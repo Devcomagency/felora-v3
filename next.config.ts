@@ -60,7 +60,7 @@ const nextConfig: NextConfig = {
     ],
   },
   // Configuration des Server Actions et uploads
-  output: 'standalone', // Mode déploiement pour Vercel
+  // output: 'standalone', // Disabled - causing routing issues on Vercel
   experimental: {
     serverActions: {
       bodySizeLimit: '10mb', // Limite augmentée pour les uploads de médias
