@@ -10,10 +10,17 @@ build/
 out/
 
 # Environment variables
+<<<<<<< HEAD:.gitignore
 # Ignore all env files by default, keep only the example template tracked
 .env
 .env.*
 !.env.example
+=======
+.env
+.env.local
+.env.production.local
+.env.test.local
+>>>>>>> 178d6043a (Add comprehensive .gitignore):Desktop/projets/felora-v3/.gitignore
 
 # Logs
 logs/
@@ -69,4 +76,8 @@ public/uploads/
 ../felora/
 ../MonApp/
 ../../*
+<<<<<<< HEAD:.gitignore
 ../../../*
+=======
+../../../*
+>>>>>>> 178d6043a (Add comprehensive .gitignore):Desktop/projets/felora-v3/.gitignore
