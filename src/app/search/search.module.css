@@ -1,0 +1,132 @@
+/* Search page responsive styles */
+
+.searchInput {
+  /* Masquer les flèches et icônes par défaut du navigateur */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+.searchInput::-webkit-search-decoration,
+.searchInput::-webkit-search-cancel-button,
+.searchInput::-webkit-search-results-button,
+.searchInput::-webkit-search-results-decoration {
+  -webkit-appearance: none;
+}
+
+.headerContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.compactHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+}
+
+/* Mobile responsiveness pour le header compact */
+@media (max-width: 768px) {
+  .compactHeader {
+    gap: 8px;
+  }
+  
+  .compactHeader input {
+    min-width: 130px !important;
+    font-size: 14px !important;
+    padding: 12px 14px !important;
+  }
+  
+  .compactHeader button {
+    padding: 12px !important;
+  }
+  
+  .compactHeader > div {
+    font-size: 11px !important;
+    padding: 6px 8px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .compactHeader {
+    gap: 6px;
+    flex-wrap: nowrap;
+  }
+  
+  .compactHeader input {
+    min-width: 100px !important;
+    font-size: 13px !important;
+    padding: 10px 12px !important;
+    flex: 1;
+  }
+  
+  .compactHeader button {
+    padding: 10px !important;
+    flex-shrink: 0;
+  }
+  
+  .compactHeader > div {
+    font-size: 10px !important;
+    padding: 4px 6px !important;
+    flex-shrink: 0;
+  }
+}
+
+/* Styles responsive pour les filtres de localisation */
+.location-filters {
+  grid-template-columns: auto 1fr 1fr auto;
+}
+
+@media (max-width: 768px) {
+  .location-filters {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px !important;
+  }
+  
+  .location-filters select {
+    font-size: 11px !important;
+    padding: 6px 8px !important;
+    min-width: 0 !important;
+  }
+  
+  .location-filters button {
+    font-size: 11px !important;
+    padding: 6px 10px !important;
+    white-space: nowrap !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .location-filters {
+    grid-template-columns: 1fr;
+    gap: 6px !important;
+  }
+  
+  .location-filters select {
+    font-size: 12px !important;
+    padding: 8px 10px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  
+  .location-filters button {
+    font-size: 12px !important;
+    padding: 8px 12px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  
+  .location-filters > div {
+    justify-content: center !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  
+  .location-filters input[type="range"] {
+    width: 100% !important;
+  }
+}

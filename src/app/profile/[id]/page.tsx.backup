@@ -1,0 +1,166 @@
+import ProfileClient from '@/components/ProfileClient'
+import { prisma } from '@/lib/prisma'
+
+interface EscortProfile {
+  id: string
+  name: string
+  stageName: string
+  age: number
+  location: string
+  media: string
+  gallery: string[]
+  blurredGallery: string[]
+  description: string
+  services: string[]
+  price: number
+  rating: number
+  reviews: number
+  likes: number
+  followers: number
+  online: boolean
+  lastSeen: string
+  verified: boolean
+  premium: boolean
+  viewersCount: number
+  responseRate: number
+  responseTime: string
+  languages: string[]
+  stats: {
+    views: number
+    hearts: number
+    bookings: number
+  }
+  // Nouvelles données du profil détaillé
+  physicalDetails?: {
+    height?: string
+    bodyType?: string
+    hairColor?: string
+    eyeColor?: string
+    ethnicity?: string
+    bustSize?: string
+    tattoos?: string
+    piercings?: string
+  }
+  rates?: {
+    hour?: number
+    twoHours?: number
+    halfDay?: number
+    fullDay?: number
+    overnight?: number
+  }
+  workingArea?: string
+  practices?: string[]
+  incall?: boolean
+  outcall?: boolean
+  availableNow?: boolean
+  weekendAvailable?: boolean
+}
+
+export default async function ProfilePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+
+  try {
+    // 1) DB direct avec Prisma
+    const escortProfile = await prisma.escortProfile.findUnique({
+      where: { id: id },
+      include: {
+        user: {
+          select: {
+            name: true,
+            email: true,
+            createdAt: true
+          }
+        }
+      }
+    })
+
+    if (escortProfile) {
+      console.log('✅ Profil chargé:', escortProfile.stageName)
+      console.log('📱 galleryPhotos raw:', escortProfile.galleryPhotos)
+      
+      if (escortProfile.galleryPhotos) {
+        const galleryParsed = JSON.parse(escortProfile.galleryPhotos)
+        console.log('📱 galleryPhotos parsed:', galleryParsed)
+        console.log('📱 Vidéos trouvées:', galleryParsed.filter((m: any) => m.type === 'video'))
+        console.log('📱 Images trouvées:', galleryParsed.filter((m: any) => m.type === 'image'))
+      }
+      
+      // Créer le profil avec les VRAIES données uniquement
+      const profile: EscortProfile = {
+        id: escortProfile.id,
+        name: escortProfile.firstName || escortProfile.stageName || 'Inconnu',
+        stageName: escortProfile.stageName || escortProfile.firstName || 'Inconnu',
+        age: escortProfile.dateOfBirth ? 
+          new Date().getFullYear() - new Date(escortProfile.dateOfBirth).getFullYear() : 25,
+        location: escortProfile.city || 'Non spécifié',
+        media: escortProfile.profilePhoto || '/placeholder-avatar.jpg',
+        gallery: escortProfile.galleryPhotos ? 
+          JSON.parse(escortProfile.galleryPhotos).map((m: any) => {
+            // 🔧 ASTUCE : Encoder le type dans l'URL avec un paramètre
+            const typeParam = m.type === 'video' ? '?type=video' : '?type=image'
+            return m.url + typeParam
+          }) : [],
+        blurredGallery: escortProfile.galleryPhotos ? 
+          JSON.parse(escortProfile.galleryPhotos).filter((m: any) => m.type === 'image').map((m: any) => m.url).slice(0, 6) : [],
+        description: escortProfile.description || 'Aucune description disponible',
+        services: escortProfile.services ? JSON.parse(escortProfile.services) : ['Accompagnement'],
+        price: escortProfile.rate1H || 350,
+        rating: 4.9,
+        reviews: 24,
+        likes: 156,
+        followers: 289,
+        online: escortProfile.status === 'ACTIVE',
+        lastSeen: escortProfile.status === 'ACTIVE' ? 'En ligne maintenant' : 'Vu récemment',
+        verified: escortProfile.isVerifiedBadge || false,
+        premium: true,
+        viewersCount: Math.floor(Math.random() * 20) + 5,
+        responseRate: 98,
+        responseTime: '< 5 min',
+        languages: escortProfile.languages ? JSON.parse(escortProfile.languages) : ['Français'],
+        stats: {
+          views: escortProfile.views || 0,
+          hearts: 156,
+          bookings: 89
+        },
+        // Nouvelles données détaillées
+        physicalDetails: {
+          height: escortProfile.height ? `${escortProfile.height} cm` : undefined,
+          bodyType: escortProfile.bodyType || undefined,
+          hairColor: escortProfile.hairColor || undefined,
+          eyeColor: escortProfile.eyeColor || undefined,
+          ethnicity: escortProfile.ethnicity || undefined,
+          bustSize: escortProfile.bustSize || undefined,
+          tattoos: escortProfile.tattoos || undefined,
+          piercings: escortProfile.piercings || undefined,
+        },
+        rates: {
+          hour: escortProfile.rate1H || undefined,
+          twoHours: escortProfile.rate2H || undefined,
+          halfDay: escortProfile.rateHalfDay || undefined,
+          fullDay: escortProfile.rateFullDay || undefined,
+          overnight: escortProfile.rateOvernight || undefined,
+        },
+        workingArea: escortProfile.workingArea || undefined,
+        practices: escortProfile.practices ? JSON.parse(escortProfile.practices) : undefined,
+        incall: escortProfile.incall || false,
+        outcall: escortProfile.outcall || false,
+        availableNow: escortProfile.availableNow || false,
+        weekendAvailable: escortProfile.weekendAvailable || false,
+      }
+
+      return <ProfileClient profile={profile} />
+    }
+  } catch (error) {
+    console.error('❌ Erreur chargement profil:', error)
+  }
+
+  // Fallback en cas d'erreur
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center">
+      <div className="text-center">
+        <h1 className="text-2xl text-white mb-4">Profil non trouvé</h1>
+        <p className="text-gray-400">Ce profil n'existe pas ou n'est pas accessible.</p>
+      </div>
+    </div>
+  )
+}

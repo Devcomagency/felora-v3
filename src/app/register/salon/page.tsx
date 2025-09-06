@@ -1,0 +1,2 @@
+export { default } from '../../profile-test-signup/club/page'
+

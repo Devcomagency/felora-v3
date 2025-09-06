@@ -1,0 +1,274 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Design tokens (premium dark + glass) - CHARTE COMPLÈTE */
+:root{
+  /* Neutres */
+  --bg:#0B0B0B; --surface:#111318; --panel:#14171D;
+  --border:#23262D; --muted:#A1A5B0; --text:#EAECEF;
+  
+  /* Accents (premium) */
+  --accent-1:#FF6B9D; --accent-2:#B794F6; --accent-3:#4FD1C7;
+  --grad-1:linear-gradient(135deg,#FF6B9D 0%,#B794F6 100%);
+  
+  /* États */
+  --success:#10B981; --warning:#F59E0B; --danger:#EF4444;
+  
+  /* Overlays/Glass */
+  --glass-bg:rgba(17,19,24,0.72); --glass-blur:12px; --glass-border:rgba(255,255,255,0.08);
+  --halo-1:linear-gradient(90deg,#FF6B9D33,#B794F633,#4FD1C733);
+  
+  /* Spacing (base 8) */
+  --sp-4:4px; --sp-8:8px; --sp-12:12px; --sp-16:16px; --sp-24:24px; --sp-32:32px;
+  
+  /* Radius */
+  --r-8:8px; --r-12:12px; --r-16:16px; --r-24:24px;
+  
+  /* Ombres */
+  --shadow-1:0 8px 24px rgba(0,0,0,.40);
+  --inner-1:inset 0 1px 0 rgba(255,255,255,.06);
+  --glow-1:0 0 0 2px rgba(255,255,255,.06);
+  
+  /* Typography */
+  --fs-12:12px; --fs-14:14px; --fs-16:16px; --fs-20:20px; --fs-24:24px; --fs-32:32px;
+}
+
+/* (Nettoyé) styles MapLibre supprimés — uniquement Leaflet conservé */
+
+/* Glass card utility (shared across pages) */
+.glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-16);
+  box-shadow: var(--shadow-1), var(--inner-1);
+  color: var(--text);
+}
+
+.glass-card:hover {
+  box-shadow: 0 10px 30px rgba(0,0,0,.5), var(--inner-1);
+}
+
+/* Safe area utilities pour les appareils modernes */
+@layer utilities {
+  .safe-area-pt {
+    padding-top: env(safe-area-inset-top);
+  }
+  .safe-area-pb {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .safe-area-pl {
+    padding-left: env(safe-area-inset-left);
+  }
+  .safe-area-pr {
+    padding-right: env(safe-area-inset-right);
+  }
+  
+  /* Scrollbar cachée pour fullscreen */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* Fullscreen responsive comme l'accueil */
+  .fullscreen-carousel {
+    /* Mobile : vraiment fullscreen */
+    width: 100vw !important;
+    height: 100vh !important;
+    max-width: none !important;
+    max-height: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+  
+  /* Desktop : container centré comme l'accueil */
+  @media (min-width: 1024px) {
+    .fullscreen-carousel {
+      width: 100% !important;
+      height: 100% !important;
+      max-width: 450px !important;
+      max-height: 800px !important;
+      border-radius: 20px !important;
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8) !important;
+    }
+  }
+  
+  /* Large desktop : un peu plus grand */
+  @media (min-width: 1440px) {
+    .fullscreen-carousel {
+      max-width: 500px !important;
+      max-height: 900px !important;
+    }
+  }
+}
+
+html, body { 
+  height: 100%; 
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+}
+
+/* Hide static bottom nav and remove bottom padding in map-test or when requested */
+body[data-hide-static-nav="true"] [data-static-nav="true"] {
+  display: none !important;
+}
+body[data-hide-static-nav="true"] [data-app-shell] {
+  padding-bottom: 0 !important;
+  padding-top: 0 !important;
+}
+
+/* Force le scroll sur toute l'application */
+#__next {
+  overflow-y: auto !important;
+  height: auto !important;
+}
+
+/* Assurer le scroll sur le body */
+body {
+  overflow-y: auto !important;
+}
+
+/* Fix pour le scroll bloqué sur les pages d'inscription et dashboard */
+[data-scroll-container] {
+  overflow-y: auto !important;
+  height: auto !important;
+}
+
+/* Fix spécifique pour les dashboards */
+.dashboard-container {
+  overflow-y: auto !important;
+  max-height: none !important;
+  height: auto !important;
+}
+
+/* Assurer que les éléments sticky ne bloquent pas le scroll */
+.sticky-header {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+/* Fix pour les marqueurs Leaflet */
+.leaflet-default-icon-path {
+  background-image: none;
+}
+
+/* Styles personnalisés pour la carte - NOUVELLE CHARTE */
+.leaflet-popup-content-wrapper {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(var(--glass-blur)) !important;
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: var(--shadow-1), var(--inner-1) !important;
+  border-radius: var(--r-16) !important;
+  padding: 0 !important;
+}
+
+.leaflet-popup-content {
+  margin: 0 !important;
+  padding: 0 !important;
+  color: var(--text) !important;
+}
+
+.leaflet-popup-tip {
+  background: var(--glass-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+}
+
+/* Markers et clusters selon la nouvelle charte */
+.custom-marker:hover {
+  transform: scale(1.05) !important;
+  filter: drop-shadow(var(--glow-1)) !important;
+  transition: all 150ms cubic-bezier(.22,1,.36,1) !important;
+}
+
+.leaflet-marker-icon {
+  border-radius: 50% !important;
+  border: 2px solid var(--glass-border) !important;
+  box-shadow: var(--shadow-1) !important;
+}
+
+.marker-cluster {
+  background: var(--grad-1) !important;
+  border-radius: 50% !important;
+  color: var(--text) !important;
+  font-weight: 600 !important;
+  border: 2px solid var(--glass-border) !important;
+  box-shadow: var(--shadow-1) !important;
+}
+
+.marker-cluster-small {
+  width: 40px !important;
+  height: 40px !important;
+  line-height: 36px !important;
+  font-size: var(--fs-12) !important;
+}
+
+.marker-cluster-medium {
+  width: 48px !important;
+  height: 48px !important;
+  line-height: 44px !important;
+  font-size: var(--fs-14) !important;
+}
+
+.marker-cluster-large {
+  width: 56px !important;
+  height: 56px !important;
+  line-height: 52px !important;
+  font-size: var(--fs-16) !important;
+}
+
+/* Style pour la carte sombre */
+.leaflet-container {
+  background: #000000 !important;
+}
+
+.leaflet-control-zoom {
+  display: none !important;
+}
+
+.leaflet-control-attribution {
+  background: rgba(0, 0, 0, 0.8) !important;
+  color: rgba(255, 255, 255, 0.6) !important;
+  border-radius: 8px !important;
+  padding: 4px 8px !important;
+  font-size: 11px !important;
+}
+
+.leaflet-control-attribution a {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* Meilleur positionnement de la croix de fermeture des popups */
+.leaflet-popup-close-button {
+  position: absolute !important;
+  top: 8px !important;
+  right: 8px !important;
+  width: 32px !important;
+  height: 32px !important;
+  background: rgba(0, 0, 0, 0.7) !important;
+  backdrop-filter: blur(10px) !important;
+  border-radius: 16px !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  z-index: 1000 !important;
+  transition: all 200ms ease !important;
+}
+
+.leaflet-popup-close-button:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  transform: scale(1.05) !important;
+}

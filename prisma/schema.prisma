@@ -1,0 +1,798 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                   String               @id @default(cuid())
+  email                String               @unique
+  phone                String?
+  name                 String?
+  image                String?
+  password             String?
+  role                 UserRole             @default(CLIENT)
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+  passwordHash         String?
+  phoneE164            String?
+  accounts             Account[]
+  profile              ClientProfile?
+  clubProfile          ClubProfile?
+  clubProfileV2        ClubProfileV2?       @relation("ClubProfileV2User")
+  escortConversations  Conversation[]       @relation("EscortConversations")
+  clientConversations  Conversation[]       @relation("ClientConversations")
+  customOrdersAsClient CustomOrder[]        @relation("CustomOrderClient")
+  customOrdersAsEscort CustomOrder[]        @relation("CustomOrderEscort")
+  diamondWallet        DiamondWallet?       @relation("DiamondWallet")
+  escortProfile        EscortProfile?
+  escortProfileV2      EscortProfileV2?     @relation("EscortProfileV2User")
+  subscriptions        EscortSubscription[]
+  receivedMessages     Message[]            @relation("ReceivedMessages")
+  sentMessages         Message[]            @relation("SentMessages")
+  salonProfile         SalonProfile?
+  sessions             Session[]
+  passwordResetTokens  PasswordResetToken[]
+
+  @@map("users")
+}
+
+model EscortProfileV2 {
+  id        String      @id @default(cuid())
+  userId    String      @unique
+  handle    String      @unique
+  birthDate DateTime
+  verified  Boolean     @default(false)
+  kycStatus KycStatusV2 @default(PENDING)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  user      User        @relation("EscortProfileV2User", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("escort_profiles_v2")
+}
+
+model ClubProfileV2 {
+  id          String      @id @default(cuid())
+  userId      String      @unique
+  handle      String      @unique
+  companyName String?
+  ideNumber   String?
+  managerName String?
+  verified    Boolean     @default(false)
+  kycStatus   KycStatusV2 @default(PENDING)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  user        User        @relation("ClubProfileV2User", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("club_profiles_v2")
+}
+
+model KycSubmission {
+  id               String      @id @default(cuid())
+  userId           String
+  role             UserRole
+  docFrontUrl      String?
+  docBackUrl       String?
+  selfieUrl        String?
+  selfieSignUrl    String?
+  livenessVideoUrl String?
+  status           KycStatusV2 @default(PENDING)
+  reviewerId       String?
+  reviewedAt       DateTime?
+  notes            String?
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  @@index([userId, status])
+  @@map("kyc_submissions")
+}
+
+model PlanV2 {
+  id         String         @id @default(cuid())
+  code       String         @unique
+  name       String
+  interval   PlanIntervalV2
+  priceCents Int
+  popular    Boolean        @default(false)
+  active     Boolean        @default(true)
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+
+  @@map("plans_v2")
+}
+
+model ClientProfile {
+  id          String    @id @default(cuid())
+  userId      String    @unique
+  firstName   String?
+  lastName    String?
+  dateOfBirth DateTime?
+  city        String?
+  preferences Json?
+  verifyLevel Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("client_profiles")
+}
+
+model EscortProfile {
+  id                  String       @id @default(cuid())
+  userId              String       @unique
+  firstName           String
+  stageName           String
+  dateOfBirth         DateTime
+  nationality         String
+  languages           String
+  city                String
+  workingArea         String
+  description         String
+  canton              String?
+  codePostal          String?
+  ville               String?
+  rue                 String?
+  numero              String?
+  addressVisible      Boolean      @default(false)
+  latitude            Float?
+  longitude           Float?
+  services            String
+  rates               String
+  availability        String
+  profilePhoto        String?
+  galleryPhotos       String
+  videos              String
+  status              EscortStatus @default(PENDING)
+  verificationData    Json?
+  isVerifiedBadge     Boolean      @default(false)
+  profileCompleted    Boolean      @default(false)
+  photosCount         Int          @default(0)
+  videosCount         Int          @default(0)
+  hasProfilePhoto     Boolean      @default(false)
+  views               Int          @default(0)
+  likes               Int          @default(0)
+  rating              Float        @default(0)
+  reviewCount         Int          @default(0)
+  telegramChatId      String?
+  telegramUsername    String?
+  telegramConnected   Boolean      @default(false)
+  telegramEnabled     Boolean      @default(false)
+  messagingPreference String       @default("APP_ONLY")
+  height              Int?
+  bodyType            String?
+  hairColor           String?
+  eyeColor            String?
+  ethnicity           String?
+  bustSize            String?
+  tattoos             String?
+  piercings           String?
+  rate1H              Float?
+  rate2H              Float?
+  rateHalfDay         Float?
+  rateFullDay         Float?
+  rateOvernight       Float?
+  currency            String       @default("CHF")
+  minimumDuration     String?
+  practices           String?
+  orientation         String?
+  acceptedClients     String?
+  outcall             Boolean      @default(false)
+  incall              Boolean      @default(false)
+  timeSlots           String?
+  availableNow        Boolean      @default(false)
+  weekendAvailable    Boolean      @default(false)
+  hasPrivatePhotos    Boolean      @default(false)
+  hasPrivateVideos    Boolean      @default(false)
+  hasWebcamLive       Boolean      @default(false)
+  acceptsGifts        Boolean      @default(false)
+  isActive            Boolean      @default(false)
+  totalLikes          Int          @default(0)
+  totalReacts         Int          @default(0)
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+  user                User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("escort_profiles")
+}
+
+model SalonProfile {
+  id                String       @id @default(cuid())
+  userId            String       @unique
+  companyName       String
+  businessName      String?
+  siret             String?      @unique
+  ideNumber         String?      @unique
+  vatNumber         String?
+  legalForm         String?
+  canton            String?
+  address           String
+  city              String
+  postalCode        String
+  country           String       @default("CH")
+  managerName       String
+  managerEmail      String
+  phone             String
+  website           String?
+  description       String
+  services          String
+  capacity          Int
+  openingHours      String
+  logo              String?
+  photos            String
+  status            EscortStatus @default(PENDING)
+  businessDocuments Json?
+  views             Int          @default(0)
+  rating            Float        @default(0)
+  reviewCount       Int          @default(0)
+  managedEscorts    String
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("salon_profiles")
+}
+
+model ClubProfile {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  handle       String   @unique
+  name         String
+  description  String?
+  address      String?
+  openingHours String?
+  avatarUrl    String?
+  coverUrl     String?
+  isActive     Boolean  @default(false)
+  updatedAt    DateTime @updatedAt
+  createdAt    DateTime @default(now())
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("club_profiles")
+}
+
+model Conversation {
+  id        String           @id @default(cuid())
+  type      ConversationType @default(FREE)
+  clientId  String
+  escortId  String
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  escort    User             @relation("EscortConversations", fields: [escortId], references: [id])
+  client    User             @relation("ClientConversations", fields: [clientId], references: [id])
+  messages  Message[]
+
+  @@map("conversations")
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  type           MessageType  @default(TEXT)
+  content        String
+  senderId       String
+  receiverId     String
+  conversationId String
+  readAt         DateTime?
+  createdAt      DateTime     @default(now())
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  receiver       User         @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  sender         User         @relation("SentMessages", fields: [senderId], references: [id])
+
+  @@map("messages")
+}
+
+model EscortSubscription {
+  id                   String             @id @default(cuid())
+  userId               String
+  plan                 SubscriptionPlan
+  status               SubscriptionStatus @default(PENDING_PAYMENT)
+  stripeCustomerId     String?
+  stripeSubscriptionId String?
+  stripePriceId        String?
+  amount               Float
+  currency             String             @default("EUR")
+  startDate            DateTime
+  endDate              DateTime
+  cancelledAt          DateTime?
+  metadata             Json?
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+  user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("escort_subscriptions")
+}
+
+model PasswordResetToken {
+  id         String   @id @default(cuid())
+  userId     String
+  tokenHash  String   @unique
+  expiresAt  DateTime
+  usedAt     DateTime?
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("password_reset_tokens")
+}
+
+model EmailVerification {
+  id         String   @id @default(cuid())
+  email      String   @unique
+  codeHash   String
+  expiresAt  DateTime
+  verifiedAt DateTime?
+  createdAt  DateTime @default(now())
+
+  @@map("email_verifications")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+model DiamondWallet {
+  id                   String               @id @default(cuid())
+  userId               String               @unique
+  balance              Int                  @default(0)
+  totalEarned          Int                  @default(0)
+  totalSpent           Int                  @default(0)
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+  receivedTransactions DiamondTransaction[] @relation("ReceivedTransactions")
+  sentTransactions     DiamondTransaction[] @relation("SentTransactions")
+  user                 User                 @relation("DiamondWallet", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("diamond_wallets")
+}
+
+model DiamondTransaction {
+  id                    String                   @id @default(cuid())
+  type                  DiamondTransactionType
+  status                DiamondTransactionStatus @default(PENDING)
+  amount                Int
+  fromUserId            String?
+  toUserId              String?
+  paymentMethod         PaymentMethod?
+  paymentAmount         Float?
+  paymentCurrency       String?                  @default("CHF")
+  stripeSessionId       String?
+  stripePaymentIntentId String?
+  externalTransactionId String?
+  description           String?
+  metadata              Json?
+  processedAt           DateTime?
+  createdAt             DateTime                 @default(now())
+  updatedAt             DateTime                 @updatedAt
+  toUser                DiamondWallet?           @relation("ReceivedTransactions", fields: [toUserId], references: [userId])
+  fromUser              DiamondWallet?           @relation("SentTransactions", fields: [fromUserId], references: [userId])
+
+  @@map("diamond_transactions")
+}
+
+model DiamondPack {
+  id            String   @id @default(cuid())
+  name          String
+  description   String?
+  diamonds      Int
+  price         Float
+  currency      String   @default("CHF")
+  bonusDiamonds Int      @default(0)
+  color         String?
+  icon          String?
+  popular       Boolean  @default(false)
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("diamond_packs")
+}
+
+model DiamondGift {
+  id            String   @id @default(cuid())
+  name          String
+  description   String?
+  cost          Int
+  emoji         String?
+  color         String?
+  animationType String?
+  category      String?
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("diamond_gifts")
+}
+
+model CustomOrder {
+  id                String              @id @default(cuid())
+  clientId          String
+  escortId          String
+  type              CustomOrderType
+  title             String
+  description       String
+  requirements      Json?
+  proposedPrice     Int?
+  finalPrice        Int?
+  priority          CustomOrderPriority @default(STANDARD)
+  estimatedDelivery DateTime?
+  status            CustomOrderStatus   @default(PENDING)
+  escortNotes       String?
+  clientFeedback    String?
+  rating            Int?
+  deliveredFiles    Json?
+  previewFiles      Json?
+  paidAt            DateTime?
+  deliveredAt       DateTime?
+  conversationId    String?
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  client            User                @relation("CustomOrderClient", fields: [clientId], references: [id], onDelete: Cascade)
+  escort            User                @relation("CustomOrderEscort", fields: [escortId], references: [id], onDelete: Cascade)
+
+  @@map("custom_orders")
+}
+
+model UserDevice {
+  id              String   @id @default(cuid())
+  userId          String
+  deviceId        String
+  identityKeyPub  String
+  signedPreKeyId  Int
+  signedPreKeyPub String
+  signedPreKeySig String
+  preKeysJson     Json
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([userId, deviceId])
+  @@index([userId])
+}
+
+model E2EEConversation {
+  id              String   @id @default(cuid())
+  isGroup         Boolean  @default(false)
+  name            String?
+  participants    Json
+  participantsKey String   @unique
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([isGroup])
+}
+
+model E2EEMessageEnvelope {
+  id             String         @id @default(cuid())
+  conversationId String
+  senderUserId   String
+  senderDeviceId String
+  cipherText     String
+  messageId      String
+  status         DeliveryStatus @default(SENT)
+  attachmentUrl  String?
+  attachmentMeta Json?
+  createdAt      DateTime       @default(now())
+  deliveredAt    DateTime?
+  readAt         DateTime?
+
+  @@unique([conversationId, messageId])
+  @@index([conversationId, createdAt])
+}
+
+model E2EEConversationRead {
+  id             String   @id @default(cuid())
+  conversationId String
+  userId         String
+  lastReadAt     DateTime @default(now())
+
+  @@unique([conversationId, userId])
+  @@index([userId])
+}
+
+model UserBlock {
+  id            String   @id @default(cuid())
+  blockerUserId String
+  blockedUserId String
+  reason        String?
+  createdAt     DateTime @default(now())
+
+  @@unique([blockerUserId, blockedUserId])
+  @@index([blockerUserId])
+  @@index([blockedUserId])
+}
+
+model ChatReport {
+  id             String       @id @default(cuid())
+  reporterUserId String
+  targetUserId   String
+  conversationId String?
+  messageId      String?
+  reason         String
+  details        String?
+  status         ReportStatus @default(PENDING)
+  createdAt      DateTime     @default(now())
+  reviewedAt     DateTime?
+}
+
+model Media {
+  id          String          @id @default(cuid())
+  ownerType   String
+  ownerId     String
+  type        String
+  url         String
+  thumbUrl    String?
+  visibility  MediaVisibility @default(PUBLIC)
+  price       Int?
+  pos         Int?
+  likeCount   Int             @default(0)
+  reactCount  Int             @default(0)
+  createdAt   DateTime        @default(now())
+  mediaAccess MediaAccess[]
+  reactions   Reaction[]
+
+  @@map("media")
+}
+
+model Reaction {
+  id        String       @id @default(cuid())
+  mediaId   String
+  userId    String
+  type      ReactionType
+  createdAt DateTime     @default(now())
+  media     Media        @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
+  @@unique([mediaId, userId, type])
+  @@map("reactions")
+}
+
+model MediaAccess {
+  id        String   @id @default(cuid())
+  mediaId   String
+  userId    String
+  createdAt DateTime @default(now())
+  media     Media    @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
+  @@unique([mediaId, userId])
+  @@map("media_access")
+}
+
+model MediaOrder {
+  id        String   @id @default(cuid())
+  escortId  String
+  clientId  String
+  status    String   @default("PENDING")
+  request   Json
+  price     Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("media_orders")
+}
+
+enum KycStatusV2 {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum WalletTxType {
+  FUND
+  PURCHASE_GIFT
+  TRANSFER
+  REFUND
+}
+
+enum PlanIntervalV2 {
+  TRIAL
+  WEEK
+  MONTH
+  QUARTER
+  YEAR
+}
+
+enum UserRole {
+  CLIENT
+  ESCORT
+  SALON
+  CLUB
+  ADMIN
+}
+
+enum EscortStatus {
+  PENDING
+  ACTIVE
+  PAUSED
+  VERIFIED
+  SUSPENDED
+  BANNED
+}
+
+enum ConversationType {
+  FREE
+  PREMIUM
+  VIP
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  VIDEO
+  GIFT
+  SYSTEM
+}
+
+enum DeliveryStatus {
+  SENT
+  DELIVERED
+  READ
+}
+
+enum ReportStatus {
+  PENDING
+  REVIEWED
+  RESOLVED
+}
+
+enum SubscriptionPlan {
+  TRIAL
+  WEEKLY
+  MONTHLY
+  QUARTERLY
+  YEARLY
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  EXPIRED
+  CANCELLED
+  PENDING_PAYMENT
+}
+
+enum DiamondTransactionType {
+  PURCHASE
+  TRANSFER
+  GIFT
+  REFUND
+  BONUS
+}
+
+enum PaymentMethod {
+  STRIPE
+  TWINT
+  CRYPTO
+  PAYPAL
+}
+
+enum DiamondTransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  CANCELLED
+  REFUNDED
+}
+
+enum CustomOrderStatus {
+  PENDING
+  CONFIRMED
+  PAID
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  REFUNDED
+}
+
+enum CustomOrderType {
+  PHOTO
+  VIDEO
+  VIDEO_CALL
+  MESSAGE
+  BUNDLE
+}
+
+enum CustomOrderPriority {
+  STANDARD
+  EXPRESS
+  URGENT
+}
+
+enum MediaVisibility {
+  PUBLIC
+  PRIVATE
+  REQUESTABLE
+}
+
+// Gift System Models
+model Wallet {
+  id           String     @id @default(cuid())
+  userId       String     @unique
+  balance      Int        @default(0) // en diamants
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  transactions WalletTx[]
+
+  @@map("wallets")
+}
+
+model WalletTx {
+  id        String       @id @default(cuid())
+  walletId  String
+  amount    Int          // positif = crédit, négatif = débit
+  type      WalletTxType
+  reference String?      // ex: "STRIPE_sess_123" ou "GIFT_evt_456"
+  meta      Json?        // métadonnées additionnelles (ex: détails cadeau, infos paiement)
+  createdAt DateTime     @default(now())
+  wallet    Wallet       @relation(fields: [walletId], references: [id], onDelete: Cascade)
+
+  @@index([walletId, createdAt])
+  @@map("wallet_transactions")
+}
+
+model GiftCatalog {
+  id        String   @id @default(cuid())
+  code      String   @unique // HEART | DIAMOND | FIREWORKS ...
+  name      String
+  price     Int      // coût en diamants
+  lottieUrl String   // /public/lottie/diamond.json ou .lottie
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("gift_catalog")
+}
+
+model GiftEvent {
+  id             String   @id @default(cuid())
+  fromUserId     String
+  toUserId       String
+  giftCode       String
+  amount         Int      // coût en diamants
+  conversationId String?
+  messageId      String?
+  createdAt      DateTime @default(now())
+
+  @@index([toUserId, createdAt])
+  @@map("gift_events")
+}
+
+enum ReactionType {
+  LIKE
+  LOVE
+  FIRE
+  WOW
+  SMILE
+}

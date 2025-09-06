@@ -1,0 +1,11 @@
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Connexion — Felora',
+  description: 'Accédez à votre compte Felora en toute sécurité.',
+}
+
+export default function LoginLayout({ children }: { children: React.ReactNode }) {
+  return children as any
+}
+

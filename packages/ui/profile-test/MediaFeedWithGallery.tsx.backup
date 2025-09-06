@@ -1,0 +1,794 @@
+'use client'
+
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { ArrowLeft, Heart, Play, Crown, Smile, Share, MoreVertical, Flag, Edit, Trash2, Bookmark, Flame } from 'lucide-react'
+import Image from 'next/image'
+import { useReactions, ReactionType } from '../../../src/hooks/useReactions'
+import ReactionBar from '../../../src/components/reactions/ReactionBar'
+import { stableMediaId } from '@/lib/reactions/stableMediaId'
+
+interface MediaItem {
+  id?: string // ID unique du média pour les réactions
+  type: 'image' | 'video'
+  url: string
+  thumb?: string
+  poster?: string
+  isPrivate?: boolean
+  likes?: number
+  comments?: number
+}
+
+interface MediaFeedWithGalleryProps {
+  media: MediaItem[]
+  profileId: string
+  profileName?: string
+  userId?: string | null // ID de l'utilisateur connecté
+  onLike?: (index: number) => Promise<void>
+  onSave?: (index: number) => Promise<void>
+  onReactionChange?: () => Promise<void> // Callback pour notifier les changements de réactions
+  className?: string
+  privateEnabled?: boolean
+  viewerIsOwner?: boolean
+  onDeleteMedia?: (mediaUrl: string, index: number) => void
+  onEditMedia?: (mediaUrl: string, index: number) => void
+}
+
+const EMOJI_REACTIONS = ['❤️', '😍', '🔥', '🥵', '😈', '💋', '🤤', '😘', '🫦', '🔞']
+
+interface MediaPlayerProps extends MediaItem {
+  index: number
+  isActive: boolean
+  profileId: string
+  userId?: string | null
+  onLike?: () => Promise<void>
+  onSave?: () => Promise<void>
+  onFullscreen?: () => void
+}
+
+function MediaPlayer({ id, type, url, thumb, poster, index, isActive, profileId, userId, onLike, onSave, onFullscreen, isPrivate }: MediaPlayerProps) {
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [error, setError] = useState(false)
+  const effectiveUserId = useMemo(() => userId ?? 'dev-guest', [userId])
+  const mediaId = useMemo(() => stableMediaId({ rawId: id || null, profileId, url }), [id, profileId, url])
+  const [reactionCount, setReactionCount] = useState<number>(0)
+
+  const refreshCount = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/reactions?mediaId=${encodeURIComponent(mediaId)}&userId=${encodeURIComponent(effectiveUserId || '')}`)
+      const data = await res.json().catch(() => ({}))
+      if (data?.success) {
+        setReactionCount(data?.stats?.total ?? 0)
+      }
+    } catch {}
+  }, [mediaId, effectiveUserId])
+
+  useEffect(() => {
+    refreshCount()
+  }, [refreshCount])
+
+  // No automatic refresh to prevent API spam - only refresh on mount
+  // Fonction pour tracker les vues de média
+  const trackMediaView = useCallback(async (mediaUrl: string, mediaIndex: number) => {
+    try {
+      const trackingId = stableMediaId({ rawId: id || null, profileId, url: mediaUrl })
+      await fetch('/api/analytics/track-view', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          targetId: trackingId, 
+          viewType: 'media'
+        })
+      })
+    } catch (error) {
+      console.error('Failed to track media view:', error)
+    }
+  }, [id, profileId])
+
+  // Auto-play logic for videos
+  useEffect(() => {
+    const video = videoRef.current
+    if (!video || type !== 'video') return
+
+    if (isActive && !isPrivate) {
+      video.play()
+        .then(() => setIsPlaying(true))
+        .catch(() => setError(true))
+    } else {
+      video.pause()
+      setIsPlaying(false)
+    }
+  }, [isActive, type, isPrivate])
+
+  const togglePlayPause = useCallback(() => {
+    const video = videoRef.current
+    if (!video) return
+
+    if (video.paused) {
+      video.play()
+        .then(() => setIsPlaying(true))
+        .catch(() => setError(true))
+    } else {
+      video.pause()
+      setIsPlaying(false)
+    }
+  }, [])
+
+
+  if (type === 'video') {
+    return (
+      <div className="relative w-full h-full bg-black rounded-none overflow-hidden group">
+        <video
+          ref={videoRef}
+          className={`w-full h-full object-cover ${isPrivate && !isActive ? 'blur-xl brightness-30' : ''}`}
+          muted
+          loop
+          playsInline
+          poster={poster || thumb}
+          onError={() => setError(true)}
+        >
+          <source src={url} type="video/mp4" />
+        </video>
+
+        {/* Play button overlay */}
+        <button
+          onClick={() => {
+            // Ouvrir en plein écran au clic (même pour les vidéos)
+            onFullscreen && onFullscreen()
+            // Track view quand on ouvre en grand
+            trackMediaView(url, index)
+          }}
+          className="absolute inset-0 bg-transparent group-hover:bg-black/20 transition-colors duration-200 flex items-center justify-center"
+          aria-label={isPlaying ? 'Pause video' : 'Play video'}
+        >
+          {(!error) && (
+            <div className="w-16 h-16 bg-black/70 backdrop-blur-sm rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
+              {isPrivate ? <Crown size={24} className="text-white" /> : <Play size={24} className="text-white ml-1" />}
+            </div>
+          )}
+        </button>
+
+        {/* Compteur discret (flamme blanche) */}
+        {!isPrivate && (
+          <div className="absolute bottom-2 right-2 z-20 pointer-events-none">
+            <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/40 border border-white/10 text-white/90 text-xs">
+              <Flame size={12} className="text-white" />
+              <span>{reactionCount}</span>
+            </div>
+          </div>
+        )}
+
+        {/* Badge VIP */}
+        {isPrivate && (
+          <div className="absolute top-2 left-2">
+            <div className="px-2 py-1 bg-gradient-to-r from-pink-500 to-purple-500 rounded-md text-xs font-bold text-white shadow-md">
+              VIP
+            </div>
+          </div>
+        )}
+
+        {/* Private overlay */}
+        {isPrivate && (
+          <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+            <div className="w-12 h-12 bg-white/40 rounded-full flex items-center justify-center shadow-lg backdrop-blur-sm">
+              <Crown size={20} className="text-gray-800" />
+            </div>
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  // Image player
+  return (
+    <div className="relative w-full h-full bg-black rounded-none overflow-hidden group">
+      <Image
+        src={url}
+        alt={`Media ${index + 1}`}
+        fill
+        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+        priority={index === 0} // Première image en priorité
+        className={`object-cover ${isPrivate ? 'blur-xl brightness-30' : ''}`}
+        onError={() => setError(true)}
+      />
+
+      {/* Click overlay */}
+      <button
+        onClick={() => {
+          onFullscreen && onFullscreen()
+          // Track media view when user opens fullscreen
+          trackMediaView(url, index)
+        }}
+        className="absolute inset-0 bg-transparent group-hover:bg-black/20 transition-colors duration-200"
+        aria-label="View fullscreen"
+      />
+
+      {/* Compteur discret (flamme blanche) */}
+      {!isPrivate && (
+        <div className="absolute bottom-2 right-2 z-20 pointer-events-none">
+          <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/40 border border-white/10 text-white/90 text-xs">
+            <Flame size={12} className="text-white" />
+            <span>{reactionCount}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Badge VIP */}
+      {isPrivate && (
+        <div className="absolute top-2 left-2">
+          <div className="px-2 py-1 bg-gradient-to-r from-pink-500 to-purple-500 rounded-md text-xs font-bold text-white shadow-md">
+            VIP
+          </div>
+        </div>
+      )}
+
+      {/* Private overlay */}
+      {isPrivate && (
+        <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+          <div className="w-12 h-12 bg-white/40 rounded-full flex items-center justify-center shadow-lg backdrop-blur-sm">
+            <Crown size={20} className="text-gray-800" />
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+export default function MediaFeedWithGallery({
+  media,
+  profileId,
+  profileName,
+  userId,
+  onLike,
+  onSave,
+  onReactionChange,
+  className = '',
+  privateEnabled = true,
+  viewerIsOwner = false,
+  onDeleteMedia,
+  onEditMedia,
+}: MediaFeedWithGalleryProps) {
+  const [activeTab, setActiveTab] = useState('posts')
+  const [fullscreenMedia, setFullscreenMedia] = useState<string | null>(null)
+  const [fullscreenIndex, setFullscreenIndex] = useState(0)
+  const [showReactions, setShowReactions] = useState(false)
+  const [explosionEmojis, setExplosionEmojis] = useState<{emoji: string, id: number}[]>([])
+  const [mediaReactions, setMediaReactions] = useState<{[key: string]: string}>({})
+  const [showMenu, setShowMenu] = useState(false)
+  // Responsive radius + count for radial reactions
+  const [reactionRadius, setReactionRadius] = useState(110)
+  const [reactionCount, setReactionCount] = useState(6)
+
+  // No automatic interval for parent recalculation to prevent API spam
+  // Only trigger recalculation manually after user actions
+
+  useEffect(() => {
+    const compute = () => {
+      const base = Math.min(window.innerWidth, window.innerHeight)
+      // Radius between 80 and 140 based on viewport
+      const r = Math.max(80, Math.min(140, Math.round(base * 0.24)))
+      setReactionRadius(r)
+      // Fewer emojis on very small screens to reduce overlap
+      if (base < 360) setReactionCount(5)
+      else setReactionCount(6)
+    }
+    compute()
+    window.addEventListener('resize', compute)
+    window.addEventListener('orientationchange', compute)
+    return () => {
+      window.removeEventListener('resize', compute)
+      window.removeEventListener('orientationchange', compute)
+    }
+  }, [])
+  
+  const fullscreenRef = useRef<HTMLDivElement>(null)
+
+  // Generate mixed content with privacy flags
+  const mixedContent = useMemo(() => {
+    return media.map((item, index) => ({
+      ...item,
+      isPrivate: privateEnabled ? Math.random() > 0.7 : false,
+      likes: Math.floor(Math.random() * 300) + 50,
+      comments: Math.floor(Math.random() * 50) + 5
+    }))
+  }, [media, privateEnabled])
+
+  const publicContent = mixedContent.filter(item => !item.isPrivate)
+  const privateContent = mixedContent.filter(item => item.isPrivate)
+
+  // Fullscreen handlers
+  const openFullscreen = useCallback((mediaUrl: string, index: number) => {
+    setFullscreenMedia(mediaUrl)
+    setFullscreenIndex(index)
+    document.body.style.overflow = 'hidden'
+  }, [])
+
+  const closeFullscreen = useCallback(() => {
+    setFullscreenMedia(null)
+    setShowReactions(false)
+    document.body.style.overflow = 'auto'
+  }, [])
+
+  // Reactions hook for fullscreen media
+  const fullUserId = useMemo(() => userId ?? 'dev-guest', [userId])
+  const fullscreenMediaId = useMemo(() => {
+    if (!fullscreenMedia) return ''
+    const rawId = mixedContent?.[fullscreenIndex]?.id || null
+    return stableMediaId({ rawId, profileId, url: fullscreenMedia })
+  }, [mixedContent, profileId, fullscreenIndex, fullscreenMedia])
+  const { stats: fsStats, userHasLiked, toggleReaction: fsToggle } = useReactions({ mediaId: fullscreenMediaId, userId: fullUserId, enabled: !!fullscreenMediaId })
+  
+
+  const RADIAL_CHOICES: { emoji: string; type: ReactionType }[] = [
+    { emoji: '❤️', type: 'love' },
+    { emoji: '🔥', type: 'fire' },
+    { emoji: '😮', type: 'wow' },
+    { emoji: '🙂', type: 'smile' },
+  ]
+
+  // Reaction handlers
+  const handleEmojiReaction = useCallback((emoji: string) => {
+    if (!fullscreenMedia) return
+    
+    setMediaReactions(prev => ({
+      ...prev,
+      [fullscreenMedia]: emoji
+    }))
+    
+    // Explosion animation
+    const newExplosions = Array.from({ length: 8 }, (_, i) => ({
+      emoji,
+      id: Date.now() + i
+    }))
+    setExplosionEmojis(newExplosions)
+    
+    setTimeout(() => {
+      setExplosionEmojis([])
+      setMediaReactions(prev => {
+        const newReactions = { ...prev }
+        delete newReactions[fullscreenMedia]
+        return newReactions
+      })
+    }, 3000)
+    
+    setShowReactions(false)
+  }, [fullscreenMedia])
+
+  // Navigation
+  const navigateFullscreen = useCallback((direction: 'up' | 'down') => {
+    if (!fullscreenMedia) return
+    
+    const currentContent = activeTab === 'posts' ? publicContent : mixedContent
+    const currentIndex = fullscreenIndex
+    let newIndex = currentIndex
+    
+    if (direction === 'up' && currentIndex > 0) {
+      newIndex = currentIndex - 1
+    } else if (direction === 'down' && currentIndex < currentContent.length - 1) {
+      newIndex = currentIndex + 1
+    }
+    
+    if (newIndex !== currentIndex && currentContent[newIndex]) {
+      setFullscreenIndex(newIndex)
+      setFullscreenMedia(currentContent[newIndex].url)
+    }
+  }, [fullscreenMedia, fullscreenIndex, activeTab, publicContent, mixedContent])
+
+  // Keyboard navigation
+  useEffect(() => {
+    if (!fullscreenMedia) return
+    
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowDown' || e.key === ' ') {
+        e.preventDefault()
+        navigateFullscreen('down')
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault()
+        navigateFullscreen('up')
+      } else if (e.key === 'Escape') {
+        closeFullscreen()
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyPress)
+    return () => window.removeEventListener('keydown', handleKeyPress)
+  }, [fullscreenMedia, navigateFullscreen, closeFullscreen])
+
+  if (!media.length) {
+    return (
+      <div className={`glass-card p-8 text-center ${className}`}>
+        <div className="text-gray-400 mb-4">
+          <div className="w-16 h-16 mx-auto mb-4 bg-gray-700 rounded-full flex items-center justify-center">
+            <Play size={32} />
+          </div>
+          <p className="text-lg font-semibold text-gray-300">Aucun contenu disponible</p>
+          <p className="text-sm">Ce profil n'a pas encore publié de contenu.</p>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <>
+      {/* Onglets style TikTok */}
+      <div className="border-t border-white/10">
+        <div className="flex px-4">
+          {(
+            [
+              { id: 'posts', label: 'Posts', count: publicContent.length },
+              ...(privateEnabled ? [{ id: 'private', label: 'Privé', count: privateContent.length }] as const : [])
+            ] as const
+          ).map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex-1 py-3 text-center transition-all ${
+                activeTab === tab.id 
+                  ? 'border-b-2 border-white text-white' 
+                  : 'text-gray-400'
+              }`}
+            >
+              <span className="text-sm font-medium">{tab.label}</span>
+              <span className="ml-1 text-xs">({tab.count})</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Galerie redesignée avec bordures */}
+      {activeTab === 'posts' && (
+        <div
+          className="mt-2 rounded-2xl backdrop-blur-md p-2 shadow-[0_6px_18px_rgba(0,0,0,0.25)]"
+          style={{ background: 'linear-gradient(135deg, rgba(46,16,101,0.22) 0%, rgba(88,28,135,0.16) 40%, rgba(236,72,153,0.10) 100%)', border: '1px solid rgba(168,85,247,0.22)' }}
+        >
+          <div className="grid grid-cols-3 gap-2">
+            {publicContent.map((content, index) => (
+              <div key={index} className="p-[1px] rounded-none" style={{ background: 'linear-gradient(135deg, rgba(183,148,246,0.26), rgba(255,107,157,0.24), rgba(79,209,199,0.16))' }}>
+                <div
+                  className="aspect-square relative cursor-pointer rounded-none overflow-hidden bg-black/60 backdrop-blur-sm border border-violet-300/20 hover:border-fuchsia-300/40 transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_6px_20px_rgba(168,85,247,0.18),0_2px_8px_rgba(255,107,157,0.12)] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
+                >
+                  <MediaPlayer
+                    {...content}
+                    index={index}
+                    isActive={false}
+                    profileId={profileId}
+                    userId={userId}
+                    onLike={onLike ? () => onLike(index) : undefined}
+                    onSave={onSave ? () => onSave(index) : undefined}
+                    onFullscreen={() => openFullscreen(content.url, index)}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Onglet Privé */}
+      {activeTab === 'private' && (
+        <div className="p-4">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="backdrop-blur-xl rounded-2xl p-6 relative shadow-[0_8px_24px_rgba(0,0,0,0.35)]"
+            style={{ background: 'linear-gradient(135deg, rgba(46,16,101,0.35) 0%, rgba(88,28,135,0.25) 40%, rgba(236,72,153,0.18) 100%)', border: '1px solid rgba(168,85,247,0.22)' }}
+          >
+            <div className="text-center mb-6">
+              <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-fuchsia-400/30" style={{ background: 'linear-gradient(135deg, rgba(236,72,153,0.2), rgba(168,85,247,0.2))' }}>
+                <Crown size={24} className="text-fuchsia-300" />
+              </div>
+              <h3 className="text-white font-semibold text-lg mb-2">Contenu Premium</h3>
+              <p className="text-white/70 text-sm">
+                {privateContent.length} médias exclusifs vous attendent
+              </p>
+            </div>
+            
+            <div className="space-y-3 mb-6">
+              <div className="flex items-center gap-3 text-white/80 text-sm">
+                <div className="w-1.5 h-1.5 rounded-full" style={{ background: 'linear-gradient(135deg, rgba(236,72,153,0.9), rgba(168,85,247,0.9))' }}></div>
+                Contenu exclusif haute qualité
+              </div>
+              <div className="flex items-center gap-3 text-white/80 text-sm">
+                <div className="w-1.5 h-1.5 rounded-full" style={{ background: 'linear-gradient(135deg, rgba(236,72,153,0.9), rgba(168,85,247,0.9))' }}></div>
+                Accès illimité 24h/24
+              </div>
+              <div className="flex items-center gap-3 text-white/80 text-sm">
+                <div className="w-1.5 h-1.5 rounded-full" style={{ background: 'linear-gradient(135deg, rgba(236,72,153,0.9), rgba(168,85,247,0.9))' }}></div>
+                Résiliation à tout moment
+              </div>
+            </div>
+            
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => console.log('Open subscription modal')}
+              className="w-full py-4 bg-gradient-to-r from-pink-500 to-purple-600 rounded-2xl text-white font-semibold transition-all duration-200"
+            >
+              Débloquer pour 29 CHF/mois
+            </motion.button>
+            
+            <div className="mt-3 text-center text-white/60 text-xs">
+              Paiement sécurisé • Facturation mensuelle
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Modal Plein écran */}
+      <AnimatePresence>
+        {fullscreenMedia && (
+          <motion.div
+            ref={fullscreenRef}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[9999] bg-black flex items-center justify-center"
+          >
+            {/* Header */}
+            <div className="absolute top-0 left-0 right-0 p-6 bg-gradient-to-b from-black/80 to-transparent safe-area-inset-top z-10">
+              <div className="flex items-center justify-between">
+                <motion.button
+                  whileTap={{ scale: 0.9 }}
+                  onClick={closeFullscreen}
+                  className="w-12 h-12 bg-black/70 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/90 transition-colors"
+                >
+                  <ArrowLeft size={20} />
+                </motion.button>
+                <div className="relative">
+                  <motion.button
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => setShowMenu(v => !v)}
+                    className="w-12 h-12 bg-black/70 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/90 transition-colors"
+                    aria-label="Options"
+                  >
+                    <MoreVertical size={20} />
+                  </motion.button>
+                  <AnimatePresence>
+                    {showMenu && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -6 }}
+                        className="absolute right-0 mt-2 min-w-[180px] bg-black/90 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden z-50"
+                      >
+                        {viewerIsOwner ? (
+                          <div className="py-1 text-sm text-white/90">
+                            <button
+                              onClick={() => {
+                                onEditMedia ? onEditMedia(fullscreenMedia!, fullscreenIndex) : console.log('Edit media')
+                                setShowMenu(false)
+                              }}
+                              className="w-full flex items-center gap-2 px-3 py-2 hover:bg-white/10 text-left"
+                            >
+                              <Edit size={16} /> Modifier
+                            </button>
+                            <button
+                              onClick={() => {
+                                if (onDeleteMedia) onDeleteMedia(fullscreenMedia!, fullscreenIndex)
+                                else console.log('Delete media')
+                                setShowMenu(false)
+                              }}
+                              className="w-full flex items-center gap-2 px-3 py-2 hover:bg-white/10 text-left text-red-300"
+                            >
+                              <Trash2 size={16} /> Supprimer
+                            </button>
+                            <button
+                              onClick={() => {
+                                if (navigator.share) {
+                                  navigator.share({ title: profileName || 'Media', url: fullscreenMedia || window.location.href }).catch(() => {})
+                                } else {
+                                  navigator.clipboard.writeText(fullscreenMedia || window.location.href)
+                                }
+                                setShowMenu(false)
+                              }}
+                              className="w-full flex items-center gap-2 px-3 py-2 hover:bg-white/10 text-left"
+                            >
+                              <Share size={16} /> Partager
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="py-1 text-sm text-white/90">
+                            <button
+                              onClick={() => {
+                                const url = `/report?type=media&url=${encodeURIComponent(fullscreenMedia || '')}`
+                                window.open(url, '_blank')
+                                setShowMenu(false)
+                              }}
+                              className="w-full flex items-center gap-2 px-3 py-2 hover:bg-white/10 text-left"
+                            >
+                              <Flag size={16} /> Signaler
+                            </button>
+                            <button
+                              onClick={() => {
+                                if (navigator.share) {
+                                  navigator.share({ title: profileName || 'Media', url: fullscreenMedia || window.location.href }).catch(() => {})
+                                } else {
+                                  navigator.clipboard.writeText(fullscreenMedia || window.location.href)
+                                }
+                                setShowMenu(false)
+                              }}
+                              className="w-full flex items-center gap-2 px-3 py-2 hover:bg-white/10 text-left"
+                            >
+                              <Share size={16} /> Partager
+                            </button>
+                            <button
+                              onClick={() => {
+                                try {
+                                  const key = 'felora-favorite-media'
+                                  const list = JSON.parse(localStorage.getItem(key) || '[]')
+                                  const url = fullscreenMedia
+                                  if (!url) return
+                                  const idx = list.indexOf(url)
+                                  if (idx >= 0) list.splice(idx, 1)
+                                  else list.push(url)
+                                  localStorage.setItem(key, JSON.stringify(list))
+                                } catch {}
+                                setShowMenu(false)
+                              }}
+                              className="w-full flex items-center gap-2 px-3 py-2 hover:bg-white/10 text-left"
+                            >
+                              <Bookmark size={16} /> Favoris
+                            </button>
+                          </div>
+                        )}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </div>
+            </div>
+
+            {/* Actions sociales - Like + Réactions (version optimisée) */}
+            <div className="fixed right-6 bottom-32 flex flex-col gap-4 safe-area-inset-bottom z-50">
+              <motion.button
+                whileTap={{ scale: 0.8 }}
+                animate={userHasLiked ? { scale: [1, 1.2, 1] } : {}}
+                transition={{ duration: 0.3 }}
+                onClick={async (e) => { 
+                  e.stopPropagation(); 
+                  e.preventDefault(); 
+                  if (fullscreenMedia) {
+                    await fsToggle('LIKE')
+                  }
+                }}
+                className={`w-14 h-14 backdrop-blur-sm rounded-full flex items-center justify-center transition-all duration-500 ${
+                  userHasLiked 
+                    ? 'bg-gradient-to-r from-rose-500/40 to-pink-500/40 border-2 border-rose-400 shadow-lg shadow-rose-500/50' 
+                    : 'bg-black/70 border-2 border-white/30 hover:border-white/50'
+                }`}
+              >
+                <Heart size={24} className={userHasLiked ? 'text-rose-300 fill-current drop-shadow-lg' : 'text-white'} />
+              </motion.button>
+
+              {/* Bouton Réactions + menu radial */}
+              <div className="relative flex items-center justify-center">
+                <motion.button
+                  whileTap={{ scale: 0.8 }}
+                  onClick={() => setShowReactions(!showReactions)}
+                  className="relative z-10 w-14 h-14 bg-black/70 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/90 transition-colors"
+                >
+                  <Smile size={24} />
+                </motion.button>
+
+                <AnimatePresence>
+                  {showReactions && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="absolute left-1/2 top-1/2 pointer-events-none"
+                      style={{
+                        transform: `translate(calc(-50% - ${Math.round(reactionRadius * 0.18)}px), calc(-50% - ${Math.round(reactionRadius * 0.24)}px))`
+                      }}
+                    >
+                      {RADIAL_CHOICES.slice(0, reactionCount).map(({ emoji, type }, idx, arr) => {
+                        const count = arr.length
+                        const start = 30 // degrees
+                        const end = 150
+                        const t = count > 1 ? idx / (count - 1) : 0.5
+                        const angle = (start + (end - start) * t) * (Math.PI / 180)
+                        const r = reactionRadius
+                        const x = Math.cos(angle) * r
+                        const y = Math.sin(angle) * r
+                        return (
+                          <div
+                            key={emoji}
+                            className="pointer-events-auto absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+                            style={{ width: 0, height: 0 }}
+                          >
+                            <motion.button
+                              initial={{ scale: 0, x: 0, y: 0 }}
+                              animate={{ scale: 1, x, y }}
+                              exit={{ scale: 0, x: 0, y: 0 }}
+                              transition={{ type: 'spring', stiffness: 240, damping: 18, delay: idx * 0.04 }}
+                              whileHover={{ scale: 1.18, boxShadow: '0 8px 24px rgba(168,85,247,0.18), 0 4px 12px rgba(255,107,157,0.12)' }}
+                              whileTap={{ scale: 0.95 }}
+                              onClick={(e) => { 
+                                e.stopPropagation(); 
+                                e.preventDefault(); 
+                                if (fullscreenMedia) {
+                                  fsToggle(type)
+                                  handleEmojiReaction(emoji)
+                                }
+                              }}
+                              className="w-11 h-11 rounded-full bg-black/70 border border-white/10 backdrop-blur-md flex items-center justify-center text-2xl hover:bg-black/80"
+                              aria-label={`Réagir ${emoji}`}
+                              style={{ boxShadow: '0 4px 16px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06)' }}
+                            >
+                              {emoji}
+                            </motion.button>
+                          </div>
+                        )
+                      })}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
+
+            {/* Média actuel */}
+            <div className="w-full h-full max-w-md max-h-screen bg-black relative border-radius-20">
+              {fullscreenMedia?.includes('.mp4') ? (
+                <video
+                  src={fullscreenMedia}
+                  controls
+                  autoPlay
+                  loop
+                  playsInline
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <img
+                  src={fullscreenMedia}
+                  alt={`Media ${fullscreenIndex + 1}`}
+                  className="w-full h-full object-cover"
+                />
+              )}
+            </div>
+
+            {/* Réaction principale animée */}
+            <AnimatePresence>
+              {mediaReactions[fullscreenMedia] && (
+                <motion.div
+                  initial={{ scale: 0, opacity: 0, y: 50 }}
+                  animate={{ 
+                    scale: [0, 1.5, 1],
+                    opacity: [0, 1, 0.8],
+                    y: [50, -20, 0]
+                  }}
+                  exit={{ scale: 0, opacity: 0, y: -100 }}
+                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-50 text-8xl"
+                >
+                  {mediaReactions[fullscreenMedia]}
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Explosion d'émojis */}
+            <AnimatePresence>
+              {explosionEmojis.map((item, index) => (
+                <motion.div
+                  key={item.id}
+                  initial={{ scale: 0, opacity: 1, x: 0, y: 0, rotate: 0 }}
+                  animate={{ 
+                    scale: [0, 1.5, 0.8],
+                    opacity: [1, 0.8, 0],
+                    x: [0, (Math.random() - 0.5) * 400],
+                    y: [0, (Math.random() - 0.5) * 400],
+                    rotate: [0, (Math.random() - 0.5) * 720]
+                  }}
+                  exit={{ scale: 0, opacity: 0 }}
+                  transition={{ duration: 2, ease: "easeOut", delay: index * 0.1 }}
+                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none text-5xl"
+                >
+                  {item.emoji}
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
+  )
+}
