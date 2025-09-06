@@ -1,121 +1,115 @@
-import ClientFeedPage from './client-page'
-import { prisma } from '@/lib/prisma'
+"use client"
 
-// Types locaux pour le feed
-interface MediaAuthor {
-  id: string
-  handle: string
-  name: string
-  avatar: string
-}
+import Link from 'next/link'
+import { motion } from 'framer-motion'
 
-interface MediaItem {
-  id: string
-  type: 'IMAGE' | 'VIDEO'
-  url: string
-  thumb: string
-  visibility: string
-  author: MediaAuthor
-  likeCount: number
-  reactCount: number
-  createdAt: string
-}
+export default function SimpleHomePage() {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-black via-[#0D0D0D] to-[#1A1A1A] text-white">
+      {/* Hero Section */}
+      <div className="flex flex-col items-center justify-center min-h-screen px-6">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="text-center max-w-4xl mx-auto"
+        >
+          {/* Logo */}
+          <div className="mb-8 mx-auto w-20 h-20 rounded-xl p-[3px]" style={{ background: 'linear-gradient(135deg, #FF6B9D 0%, #B794F6 50%, #4FD1C7 100%)' }}>
+            <div className="w-full h-full rounded-xl bg-black grid place-items-center text-3xl font-bold">
+              F
+            </div>
+          </div>
 
-export default async function HomePage() {
-  let items: MediaItem[] = []
-  
-  try {
-    // Récupérer tous les profils escorts avec leurs médias
-    const escortProfiles = await prisma.escortProfile.findMany({
-      where: {
-        status: 'ACTIVE'
-      },
-      include: {
-        user: {
-          select: {
-            name: true,
-            email: true
-          }
-        }
-      },
-      orderBy: {
-        createdAt: 'desc'
-      },
-      take: 20
-    })
+          {/* Titre Principal */}
+          <h1 className="text-5xl md:text-7xl font-extrabold mb-6">
+            <span className="bg-gradient-to-r from-[#FF6B9D] via-[#B794F6] to-[#4FD1C7] bg-clip-text text-transparent">
+              FELORA
+            </span>
+          </h1>
 
-    console.log('🔍 Profils trouvés pour le feed:', escortProfiles.length)
+          <p className="text-xl md:text-2xl text-white/80 mb-4 font-light">
+            Plateforme Premium Suisse
+          </p>
 
-    // Transformer les médias en items de feed
-    for (const profile of escortProfiles) {
-      if (profile.galleryPhotos) {
-        try {
-          const galleryParsed = JSON.parse(profile.galleryPhotos)
-          console.log(`📸 Médias trouvés pour ${profile.stageName}:`, galleryParsed.length)
-          
-          // Créer un item uniquement pour les médias autorisés dans le feed:
-          // - médias OBLIGATOIRES (slots 0..5) toujours
-          // - médias PUBLICS (isPrivate !== true)
-          for (const media of galleryParsed) {
-            const url: string = String(media?.url || '')
-            if (!url) continue
-            const slot = Number(media?.slot)
-            const isMandatory = Number.isFinite(slot) && slot >= 0 && slot <= 5
-            const isPublic = media?.isPrivate !== true
-            if (!isMandatory && !isPublic) continue
+          <p className="text-lg text-white/60 mb-12 max-w-2xl mx-auto">
+            Découvrez une expérience unique avec notre système de réactions optimisé, 
+            messagerie sécurisée et interface TikTok-style.
+          </p>
 
-            items.push({
-              id: `${profile.id}-${url.split('/').pop()}`,
-              type: media?.type === 'video' ? 'VIDEO' : 'IMAGE',
-              url,
-              thumb: url,
-              visibility: isMandatory ? 'MANDATORY' : 'PUBLIC',
-              author: {
-                id: profile.id,
-                handle: `@${profile.stageName?.toLowerCase().replace(/\s+/g, '_') || 'escort'}`,
-                name: profile.stageName || profile.firstName || 'Escort',
-                avatar: profile.profilePhoto || '/placeholder-avatar.jpg'
-              },
-              likeCount: Math.floor(Math.random() * 2000) + 100,
-              reactCount: Math.floor(Math.random() * 300) + 50,
-              createdAt: profile.createdAt?.toISOString() || new Date().toISOString()
-            })
-          }
-        } catch (parseError) {
-          console.error('❌ Erreur parsing galleryPhotos pour', profile.stageName, parseError)
-        }
-      }
-    }
+          {/* CTA Buttons */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link href="/login">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="px-8 py-4 bg-gradient-to-r from-[#FF6B9D] to-[#B794F6] rounded-xl font-semibold text-lg shadow-2xl hover:shadow-[#FF6B9D]/25 transition-all duration-300"
+              >
+                Se connecter
+              </motion.button>
+            </Link>
+            
+            <Link href="/register">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="px-8 py-4 border border-white/20 rounded-xl font-semibold text-lg backdrop-blur-sm hover:bg-white/5 transition-all duration-300"
+              >
+                S'inscrire
+              </motion.button>
+            </Link>
+          </div>
 
-    console.log('✅ Items de feed créés:', items.length)
+          {/* Features */}
+          <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="text-center"
+            >
+              <div className="w-12 h-12 mx-auto mb-4 rounded-lg bg-gradient-to-r from-[#FF6B9D] to-[#B794F6] flex items-center justify-center">
+                ⚡
+              </div>
+              <h3 className="font-semibold mb-2">Performance Optimisée</h3>
+              <p className="text-sm text-white/60">Réactions ultra-rapides avec cache intelligent</p>
+            </motion.div>
 
-  } catch (error) {
-    console.error('❌ Erreur récupération feed:', error)
-    
-    // Fallback avec quelques données mock si erreur
-    items = [
-      {
-        id: 'fallback-1',
-        type: 'IMAGE',
-        url: 'https://picsum.photos/400/600?random=1',
-        thumb: 'https://picsum.photos/400/600?random=1',
-        visibility: 'PUBLIC',
-        author: {
-          id: 'fallback-user',
-          handle: '@felora_demo',
-          name: 'Demo Account',
-          avatar: 'https://picsum.photos/100/100?random=10'
-        },
-        likeCount: 123,
-        reactCount: 45,
-        createdAt: new Date().toISOString()
-      }
-    ]
-  }
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="text-center"
+            >
+              <div className="w-12 h-12 mx-auto mb-4 rounded-lg bg-gradient-to-r from-[#B794F6] to-[#4FD1C7] flex items-center justify-center">
+                🔒
+              </div>
+              <h3 className="font-semibold mb-2">Sécurité Maximale</h3>
+              <p className="text-sm text-white/60">Données protégées et messagerie chiffrée</p>
+            </motion.div>
 
-  // Mélanger les items pour un feed plus dynamique
-  const shuffledItems = items.sort(() => Math.random() - 0.5)
-  const nextCursor = 'db-cursor-1'
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+              className="text-center"
+            >
+              <div className="w-12 h-12 mx-auto mb-4 rounded-lg bg-gradient-to-r from-[#4FD1C7] to-[#FF6B9D] flex items-center justify-center">
+                ✨
+              </div>
+              <h3 className="font-semibold mb-2">Expérience Premium</h3>
+              <p className="text-sm text-white/60">Interface moderne et intuitive</p>
+            </motion.div>
+          </div>
+        </motion.div>
+      </div>
 
-  return <ClientFeedPage initialItems={shuffledItems} initialCursor={nextCursor} />
+      {/* Status */}
+      <div className="fixed bottom-4 right-4">
+        <div className="bg-white/10 backdrop-blur-xl rounded-lg px-3 py-2 text-xs text-white/80">
+          🚀 V3 Deployed Successfully
+        </div>
+      </div>
+    </div>
+  )
 }
