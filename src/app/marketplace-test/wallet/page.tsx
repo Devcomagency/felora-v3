@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useSession } from 'next-auth/react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
@@ -19,7 +19,7 @@ interface WalletTransaction {
   createdAt: string
 }
 
-export default function WalletTestPage() {
+function WalletTestContent() {
   const { data: session, status } = useSession()
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -384,5 +384,17 @@ export default function WalletTestPage() {
         </motion.div>
       </div>
     </div>
+  )
+}
+
+export default function WalletTestPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-felora-void flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-felora-aurora"></div>
+      </div>
+    }>
+      <WalletTestContent />
+    </Suspense>
   )
 }
