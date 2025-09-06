@@ -1,13 +1,13 @@
 "use client"
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useMemo, useState } from 'react'
+import { useMemo, useState, Suspense } from 'react'
 import Stepper from '@/components/signup-v2/Stepper'
 import Step1PreSignup from '@/components/signup-v2/Step1PreSignup'
 import SalonPreSignupQuick from '@/components/signup-v2/SalonPreSignupQuick'
 import Step2Plan from '@/components/signup-v2/Step2Plan'
 // Pas de KYC pour Club selon consigne
 
-export default function ClubSignupPage(){
+function ClubSignupContent(){
   const sp = useSearchParams()
   const router = useRouter()
   const [userId, setUserId] = useState<string>('')
@@ -29,6 +29,14 @@ export default function ClubSignupPage(){
         <SalonPlansStep />
       )}
     </main>
+  )
+}
+
+export default function ClubSignupPage(){
+  return (
+    <Suspense fallback={<div className="max-w-2xl mx-auto p-4 text-white">Loading...</div>}>
+      <ClubSignupContent />
+    </Suspense>
   )
 }
 
