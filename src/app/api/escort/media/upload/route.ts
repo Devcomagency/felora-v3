@@ -101,8 +101,9 @@ export async function POST(request: NextRequest) {
     if (!file.type?.startsWith('image/') && !file.type?.startsWith('video/')) {
       return NextResponse.json({ success: false, error: 'Type de fichier non supporté (image/* ou video/*)' }, { status: 400 })
     }
-    if (file.size > 50 * 1024 * 1024) {
-      return NextResponse.json({ success: false, error: 'Fichier trop volumineux (>50MB)' }, { status: 400 })
+    // Limite Vercel : 4.5MB pour les uploads
+    if (file.size > 4 * 1024 * 1024) {
+      return NextResponse.json({ success: false, error: 'Fichier trop volumineux (>4MB). Veuillez compresser votre vidéo.' }, { status: 400 })
     }
 
     const url = await uploadFileToStorage(file, 'profiles')
