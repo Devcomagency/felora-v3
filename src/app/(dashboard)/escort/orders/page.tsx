@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import DashboardLayout from '../../../../components/dashboard-v2/DashboardLayout'
-import { Clock, CheckCircle, XCircle, Upload, MessageCircle, Eye } from 'lucide-react'
+import { Clock, CheckCircle, XCircle, Upload, MessageCircle, Eye, ShoppingBag } from 'lucide-react'
 
 export default function EscortOrdersPage() {
   const [activeFilter, setActiveFilter] = useState<'all' | 'pending' | 'accepted' | 'delivered'>('all')
@@ -148,7 +148,7 @@ export default function EscortOrdersPage() {
           ].map((filter) => (
             <button
               key={filter.key}
-              onClick={() => setActiveFilter(filter.key as any)}
+              onClick={() => setActiveFilter(filter.key as 'all' | 'pending' | 'accepted' | 'delivered')}
               className={`flex items-center space-x-2 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
                 activeFilter === filter.key
                   ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg'

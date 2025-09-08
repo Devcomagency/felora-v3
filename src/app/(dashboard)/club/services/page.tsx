@@ -34,7 +34,7 @@ export default function ClubServicesPage(){
     setForm(prev => {
       const arr = new Set((prev[key] as string[]) || [])
       if (arr.has(value)) arr.delete(value); else arr.add(value)
-      return { ...prev, [key]: Array.from(arr) as any }
+      return { ...prev, [key]: Array.from(arr) as string[] }
     })
   }
 

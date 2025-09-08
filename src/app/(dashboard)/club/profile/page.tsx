@@ -18,7 +18,7 @@ type Club = {
 }
 
 export default function ClubProfilePage() {
-  const [club, setClub] = useState<Club | null>(null)
+  const [_club, setClub] = useState<Club | null>(null)
   const [form, setForm] = useState<Partial<Club> & { websiteUrl?: string }>({})
   const [loading, setLoading] = useState(true)
   const [saving, startSaving] = useTransition()
@@ -46,11 +46,11 @@ export default function ClubProfilePage() {
               avatarUrl: data.club.avatarUrl || '',
               coverUrl: data.club.coverUrl || '',
               isActive: !!data.club.isActive,
-              websiteUrl: (data.club as any).websiteUrl || ''
+              websiteUrl: (data.club as Club & { websiteUrl?: string }).websiteUrl || ''
             })
           }
         }
-      } catch (e) {
+      } catch (_e) {
         if (!cancelled) setError('Erreur de chargement du profil')
       } finally {
         if (!cancelled) setLoading(false)
@@ -69,7 +69,7 @@ export default function ClubProfilePage() {
         const j = await r.json()
         const items: Array<{ pos?: number|null; type:'IMAGE'|'VIDEO' }> = Array.isArray(j?.items) ? j.items : []
         const byPos = new Map<number, { type:'IMAGE'|'VIDEO' }>()
-        for (const m of items) if (typeof m.pos === 'number') byPos.set(m.pos!, { type: (m as any).type })
+        for (const m of items) if (typeof m.pos === 'number') byPos.set(m.pos!, { type: m.type })
         const okProfile = byPos.get(0)?.type === 'IMAGE'
         const okVideo = byPos.get(1)?.type === 'VIDEO'
         const okPhoto1 = byPos.get(2)?.type === 'IMAGE'
@@ -90,7 +90,7 @@ export default function ClubProfilePage() {
     return n
   }, [form.name, form.description, form.address, form.openingHours])
 
-  const updateField = (key: keyof Club, value: any) => {
+  const updateField = (key: keyof Club, value: string | boolean) => {
     setForm(prev => ({ ...prev, [key]: value }))
   }
 
@@ -107,7 +107,7 @@ export default function ClubProfilePage() {
     if (Object.keys(errs).length) return
     startSaving(async () => {
       try {
-        const payload: any = {
+        const payload: Partial<Club> & { websiteUrl?: string } = {
           name: form.name,
           description: form.description,
           address: form.address,
@@ -125,7 +125,7 @@ export default function ClubProfilePage() {
         const j = await res.json()
         if (!res.ok || !j?.ok) throw new Error(j?.error || 'save_failed')
         setMessage('Profil mis à jour')
-      } catch (e) {
+      } catch (_e) {
         setError('Échec de la sauvegarde')
       }
     })
@@ -134,9 +134,9 @@ export default function ClubProfilePage() {
   // Écoute le bouton "Enregistrer" du header (club:save)
   useEffect(() => {
     const handler = () => onSave()
-    window.addEventListener('club:save' as any, handler)
-    return () => window.removeEventListener('club:save' as any, handler)
-  }, [form.name, form.description, form.address, form.openingHours, form.avatarUrl, form.coverUrl, form.isActive])
+    window.addEventListener('club:save' as keyof WindowEventMap, handler)
+    return () => window.removeEventListener('club:save' as keyof WindowEventMap, handler)
+  }, [form.name, form.description, form.address, form.openingHours, form.avatarUrl, form.coverUrl, form.isActive, onSave])
 
   return (
     <DashboardLayout title="Profil Club" subtitle="Gérez les informations publiques de votre club">
@@ -148,7 +148,7 @@ export default function ClubProfilePage() {
         <div className="sm:hidden mb-2">
           <select
             value={activeTab}
-            onChange={e => setActiveTab(e.target.value as any)}
+            onChange={e => setActiveTab(e.target.value as 'info'|'services'|'medias')}
             className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white"
           >
             <option value="info">Informations</option>
@@ -251,7 +251,7 @@ export default function ClubProfilePage() {
               </div>
 
               <div>
-                <label className="block text-sm text-gray-300 mb-1">Horaires d'ouverture</label>
+                <label className="block text-sm text-gray-300 mb-1">Horaires d&apos;ouverture</label>
                 <input
                   value={form.openingHours || ''}
                   onChange={e => updateField('openingHours', e.target.value)}
@@ -349,7 +349,7 @@ function ServicesPanel(){
   const DEFAULT_SERVICES = ['Bar','Champagne','Privé','Sécurité','Parking','Salle VIP']
 
   const toggle = (setter: React.Dispatch<React.SetStateAction<string[]>>, list: string[], value: string) => {
-    setter(prev => {
+    setter(_prev => {
       const s = new Set(list)
       if (s.has(value)) s.delete(value); else s.add(value)
       return Array.from(s)
@@ -371,7 +371,7 @@ function ServicesPanel(){
           setIsOpen24_7(!!s.isOpen24_7)
           setOpeningHours(typeof s.openingHours === 'string' ? s.openingHours : '')
         }
-      } catch (e) {
+      } catch (_e) {
         if (!cancelled) setError('Impossible de charger les services')
       }
     })()
@@ -388,7 +388,7 @@ function ServicesPanel(){
         const d = await r.json()
         if (!r.ok || !d?.ok) throw new Error(d?.error || 'save_failed')
         setMessage('Paramètres enregistrés')
-      } catch (e) {
+      } catch (_e) {
         setError('Échec de la sauvegarde')
       }
     })

@@ -29,7 +29,7 @@ export default function ClubSettingsPage() {
           <div className="text-white font-medium mb-3">Confidentialité</div>
           <div className="space-y-3">
             <label className="flex items-center justify-between p-3 rounded-lg bg-gray-800/50 border border-gray-700">
-              <span className="text-sm text-gray-200">Afficher l'adresse sur le profil</span>
+              <span className="text-sm text-gray-200">Afficher l&apos;adresse sur le profil</span>
               <input type="checkbox" checked={showAddress} onChange={e => setShowAddress(e.target.checked)} />
             </label>
           </div>
