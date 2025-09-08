@@ -109,6 +109,39 @@ Variables utilisables:
 
 ---
 
+## ☁️ Déploiement Vercel + Cloudflare R2 (Check‑list)
+
+Les uploads n’ont pas de persistance sur Vercel sans stockage externe (le FS est éphémère). Pour des médias fiables en production, configure Cloudflare R2.
+
+1) Variables d’environnement à ajouter dans Vercel (Project Settings → Environment Variables)
+- `CLOUDFLARE_R2_ENDPOINT` (ex: https://<account-id>.r2.cloudflarestorage.com)
+- `CLOUDFLARE_R2_ACCESS_KEY`
+- `CLOUDFLARE_R2_SECRET_KEY`
+- `CLOUDFLARE_R2_BUCKET` (ex: felora-prod)
+- Optionnel: `CLOUDFLARE_R2_ACCOUNT_ID` (mémo)
+- `NEXTAUTH_URL` = URL publique (ex: https://felora-v3.vercel.app)
+- `NEXTAUTH_SECRET` = clé forte (openssl rand -base64 32)
+
+2) Limites et compatibilité
+- Vercel limite les payloads à ~4 MB → le client compresse automatiquement les vidéos > 4 MB en WebM (VP9).
+- Le backend vérifie et refuse > 4 MB (`/api/media/upload`).
+
+3) Images/vidéos distantes
+- `next.config.js` autorise déjà `*.r2.cloudflarestorage.com` (remotePatterns) pour l’affichage d’images.
+- Les URLs R2 sont actuellement signées (validité 7 jours). Prévoir une stratégie de rafraîchissement si nécessaire.
+
+4) Fonctions serverless
+- `vercel.json` définit `maxDuration: 30` pour `/api/media/upload` (suffisant avec la compression côté client).
+
+5) Procédure de test prod
+- Dashboard → Médias → onglet Public/Privé.
+- Uploader une image (< 4 MB) → s’affiche immédiatement → recharger la page → persiste.
+- Uploader une vidéo > 4 MB → le bouton affiche “Compression…”, puis upload → recharger → persiste.
+- Changer la visibilité (barre d’actions) et vérifier la mise à jour.
+
+Astuce: pour un bucket R2 public, vous pouvez exposer un domaine public et éviter les URLs signées (à ajuster côté `mediaStorage`).
+
+
 ## 📱 **Pages Principales**
 
 ### 🌐 **Public**

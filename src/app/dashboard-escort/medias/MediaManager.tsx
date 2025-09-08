@@ -78,16 +78,13 @@ export default function MediaManager() {
         if (file.type.startsWith('video/') && file.size > 4 * 1024 * 1024) {
           setCompressing(fileId)
           toast.info(`Compression de la vidéo ${file.name}...`)
-          
+          // Utilise l'API correcte: compressVideo → renvoie { file, ... }
           const compressor = new VideoCompressor()
-          processedFile = await compressor.compress(file, {
+          const result = await compressor.compressVideo(file, {
             quality: 0.8,
-            maxSizeMB: 3.5, // Laisser un peu de marge sous 4MB
-            onProgress: (progress) => {
-              setUploadProgress(prev => ({ ...prev, [fileId]: progress * 100 }))
-            }
+            maxSizeMB: 3.5,
           })
-          
+          processedFile = result.file
           setCompressing(null)
           console.log(`🎥 Vidéo compressée: ${file.size} → ${processedFile.size} bytes`)
         }

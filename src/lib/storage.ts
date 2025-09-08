@@ -36,7 +36,8 @@ export class MediaStorage {
       const buffer = Buffer.from(bytes)
       
       const fileName = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`
-      const uploadDir = join(process.cwd(), 'uploads', folder)
+      // Pour l'API existante /api/escort/media/[file], on stocke sous 'uploads/profiles'
+      const uploadDir = join(process.cwd(), 'uploads', 'profiles')
       
       await mkdir(uploadDir, { recursive: true })
       

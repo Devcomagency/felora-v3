@@ -95,7 +95,11 @@ export class VideoCompressor {
               }
             }
             
-            const compressedFile = new File([blob], file.name, {
+            // Renommer en .webm pour que l'en-tête Content-Type côté serveur soit correct
+            const webmName = file.name.includes('.')
+              ? file.name.replace(/\.[^.]+$/, '.webm')
+              : file.name + '.webm'
+            const compressedFile = new File([blob], webmName, {
               type: 'video/webm',
               lastModified: Date.now()
             })
