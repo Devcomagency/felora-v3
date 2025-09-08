@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
 import { escortPreSignupLite } from '@/components/signup-v2/validation'
 import { rateLimit, getClientIp } from '@/lib/rateLimit'
+import { sendEmail, emailTemplates } from '@/lib/email'
 
 export async function POST(req: NextRequest) {
   try {
@@ -35,6 +36,27 @@ export async function POST(req: NextRequest) {
       await prisma.escortProfileV2.create({ data: { userId: user.id, handle, birthDate: new Date(birthDate) } })
     }
     await prisma.kycSubmission.create({ data: { userId: user.id, role: 'ESCORT' as any, status: 'PENDING' as any } })
+
+    // Envoyer l'email de bienvenue à l'escorte
+    try {
+      const welcomeEmail = emailTemplates.welcome(handle || email.split('@')[0])
+      const emailResult = await sendEmail({
+        to: email,
+        subject: welcomeEmail.subject,
+        html: welcomeEmail.html
+      })
+      
+      if (!emailResult.success) {
+        console.error('❌ Erreur envoi email de bienvenue escorte:', emailResult.error)
+        // On ne fait pas échouer l'inscription si l'email échoue
+      } else {
+        console.log('✅ Email de bienvenue escorte envoyé:', emailResult.messageId)
+      }
+    } catch (emailError) {
+      console.error('❌ Exception envoi email bienvenue escorte:', emailError)
+      // On continue même si l'email échoue
+    }
+
     return NextResponse.json({ ok: true, userId: user.id, next: '/profile-test-signup/escort?step=2' })
   } catch (e:any) {
     return NextResponse.json({ error: e?.message || 'server_error' }, { status: 500 })
