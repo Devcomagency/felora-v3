@@ -81,7 +81,7 @@ export default function EscortStatsPage() {
           {periods.map((period) => (
             <button
               key={period.key}
-              onClick={() => setSelectedPeriod(period.key as any)}
+              onClick={() => setSelectedPeriod(period.key as 'week' | 'month' | 'year')}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                 selectedPeriod === period.key
                   ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg'

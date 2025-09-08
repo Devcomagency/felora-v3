@@ -130,7 +130,7 @@ export default function EscortWalletPage() {
           ].map((tab) => (
             <button
               key={tab.key}
-              onClick={() => setActiveTab(tab.key as any)}
+              onClick={() => setActiveTab(tab.key as 'balance' | 'transactions' | 'withdraw')}
               className={`flex items-center space-x-2 px-6 py-3 rounded-lg text-sm font-medium transition-all ${
                 activeTab === tab.key
                   ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg'

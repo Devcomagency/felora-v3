@@ -56,7 +56,7 @@ export default function EscortSettingsPage() {
     }
   })
 
-  const updateSetting = (section: string, key: string, value: any) => {
+  const updateSetting = (section: string, key: string, value: boolean | string | number) => {
     setSettings(prev => ({
       ...prev,
       [section]: {
@@ -137,7 +137,7 @@ export default function EscortSettingsPage() {
                           <Bell className="text-green-400" size={20} />
                           <div>
                             <div className="text-white font-medium">Notifications push</div>
-                            <div className="text-sm text-gray-400">Notifications instantanées sur l'appareil</div>
+                            <div className="text-sm text-gray-400">Notifications instantanées sur l&apos;appareil</div>
                           </div>
                         </div>
                         <label className="relative inline-flex items-center cursor-pointer">
@@ -347,7 +347,7 @@ export default function EscortSettingsPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Délai d'expiration de session</label>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Délai d&apos;expiration de session</label>
                     <select 
                       value={settings.security.sessionTimeout}
                       onChange={(e) => updateSetting('security', 'sessionTimeout', parseInt(e.target.value))}
