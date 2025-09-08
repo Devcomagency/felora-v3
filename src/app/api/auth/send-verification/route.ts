@@ -1,16 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-
-// Store temporaire pour les codes de vérification (en production, utiliser Redis ou DB)
-declare global {
-  var verificationCodes: Map<string, { code: string, expires: number }> | undefined
-}
-
-const getVerificationCodes = () => {
-  if (!global.verificationCodes) {
-    global.verificationCodes = new Map()
-  }
-  return global.verificationCodes
-}
+import { prisma } from '@/lib/prisma'
+import bcrypt from 'bcryptjs'
 
 export async function POST(request: NextRequest) {
   try {
@@ -29,20 +19,37 @@ export async function POST(request: NextRequest) {
 
     // Générer un code à 6 chiffres
     const code = Math.floor(100000 + Math.random() * 900000).toString()
+    const codeHash = await bcrypt.hash(code, 10)
     
-    // Stocker le code avec expiration (5 minutes)
-    const verificationCodes = getVerificationCodes()
-    verificationCodes.set(email, {
-      code,
-      expires: Date.now() + (5 * 60 * 1000) // 5 minutes
+    // Stocker en base PostgreSQL avec expiration (10 minutes)
+    await prisma.emailVerification.upsert({
+      where: { email: email.toLowerCase() },
+      update: {
+        codeHash,
+        expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
+        verifiedAt: null // Reset verification
+      },
+      create: {
+        email: email.toLowerCase(),
+        codeHash,
+        expiresAt: new Date(Date.now() + 10 * 60 * 1000)
+      }
     })
 
-    // En production, envoyer un vrai email ici
-    // Pour le développement, log le code
-    console.log(`Code de vérification pour ${email}: ${code}`)
+    // Envoyer l'email de vérification avec Resend
+    const { sendEmail, emailTemplates } = await import('@/lib/email')
+    const emailResult = await sendEmail({
+      to: email,
+      ...emailTemplates.verification(code)
+    })
 
-    // Simuler l'envoi d'email (remplacer par un vrai service d'email en production)
-    // await sendEmail(email, 'Code de vérification Felora', `Votre code: ${code}`)
+    if (!emailResult.success) {
+      console.error('Erreur envoi email:', emailResult.error)
+      // Log le code pour debug en cas d'erreur email
+      console.log(`Code de vérification pour ${email}: ${code}`)
+    } else {
+      console.log(`✅ Email de vérification envoyé à ${email}`)
+    }
 
     return NextResponse.json({ 
       success: true,
