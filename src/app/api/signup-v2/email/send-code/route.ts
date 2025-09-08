@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import crypto from 'crypto'
-import { sendMail } from '@/lib/mail'
+import { sendEmail } from '@/lib/email'
 import { rateLimit, getClientIp } from '@/lib/rateLimit'
 
 export async function POST(req: NextRequest) {
@@ -42,8 +42,12 @@ export async function POST(req: NextRequest) {
         <p style="color:#666">Ce code expire dans 10 minutes.</p>
       </div>
     `
-    const mailRes = await sendMail(safeEmail, 'Votre code de vérification', html)
-    if (!mailRes?.ok) {
+    const mailRes = await sendEmail({
+      to: safeEmail,
+      subject: 'Votre code de vérification FELORA',
+      html: html
+    })
+    if (!mailRes.success) {
       return NextResponse.json({ error: 'mail_failed' }, { status: 500 })
     }
 

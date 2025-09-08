@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import crypto from 'crypto'
-import { sendMail } from '@/lib/mail'
+import { sendEmail } from '@/lib/email'
 
 export async function POST(req: NextRequest) {
   try {
@@ -36,7 +36,11 @@ export async function POST(req: NextRequest) {
           <p style="color:#666">Ce lien expire dans 30 minutes. Si vous n'êtes pas à l'origine de cette demande, ignorez cet email.</p>
         </div>
       `
-      await sendMail(user.email, 'Réinitialisation du mot de passe', html)
+      await sendEmail({
+        to: user.email,
+        subject: 'Réinitialisation du mot de passe FELORA',
+        html: html
+      })
     }
 
     return NextResponse.json({ success: true })
