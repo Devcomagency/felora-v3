@@ -12,11 +12,11 @@ export const profileService: ProfileService = {
       id: p.id,
       handle: `@${p.stageName}`,
       displayName: p.stageName,
-      bio: p.description,
+      bio: p.description || undefined,
       languages: p.languages ? p.languages.split(',').map(l => l.trim()) : [],
       services: p.services ? p.services.split(',').map(s => s.trim()) : [],
       ratePerHour: p.rate1H ? Math.round(p.rate1H) : undefined,
-      avatarUrl: p.profilePhoto
+      avatarUrl: p.profilePhoto ?? undefined
     }
   },
 
@@ -36,11 +36,11 @@ export const profileService: ProfileService = {
       id: p.id,
       handle: `@${p.stageName}`,
       displayName: p.stageName,
-      bio: p.description,
+      bio: p.description || undefined,
       languages: p.languages ? p.languages.split(',').map(l => l.trim()) : [],
       services: p.services ? p.services.split(',').map(s => s.trim()) : [],
       ratePerHour: p.rate1H ? Math.round(p.rate1H) : undefined,
-      avatarUrl: p.profilePhoto
+      avatarUrl: p.profilePhoto ?? undefined
     }
   },
   
