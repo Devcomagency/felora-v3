@@ -22,11 +22,16 @@ export class MediaStorage {
   }
 
   async upload(file: File, folder: string = 'general'): Promise<UploadResult> {
-    if (this.isProduction) {
-      return await this.uploadToCloud(file, folder)
-    } else {
+    const provider = (process.env.STORAGE_PROVIDER || '').toLowerCase()
+    if (!this.isProduction || provider === 'local') {
       return await this.uploadLocal(file, folder)
     }
+    // cloud providers
+    if (provider === 'cloudflare-r2' || provider === '') {
+      return await this.uploadToCloud(file, folder)
+    }
+    // future: aws-s3
+    return await this.uploadToCloud(file, folder)
   }
 
   // Stockage local pour le développement
@@ -76,7 +81,21 @@ export class MediaStorage {
 
   private async uploadToR2(file: File, folder: string): Promise<UploadResult> {
     try {
-      const endpoint = process.env.CLOUDFLARE_R2_ENDPOINT
+      // Normaliser l'endpoint R2 (S3 API), ex: https://<account-id>.r2.cloudflarestorage.com
+      let endpoint = process.env.CLOUDFLARE_R2_ENDPOINT || ''
+      const accountId = process.env.CLOUDFLARE_R2_ACCOUNT_ID || ''
+      if (!endpoint && accountId) {
+        endpoint = `https://${accountId}.r2.cloudflarestorage.com`
+      }
+      if (endpoint && !endpoint.startsWith('https://')) {
+        endpoint = `https://${endpoint.replace(/^https?:\/\//, '')}`
+      }
+      // Retirer tout trailing slash ou segment de bucket (doit être base host uniq.)
+      endpoint = endpoint.replace(/\/$/, '')
+      if (endpoint.includes('/')) {
+        const u = new URL(endpoint)
+        endpoint = `${u.protocol}//${u.host}`
+      }
       const accessKey = process.env.CLOUDFLARE_R2_ACCESS_KEY
       const secretKey = process.env.CLOUDFLARE_R2_SECRET_KEY
       const bucketName = process.env.CLOUDFLARE_R2_BUCKET
@@ -122,6 +141,11 @@ export class MediaStorage {
 
       return { url: signedUrl, success: true, key }
     } catch (error) {
+      console.error('R2 upload failed:', (error && (error as any).name) || 'Error', (error && (error as any).message) || '')
+      console.error('R2 config (masquée):', {
+        endpoint: (process.env.CLOUDFLARE_R2_ENDPOINT || process.env.CLOUDFLARE_R2_ACCOUNT_ID) ? 'set' : 'missing',
+        bucket: process.env.CLOUDFLARE_R2_BUCKET ? 'set' : 'missing'
+      })
       return {
         url: '',
         success: false,
