@@ -23,15 +23,23 @@ export class MediaStorage {
 
   async upload(file: File, folder: string = 'general'): Promise<UploadResult> {
     const provider = (process.env.STORAGE_PROVIDER || '').toLowerCase()
+    
+    // FORCE Base64 storage for reliability 
+    if (provider === 'base64' || provider === '') {
+      return await this.uploadBase64(file, folder)
+    }
+    
     if (!this.isProduction || provider === 'local') {
       return await this.uploadLocal(file, folder)
     }
-    // cloud providers
-    if (provider === 'cloudflare-r2' || provider === '') {
+    
+    // cloud providers (fallback)
+    if (provider === 'cloudflare-r2') {
       return await this.uploadToCloud(file, folder)
     }
-    // future: aws-s3
-    return await this.uploadToCloud(file, folder)
+    
+    // Default: Base64 for production reliability
+    return await this.uploadBase64(file, folder)
   }
 
   // Stockage local pour le développement
@@ -59,6 +67,29 @@ export class MediaStorage {
         url: '',
         success: false,
         error: error instanceof Error ? error.message : 'Upload failed'
+      }
+    }
+  }
+
+  // Stockage Base64 en BDD - 100% fiable
+  private async uploadBase64(file: File, folder: string): Promise<UploadResult> {
+    try {
+      const bytes = await file.arrayBuffer()
+      const base64 = Buffer.from(bytes).toString('base64')
+      const dataUrl = `data:${file.type};base64,${base64}`
+      
+      const fileName = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`
+      
+      return {
+        url: dataUrl,
+        success: true,
+        key: fileName
+      }
+    } catch (error) {
+      return {
+        url: '',
+        success: false,
+        error: error instanceof Error ? error.message : 'Base64 upload failed'
       }
     }
   }
