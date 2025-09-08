@@ -7,8 +7,16 @@ export type { MediaService, MediaItem, MediaVisibility, MediaType } from './Medi
 let _instance: MediaService | null = null
 export async function getMediaService(): Promise<MediaService> {
   if (_instance) return _instance
+  
+  // Priorité : Prisma > Sanity > Memory
+  const hasPrisma = true // Toujours utiliser Prisma pour la persistance
   const hasSanity = !!process.env.NEXT_PUBLIC_SANITY_PROJECT_ID && !!process.env.SANITY_API_TOKEN
-  if (hasSanity) {
+  
+  if (hasPrisma) {
+    const mod = await import('./MediaService.prisma')
+    const MediaServicePrisma = mod.MediaServicePrisma
+    _instance = new MediaServicePrisma()
+  } else if (hasSanity) {
     const mod = await import('./MediaService.sanity')
     const MediaServiceSanity = mod.MediaServiceSanity
     _instance = new MediaServiceSanity()

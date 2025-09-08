@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
-import { Plus, Trash2, Edit3, Eye, Lock, Video, Image as ImageIcon, GripVertical } from 'lucide-react'
+import { Plus, Trash2, Edit3, Eye, Lock, Video, Image as ImageIcon, GripVertical, Loader } from 'lucide-react'
+import { VideoCompressor } from '@/lib/video-compression'
 
 type MediaItem = {
   id: string
@@ -19,6 +20,8 @@ export default function MediaManager() {
   const [items, setItems] = useState<MediaItem[]>([])
   const [counts, setCounts] = useState({ PUBLIC: 0, PRIVATE: 0 })
   const [selection, setSelection] = useState<Set<string>>(new Set())
+  const [uploadProgress, setUploadProgress] = useState<{ [key: string]: number }>({})
+  const [compressing, setCompressing] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
   const load = async () => {
@@ -66,22 +69,46 @@ export default function MediaManager() {
     
     for (const file of Array.from(files)) {
       console.log(`📤 Upload: ${file.name} (${file.type}, ${file.size} bytes)`)
+      const fileId = `${file.name}-${Date.now()}`
       
       try {
+        let processedFile = file
+        
+        // Compression vidéo si nécessaire
+        if (file.type.startsWith('video/') && file.size > 4 * 1024 * 1024) {
+          setCompressing(fileId)
+          toast.info(`Compression de la vidéo ${file.name}...`)
+          
+          const compressor = new VideoCompressor()
+          processedFile = await compressor.compress(file, {
+            quality: 0.8,
+            maxSizeMB: 3.5, // Laisser un peu de marge sous 4MB
+            onProgress: (progress) => {
+              setUploadProgress(prev => ({ ...prev, [fileId]: progress * 100 }))
+            }
+          })
+          
+          setCompressing(null)
+          console.log(`🎥 Vidéo compressée: ${file.size} → ${processedFile.size} bytes`)
+        }
+        
         const fd = new FormData()
-        fd.append('file', file)
-        fd.append('type', file.type.startsWith('video/') ? 'VIDEO' : 'IMAGE')
+        fd.append('file', processedFile)
+        fd.append('type', processedFile.type.startsWith('video/') ? 'VIDEO' : 'IMAGE')
         fd.append('visibility', active)
         if (active === 'PUBLIC') fd.append('position', '7')
         
         console.log(`🚀 Envoi vers /api/media/upload...`)
         console.log(`📤 Visibilité envoyée: ${active}`)
         console.log(`📝 FormData:`, {
-          file: file.name,
-          type: file.type.startsWith('video/') ? 'VIDEO' : 'IMAGE',
+          file: processedFile.name,
+          type: processedFile.type.startsWith('video/') ? 'VIDEO' : 'IMAGE',
           visibility: active,
-          position: active === 'PUBLIC' ? '7' : undefined
+          position: active === 'PUBLIC' ? '7' : undefined,
+          size: processedFile.size
         })
+        
+        setUploadProgress(prev => ({ ...prev, [fileId]: 0 }))
         
         const r = await fetch('/api/media/upload', { 
           method:'POST', 
@@ -108,6 +135,16 @@ export default function MediaManager() {
       } catch (e:any) {
         console.log('💥 Erreur upload complète:', e)
         toast.error(`Erreur upload: ${e.message}`)
+      } finally {
+        // Nettoyer les états
+        setUploadProgress(prev => {
+          const next = { ...prev }
+          delete next[fileId]
+          return next
+        })
+        if (compressing === fileId) {
+          setCompressing(null)
+        }
       }
     }
     
@@ -158,7 +195,23 @@ export default function MediaManager() {
         </div>
         <div className="flex items-center gap-2">
           <div className="px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white/80">Revenus ce mois: 2 840 ♦</div>
-          <button onClick={onAddClick} className="px-3 py-2 rounded-lg bg-pink-500 hover:bg-pink-600 text-white inline-flex items-center gap-2"><Plus size={16}/> Ajouter des médias</button>
+          <button 
+            onClick={onAddClick} 
+            disabled={!!compressing}
+            className="px-3 py-2 rounded-lg bg-pink-500 hover:bg-pink-600 disabled:bg-gray-600 disabled:cursor-not-allowed text-white inline-flex items-center gap-2"
+          >
+            {compressing ? (
+              <>
+                <Loader size={16} className="animate-spin" />
+                Compression...
+              </>
+            ) : (
+              <>
+                <Plus size={16} />
+                Ajouter des médias
+              </>
+            )}
+          </button>
           <input ref={inputRef} type="file" multiple accept="image/*,video/*" className="hidden" onChange={e=>onFilesPicked(e.target.files)} />
         </div>
       </div>

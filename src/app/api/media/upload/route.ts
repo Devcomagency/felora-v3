@@ -78,10 +78,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Prix requis pour les médias payants' }, { status: 400 })
     }
 
-    // File validation
-    const maxSize = 50 * 1024 * 1024 // 50MB
+    // File validation - Limite Vercel 4MB
+    const maxSize = 4 * 1024 * 1024 // 4MB (limite Vercel)
     if (file.size > maxSize) {
-      return NextResponse.json({ error: 'Fichier trop volumineux (max 50MB)' }, { status: 400 })
+      return NextResponse.json({ error: 'Fichier trop volumineux (max 4MB). Veuillez compresser votre vidéo.' }, { status: 400 })
     }
 
     const allowedTypes = type === 'IMAGE' 
