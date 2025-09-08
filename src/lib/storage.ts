@@ -109,10 +109,16 @@ export class MediaStorage {
       const { getSignedUrl } = await import('@aws-sdk/s3-request-presigner')
 
       const s3 = new S3Client({
-        region: 'auto',
+        region: 'us-east-1', // R2 compatibility
         endpoint,
-        credentials: { accessKeyId: accessKey, secretAccessKey: secretKey },
-        forcePathStyle: true,
+        credentials: { 
+          accessKeyId: accessKey, 
+          secretAccessKey: secretKey 
+        },
+        forcePathStyle: false, // R2 recommande false
+        requestHandler: {
+          requestTimeout: 60000, // 60s pour gros fichiers
+        }
       })
 
       const bytes = await file.arrayBuffer()
@@ -141,10 +147,15 @@ export class MediaStorage {
 
       return { url: signedUrl, success: true, key }
     } catch (error) {
-      console.error('R2 upload failed:', (error && (error as any).name) || 'Error', (error && (error as any).message) || '')
-      console.error('R2 config (masquée):', {
-        endpoint: (process.env.CLOUDFLARE_R2_ENDPOINT || process.env.CLOUDFLARE_R2_ACCOUNT_ID) ? 'set' : 'missing',
-        bucket: process.env.CLOUDFLARE_R2_BUCKET ? 'set' : 'missing'
+      console.error('❌ R2 upload failed:', {
+        name: (error as any)?.name,
+        message: (error as any)?.message,
+        code: (error as any)?.Code || (error as any)?.code,
+        statusCode: (error as any)?.$response?.statusCode,
+        endpoint: process.env.CLOUDFLARE_R2_ENDPOINT?.substring(0, 50) + '...',
+        bucket: process.env.CLOUDFLARE_R2_BUCKET,
+        hasAccessKey: !!process.env.CLOUDFLARE_R2_ACCESS_KEY,
+        hasSecretKey: !!process.env.CLOUDFLARE_R2_SECRET_KEY
       })
       return {
         url: '',
