@@ -52,7 +52,7 @@ export default function EscortProfilePage() {
       {/* Barre d'actions */}
       <div className="mb-4 flex items-center justify-end gap-2">
         <button
-          onClick={() => { try { window.dispatchEvent(new CustomEvent('profile:save' as any)) } catch {} }}
+          onClick={() => { try { window.dispatchEvent(new CustomEvent('profile:save')) } catch {} }}
           className="px-3 py-2 rounded-lg bg-white/10 hover:bg-white/15 border border-white/20 text-white/90"
         >
           Enregistrer
