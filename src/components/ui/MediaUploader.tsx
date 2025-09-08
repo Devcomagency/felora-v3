@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Upload, AlertCircle, User } from 'lucide-react'
+import { videoCompressor } from '@/lib/video-compression'
 
 interface MediaUploaderProps {
   onUploadSuccess?: (mediaId: string) => void
@@ -92,8 +93,23 @@ export default function MediaUploader({ onUploadSuccess, className = '' }: Media
     setError('')
 
     try {
+      let fileToUpload: File = file
+      if (file.type.startsWith('video/') && file.size > 4 * 1024 * 1024) {
+        try {
+          const result = await videoCompressor.compressVideo(file, { maxSizeMB: 3.5, quality: 0.8 })
+          fileToUpload = result.file
+        } catch (e:any) {
+          setError(`Compression vidéo échouée: ${e?.message || 'inconnue'}`)
+          return
+        }
+        if (fileToUpload.size > 4 * 1024 * 1024) {
+          setError('Vidéo trop volumineuse après compression (limite 4MB).')
+          return
+        }
+      }
+
       const formData = new FormData()
-      formData.append('file', file)
+      formData.append('file', fileToUpload)
       formData.append('type', type)
       formData.append('visibility', visibility)
       if (visibility === 'REQUESTABLE' && price) {

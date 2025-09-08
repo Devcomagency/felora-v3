@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import { User, Image, Eye, Heart, Clock, Settings as SettingsIcon, CheckCircle2, AlertTriangle, ShieldCheck, Pause, Calendar, Save, X, BadgeCheck, Search, Loader2 } from 'lucide-react'
 import * as Dialog from '@radix-ui/react-dialog'
 import AddressAutocomplete from '../ui/AddressAutocomplete'
+import { videoCompressor } from '@/lib/video-compression'
 
 interface ProfileData {
   // Informations de base
@@ -684,12 +685,29 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                   if (hasEscortProfile === false) { setSaveMsg({ type:'error', text:'Créez d\'abord votre profil (enregistrez vos infos), puis réessayez.' }); setTimeout(()=> setSaveMsg(null), 3000); return }
                   const isValid = slot.accept.startsWith('image') ? file.type.startsWith('image/') : file.type.startsWith('video/')
                   if (!isValid) return
-                  const preview = URL.createObjectURL(file)
+                  let fileToUpload: File = file
+                  // Compression vidéo stricte pour éviter 413 sur Vercel
+                  if (file.type.startsWith('video/') && file.size > 4 * 1024 * 1024) {
+                    try {
+                      const result = await videoCompressor.compressVideo(file, { maxSizeMB: 3.5, quality: 0.8 })
+                      fileToUpload = result.file
+                    } catch (e:any) {
+                      setSaveMsg({ type:'error', text: `Compression vidéo échouée: ${e?.message||'inconnue'}` })
+                      setTimeout(()=> setSaveMsg(null), 4000)
+                      return
+                    }
+                    if (fileToUpload.size > 4 * 1024 * 1024) {
+                      setSaveMsg({ type:'error', text: 'Vidéo trop volumineuse après compression (limite 4MB).' })
+                      setTimeout(()=> setSaveMsg(null), 4000)
+                      return
+                    }
+                  }
+                  const preview = URL.createObjectURL(fileToUpload)
                   // Upload immédiatement
                   try {
                     setMandatoryMedia(prev => { const next=[...prev]; next[idx] = { ...(next[idx]||{}), uploading: true }; return next })
                     const fd = new FormData()
-                    fd.append('file', file)
+                    fd.append('file', fileToUpload)
                     // API persistante des slots obligatoires
                     const zeroBasedSlot = Math.max(0, Math.min(5, (slot.n || (idx+1)) - 1))
                     fd.append('slot', String(zeroBasedSlot))
@@ -699,8 +717,8 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                     if (!res.ok || !data?.success) {
                       // Fallback to legacy endpoint if new one fails
                       const fd2 = new FormData()
-                      fd2.append('file', file)
-                      fd2.append('type', slot.accept.startsWith('image') ? 'IMAGE' : 'VIDEO')
+                      fd2.append('file', fileToUpload)
+                      fd2.append('type', (fileToUpload.type.startsWith('image/') ? 'IMAGE' : 'VIDEO'))
                       fd2.append('visibility', 'PUBLIC')
                       fd2.append('position', String(slot.n))
                       const res2 = await fetch('/api/media/upload', { method: 'POST', body: fd2, credentials: 'include' })

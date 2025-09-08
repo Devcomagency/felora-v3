@@ -60,11 +60,12 @@ export class MediaStorage {
 
   // Stockage cloud pour la production (à implémenter plus tard)
   private async uploadToCloud(file: File, folder: string): Promise<UploadResult> {
-    // TODO: Implémenter Cloudflare R2 ou AWS S3
-    
+    // Sélection du provider cloud
     if (process.env.CLOUDFLARE_R2_ENDPOINT) {
+      console.log('📦 Storage: Cloudflare R2')
       return await this.uploadToR2(file, folder)
     } else if (process.env.AWS_S3_BUCKET) {
+      console.log('📦 Storage: AWS S3 (non implémenté)')
       return await this.uploadToS3(file, folder)
     } else {
       // Fallback vers local même en production si pas de config cloud
