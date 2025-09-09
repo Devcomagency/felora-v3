@@ -64,8 +64,13 @@ export async function POST(req: NextRequest) {
         city: true,
         ville: true, // Include both city fields
         canton: true,
+        rue: true, // New address fields
+        numero: true,
+        codePostal: true,
+        workingArea: true, // Legacy address field
         languages: true,
         services: true,
+        practices: true,
         photosCount: true,
         videosCount: true,
         hasProfilePhoto: true,
@@ -78,14 +83,33 @@ export async function POST(req: NextRequest) {
     if (action === 'pause') {
       newStatus = 'PAUSED'
     } else if (action === 'activate' || action === 'resume') {
-      // Vérifier la complétion avant d'activer
-      const completion = checkProfileCompletion(escort as any)
-      if (completion.percentage < 80) {
+      // Validation according to patch pack - dual city/ville support
+      const hasCity = Boolean(escort.ville || escort.city)
+      const hasAddress = Boolean((escort.rue && escort.codePostal) || escort.workingArea)
+      const hasLang = Boolean(escort.languages) // CSV ok
+      const hasServices = Boolean(escort.services) // CSV ok  
+      const hasRate = Boolean(escort.rate1H)
+      const hasName = Boolean(escort.stageName)
+      
+      const totalChecks = 6 // adjust according to real criteria
+      const passed = [hasCity, hasAddress, hasLang, hasServices, hasRate, hasName].filter(Boolean).length
+      const completion = (passed / totalChecks) * 100
+      
+      if (completion < 80) {
+        const missing = []
+        if (!hasName) missing.push('Nom d\'artiste')
+        if (!hasCity) missing.push('Ville')
+        if (!hasAddress) missing.push('Adresse')
+        if (!hasLang) missing.push('Langues')
+        if (!hasServices) missing.push('Services')
+        if (!hasRate) missing.push('Tarifs')
+        
         return NextResponse.json({ 
           ok: false, 
-          error: 'profile_incomplete', 
-          completion: completion.percentage,
-          missingRequirements: completion.missing
+          error: 'profile_incomplete',
+          reason: 'INCOMPLETE',
+          completion: Math.round(completion),
+          missing: missing
         }, { status: 400 })
       }
       newStatus = 'ACTIVE'

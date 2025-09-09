@@ -54,6 +54,17 @@ const nextConfig = {
     return config
   },
 
+  // Redirects: /dashboard-escort/* → /escort/*
+  async redirects() {
+    return [
+      {
+        source: '/dashboard-escort/:path*',
+        destination: '/escort/:path*',
+        permanent: true,
+      },
+    ];
+  },
+
   // En-têtes de sécurité (+ CSP souple en dev)
   async headers() {
     const isDev = process.env.NODE_ENV !== 'production'

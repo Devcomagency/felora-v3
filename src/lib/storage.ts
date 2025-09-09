@@ -140,13 +140,13 @@ export class MediaStorage {
       const { getSignedUrl } = await import('@aws-sdk/s3-request-presigner')
 
       const s3 = new S3Client({
-        region: 'us-east-1', // R2 compatibility
+        region: 'auto', // R2 uses 'auto' instead of us-east-1
         endpoint,
         credentials: { 
           accessKeyId: accessKey, 
           secretAccessKey: secretKey 
         },
-        forcePathStyle: false, // R2 recommande false
+        forcePathStyle: true, // Patch pack recommends true for R2
         requestHandler: {
           requestTimeout: 60000, // 60s pour gros fichiers
         }

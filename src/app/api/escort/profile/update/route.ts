@@ -99,66 +99,101 @@ export async function POST(req: NextRequest) {
     if (typeof input.address === 'string' && input.address.trim()) {
       data.workingArea = input.address.trim()
     }
-    // List fields (store as CSV to stay compatible with existing consumers)
-    const toCsv = (val: unknown): string | undefined => {
-      if (Array.isArray(val)) return val.map(s => String(s).trim()).filter(Boolean).join(', ')
-      if (typeof val === 'string') {
-        const s = val.trim()
-        if (!s) return undefined
-        // If it's a JSON array string, parse and join
-        if (s.startsWith('[')) {
-          try {
-            const arr = JSON.parse(s)
-            if (Array.isArray(arr)) return arr.map((x: any) => String(x).trim()).filter(Boolean).join(', ')
-          } catch {}
-        }
-        return s
-      }
-      return undefined
+    
+    // Helper functions according to patch pack
+    function toCsv(v: any) {
+      return Array.isArray(v) ? v.filter(Boolean).join(',') : (typeof v === 'string' ? v : '')
     }
-    const csvLanguages = toCsv(input.languages)
-    if (csvLanguages !== undefined) data.languages = csvLanguages
-    const csvServices = toCsv(input.services)
-    if (csvServices !== undefined) data.services = csvServices
-    const csvPractices = toCsv(input.practices)
-    if (csvPractices !== undefined) data.practices = csvPractices
-    // toggles
-    if (typeof input.incall === 'boolean') data.incall = input.incall
-    if (typeof input.outcall === 'boolean') data.outcall = input.outcall
-    // rates
-    if (typeof input.rate1H === 'number') data.rate1H = input.rate1H
-    if (typeof input.rate2H === 'number') data.rate2H = input.rate2H
-    if (typeof input.rateOvernight === 'number') data.rateOvernight = input.rateOvernight
-    // physical
-    if (typeof input.height === 'number') data.height = input.height
-    if (typeof input.bodyType === 'string') data.bodyType = input.bodyType
-    if (typeof input.hairColor === 'string') data.hairColor = input.hairColor
-    if (typeof input.eyeColor === 'string') data.eyeColor = input.eyeColor
-    if (typeof input.ethnicity === 'string') data.ethnicity = input.ethnicity
-    if (typeof input.bustSize === 'string') data.bustSize = input.bustSize
-    if (typeof input.tattoos === 'string') data.tattoos = input.tattoos
-    if (typeof input.piercings === 'string') data.piercings = input.piercings
-    if (input.timeSlots !== undefined) data.timeSlots = typeof input.timeSlots === 'string' ? input.timeSlots : JSON.stringify(input.timeSlots)
-    // Contact - Le téléphone est mis à jour dans la table User, pas EscortProfile
+    
+    function parseAddress(address?: string) {
+      if (!address) return {}
+      // "rue numero, codePostal ville" → parse components
+      const m = address.match(/^(.*?)[,\s]+(\d{4,5})\s+(.+)$/)
+      if (!m) return {}
+      return { rue: m[1]?.trim(), codePostal: m[2], ville: m[3]?.trim() }
+    }
+    
+    // Parse address components
+    const parsed = parseAddress(input.address)
+    
+    // Data mapping according to patch pack - dual city/ville support
+    const dataToSave: any = {
+      // Family 1 (legacy)
+      city: input.city ?? input.ville ?? parsed.ville ?? null,
+      workingArea: input.workingArea ?? null,
+
+      // Family 2 (new columns)
+      ville: input.ville ?? input.city ?? parsed.ville ?? null,
+      rue: input.rue ?? parsed.rue ?? null,
+      numero: input.numero ?? null,
+      codePostal: input.codePostal ?? parsed.codePostal ?? null,
+
+      // Lists → CSV
+      languages: toCsv(input.languages),
+      services: toCsv(input.services), // was serviceType
+      practices: toCsv(input.practices), // was specialties
+    }
+    
+    // Add other fields to dataToSave
+    if (typeof input.stageName === 'string') dataToSave.stageName = input.stageName
+    if (typeof input.description === 'string') dataToSave.description = input.description
+    if (typeof input.canton === 'string' && input.canton.trim()) dataToSave.canton = input.canton.trim()
+    
+    // Age handling
+    if (typeof input.age === 'number' && isFinite(input.age)) {
+      const a = Math.round(input.age)
+      if (a >= 18 && a <= 80) {
+        const today = new Date()
+        const dobYear = today.getFullYear() - a
+        const dob = new Date(dobYear, 5, 15)
+        dataToSave.dateOfBirth = dob
+      }
+    }
+    
+    // Coordinates
+    if (input.coordinates && typeof input.coordinates.lat === 'number' && typeof input.coordinates.lng === 'number') {
+      dataToSave.latitude = input.coordinates.lat
+      dataToSave.longitude = input.coordinates.lng
+    }
+    if (typeof input.latitude === 'number' && typeof input.longitude === 'number') {
+      dataToSave.latitude = input.latitude
+      dataToSave.longitude = input.longitude
+    }
+    
+    // Toggles, rates, physical attributes  
+    if (typeof input.incall === 'boolean') dataToSave.incall = input.incall
+    if (typeof input.outcall === 'boolean') dataToSave.outcall = input.outcall
+    if (typeof input.rate1H === 'number') dataToSave.rate1H = input.rate1H
+    if (typeof input.rate2H === 'number') dataToSave.rate2H = input.rate2H
+    if (typeof input.rateOvernight === 'number') dataToSave.rateOvernight = input.rateOvernight
+    if (typeof input.height === 'number') dataToSave.height = input.height
+    if (typeof input.bodyType === 'string') dataToSave.bodyType = input.bodyType
+    if (typeof input.hairColor === 'string') dataToSave.hairColor = input.hairColor
+    if (typeof input.eyeColor === 'string') dataToSave.eyeColor = input.eyeColor
+    if (typeof input.ethnicity === 'string') dataToSave.ethnicity = input.ethnicity
+    if (typeof input.bustSize === 'string') dataToSave.bustSize = input.bustSize
+    if (typeof input.tattoos === 'string') dataToSave.tattoos = input.tattoos
+    if (typeof input.piercings === 'string') dataToSave.piercings = input.piercings
+    if (input.timeSlots !== undefined) dataToSave.timeSlots = typeof input.timeSlots === 'string' ? input.timeSlots : JSON.stringify(input.timeSlots)
+    if (input.phoneVisibility) dataToSave.phoneVisibility = input.phoneVisibility
+    if (input.breastType) dataToSave.breastType = input.breastType
+    if (input.pubicHair) dataToSave.pubicHair = input.pubicHair
+    if (typeof input.smoker === 'boolean') dataToSave.smoker = input.smoker
+    if (typeof input.acceptsCouples === 'boolean') dataToSave.acceptsCouples = input.acceptsCouples
+    if (typeof input.acceptsWomen === 'boolean') dataToSave.acceptsWomen = input.acceptsWomen
+    if (typeof input.acceptsHandicapped === 'boolean') dataToSave.acceptsHandicapped = input.acceptsHandicapped
+    if (typeof input.acceptsSeniors === 'boolean') dataToSave.acceptsSeniors = input.acceptsSeniors
+
+    // Update phone in User table separately
     if (typeof input.phone === 'string') {
       await prisma.user.update({ 
         where: { id: userId }, 
         data: { phone: input.phone } 
       })
     }
-    if (input.phoneVisibility) data.phoneVisibility = input.phoneVisibility
-    // Préférences physiques
-    if (input.breastType) data.breastType = input.breastType
-    if (input.pubicHair) data.pubicHair = input.pubicHair
-    if (typeof input.smoker === 'boolean') data.smoker = input.smoker
-    // Préférences clients
-    if (typeof input.acceptsCouples === 'boolean') data.acceptsCouples = input.acceptsCouples
-    if (typeof input.acceptsWomen === 'boolean') data.acceptsWomen = input.acceptsWomen
-    if (typeof input.acceptsHandicapped === 'boolean') data.acceptsHandicapped = input.acceptsHandicapped
-    if (typeof input.acceptsSeniors === 'boolean') data.acceptsSeniors = input.acceptsSeniors
 
-    // Persist minimal update
-    await prisma.escortProfile.update({ where: { userId }, data })
+    // Persist unified update
+    await prisma.escortProfile.update({ where: { userId }, data: dataToSave })
 
     return NextResponse.json({ success: true, message: 'Modifications enregistrées' })
   } catch (e:any) {
