@@ -257,7 +257,24 @@ export default function EscortProfile() {
             duoTrio: !!p.duoTrio,
 
             // Affichage des tarifs
-            showPrices: p.showPrices !== false // Par défaut true
+            showPrices: p.showPrices !== false, // Par défaut true
+
+            // Médias
+            avatarUrl: p.avatarUrl || '',
+            publicPhotos: p.publicPhotos ? (Array.isArray(p.publicPhotos) ? p.publicPhotos : []) : [],
+            privatePhotos: p.privatePhotos ? (Array.isArray(p.privatePhotos) ? p.privatePhotos : []) : [],
+            
+            // Statut et activation
+            isActive: !!p.isActive,
+            profileCompletion: 0,
+            
+            // Statistiques
+            stats: {
+              views: p.stats?.views || 0,
+              contacts: p.stats?.contacts || 0,
+              favorites: p.stats?.favorites || 0,
+              revenue: p.stats?.revenue || 0
+            }
           })
         }
       } catch (error) {
@@ -370,11 +387,11 @@ export default function EscortProfile() {
     if (profile.stageName) completed++
     if (profile.description) completed++
     if (profile.avatarUrl) completed++
-    if (profile.publicPhotos.length >= 3) completed++
+    if ((profile.publicPhotos || []).length >= 3) completed++
     if (profile.ville) completed++
-    if (profile.languages.length > 0) completed++
-    if (profile.serviceType.length > 0) completed++
-    if (profile.prices.oneHour > 0) completed++
+    if ((profile.languages || []).length > 0) completed++
+    if ((profile.serviceType || []).length > 0) completed++
+    if (profile.prices && profile.prices.oneHour > 0) completed++
     if (profile.canton) completed++
     if (profile.height > 0) completed++
 
@@ -1119,7 +1136,7 @@ export default function EscortProfile() {
               </h2>
               
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                {profile.publicPhotos.map((photo, index) => (
+                {(profile.publicPhotos || []).map((photo, index) => (
                   <div key={index} className="relative group">
                     <img src={photo} alt={`Photo ${index + 1}`} className="w-full h-32 object-cover rounded-lg" />
                     <button className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">
@@ -1147,7 +1164,7 @@ export default function EscortProfile() {
               </h2>
               
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                {profile.privatePhotos.map((photo, index) => (
+                {(profile.privatePhotos || []).map((photo, index) => (
                   <div key={index} className="relative group">
                     <img src={photo} alt={`Photo privée ${index + 1}`} className="w-full h-32 object-cover rounded-lg" />
                     <button className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">
@@ -1411,9 +1428,9 @@ export default function EscortProfile() {
                 {!profile.stageName && <li>• Nom de scène</li>}
                 {!profile.description && <li>• Description</li>}
                 {!profile.avatarUrl && <li>• Photo de profil</li>}
-                {profile.publicPhotos.length < 3 && <li>• Au moins 3 photos publiques</li>}
+                {(profile.publicPhotos || []).length < 3 && <li>• Au moins 3 photos publiques</li>}
                 {!profile.ville && <li>• Ville</li>}
-                {profile.languages.length === 0 && <li>• Au moins une langue</li>}
+                {(profile.languages || []).length === 0 && <li>• Au moins une langue</li>}
               </ul>
             </div>
           )}
