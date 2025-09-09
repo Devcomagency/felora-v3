@@ -126,7 +126,7 @@ export async function POST(req: NextRequest) {
     
     // Helper functions according to patch pack
     function toCsv(v: any) {
-      return Array.isArray(v) ? v.filter(Boolean).join(',') : (typeof v === 'string' ? v : '')
+      return Array.isArray(v) ? v.map((x:string)=>String(x).trim()).filter(Boolean).join(', ') : (typeof v === 'string' ? v.trim() : '')
     }
     
     function parseAddress(address?: string) {
@@ -141,21 +141,39 @@ export async function POST(req: NextRequest) {
     const addressParts = parseAddress(input.address)
     
     // Data mapping according to patch pack - dual city/ville support
-    const dataToSave: any = {
-      // Family 1 (legacy)
-      city: input.city ?? input.ville ?? addressParts.ville ?? null,
-      workingArea: input.workingArea ?? null,
+    const dataToSave: any = {}
 
-      // Family 2 (new columns)
-      ville: input.ville ?? input.city ?? addressParts.ville ?? null,
-      rue: input.rue ?? addressParts.rue ?? null,
-      numero: input.numero ?? null,
-      codePostal: input.codePostal ?? addressParts.codePostal ?? null,
+    // City/Ville mapping without forcing nulls
+    const maybeVille = (typeof input.city === 'string' && input.city.trim())
+      ? input.city.trim()
+      : (addressParts.ville || undefined)
+    if (maybeVille) {
+      dataToSave.ville = maybeVille
+      // Legacy mirror for compatibility
+      dataToSave.city = maybeVille
+    }
+    // workingArea legacy only if provided
+    if (typeof input.address === 'string' && input.address.trim()) {
+      dataToSave.workingArea = input.address.trim()
+    }
+    // Address components (optional fields)
+    if (addressParts.rue) dataToSave.rue = addressParts.rue
+    if (addressParts.codePostal) dataToSave.codePostal = addressParts.codePostal
+    if (addressParts.ville) dataToSave.ville = addressParts.ville
+    if (typeof (input as any).numero === 'string' && (input as any).numero.trim()) dataToSave.numero = (input as any).numero.trim()
 
-      // Lists → CSV
-      languages: toCsv(input.languages),
-      services: toCsv(input.services), // was serviceType
-      practices: toCsv(input.practices), // was specialties
+    // Lists → CSV only if provided
+    if (typeof input.languages !== 'undefined') {
+      const csv = toCsv(input.languages)
+      if (csv) dataToSave.languages = csv
+    }
+    if (typeof input.services !== 'undefined') {
+      const csv = toCsv(input.services)
+      if (csv) dataToSave.services = csv
+    }
+    if (typeof input.practices !== 'undefined') {
+      const csv = toCsv(input.practices)
+      if (csv) dataToSave.practices = csv
     }
     
     // Add other fields to dataToSave
