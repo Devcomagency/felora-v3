@@ -69,23 +69,32 @@ export default function EscortProfileNew() {
         })
         const data = await response.json()
         
-        if (response.ok && data) {
+        if (response.ok && data.success && data.profile) {
+          const p = data.profile
+          
+          // Calculer l'âge depuis dateOfBirth
+          const age = p.dateOfBirth ? 
+            new Date().getFullYear() - new Date(p.dateOfBirth).getFullYear() : 18
+
+          // Parser les langues et services depuis CSV
+          const parseCSV = (csv: string) => csv ? csv.split(',').map(s => s.trim()).filter(Boolean) : []
+          
           setProfile({
-            stageName: data.stageName || '',
-            age: data.age || 18,
-            description: data.description || '',
-            height: data.height || 165,
-            weight: data.weight || 55,
-            ville: data.ville || '',
-            rue: data.rue || '',
-            codePostal: data.codePostal || '',
-            canton: data.canton || '',
-            hourlyRate: data.hourlyRate || 200,
-            languages: data.languages || [],
-            bodyType: data.bodyType || '',
-            breastSize: data.breastSize || '',
-            hairColor: data.hairColor || '',
-            services: data.services || []
+            stageName: p.stageName || '',
+            age: age,
+            description: p.description || '',
+            height: p.height || 165,
+            weight: p.weight || 55, // À ajouter dans l'API si nécessaire
+            ville: p.ville || p.city || '', // Support des deux formats
+            rue: p.rue || '',
+            codePostal: p.codePostal || '',
+            canton: p.canton || '',
+            hourlyRate: p.rate1H || 200,
+            languages: parseCSV(p.languages || ''),
+            bodyType: p.bodyType || '',
+            breastSize: p.bustSize || '', // bustSize → breastSize
+            hairColor: p.hairColor || '',
+            services: parseCSV(p.services || '')
           })
         }
       } catch (error) {
@@ -104,11 +113,30 @@ export default function EscortProfileNew() {
     setMessage(null)
 
     try {
+      // Mapper nos champs vers ceux attendus par l'API
+      const payload = {
+        stageName: profile.stageName,
+        age: profile.age,
+        description: profile.description,
+        city: profile.ville, // ville → city
+        canton: profile.canton,
+        address: `${profile.rue}, ${profile.codePostal} ${profile.ville}`.trim(), // construire address complète
+        rate1H: profile.hourlyRate, // hourlyRate → rate1H
+        height: profile.height,
+        languages: profile.languages, // L'API gère les arrays
+        services: profile.services,
+        bodyType: profile.bodyType,
+        bustSize: profile.breastSize, // breastSize → bustSize
+        hairColor: profile.hairColor
+      }
+
+      console.log('Envoi des données:', payload) // Debug
+
       const response = await fetch('/api/escort/profile/update', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify(profile)
+        body: JSON.stringify(payload)
       })
       
       const result = await response.json()
