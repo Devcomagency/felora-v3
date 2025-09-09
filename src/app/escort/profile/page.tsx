@@ -383,6 +383,14 @@ export default function EscortProfile() {
   const handlePhotoUpload = async (file: File, type: 'avatar' | 'public' | 'private') => {
     if (!file) return
 
+    // Vérifier l'authentification d'abord
+    if (!session?.user) {
+      setMessage({ type: 'error', text: 'Vous devez être connecté pour uploader des photos' })
+      return
+    }
+
+    console.log('🔐 Upload - Session utilisateur:', session.user.id)
+
     // Validation du fichier
     if (!file.type.startsWith('image/')) {
       setMessage({ type: 'error', text: 'Veuillez sélectionner un fichier image valide' })
@@ -394,6 +402,7 @@ export default function EscortProfile() {
       return
     }
 
+    console.log('📤 Upload - Fichier:', file.name, 'Type:', type, 'Taille:', file.size)
     setUploading(true)
 
     try {
