@@ -168,6 +168,7 @@ export default function EscortProfile() {
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<{type: 'success' | 'error', text: string} | null>(null)
   const [activeTab, setActiveTab] = useState<'basic' | 'physical' | 'services' | 'rates' | 'location' | 'preferences' | 'media' | 'calendar' | 'stats'>('basic')
+  const [uploading, setUploading] = useState(false)
 
   // Auth check
   useEffect(() => {
@@ -376,6 +377,96 @@ export default function EscortProfile() {
         : [...currentArray, value]
       return { ...prev, [field]: newArray }
     })
+  }
+
+  // Upload de photos
+  const handlePhotoUpload = async (file: File, type: 'avatar' | 'public' | 'private') => {
+    if (!file) return
+
+    // Validation du fichier
+    if (!file.type.startsWith('image/')) {
+      setMessage({ type: 'error', text: 'Veuillez sélectionner un fichier image valide' })
+      return
+    }
+
+    if (file.size > 5 * 1024 * 1024) { // 5MB
+      setMessage({ type: 'error', text: 'La taille du fichier ne doit pas dépasser 5MB' })
+      return
+    }
+
+    setUploading(true)
+
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('type', type)
+
+      const response = await fetch('/api/escort/profile/upload', {
+        method: 'POST',
+        credentials: 'include',
+        body: formData
+      })
+
+      const result = await response.json()
+
+      if (response.ok && result.success) {
+        const imageUrl = result.url
+
+        if (type === 'avatar') {
+          setProfile(prev => ({ ...prev, avatarUrl: imageUrl }))
+        } else if (type === 'public') {
+          setProfile(prev => ({ 
+            ...prev, 
+            publicPhotos: [...(prev.publicPhotos || []), imageUrl]
+          }))
+        } else if (type === 'private') {
+          setProfile(prev => ({ 
+            ...prev, 
+            privatePhotos: [...(prev.privatePhotos || []), imageUrl]
+          }))
+        }
+
+        setMessage({ type: 'success', text: 'Photo uploadée avec succès!' })
+      } else {
+        setMessage({ type: 'error', text: result.error || 'Erreur lors de l\'upload' })
+      }
+    } catch (error) {
+      console.error('Erreur upload:', error)
+      setMessage({ type: 'error', text: 'Erreur de connexion lors de l\'upload' })
+    } finally {
+      setUploading(false)
+      setTimeout(() => setMessage(null), 3000)
+    }
+  }
+
+  // Supprimer une photo
+  const removePhoto = async (photoUrl: string, type: 'public' | 'private') => {
+    try {
+      const response = await fetch('/api/escort/profile/delete-photo', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ url: photoUrl, type })
+      })
+
+      if (response.ok) {
+        if (type === 'public') {
+          setProfile(prev => ({
+            ...prev,
+            publicPhotos: (prev.publicPhotos || []).filter(url => url !== photoUrl)
+          }))
+        } else {
+          setProfile(prev => ({
+            ...prev,
+            privatePhotos: (prev.privatePhotos || []).filter(url => url !== photoUrl)
+          }))
+        }
+        setMessage({ type: 'success', text: 'Photo supprimée' })
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Erreur lors de la suppression' })
+    }
+    setTimeout(() => setMessage(null), 2000)
   }
 
   // Calculer le pourcentage de completion du profil
@@ -1120,9 +1211,25 @@ export default function EscortProfile() {
                 )}
                 
                 <div>
-                  <button className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors">
-                    Choisir une photo
-                  </button>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0]
+                      if (file) handlePhotoUpload(file, 'avatar')
+                    }}
+                    className="hidden"
+                    id="avatar-upload"
+                    disabled={uploading}
+                  />
+                  <label 
+                    htmlFor="avatar-upload" 
+                    className={`px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors cursor-pointer inline-block ${
+                      uploading ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
+                  >
+                    {uploading ? 'Upload...' : 'Choisir une photo'}
+                  </label>
                   <p className="text-sm text-gray-400 mt-2">JPG, PNG - Max 5MB</p>
                 </div>
               </div>
@@ -1139,16 +1246,39 @@ export default function EscortProfile() {
                 {(profile.publicPhotos || []).map((photo, index) => (
                   <div key={index} className="relative group">
                     <img src={photo} alt={`Photo ${index + 1}`} className="w-full h-32 object-cover rounded-lg" />
-                    <button className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button 
+                      onClick={() => removePhoto(photo, 'public')}
+                      className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
+                    >
                       ✕
                     </button>
                   </div>
                 ))}
                 
-                <button className="w-full h-32 border-2 border-dashed border-gray-600 rounded-lg flex flex-col items-center justify-center hover:border-blue-500 transition-colors">
-                  <span className="text-2xl text-gray-400">+</span>
-                  <span className="text-sm text-gray-400">Ajouter une photo</span>
-                </button>
+                <div className="relative">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0]
+                      if (file) handlePhotoUpload(file, 'public')
+                    }}
+                    className="hidden"
+                    id="public-upload"
+                    disabled={uploading}
+                  />
+                  <label 
+                    htmlFor="public-upload" 
+                    className={`w-full h-32 border-2 border-dashed border-gray-600 rounded-lg flex flex-col items-center justify-center hover:border-blue-500 transition-colors cursor-pointer ${
+                      uploading ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
+                  >
+                    <span className="text-2xl text-gray-400">+</span>
+                    <span className="text-sm text-gray-400">
+                      {uploading ? 'Upload...' : 'Ajouter une photo'}
+                    </span>
+                  </label>
+                </div>
               </div>
               
               <p className="text-sm text-gray-400">
@@ -1167,16 +1297,39 @@ export default function EscortProfile() {
                 {(profile.privatePhotos || []).map((photo, index) => (
                   <div key={index} className="relative group">
                     <img src={photo} alt={`Photo privée ${index + 1}`} className="w-full h-32 object-cover rounded-lg" />
-                    <button className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button 
+                      onClick={() => removePhoto(photo, 'private')}
+                      className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
+                    >
                       ✕
                     </button>
                   </div>
                 ))}
                 
-                <button className="w-full h-32 border-2 border-dashed border-gray-600 rounded-lg flex flex-col items-center justify-center hover:border-purple-500 transition-colors">
-                  <span className="text-2xl text-gray-400">+</span>
-                  <span className="text-sm text-gray-400">Ajouter une photo</span>
-                </button>
+                <div className="relative">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0]
+                      if (file) handlePhotoUpload(file, 'private')
+                    }}
+                    className="hidden"
+                    id="private-upload"
+                    disabled={uploading}
+                  />
+                  <label 
+                    htmlFor="private-upload" 
+                    className={`w-full h-32 border-2 border-dashed border-gray-600 rounded-lg flex flex-col items-center justify-center hover:border-purple-500 transition-colors cursor-pointer ${
+                      uploading ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
+                  >
+                    <span className="text-2xl text-gray-400">+</span>
+                    <span className="text-sm text-gray-400">
+                      {uploading ? 'Upload...' : 'Ajouter une photo'}
+                    </span>
+                  </label>
+                </div>
               </div>
               
               <p className="text-sm text-gray-400">
