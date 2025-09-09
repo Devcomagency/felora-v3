@@ -192,12 +192,17 @@ export async function POST(req: NextRequest) {
       })
     }
 
+    // Debug logging
+    console.log('🔧 Profile update data:', JSON.stringify(dataToSave, null, 2))
+    
     // Persist unified update
     await prisma.escortProfile.update({ where: { userId }, data: dataToSave })
 
     return NextResponse.json({ success: true, message: 'Modifications enregistrées' })
   } catch (e:any) {
-    console.error('/api/escort/profile/update error:', e.message)
+    console.error('❌ /api/escort/profile/update error:', e.message)
+    console.error('❌ Full error:', e)
+    console.error('❌ Data that failed:', JSON.stringify(dataToSave, null, 2))
     return NextResponse.json({ success: false, error: 'server_error' }, { status: 500 })
   }
 }
