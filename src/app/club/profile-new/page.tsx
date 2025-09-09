@@ -61,19 +61,24 @@ export default function ClubProfileNew() {
         })
         const data = await response.json()
         
-        if (response.ok && data?.club) {
+        if (response.ok && data.success && data.club) {
+          const c = data.club
+          
+          // Parser les CSV en arrays
+          const parseCSV = (csv: string) => csv ? csv.split(',').map(s => s.trim()).filter(Boolean) : []
+          
           setProfile({
-            name: data.club.name || '',
-            description: data.club.description || '',
-            address: data.club.address || '',
-            openingHours: data.club.openingHours || '',
-            avatarUrl: data.club.avatarUrl || '',
-            coverUrl: data.club.coverUrl || '',
-            isActive: !!data.club.isActive,
-            websiteUrl: data.club.websiteUrl || '',
-            languages: data.club.languages || [],
-            paymentMethods: data.club.paymentMethods || [],
-            services: data.club.services || []
+            name: c.name || '',
+            description: c.description || '',
+            address: c.address || '',
+            openingHours: c.openingHours || '',
+            avatarUrl: c.avatarUrl || '',
+            coverUrl: c.coverUrl || '',
+            isActive: !!c.isActive,
+            websiteUrl: c.websiteUrl || '',
+            languages: parseCSV(c.languages || ''),
+            paymentMethods: parseCSV(c.paymentMethods || ''),
+            services: parseCSV(c.services || '')
           })
         }
       } catch (error) {
