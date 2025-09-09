@@ -310,7 +310,7 @@ export default function EscortProfile() {
     setProfile(prev => ({ ...prev, [field]: value }))
   }
 
-  const updatePriceField = (field: keyof EscortProfile['prices'], value: number) => {
+  const updatePriceField = (field: keyof EscortProfile['prices'], value: number | undefined) => {
     setProfile(prev => ({ 
       ...prev, 
       prices: { ...prev.prices, [field]: value }
@@ -741,7 +741,7 @@ export default function EscortProfile() {
                   type="number"
                   min="0"
                   value={profile.prices.fifteenMin || ''}
-                  onChange={(e) => updatePriceField('fifteenMin', parseInt(e.target.value) || 0)}
+                  onChange={(e) => updatePriceField('fifteenMin', parseInt(e.target.value) || undefined)}
                   className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-purple-500"
                   placeholder="Optionnel"
                 />
@@ -753,7 +753,7 @@ export default function EscortProfile() {
                   type="number"
                   min="0"
                   value={profile.prices.thirtyMin || ''}
-                  onChange={(e) => updatePriceField('thirtyMin', parseInt(e.target.value) || 0)}
+                  onChange={(e) => updatePriceField('thirtyMin', parseInt(e.target.value) || undefined)}
                   className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-purple-500"
                   placeholder="Optionnel"
                 />
@@ -777,7 +777,7 @@ export default function EscortProfile() {
                   type="number"
                   min="0"
                   value={profile.prices.twoHours || ''}
-                  onChange={(e) => updatePriceField('twoHours', parseInt(e.target.value) || 0)}
+                  onChange={(e) => updatePriceField('twoHours', parseInt(e.target.value) || undefined)}
                   className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-purple-500"
                   placeholder="Optionnel"
                 />
@@ -789,7 +789,7 @@ export default function EscortProfile() {
                   type="number"
                   min="0"
                   value={profile.prices.overnight || ''}
-                  onChange={(e) => updatePriceField('overnight', parseInt(e.target.value) || 0)}
+                  onChange={(e) => updatePriceField('overnight', parseInt(e.target.value) || undefined)}
                   className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-purple-500"
                   placeholder="Optionnel"
                 />
