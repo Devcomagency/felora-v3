@@ -287,8 +287,15 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
             overnight: p.rateOvernight || undefined
           },
           canton: p.canton || '',
-          city: p.city || '',
-          address: p.workingArea || '',
+          city: p.ville || p.city || '',  // Priorise ville (nouveau) puis city (legacy)
+          address: (() => {
+            // Reconstituer adresse complète à partir des nouveaux champs si disponibles
+            if (p.rue && p.codePostal) {
+              return `${p.rue}${p.numero ? ' ' + p.numero : ''}, ${p.codePostal} ${p.ville || p.city || ''}`.trim()
+            }
+            // Fallback sur workingArea (legacy)
+            return p.workingArea || ''
+          })(),
           coordinates: (typeof p.latitude === 'number' && typeof p.longitude === 'number') ? { lat: p.latitude, lng: p.longitude } : undefined,
           phone: p.user?.phone || '',
           phoneVisibility: p.phoneVisibility || 'hidden',
