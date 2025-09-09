@@ -64,6 +64,23 @@ interface EscortProfile {
 
   // Affichage des tarifs
   showPrices: boolean
+
+  // Médias
+  avatarUrl?: string
+  publicPhotos: string[]
+  privatePhotos: string[]
+  
+  // Statut et activation
+  isActive: boolean
+  profileCompletion: number
+  
+  // Statistiques
+  stats: {
+    views: number
+    contacts: number
+    favorites: number
+    revenue: number
+  }
 }
 
 export default function EscortProfile() {
@@ -127,13 +144,30 @@ export default function EscortProfile() {
     duoTrio: false,
 
     // Affichage des tarifs
-    showPrices: true
+    showPrices: true,
+
+    // Médias
+    avatarUrl: '',
+    publicPhotos: [],
+    privatePhotos: [],
+    
+    // Statut et activation
+    isActive: false,
+    profileCompletion: 0,
+    
+    // Statistiques
+    stats: {
+      views: 0,
+      contacts: 0,
+      favorites: 0,
+      revenue: 0
+    }
   })
   
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<{type: 'success' | 'error', text: string} | null>(null)
-  const [activeTab, setActiveTab] = useState<'basic' | 'physical' | 'services' | 'rates' | 'location' | 'preferences'>('basic')
+  const [activeTab, setActiveTab] = useState<'basic' | 'physical' | 'services' | 'rates' | 'location' | 'preferences' | 'media' | 'calendar' | 'stats'>('basic')
 
   // Auth check
   useEffect(() => {
@@ -327,6 +361,32 @@ export default function EscortProfile() {
     })
   }
 
+  // Calculer le pourcentage de completion du profil
+  const calculateProfileCompletion = () => {
+    let completed = 0
+    const totalFields = 10
+
+    // Champs obligatoires
+    if (profile.stageName) completed++
+    if (profile.description) completed++
+    if (profile.avatarUrl) completed++
+    if (profile.publicPhotos.length >= 3) completed++
+    if (profile.ville) completed++
+    if (profile.languages.length > 0) completed++
+    if (profile.serviceType.length > 0) completed++
+    if (profile.prices.oneHour > 0) completed++
+    if (profile.canton) completed++
+    if (profile.height > 0) completed++
+
+    return Math.round((completed / totalFields) * 100)
+  }
+
+  // Mettre à jour le pourcentage à chaque changement
+  useEffect(() => {
+    const completion = calculateProfileCompletion()
+    setProfile(prev => ({ ...prev, profileCompletion: completion }))
+  }, [profile.stageName, profile.description, profile.avatarUrl, profile.publicPhotos, profile.ville, profile.languages, profile.serviceType, profile.prices.oneHour, profile.canton, profile.height])
+
   if (status === 'loading' || loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-violet-900 flex items-center justify-center">
@@ -362,7 +422,10 @@ export default function EscortProfile() {
             { key: 'services', label: 'Services proposés' },
             { key: 'rates', label: 'Tarifs' },
             { key: 'location', label: 'Localisation' },
-            { key: 'preferences', label: 'Préférences' }
+            { key: 'preferences', label: 'Préférences' },
+            { key: 'media', label: 'Médias' },
+            { key: 'calendar', label: 'Agenda' },
+            { key: 'stats', label: 'Statistiques' }
           ].map(tab => (
             <button
               key={tab.key}
@@ -1019,6 +1082,342 @@ export default function EscortProfile() {
             </div>
           </div>
         )}
+
+        {/* Onglet: Médias */}
+        {activeTab === 'media' && (
+          <div className="space-y-6">
+            {/* Photo de profil obligatoire */}
+            <div className="bg-red-800/20 backdrop-blur-sm border border-red-700/50 rounded-xl p-6">
+              <h2 className="text-xl font-semibold text-white mb-4 flex items-center">
+                <span className="w-2 h-2 bg-red-500 rounded-full mr-2"></span>
+                Photo de profil (OBLIGATOIRE)
+              </h2>
+              
+              <div className="flex items-center space-x-4">
+                {profile.avatarUrl ? (
+                  <img src={profile.avatarUrl} alt="Photo de profil" className="w-20 h-20 rounded-lg object-cover" />
+                ) : (
+                  <div className="w-20 h-20 bg-gray-600 rounded-lg flex items-center justify-center">
+                    <span className="text-gray-400">Aucune photo</span>
+                  </div>
+                )}
+                
+                <div>
+                  <button className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors">
+                    Choisir une photo
+                  </button>
+                  <p className="text-sm text-gray-400 mt-2">JPG, PNG - Max 5MB</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Photos publiques */}
+            <div className="bg-blue-800/20 backdrop-blur-sm border border-blue-700/50 rounded-xl p-6">
+              <h2 className="text-xl font-semibold text-white mb-4 flex items-center">
+                <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+                Galerie publique (minimum 3 photos)
+              </h2>
+              
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                {profile.publicPhotos.map((photo, index) => (
+                  <div key={index} className="relative group">
+                    <img src={photo} alt={`Photo ${index + 1}`} className="w-full h-32 object-cover rounded-lg" />
+                    <button className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">
+                      ✕
+                    </button>
+                  </div>
+                ))}
+                
+                <button className="w-full h-32 border-2 border-dashed border-gray-600 rounded-lg flex flex-col items-center justify-center hover:border-blue-500 transition-colors">
+                  <span className="text-2xl text-gray-400">+</span>
+                  <span className="text-sm text-gray-400">Ajouter une photo</span>
+                </button>
+              </div>
+              
+              <p className="text-sm text-gray-400">
+                Ces photos seront visibles par tous les visiteurs. Minimum 3 photos requises pour activer le profil.
+              </p>
+            </div>
+
+            {/* Photos privées */}
+            <div className="bg-purple-800/20 backdrop-blur-sm border border-purple-700/50 rounded-xl p-6">
+              <h2 className="text-xl font-semibold text-white mb-4 flex items-center">
+                <span className="w-2 h-2 bg-purple-500 rounded-full mr-2"></span>
+                Galerie privée (optionnel)
+              </h2>
+              
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                {profile.privatePhotos.map((photo, index) => (
+                  <div key={index} className="relative group">
+                    <img src={photo} alt={`Photo privée ${index + 1}`} className="w-full h-32 object-cover rounded-lg" />
+                    <button className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">
+                      ✕
+                    </button>
+                  </div>
+                ))}
+                
+                <button className="w-full h-32 border-2 border-dashed border-gray-600 rounded-lg flex flex-col items-center justify-center hover:border-purple-500 transition-colors">
+                  <span className="text-2xl text-gray-400">+</span>
+                  <span className="text-sm text-gray-400">Ajouter une photo</span>
+                </button>
+              </div>
+              
+              <p className="text-sm text-gray-400">
+                Ces photos ne seront visibles qu'aux membres premium après validation.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Onglet: Agenda */}
+        {activeTab === 'calendar' && (
+          <div className="bg-gray-800/40 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6">
+            <h2 className="text-xl font-semibold text-white mb-4">Gestion de l'agenda</h2>
+            
+            <div className="space-y-6">
+              {/* Disponibilités générales */}
+              <div>
+                <h3 className="text-lg font-medium text-white mb-3">Disponibilités générales</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Heures d'ouverture</label>
+                    <div className="flex space-x-2">
+                      <input 
+                        type="time" 
+                        className="flex-1 px-3 py-2 bg-gray-700/50 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-purple-500" 
+                        defaultValue="09:00"
+                      />
+                      <span className="text-gray-400 flex items-center">à</span>
+                      <input 
+                        type="time" 
+                        className="flex-1 px-3 py-2 bg-gray-700/50 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-purple-500" 
+                        defaultValue="22:00"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Préavis minimum</label>
+                    <select className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-purple-500">
+                      <option value="30">30 minutes</option>
+                      <option value="60">1 heure</option>
+                      <option value="120">2 heures</option>
+                      <option value="240">4 heures</option>
+                      <option value="1440">24 heures</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Calendrier rapide */}
+              <div>
+                <h3 className="text-lg font-medium text-white mb-3">Indisponibilités</h3>
+                <div className="bg-gray-700/30 rounded-lg p-4">
+                  <p className="text-gray-400 text-center">Calendrier interactif à implémenter</p>
+                  <div className="mt-4 flex justify-center space-x-4">
+                    <button className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors">
+                      Marquer indisponible
+                    </button>
+                    <button className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors">
+                      Marquer disponible
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Rendez-vous récents */}
+              <div>
+                <h3 className="text-lg font-medium text-white mb-3">Demandes de rendez-vous</h3>
+                <div className="space-y-3">
+                  <div className="bg-gray-700/30 rounded-lg p-4">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <p className="text-white font-medium">Client ****123</p>
+                        <p className="text-gray-400 text-sm">Demain 14:00 - 2h</p>
+                      </div>
+                      <div className="flex space-x-2">
+                        <button className="px-3 py-1 bg-green-500 text-white text-sm rounded-lg hover:bg-green-600 transition-colors">
+                          Accepter
+                        </button>
+                        <button className="px-3 py-1 bg-red-500 text-white text-sm rounded-lg hover:bg-red-600 transition-colors">
+                          Refuser
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <p className="text-gray-400 text-center">Aucune nouvelle demande</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Onglet: Statistiques */}
+        {activeTab === 'stats' && (
+          <div className="space-y-6">
+            {/* Cartes de statistiques */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="bg-blue-800/20 backdrop-blur-sm border border-blue-700/50 rounded-xl p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-blue-400 text-sm font-medium">Vues du profil</p>
+                    <p className="text-2xl font-bold text-white">{profile.stats.views.toLocaleString()}</p>
+                  </div>
+                  <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center">
+                    👁️
+                  </div>
+                </div>
+                <p className="text-xs text-gray-400 mt-2">+12% cette semaine</p>
+              </div>
+              
+              <div className="bg-green-800/20 backdrop-blur-sm border border-green-700/50 rounded-xl p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-green-400 text-sm font-medium">Contacts reçus</p>
+                    <p className="text-2xl font-bold text-white">{profile.stats.contacts.toLocaleString()}</p>
+                  </div>
+                  <div className="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center">
+                    💬
+                  </div>
+                </div>
+                <p className="text-xs text-gray-400 mt-2">+5% cette semaine</p>
+              </div>
+              
+              <div className="bg-purple-800/20 backdrop-blur-sm border border-purple-700/50 rounded-xl p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-purple-400 text-sm font-medium">Favoris</p>
+                    <p className="text-2xl font-bold text-white">{profile.stats.favorites.toLocaleString()}</p>
+                  </div>
+                  <div className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center">
+                    ❤️
+                  </div>
+                </div>
+                <p className="text-xs text-gray-400 mt-2">+8% cette semaine</p>
+              </div>
+              
+              <div className="bg-yellow-800/20 backdrop-blur-sm border border-yellow-700/50 rounded-xl p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-yellow-400 text-sm font-medium">Revenus</p>
+                    <p className="text-2xl font-bold text-white">{profile.stats.revenue.toLocaleString()} CHF</p>
+                  </div>
+                  <div className="w-10 h-10 bg-yellow-500/20 rounded-lg flex items-center justify-center">
+                    💰
+                  </div>
+                </div>
+                <p className="text-xs text-gray-400 mt-2">Ce mois-ci</p>
+              </div>
+            </div>
+
+            {/* Graphique des vues */}
+            <div className="bg-gray-800/40 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-white mb-4">Évolution des vues (7 derniers jours)</h3>
+              <div className="h-64 bg-gray-700/30 rounded-lg flex items-center justify-center">
+                <p className="text-gray-400">Graphique des statistiques à implémenter</p>
+              </div>
+            </div>
+
+            {/* Tableaux détaillés */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="bg-gray-800/40 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6">
+                <h3 className="text-lg font-semibold text-white mb-4">Sources de trafic</h3>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-300">Recherche directe</span>
+                    <span className="text-white font-medium">45%</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-300">Google</span>
+                    <span className="text-white font-medium">32%</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-300">Réseaux sociaux</span>
+                    <span className="text-white font-medium">23%</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-gray-800/40 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6">
+                <h3 className="text-lg font-semibold text-white mb-4">Heures de pointe</h3>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-300">14h - 16h</span>
+                    <span className="text-white font-medium">28%</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-300">20h - 22h</span>
+                    <span className="text-white font-medium">35%</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-300">22h - 00h</span>
+                    <span className="text-white font-medium">24%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Indicateur de completion et bouton d'activation */}
+        <div className="bg-gradient-to-r from-gray-800/40 to-gray-800/60 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6 mb-6">
+          <div className="flex justify-between items-center mb-4">
+            <div>
+              <h3 className="text-lg font-semibold text-white mb-2">Statut du profil</h3>
+              <div className="flex items-center space-x-3">
+                <div className="w-32 bg-gray-700 rounded-full h-2">
+                  <div 
+                    className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${Math.min(profile.profileCompletion, 100)}%` }}
+                  ></div>
+                </div>
+                <span className="text-sm text-gray-300">{Math.min(profile.profileCompletion, 100)}% complété</span>
+              </div>
+            </div>
+            
+            <div className="text-right">
+              {profile.isActive ? (
+                <div className="flex items-center space-x-2 mb-2">
+                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                  <span className="text-green-400 font-medium">Profil actif</span>
+                </div>
+              ) : (
+                <div className="flex items-center space-x-2 mb-2">
+                  <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                  <span className="text-red-400 font-medium">Profil inactif</span>
+                </div>
+              )}
+              
+              <button 
+                className={`px-6 py-2 rounded-lg font-medium transition-colors ${
+                  profile.profileCompletion >= 70
+                    ? 'bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700'
+                    : 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                }`}
+                disabled={profile.profileCompletion < 70}
+              >
+                {profile.isActive ? 'Désactiver le profil' : 'Activer le profil'}
+              </button>
+            </div>
+          </div>
+          
+          {profile.profileCompletion < 70 && (
+            <div className="bg-yellow-500/20 border border-yellow-500/40 rounded-lg p-3">
+              <p className="text-yellow-400 text-sm">
+                <strong>Champs manquants pour l'activation :</strong>
+              </p>
+              <ul className="text-yellow-300 text-sm mt-2 space-y-1">
+                {!profile.stageName && <li>• Nom de scène</li>}
+                {!profile.description && <li>• Description</li>}
+                {!profile.avatarUrl && <li>• Photo de profil</li>}
+                {profile.publicPhotos.length < 3 && <li>• Au moins 3 photos publiques</li>}
+                {!profile.ville && <li>• Ville</li>}
+                {profile.languages.length === 0 && <li>• Au moins une langue</li>}
+              </ul>
+            </div>
+          )}
+        </div>
 
         {/* Bouton de sauvegarde global */}
         <div className="flex justify-end">
