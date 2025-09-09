@@ -1,15 +1,28 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import DashboardLayout from '../../../../components/dashboard-v2/DashboardLayout'
-import { useProfileStatus } from '../../../../hooks/useProfileStatus'
+import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
+import DashboardLayout from '../../../components/dashboard-v2/DashboardLayout'
+import { useProfileStatus } from '../../../hooks/useProfileStatus'
 import dynamic from 'next/dynamic'
-const ModernProfileEditor = dynamic(() => import('../../../../components/dashboard/ModernProfileEditor'), { ssr: false, loading: () => <div className="h-40 bg-white/5 rounded-xl animate-pulse"/> })
+const ModernProfileEditor = dynamic(() => import('../../../components/dashboard/ModernProfileEditor'), { ssr: false, loading: () => <div className="h-40 bg-white/5 rounded-xl animate-pulse"/> })
 
 export default function EscortProfilePage() {
+  const { data: session, status } = useSession()
+  const router = useRouter()
   const { profileStatus, updating, toggleStatus } = useProfileStatus()
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
   const [escortId, setEscortId] = useState<string | null>(null)
+
+  // Auth check
+  useEffect(() => {
+    if (status === 'loading') return
+    if (!session?.user) {
+      router.push('/login?callbackUrl=/escort/profile')
+      return
+    }
+  }, [session, status, router])
 
   // Fonction pour gérer l'activation/pause
   const handleToggleStatus = async () => {
@@ -43,6 +56,21 @@ export default function EscortProfilePage() {
     })()
     return () => { cancelled = true }
   }, [])
+
+  if (status === 'loading') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-violet-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+          <p className="text-white">Chargement...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!session?.user) {
+    return null
+  }
 
   return (
     <DashboardLayout 
