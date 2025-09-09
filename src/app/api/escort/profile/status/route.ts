@@ -21,6 +21,7 @@ export async function GET() {
         stageName: true,
         description: true,
         city: true,
+        ville: true, // Include both city fields
         canton: true,
         languages: true,
         services: true,
@@ -53,13 +54,44 @@ export async function POST(req: NextRequest) {
     const body = await req.json().catch(() => ({}))
     const action = String(body?.action || '').toLowerCase()
 
-    const escort = await prisma.escortProfile.findUnique({ where: { userId }, select: { id: true, status: true } })
+    const escort = await prisma.escortProfile.findUnique({ 
+      where: { userId }, 
+      select: { 
+        id: true, 
+        status: true,
+        stageName: true,
+        description: true,
+        city: true,
+        ville: true, // Include both city fields
+        canton: true,
+        languages: true,
+        services: true,
+        photosCount: true,
+        videosCount: true,
+        hasProfilePhoto: true,
+        rate1H: true,
+      } 
+    })
     if (!escort) return NextResponse.json({ ok: false, error: 'profile_not_found' }, { status: 404 })
 
     let newStatus: any = escort.status
-    if (action === 'pause') newStatus = 'PAUSED'
-    else if (action === 'activate' || action === 'resume') newStatus = 'ACTIVE'
-    else return NextResponse.json({ ok: false, error: 'invalid_action' }, { status: 400 })
+    if (action === 'pause') {
+      newStatus = 'PAUSED'
+    } else if (action === 'activate' || action === 'resume') {
+      // Vérifier la complétion avant d'activer
+      const completion = checkProfileCompletion(escort as any)
+      if (completion.percentage < 80) {
+        return NextResponse.json({ 
+          ok: false, 
+          error: 'profile_incomplete', 
+          completion: completion.percentage,
+          missingRequirements: completion.missing
+        }, { status: 400 })
+      }
+      newStatus = 'ACTIVE'
+    } else {
+      return NextResponse.json({ ok: false, error: 'invalid_action' }, { status: 400 })
+    }
 
     await prisma.escortProfile.update({ where: { id: escort.id }, data: { status: newStatus } })
     return NextResponse.json({ ok: true, status: newStatus })

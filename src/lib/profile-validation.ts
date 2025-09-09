@@ -89,7 +89,8 @@ export function checkProfileCompletion(escortProfile: any) {
     // Basic fields
     if (escortProfile?.stageName) score += 10; else missing.push('Nom d\'artiste')
     if (escortProfile?.description && escortProfile.description.length >= 50) score += 15; else missing.push('Description (≥ 50 car.)')
-    if (escortProfile?.city) score += 5; else missing.push('Ville principale')
+    // Vérifier les deux champs possibles pour la ville
+    if (escortProfile?.city || escortProfile?.ville) score += 5; else missing.push('Ville principale')
     if (escortProfile?.canton) score += 5; else missing.push('Canton')
 
     // Languages/services are stored as strings (JSON)
@@ -142,8 +143,20 @@ function safeParseArray(input: any): any[] {
   try {
     if (!input) return []
     if (Array.isArray(input)) return input
-    const parsed = JSON.parse(String(input))
-    return Array.isArray(parsed) ? parsed : []
+    
+    const str = String(input).trim()
+    if (!str) return []
+    
+    // Tenter JSON d'abord (pour les anciens formats)
+    if (str.startsWith('[')) {
+      try {
+        const parsed = JSON.parse(str)
+        return Array.isArray(parsed) ? parsed : []
+      } catch {}
+    }
+    
+    // Sinon traiter comme CSV
+    return str.split(',').map(x => x.trim()).filter(Boolean)
   } catch { return [] }
 }
 

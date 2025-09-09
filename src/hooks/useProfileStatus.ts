@@ -16,7 +16,7 @@ interface ProfileStatus {
 
 interface ToggleResult {
   success: boolean
-  message: string
+  message?: string
   error?: string
   missingRequirements?: string[]
 }
@@ -61,6 +61,14 @@ export function useProfileStatus() {
       const j = await res.json()
       if (!res.ok || !j?.ok) {
         setUpdating(false)
+        // Gestion spéciale du profil incomplet
+        if (j?.error === 'profile_incomplete') {
+          return { 
+            success: false, 
+            error: `Profil incomplet (${j?.completion || 0}%)`, 
+            missingRequirements: j?.missingRequirements || []
+          }
+        }
         return { success:false, error: j?.error || 'Action non disponible' }
       }
       // Refresh status
