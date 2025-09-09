@@ -267,8 +267,18 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
           stageName: p.stageName || '',
           description: p.description || '',
           age: (() => { try { return p.dateOfBirth ? (new Date().getFullYear() - new Date(p.dateOfBirth).getFullYear()) : undefined } catch { return undefined } })(),
-          languages: (()=>{ try { const L = JSON.parse(String(p.languages||'[]')); return Array.isArray(L)?L:[] } catch { return [] } })(),
-          serviceType: (()=>{ try { const S = JSON.parse(String(p.services||'[]')); return Array.isArray(S)?S:[] } catch { return [] } })(),
+          languages: (()=>{ try { 
+            const raw = String(p.languages||'')
+            if (!raw) return []
+            if (raw.trim().startsWith('[')) { const L = JSON.parse(raw); return Array.isArray(L)?L:[] }
+            return raw.split(',').map((x:string)=>x.trim()).filter(Boolean)
+          } catch { return [] } })(),
+          serviceType: (()=>{ try { 
+            const raw = String(p.services||'')
+            if (!raw) return []
+            if (raw.trim().startsWith('[')) { const S = JSON.parse(raw); return Array.isArray(S)?S:[] }
+            return raw.split(',').map((x:string)=>x.trim()).filter(Boolean)
+          } catch { return [] } })(),
           outcall: !!p.outcall,
           incall: !!p.incall,
           prices: { 
@@ -282,7 +292,12 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
           coordinates: (typeof p.latitude === 'number' && typeof p.longitude === 'number') ? { lat: p.latitude, lng: p.longitude } : undefined,
           phone: p.user?.phone || '',
           phoneVisibility: p.phoneVisibility || 'hidden',
-          specialties: (()=>{ try { const S = JSON.parse(String(p.practices||'[]')); return Array.isArray(S)?S:[] } catch { return [] } })(),
+          specialties: (()=>{ try { 
+            const raw = String(p.practices||'')
+            if (!raw) return []
+            if (raw.trim().startsWith('[')) { const S = JSON.parse(raw); return Array.isArray(S)?S:[] }
+            return raw.split(',').map((x:string)=>x.trim()).filter(Boolean)
+          } catch { return [] } })(),
           height: p.height || undefined,
           bodyType: p.bodyType || '',
           hairColor: p.hairColor || '',

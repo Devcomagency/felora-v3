@@ -16,27 +16,27 @@ export async function POST(req: NextRequest) {
     const Schema = z.object({
       // Basics
       stageName: z.string().max(100).optional(),
-      age: z.number().optional(),
+      age: z.coerce.number().optional(),
       description: z.string().max(5000).optional(),
       city: z.string().max(100).optional(),
       canton: z.string().max(100).optional(),
       address: z.string().max(200).optional(),
-      coordinates: z.object({ lat: z.number(), lng: z.number() }).optional(),
-      latitude: z.number().optional(),
-      longitude: z.number().optional(),
+      coordinates: z.object({ lat: z.coerce.number(), lng: z.coerce.number() }).optional(),
+      latitude: z.coerce.number().optional(),
+      longitude: z.coerce.number().optional(),
       // Arrays (JSON strings client-side)
-      languages: z.string().optional(),
-      services: z.string().optional(),
-      practices: z.string().optional(),
+      languages: z.union([z.string(), z.array(z.string())]).optional(),
+      services: z.union([z.string(), z.array(z.string())]).optional(),
+      practices: z.union([z.string(), z.array(z.string())]).optional(),
       // Toggles
-      incall: z.boolean().optional(),
-      outcall: z.boolean().optional(),
+      incall: z.coerce.boolean().optional(),
+      outcall: z.coerce.boolean().optional(),
       // Rates
-      rate1H: z.number().optional(),
-      rate2H: z.number().optional(),
-      rateOvernight: z.number().optional(),
+      rate1H: z.coerce.number().optional(),
+      rate2H: z.coerce.number().optional(),
+      rateOvernight: z.coerce.number().optional(),
       // Physical
-      height: z.number().optional(),
+      height: z.coerce.number().optional(),
       bodyType: z.string().optional(),
       hairColor: z.string().optional(),
       eyeColor: z.string().optional(),
@@ -52,12 +52,12 @@ export async function POST(req: NextRequest) {
       // Préférences physiques
       breastType: z.enum(['naturelle', 'siliconee']).optional(),
       pubicHair: z.enum(['naturel', 'rase', 'partiel']).optional(),
-      smoker: z.boolean().optional(),
+      smoker: z.coerce.boolean().optional(),
       // Préférences clients
-      acceptsCouples: z.boolean().optional(),
-      acceptsWomen: z.boolean().optional(),
-      acceptsHandicapped: z.boolean().optional(),
-      acceptsSeniors: z.boolean().optional(),
+      acceptsCouples: z.coerce.boolean().optional(),
+      acceptsWomen: z.coerce.boolean().optional(),
+      acceptsHandicapped: z.coerce.boolean().optional(),
+      acceptsSeniors: z.coerce.boolean().optional(),
     })
     const parsed = Schema.safeParse(body)
     if (!parsed.success) {
@@ -99,10 +99,29 @@ export async function POST(req: NextRequest) {
     if (typeof input.address === 'string' && input.address.trim()) {
       data.workingArea = input.address.trim()
     }
-    // JSON fields
-    if (typeof input.languages === 'string') data.languages = input.languages
-    if (typeof input.services === 'string') data.services = input.services
-    if (typeof input.practices === 'string') data.practices = input.practices
+    // List fields (store as CSV to stay compatible with existing consumers)
+    const toCsv = (val: unknown): string | undefined => {
+      if (Array.isArray(val)) return val.map(s => String(s).trim()).filter(Boolean).join(', ')
+      if (typeof val === 'string') {
+        const s = val.trim()
+        if (!s) return undefined
+        // If it's a JSON array string, parse and join
+        if (s.startsWith('[')) {
+          try {
+            const arr = JSON.parse(s)
+            if (Array.isArray(arr)) return arr.map((x: any) => String(x).trim()).filter(Boolean).join(', ')
+          } catch {}
+        }
+        return s
+      }
+      return undefined
+    }
+    const csvLanguages = toCsv(input.languages)
+    if (csvLanguages !== undefined) data.languages = csvLanguages
+    const csvServices = toCsv(input.services)
+    if (csvServices !== undefined) data.services = csvServices
+    const csvPractices = toCsv(input.practices)
+    if (csvPractices !== undefined) data.practices = csvPractices
     // toggles
     if (typeof input.incall === 'boolean') data.incall = input.incall
     if (typeof input.outcall === 'boolean') data.outcall = input.outcall
