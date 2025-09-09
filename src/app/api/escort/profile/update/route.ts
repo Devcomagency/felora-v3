@@ -120,8 +120,13 @@ export async function POST(req: NextRequest) {
     if (typeof input.tattoos === 'string') data.tattoos = input.tattoos
     if (typeof input.piercings === 'string') data.piercings = input.piercings
     if (input.timeSlots !== undefined) data.timeSlots = typeof input.timeSlots === 'string' ? input.timeSlots : JSON.stringify(input.timeSlots)
-    // Contact
-    if (typeof input.phone === 'string') data.phone = input.phone
+    // Contact - Le téléphone est mis à jour dans la table User, pas EscortProfile
+    if (typeof input.phone === 'string') {
+      await prisma.user.update({ 
+        where: { id: userId }, 
+        data: { phone: input.phone } 
+      })
+    }
     if (input.phoneVisibility) data.phoneVisibility = input.phoneVisibility
     // Préférences physiques
     if (input.breastType) data.breastType = input.breastType

@@ -191,6 +191,15 @@ model EscortProfile {
   isActive            Boolean      @default(false)
   totalLikes          Int          @default(0)
   totalReacts         Int          @default(0)
+  // Nouveaux champs ajoutés pour persistance complète
+  phoneVisibility     String?      @default("hidden")
+  breastType          String?
+  pubicHair           String?
+  smoker              Boolean?
+  acceptsCouples      Boolean      @default(false)
+  acceptsWomen        Boolean      @default(false)
+  acceptsHandicapped  Boolean      @default(false)
+  acceptsSeniors      Boolean      @default(false)
   createdAt           DateTime     @default(now())
   updatedAt           DateTime     @updatedAt
   user                User         @relation(fields: [userId], references: [id], onDelete: Cascade)
