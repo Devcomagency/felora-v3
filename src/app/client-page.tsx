@@ -18,8 +18,6 @@ interface MediaItem {
   thumb: string
   visibility: string
   author: MediaAuthor
-  likeCount: number
-  reactCount: number
   createdAt: string
 }
 import { useFeedStore } from '../stores/feedStore'
@@ -69,8 +67,6 @@ export default function ClientFeedPage({ initialItems, initialCursor }: ClientFe
             name: `Creator ${seed % 1000}`,
             avatar: `https://picsum.photos/100/100?random=${seed + 2000}`
           },
-          likeCount: (seed * 13) % 2000,
-          reactCount: (seed * 5) % 200,
           createdAt: new Date(timestamp - (i * 3600000)).toISOString()
         }
       })
@@ -97,8 +93,6 @@ export default function ClientFeedPage({ initialItems, initialCursor }: ClientFe
             name: `User ${seed % 1000}`,
             avatar: `https://picsum.photos/100/100?random=${seed + 3000}`
           },
-          likeCount: (seed * 11) % 1000,
-          reactCount: (seed * 3) % 100,
           createdAt: new Date(fallbackTime - (i * 1800000)).toISOString()
         }
       })

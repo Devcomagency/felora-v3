@@ -16,8 +16,6 @@ interface MediaItem {
   thumb: string
   visibility: string
   author: MediaAuthor
-  likeCount: number
-  reactCount: number
   createdAt: string
 }
 
@@ -78,8 +76,6 @@ export default async function HomePage() {
                 name: profile.stageName || profile.firstName || 'Escort',
                 avatar: profile.profilePhoto || '/placeholder-avatar.jpg'
               },
-              likeCount: Math.floor(Math.random() * 2000) + 100,
-              reactCount: Math.floor(Math.random() * 300) + 50,
               createdAt: profile.createdAt?.toISOString() || new Date().toISOString()
             })
           }
@@ -109,8 +105,6 @@ export default async function HomePage() {
           name: 'Demo Account',
           avatar: 'https://picsum.photos/100/100?random=10'
         },
-        likeCount: 123,
-        reactCount: 45,
         createdAt: new Date().toISOString()
       }
     ]

@@ -41,7 +41,20 @@ export const authOptions: NextAuthOptions = {
     async signIn() {
       return true
     },
-    async redirect({ baseUrl }) {
+    async redirect({ url, baseUrl }) {
+      // Si l'utilisateur vient de se connecter, rediriger vers le dashboard approprié
+      if (url.includes('/api/auth/callback')) {
+        try {
+          // Essayer de déterminer le rôle de l'utilisateur
+          // On redirige vers un endpoint qui déterminera le bon dashboard
+          return `${baseUrl}/dashboard-redirect`
+        } catch {
+          return baseUrl
+        }
+      }
+      
+      // Pour les autres cas, utiliser l'URL fournie ou la base
+      if (url.startsWith('/')) return `${baseUrl}${url}`
       return baseUrl
     },
     async jwt({ token, user }) {
