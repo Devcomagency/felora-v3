@@ -114,19 +114,19 @@ export async function POST(req: NextRequest) {
     }
     
     // Parse address components
-    const parsed = parseAddress(input.address)
+    const addressParts = parseAddress(input.address)
     
     // Data mapping according to patch pack - dual city/ville support
     const dataToSave: any = {
       // Family 1 (legacy)
-      city: input.city ?? input.ville ?? parsed.ville ?? null,
+      city: input.city ?? input.ville ?? addressParts.ville ?? null,
       workingArea: input.workingArea ?? null,
 
       // Family 2 (new columns)
-      ville: input.ville ?? input.city ?? parsed.ville ?? null,
-      rue: input.rue ?? parsed.rue ?? null,
+      ville: input.ville ?? input.city ?? addressParts.ville ?? null,
+      rue: input.rue ?? addressParts.rue ?? null,
       numero: input.numero ?? null,
-      codePostal: input.codePostal ?? parsed.codePostal ?? null,
+      codePostal: input.codePostal ?? addressParts.codePostal ?? null,
 
       // Lists → CSV
       languages: toCsv(input.languages),
