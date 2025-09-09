@@ -5,6 +5,33 @@ import { useSearchParams } from 'next/navigation'
 import { User, Image, Eye, Heart, Clock, Settings as SettingsIcon, CheckCircle2, AlertTriangle, ShieldCheck, Pause, Calendar, Save, X, BadgeCheck, Search, Loader2 } from 'lucide-react'
 import * as Dialog from '@radix-ui/react-dialog'
 import AddressAutocomplete from '../ui/AddressAutocomplete'
+
+const CANTON_MAP: Record<string, string> = {
+  GE: 'Genève', VD: 'Vaud', VS: 'Valais', ZH: 'Zurich', BE: 'Berne', BS: 'Bâle',
+  FR: 'Fribourg', NE: 'Neuchâtel', LU: 'Lucerne', TI: 'Tessin', SG: 'Saint-Gall',
+}
+
+const CITY_BY_CANTON: Record<string, string[]> = {
+  GE: ['Genève', 'Carouge', 'Meyrin', 'Vernier', 'Lancy'],
+  VD: ['Lausanne', 'Vevey', 'Montreux', 'Yverdon-les-Bains', 'Nyon'],
+  ZH: ['Zurich', 'Winterthur', 'Uster', 'Dübendorf'],
+  BE: ['Berne', 'Biel/Bienne', 'Thoune'],
+  BS: ['Bâle', 'Riehen'],
+  VS: ['Sion', 'Sierre', 'Monthey'],
+  FR: ['Fribourg', 'Bulle'],
+  NE: ['Neuchâtel', 'La Chaux-de-Fonds'],
+  LU: ['Lucerne', 'Kriens'],
+  TI: ['Lugano', 'Bellinzona', 'Locarno'],
+  SG: ['Saint-Gall', 'Rapperswil-Jona'],
+}
+
+function detectCantonFromCity(city: string): string | null {
+  const c = city.trim().toLowerCase()
+  for (const [code, list] of Object.entries(CITY_BY_CANTON)) {
+    if (list.some(v => v.toLowerCase() === c)) return code
+  }
+  return null
+}
 import { videoCompressor } from '@/lib/video-compression'
 
 interface ProfileData {
@@ -1022,7 +1049,15 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                     <label className="block text-xs text-gray-300 mb-1">Canton <span className="text-red-400">*</span></label>
                     <select
                       value={profileData.canton || ''}
-                      onChange={(e) => updateProfileData('canton', e.target.value)}
+                      onChange={(e) => {
+                        const code = e.target.value
+                        updateProfileData('canton', code)
+                        // Réinitialiser ville si la ville actuelle n'appartient pas au canton choisi
+                        const allowed = CITY_BY_CANTON[code] || []
+                        if (profileData.city && !allowed.includes(profileData.city)) {
+                          updateProfileData('city', '')
+                        }
+                      }}
                       className={`w-full px-3 py-2 bg-gray-700/50 border rounded-lg text-white text-sm focus:border-purple-500 focus:outline-none ${!profileData.canton ? 'border-red-500/50' : 'border-gray-600/50'}`}
                       aria-invalid={!profileData.canton}
                     >
@@ -1044,7 +1079,15 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                       list="city-list"
                       type="text"
                       value={profileData.city || ''}
-                      onChange={(e) => updateProfileData('city', e.target.value)}
+                      onChange={(e) => {
+                        const v = e.target.value
+                        updateProfileData('city', v)
+                        // Détecter canton automatiquement si non choisi
+                        if (!profileData.canton) {
+                          const code = detectCantonFromCity(v)
+                          if (code) updateProfileData('canton', code)
+                        }
+                      }}
                       placeholder="ex: Genève"
                       className={`w-full px-3 py-2 bg-gray-700/50 border rounded-lg text-white text-sm focus:border-purple-500 focus:outline-none ${!profileData.city ? 'border-red-500/50' : 'border-gray-600/50'}`}
                       aria-invalid={!profileData.city}
@@ -1053,16 +1096,12 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                       <div className="text-[11px] text-red-400 mt-1">Champ requis</div>
                     )}
                     <datalist id="city-list">
-                      <option value="Genève" />
-                      <option value="Lausanne" />
-                      <option value="Zurich" />
-                      <option value="Berne" />
-                      <option value="Bâle" />
-                      <option value="Lugano" />
-                      <option value="Fribourg" />
-                      <option value="Neuchâtel" />
-                      <option value="Lucerne" />
-                      <option value="Sion" />
+                      {((CITY_BY_CANTON[profileData.canton || ''] || []).length > 0
+                        ? CITY_BY_CANTON[profileData.canton || '']
+                        : ['Genève','Lausanne','Zurich','Berne','Bâle','Lugano','Fribourg','Neuchâtel','Lucerne','Sion']
+                      ).map(c => (
+                        <option key={c} value={c} />
+                      ))}
                     </datalist>
                   </div>
                 </div>
@@ -1081,14 +1120,20 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                       }
                     }}
                     placeholder="Tapez votre adresse suisse..."
+                    cantonCode={profileData.canton || undefined}
+                    cantonName={profileData.canton ? CANTON_MAP[profileData.canton] : undefined}
+                    city={profileData.city || undefined}
                     onAddressSelect={(address) => {
-                      const addressParts = address.address.split(', ')
-                      if (addressParts.length >= 2) {
-                        const cityPart = addressParts[addressParts.length - 1]
-                        const cityName = cityPart.split(' ').slice(1).join(' ')
-                        if (cityName) {
-                          updateProfileData('city', cityName)
-                        }
+                      // Déduire ville depuis le label
+                      const parts = address.address.split(', ')
+                      if (parts.length >= 2) {
+                        const cityPart = parts[parts.length - 1]
+                        // ex: "1204 Genève" → enlever code postal
+                        const cityName = cityPart.replace(/^\d+\s+/, '')
+                        if (cityName) updateProfileData('city', cityName)
+                        // Déduire canton si possible
+                        const code = detectCantonFromCity(cityName)
+                        if (code) updateProfileData('canton', code)
                       }
                     }}
                   />

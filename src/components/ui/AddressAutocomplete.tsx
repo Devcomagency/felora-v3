@@ -20,6 +20,10 @@ interface AddressAutocompleteProps {
   placeholder?: string
   className?: string
   onAddressSelect?: (address: SwissAddress) => void
+  // Filtrage/biais facultatif
+  cantonCode?: string
+  cantonName?: string
+  city?: string
 }
 
 export default function AddressAutocomplete({
@@ -27,7 +31,10 @@ export default function AddressAutocomplete({
   onChange,
   placeholder = "Rechercher une adresse suisse...",
   className = "",
-  onAddressSelect
+  onAddressSelect,
+  cantonCode,
+  cantonName,
+  city
 }: AddressAutocompleteProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [suggestions, setSuggestions] = useState<SwissAddress[]>([])
@@ -41,12 +48,17 @@ export default function AddressAutocomplete({
     if (query.length < 2) return []
     
     try {
-      const url = `/api/geocode/search?q=${encodeURIComponent(query)}&limit=10`
+      const params = new URLSearchParams()
+      params.set('q', query)
+      params.set('limit', '10')
+      if (cantonName) params.set('region', cantonName)
+      if (city) params.set('city', city)
+      const url = `/api/geocode/search?${params.toString()}`
       const response = await fetch(url)
       if (!response.ok) return mockResults(query)
       const data = await response.json()
       const hits = Array.isArray(data.hits) ? data.hits : []
-      return hits.map((hit: any) => ({
+      let mapped = hits.map((hit: any) => ({
         score: Number(hit.score) || 0,
         identifier: String(hit.identifier || hit.id || ''),
         countryCode: String(hit.countryCode || 'CH'),
@@ -56,6 +68,12 @@ export default function AddressAutocomplete({
         latitude: Number(hit.latitude) || 0,
         longitude: Number(hit.longitude) || 0
       }))
+      // Filtrage côté client si ville précisée
+      if (city) {
+        const c = city.toLowerCase()
+        mapped = mapped.filter((m: any) => m.address.toLowerCase().includes(c))
+      }
+      return mapped
     } catch (error) {
       console.warn('Erreur API geocode, utilisation des résultats mock:', error)
       return mockResults(query)
@@ -110,12 +128,14 @@ export default function AddressAutocomplete({
           const results = await searchAddresses(value)
           setSuggestions(results)
           setIsOpen(results.length > 0)
+          setSelectedIndex(results.length > 0 ? 0 : -1)
         } finally {
           setLoading(false)
         }
       } else {
         setSuggestions([])
         setIsOpen(false)
+        setSelectedIndex(-1)
       }
     }, 300)
 
@@ -148,9 +168,8 @@ export default function AddressAutocomplete({
         break
       case 'Enter':
         e.preventDefault()
-        if (selectedIndex >= 0 && suggestions[selectedIndex]) {
-          handleSelectAddress(suggestions[selectedIndex])
-        }
+        const idx = selectedIndex >= 0 ? selectedIndex : (suggestions.length > 0 ? 0 : -1)
+        if (idx >= 0 && suggestions[idx]) handleSelectAddress(suggestions[idx])
         break
       case 'Escape':
         setIsOpen(false)

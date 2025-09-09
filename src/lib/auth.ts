@@ -42,15 +42,9 @@ export const authOptions: NextAuthOptions = {
       return true
     },
     async redirect({ url, baseUrl }) {
-      // Si l'utilisateur vient de se connecter, rediriger vers le dashboard approprié
+      // Pour éviter les erreurs client-side, rediriger directement vers dashboard-escort
       if (url.includes('/api/auth/callback')) {
-        try {
-          // Essayer de déterminer le rôle de l'utilisateur
-          // On redirige vers un endpoint qui déterminera le bon dashboard
-          return `${baseUrl}/dashboard-redirect`
-        } catch {
-          return baseUrl
-        }
+        return `${baseUrl}/dashboard-escort`
       }
       
       // Pour les autres cas, utiliser l'URL fournie ou la base

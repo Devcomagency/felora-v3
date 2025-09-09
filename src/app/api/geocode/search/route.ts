@@ -15,6 +15,8 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
   const q = (searchParams.get('q') || '').trim()
   const limit = Math.min(parseInt(searchParams.get('limit') || '10', 10) || 10, 15)
+  const region = (searchParams.get('region') || '').trim() // canton name
+  const city = (searchParams.get('city') || '').trim()
 
   if (q.length < 2) {
     return NextResponse.json({ hits: [] })
@@ -24,7 +26,9 @@ export async function GET(req: Request) {
 
   try {
     if (provider === 'mapbox' && MAPBOX_TOKEN) {
-      const url = new URL(`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(q)}.json`)
+      // Biais simple: concaténer la région/ville à la requête
+      const query = [q, city || region].filter(Boolean).join(', ')
+      const url = new URL(`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json`)
       url.searchParams.set('country', 'ch')
       url.searchParams.set('limit', String(limit))
       url.searchParams.set('language', 'fr')
@@ -52,8 +56,11 @@ export async function GET(req: Request) {
     if (provider === 'google' && GOOGLE_KEY) {
       // Use Geocoding API with CH component filter
       const url = new URL('https://maps.googleapis.com/maps/api/geocode/json')
-      url.searchParams.set('address', q)
-      url.searchParams.set('components', 'country:CH')
+      const address = [q, city || region].filter(Boolean).join(', ')
+      url.searchParams.set('address', address)
+      const comps = ['country:CH']
+      if (region) comps.push(`administrative_area:${region}`)
+      url.searchParams.set('components', comps.join('|'))
       url.searchParams.set('language', 'fr')
       url.searchParams.set('key', GOOGLE_KEY)
 
@@ -82,7 +89,8 @@ export async function GET(req: Request) {
     url.searchParams.set('limit', String(limit))
     url.searchParams.set('countrycodes', 'ch')
     url.searchParams.set('accept-language', 'fr')
-    url.searchParams.set('q', q)
+    const nq = [q, city || region].filter(Boolean).join(', ')
+    url.searchParams.set('q', nq)
 
     const r = await fetch(url.toString(), {
       headers: {
@@ -117,4 +125,3 @@ export async function GET(req: Request) {
     return NextResponse.json({ hits: [], error: 'geocode_failed' }, { status: 500 })
   }
 }
-
