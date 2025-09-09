@@ -3,23 +3,67 @@
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
+import DashboardLayout from '../../../components/dashboard-v2/DashboardLayout'
 
 interface EscortProfile {
+  // Informations de base
   stageName: string
   age: number
   description: string
+  languages: string[]
+  
+  // Apparence physique
   height: number
   weight: number
-  ville: string
-  rue: string
-  codePostal: string
-  canton: string
-  hourlyRate: number
-  languages: string[]
   bodyType: string
   breastSize: string
   hairColor: string
-  services: string[]
+  hairLength: string
+  eyeColor: string
+  ethnicity: string
+  tattoos: boolean
+  piercings: boolean
+  breastType: 'naturelle' | 'siliconee'
+  pubicHair: 'naturel' | 'rase' | 'partiel'
+  smoker: boolean
+
+  // Services proposés
+  serviceType: string[]
+  specialties: string[]
+  outcall: boolean
+  incall: boolean
+
+  // Tarifs et disponibilités
+  prices: {
+    fifteenMin?: number
+    thirtyMin?: number
+    oneHour: number
+    twoHours?: number
+    overnight?: number
+  }
+  paymentMethods: string[]
+  availability: string[]
+
+  // Localisation
+  canton: string
+  ville: string
+  rue: string
+  codePostal: string
+  address: string
+  phoneVisibility: 'visible' | 'hidden' | 'none'
+  phone?: string
+
+  // Préférences
+  acceptsCouples: boolean
+  acceptsWomen: boolean
+  acceptsHandicapped: boolean
+  acceptsSeniors: boolean
+  gfe: boolean
+  pse: boolean
+  duoTrio: boolean
+
+  // Affichage des tarifs
+  showPrices: boolean
 }
 
 export default function EscortProfileNew() {
@@ -28,26 +72,68 @@ export default function EscortProfileNew() {
   
   // États simples
   const [profile, setProfile] = useState<EscortProfile>({
+    // Informations de base
     stageName: '',
     age: 18,
     description: '',
+    languages: [],
+    
+    // Apparence physique
     height: 165,
     weight: 55,
-    ville: '',
-    rue: '',
-    codePostal: '',
-    canton: '',
-    hourlyRate: 200,
-    languages: [],
     bodyType: '',
     breastSize: '',
     hairColor: '',
-    services: []
+    hairLength: '',
+    eyeColor: '',
+    ethnicity: '',
+    tattoos: false,
+    piercings: false,
+    breastType: 'naturelle',
+    pubicHair: 'naturel',
+    smoker: false,
+
+    // Services proposés
+    serviceType: [],
+    specialties: [],
+    outcall: true,
+    incall: true,
+
+    // Tarifs et disponibilités
+    prices: {
+      oneHour: 200,
+      twoHours: 350,
+      overnight: 800
+    },
+    paymentMethods: [],
+    availability: [],
+
+    // Localisation
+    canton: '',
+    ville: '',
+    rue: '',
+    codePostal: '',
+    address: '',
+    phoneVisibility: 'hidden',
+    phone: '',
+
+    // Préférences
+    acceptsCouples: false,
+    acceptsWomen: false,
+    acceptsHandicapped: false,
+    acceptsSeniors: false,
+    gfe: false,
+    pse: false,
+    duoTrio: false,
+
+    // Affichage des tarifs
+    showPrices: true
   })
   
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<{type: 'success' | 'error', text: string} | null>(null)
+  const [activeTab, setActiveTab] = useState<'basic' | 'physical' | 'services' | 'rates' | 'location' | 'preferences'>('basic')
 
   // Auth check
   useEffect(() => {
@@ -194,15 +280,41 @@ export default function EscortProfileNew() {
 
   const availableLanguages = ['Français', 'Anglais', 'Allemand', 'Italien', 'Espagnol']
   const availableServices = ['Escort', 'Massage', 'Compagnie', 'Dîner', 'Événements']
+  const availableBodyTypes = ['Mince', 'Sportive', 'Normale', 'Ronde', 'Pulpeuse']
+  const availableHairColors = ['Blonde', 'Brune', 'Rousse', 'Noire', 'Châtain']
+  const availableHairLengths = ['Court', 'Moyen', 'Long', 'Très long']
+  const availableEyeColors = ['Bleus', 'Verts', 'Marrons', 'Noisette', 'Gris']
+  const availableEthnicities = ['Européenne', 'Africaine', 'Asiatique', 'Latino', 'Métissée']
+  const availablePaymentMethods = ['Cash', 'Carte', 'TWINT', 'Crypto']
+  const availableAvailability = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche']
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-900 to-black">
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">Mon Profil Escort</h1>
-          <p className="text-gray-400">Gérez vos informations personnelles et professionnelles</p>
+    <DashboardLayout title="Mon Profil" subtitle="Gérez vos informations personnelles et professionnelles">
+      {/* Onglets de navigation */}
+      <div className="mb-6">
+        <div className="flex flex-wrap gap-2 p-1 bg-gray-800/40 rounded-xl border border-gray-700/50">
+          {[
+            { key: 'basic', label: 'Informations de base' },
+            { key: 'physical', label: 'Apparence physique' },
+            { key: 'services', label: 'Services proposés' },
+            { key: 'rates', label: 'Tarifs' },
+            { key: 'location', label: 'Localisation' },
+            { key: 'preferences', label: 'Préférences' }
+          ].map(tab => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key as any)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                activeTab === tab.key
+                  ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg'
+                  : 'text-gray-400 hover:text-gray-300 hover:bg-gray-700/30'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
+      </div>
 
         {/* Message de feedback */}
         {message && (
