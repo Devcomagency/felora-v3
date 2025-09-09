@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
+import { writeFile, mkdir } from 'fs/promises'
+import { join } from 'path'
+import { v4 as uuidv4 } from 'uuid'
 
 export async function POST(request: NextRequest) {
   console.log('🚀 API Upload - Début de la requête')
@@ -53,40 +56,50 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    console.log('💾 API Upload - Conversion en base64 (Vercel ne supporte pas le filesystem)')
+    // Créer le nom de fichier unique
+    const fileExtension = file.name.split('.').pop()
+    const fileName = `${uuidv4()}.${fileExtension}`
     
+    console.log('📁 API Upload - Nom de fichier généré:', fileName)
+    
+    // Sur Vercel, utiliser /tmp au lieu de public/uploads
+    const uploadDir = process.env.NODE_ENV === 'production' 
+      ? '/tmp' 
+      : join(process.cwd(), 'public', 'uploads', 'escorts')
+    
+    const filePath = join(uploadDir, fileName)
+    
+    console.log('📂 API Upload - Répertoire:', uploadDir)
+    console.log('📄 API Upload - Chemin complet:', filePath)
+
     try {
-      // Sur Vercel, on ne peut pas écrire de fichiers. On va stocker en base64 temporairement
+      // Créer le dossier s'il n'existe pas (seulement en dev)
+      if (process.env.NODE_ENV !== 'production') {
+        await mkdir(uploadDir, { recursive: true })
+      }
+      
+      // Convertir le fichier en buffer et l'écrire
       const bytes = await file.arrayBuffer()
       const buffer = Buffer.from(bytes)
-      const base64 = buffer.toString('base64')
-      const mimeType = file.type
+      await writeFile(filePath, buffer)
+
+      // Retourner l'URL publique
+      const publicUrl = process.env.NODE_ENV === 'production'
+        ? `/api/uploads/${fileName}` // API endpoint pour servir le fichier depuis /tmp
+        : `/uploads/escorts/${fileName}` // Fichier statique en dev
       
-      // Créer une data URL
-      const dataUrl = `data:${mimeType};base64,${base64}`
-      
-      console.log('✅ API Upload - Fichier converti en base64, taille:', base64.length, 'caractères')
-      
-      // TODO: Ici on devrait stocker l'image sur un service cloud (Cloudinary, AWS S3, etc.)
-      // Pour l'instant, on retourne la data URL directement
+      console.log('✅ API Upload - Succès! URL:', publicUrl)
       
       return NextResponse.json({
         success: true,
-        url: dataUrl, // Data URL temporaire
-        message: 'Photo uploadée avec succès (stockage temporaire)',
-        warning: 'Stockage temporaire - implémenter un service cloud pour la production'
-      }, {
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'POST',
-          'Access-Control-Allow-Headers': 'Content-Type'
-        }
+        url: publicUrl,
+        message: 'Photo uploadée avec succès'
       })
       
-    } catch (conversionError) {
-      console.error('💥 Erreur conversion base64:', conversionError)
+    } catch (fsError) {
+      console.error('💥 API Upload - Erreur écriture fichier:', fsError)
       return NextResponse.json(
-        { success: false, error: 'Erreur lors de la conversion de l\'image' },
+        { success: false, error: 'Erreur lors de la sauvegarde du fichier', details: (fsError as Error).message },
         { status: 500 }
       )
     }
