@@ -66,9 +66,33 @@ export async function POST(req: NextRequest) {
     const input = parsed.data
 
     // Ensure profile exists
-    const existing = await prisma.escortProfile.findUnique({ where: { userId }, select: { id: true } })
+    let existing = await prisma.escortProfile.findUnique({ where: { userId }, select: { id: true } })
     if (!existing) {
-      return NextResponse.json({ success: false, error: 'profile_not_found' }, { status: 200 })
+      // Créer un profil minimal si absent pour permettre la 1ère sauvegarde
+      const user = await prisma.user.findUnique({ where: { id: userId }, select: { name: true } })
+      const baseName = (user?.name?.split(' ')?.[0] || 'Escort').toString()
+      const today = new Date()
+      const dob = new Date(today.getFullYear() - 30, 0, 1) // âge par défaut ~30
+      const created = await prisma.escortProfile.create({
+        data: {
+          userId,
+          firstName: baseName,
+          stageName: baseName,
+          dateOfBirth: dob,
+          nationality: 'CH',
+          // Champs requis non nuls avec valeurs par défaut
+          languages: '',
+          city: '',
+          workingArea: '',
+          description: '',
+          services: '',
+          rates: '',
+          availability: '',
+          galleryPhotos: '[]',
+          videos: '[]',
+        }
+      })
+      existing = { id: created.id }
     }
 
     const data: any = {}
@@ -85,7 +109,7 @@ export async function POST(req: NextRequest) {
       }
     }
     if (typeof input.description === 'string') data.description = input.description
-    if (typeof input.city === 'string' && input.city.trim()) data.city = input.city.trim()
+    if (typeof input.city === 'string' && input.city.trim()) data.ville = input.city.trim()
     if (typeof input.canton === 'string' && input.canton.trim()) data.canton = input.canton.trim()
     if (input.coordinates && typeof input.coordinates.lat === 'number' && typeof input.coordinates.lng === 'number') {
       data.latitude = input.coordinates.lat
@@ -95,7 +119,7 @@ export async function POST(req: NextRequest) {
       data.latitude = input.latitude
       data.longitude = input.longitude
     }
-    // Optional: map address to workingArea for now
+    // Optional: workingArea (legacy)
     if (typeof input.address === 'string' && input.address.trim()) {
       data.workingArea = input.address.trim()
     }
