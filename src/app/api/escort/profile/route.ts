@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
+import { getServerSession } from 'next-auth/next'
+import { authOptions } from '../auth/[...nextauth]/route'
+import { PrismaClient } from '@prisma/client'
+
+const prisma = new PrismaClient()
 
 export async function GET(request: NextRequest) {
   try {
@@ -29,10 +31,51 @@ export async function GET(request: NextRequest) {
     })
 
     if (!escortProfile) {
-      return NextResponse.json(
-        { success: false, error: 'Profil escorte non trouvé' },
-        { status: 404 }
-      )
+      // Créer un profil vide s'il n'existe pas
+      try {
+        const newProfile = await prisma.escortProfile.create({
+          data: {
+            userId: session.user.id,
+            firstName: session.user.name || '',
+            stageName: '',
+            dateOfBirth: new Date('2000-01-01'), // Date par défaut
+            nationality: '',
+            languages: '',
+            city: '',
+            workingArea: '',
+            description: '',
+            services: '',
+            rates: '',
+            availability: '',
+            galleryPhotos: '',
+            videos: '',
+            status: 'PENDING'
+          },
+          include: {
+            user: {
+              select: {
+                email: true,
+                phone: true,
+                name: true
+              }
+            }
+          }
+        })
+        
+        console.log('✅ Nouveau profil créé pour l\'utilisateur:', session.user.id)
+        
+        return NextResponse.json({
+          success: true,
+          profile: newProfile
+        })
+        
+      } catch (createError) {
+        console.error('Erreur création profil:', createError)
+        return NextResponse.json(
+          { success: false, error: 'Erreur lors de la création du profil' },
+          { status: 500 }
+        )
+      }
     }
 
     console.log('📡 API GET PROFILE - Données envoyées:')
