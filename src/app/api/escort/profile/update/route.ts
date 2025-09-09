@@ -46,6 +46,18 @@ export async function POST(req: NextRequest) {
       piercings: z.string().optional(),
       // Agenda
       timeSlots: z.any().optional(),
+      // Contact
+      phone: z.string().optional(),
+      phoneVisibility: z.enum(['visible', 'hidden', 'none']).optional(),
+      // Préférences physiques
+      breastType: z.enum(['naturelle', 'siliconee']).optional(),
+      pubicHair: z.enum(['naturel', 'rase', 'partiel']).optional(),
+      smoker: z.boolean().optional(),
+      // Préférences clients
+      acceptsCouples: z.boolean().optional(),
+      acceptsWomen: z.boolean().optional(),
+      acceptsHandicapped: z.boolean().optional(),
+      acceptsSeniors: z.boolean().optional(),
     })
     const parsed = Schema.safeParse(body)
     if (!parsed.success) {
@@ -108,6 +120,18 @@ export async function POST(req: NextRequest) {
     if (typeof input.tattoos === 'string') data.tattoos = input.tattoos
     if (typeof input.piercings === 'string') data.piercings = input.piercings
     if (input.timeSlots !== undefined) data.timeSlots = typeof input.timeSlots === 'string' ? input.timeSlots : JSON.stringify(input.timeSlots)
+    // Contact
+    if (typeof input.phone === 'string') data.phone = input.phone
+    if (input.phoneVisibility) data.phoneVisibility = input.phoneVisibility
+    // Préférences physiques
+    if (input.breastType) data.breastType = input.breastType
+    if (input.pubicHair) data.pubicHair = input.pubicHair
+    if (typeof input.smoker === 'boolean') data.smoker = input.smoker
+    // Préférences clients
+    if (typeof input.acceptsCouples === 'boolean') data.acceptsCouples = input.acceptsCouples
+    if (typeof input.acceptsWomen === 'boolean') data.acceptsWomen = input.acceptsWomen
+    if (typeof input.acceptsHandicapped === 'boolean') data.acceptsHandicapped = input.acceptsHandicapped
+    if (typeof input.acceptsSeniors === 'boolean') data.acceptsSeniors = input.acceptsSeniors
 
     // Persist minimal update
     await prisma.escortProfile.update({ where: { userId }, data })

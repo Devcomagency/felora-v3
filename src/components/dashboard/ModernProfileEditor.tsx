@@ -60,6 +60,7 @@ interface ProfileData {
   acceptsCouples: boolean
   acceptsWomen: boolean
   acceptsHandicapped: boolean
+  acceptsSeniors: boolean
   gfe: boolean
   pse: boolean
   duoTrio: boolean
@@ -218,6 +219,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
     acceptsCouples: false,
     acceptsWomen: false,
     acceptsHandicapped: false,
+    acceptsSeniors: false,
     gfe: false,
     pse: false,
     duoTrio: false,
@@ -242,19 +244,33 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
           serviceType: (()=>{ try { const S = JSON.parse(String(p.services||'[]')); return Array.isArray(S)?S:[] } catch { return [] } })(),
           outcall: !!p.outcall,
           incall: !!p.incall,
-          prices: { oneHour: p.rate1H || undefined },
+          prices: { 
+            oneHour: p.rate1H || undefined,
+            twoHours: p.rate2H || undefined,
+            overnight: p.rateOvernight || undefined
+          },
           canton: p.canton || '',
           city: p.city || '',
           address: p.workingArea || '',
           coordinates: (typeof p.latitude === 'number' && typeof p.longitude === 'number') ? { lat: p.latitude, lng: p.longitude } : undefined,
+          phone: p.user?.phone || '',
+          phoneVisibility: p.phoneVisibility || 'hidden',
+          specialties: (()=>{ try { const S = JSON.parse(String(p.practices||'[]')); return Array.isArray(S)?S:[] } catch { return [] } })(),
           height: p.height || undefined,
           bodyType: p.bodyType || '',
           hairColor: p.hairColor || '',
           eyeColor: p.eyeColor || '',
           ethnicity: p.ethnicity || '',
           breastSize: p.bustSize || '',
+          breastType: p.breastType || undefined,
+          pubicHair: p.pubicHair || undefined,
+          smoker: typeof p.smoker === 'boolean' ? p.smoker : undefined,
           tattoos: p.tattoos ? p.tattoos === 'true' : false,
           piercings: p.piercings ? p.piercings === 'true' : false,
+          acceptsCouples: !!p.acceptsCouples,
+          acceptsWomen: !!p.acceptsWomen,
+          acceptsHandicapped: !!p.acceptsHandicapped,
+          acceptsSeniors: !!p.acceptsSeniors,
         }))
 
         // Parse agenda (timeSlots JSON)
@@ -521,6 +537,14 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
       if (profileData.breastSize !== undefined) payload.bustSize = profileData.breastSize
       if (profileData.tattoos !== undefined) payload.tattoos = String(profileData.tattoos)
       if (profileData.piercings !== undefined) payload.piercings = String(profileData.piercings)
+      if (profileData.phoneVisibility) payload.phoneVisibility = profileData.phoneVisibility
+      if (profileData.breastType) payload.breastType = profileData.breastType
+      if (profileData.pubicHair) payload.pubicHair = profileData.pubicHair  
+      if (typeof profileData.smoker === 'boolean') payload.smoker = profileData.smoker
+      if (typeof profileData.acceptsCouples === 'boolean') payload.acceptsCouples = profileData.acceptsCouples
+      if (typeof profileData.acceptsWomen === 'boolean') payload.acceptsWomen = profileData.acceptsWomen
+      if (typeof profileData.acceptsHandicapped === 'boolean') payload.acceptsHandicapped = profileData.acceptsHandicapped
+      if (typeof profileData.acceptsSeniors === 'boolean') payload.acceptsSeniors = profileData.acceptsSeniors
       payload.timeSlots = scheduleToJson()
       await doSave(payload, true)
     }, 700)
@@ -529,7 +553,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
   useEffect(() => {
     triggerAutoSave()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [profileData.description, profileData.city, profileData.canton, profileData.phone, profileData.incall, profileData.outcall, profileData.languages, profileData.serviceType, profileData.prices?.oneHour, profileData.prices?.twoHours, profileData.prices?.overnight, profileData.height, profileData.bodyType, profileData.hairColor, profileData.eyeColor, profileData.ethnicity, profileData.breastSize, profileData.tattoos, profileData.piercings, weekly, pauseEnabled, pauseStart, pauseEnd, absences])
+  }, [profileData.description, profileData.city, profileData.canton, profileData.phone, profileData.phoneVisibility, profileData.incall, profileData.outcall, profileData.languages, profileData.serviceType, profileData.specialties, profileData.prices?.oneHour, profileData.prices?.twoHours, profileData.prices?.overnight, profileData.height, profileData.bodyType, profileData.breastType, profileData.hairColor, profileData.eyeColor, profileData.ethnicity, profileData.breastSize, profileData.pubicHair, profileData.smoker, profileData.tattoos, profileData.piercings, profileData.acceptsCouples, profileData.acceptsWomen, profileData.acceptsHandicapped, profileData.acceptsSeniors, weekly, pauseEnabled, pauseStart, pauseEnd, absences])
 
   const manualSave = async () => {
     try {
@@ -561,6 +585,14 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
       if (profileData.prices?.oneHour !== undefined) payload.rate1H = profileData.prices.oneHour
       if (profileData.prices?.twoHours !== undefined) payload.rate2H = profileData.prices.twoHours
       if (profileData.prices?.overnight !== undefined) payload.rateOvernight = profileData.prices.overnight
+      if (profileData.phoneVisibility) payload.phoneVisibility = profileData.phoneVisibility
+      if (profileData.breastType) payload.breastType = profileData.breastType
+      if (profileData.pubicHair) payload.pubicHair = profileData.pubicHair
+      if (typeof profileData.smoker === 'boolean') payload.smoker = profileData.smoker
+      if (typeof profileData.acceptsCouples === 'boolean') payload.acceptsCouples = profileData.acceptsCouples
+      if (typeof profileData.acceptsWomen === 'boolean') payload.acceptsWomen = profileData.acceptsWomen
+      if (typeof profileData.acceptsHandicapped === 'boolean') payload.acceptsHandicapped = profileData.acceptsHandicapped
+      if (typeof profileData.acceptsSeniors === 'boolean') payload.acceptsSeniors = profileData.acceptsSeniors
       const ok = await doSave(payload, false)
       if (ok) {
         // actualiser le snapshot après sauvegarde
