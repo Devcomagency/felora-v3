@@ -8,7 +8,7 @@ import { z } from 'zod'
 // Body: subset of fields { description?, city?, canton?, coordinates?: { lat, lng }, address?, phone?, languages?, services?, rates? }
 export async function POST(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions as any)
+    const session = await getServerSession(authOptions)
     const userId = (session as any)?.user?.id as string | undefined
     if (!userId) return NextResponse.json({ success: false, error: 'unauthorized' }, { status: 401 })
 

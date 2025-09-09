@@ -9,7 +9,7 @@ import { checkProfileCompletion } from '@/lib/profile-validation'
 export async function GET() {
   try {
     initSentryServerOnce()
-    const session = await getServerSession(authOptions as any)
+    const session = await getServerSession(authOptions)
     const userId = (session as any)?.user?.id as string | undefined
     if (!userId) return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
 
@@ -47,7 +47,7 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   try {
     initSentryServerOnce()
-    const session = await getServerSession(authOptions as any)
+    const session = await getServerSession(authOptions)
     const userId = (session as any)?.user?.id as string | undefined
     if (!userId) return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
 
