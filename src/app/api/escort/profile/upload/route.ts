@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
-import { writeFile, mkdir } from 'fs/promises'
-import { join } from 'path'
-import { v4 as uuidv4 } from 'uuid'
 
 export async function POST(request: NextRequest) {
   console.log('🚀 API Upload - Début de la requête')
@@ -56,38 +53,28 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Créer le nom de fichier unique
-    const fileExtension = file.name.split('.').pop()
-    const fileName = `${uuidv4()}.${fileExtension}`
+    console.log('💾 API Upload - Conversion en base64 (Vercel ne supporte pas le filesystem)')
     
-    // Définir le dossier selon le type
-    let folder = 'escorts'
-    if (type === 'avatar') folder = 'escorts/avatars'
-    else if (type === 'public') folder = 'escorts/public'
-    else if (type === 'private') folder = 'escorts/private'
-
-    // Créer le chemin complet
-    const uploadDir = join(process.cwd(), 'public', 'uploads', folder)
-    const filePath = join(uploadDir, fileName)
-
     try {
-      // Créer le dossier s'il n'existe pas
-      await mkdir(uploadDir, { recursive: true })
-      
-      // Convertir le fichier en buffer et l'écrire
+      // Sur Vercel, on ne peut pas écrire de fichiers. On va stocker en base64 temporairement
       const bytes = await file.arrayBuffer()
       const buffer = Buffer.from(bytes)
-      await writeFile(filePath, buffer)
-
-      // Retourner l'URL publique
-      const publicUrl = `/uploads/${folder}/${fileName}`
+      const base64 = buffer.toString('base64')
+      const mimeType = file.type
       
-      console.log('✅ API Upload - Succès! URL:', publicUrl)
+      // Créer une data URL
+      const dataUrl = `data:${mimeType};base64,${base64}`
+      
+      console.log('✅ API Upload - Fichier converti en base64, taille:', base64.length, 'caractères')
+      
+      // TODO: Ici on devrait stocker l'image sur un service cloud (Cloudinary, AWS S3, etc.)
+      // Pour l'instant, on retourne la data URL directement
       
       return NextResponse.json({
         success: true,
-        url: publicUrl,
-        message: 'Photo uploadée avec succès'
+        url: dataUrl, // Data URL temporaire
+        message: 'Photo uploadée avec succès (stockage temporaire)',
+        warning: 'Stockage temporaire - implémenter un service cloud pour la production'
       }, {
         headers: {
           'Access-Control-Allow-Origin': '*',
@@ -96,10 +83,10 @@ export async function POST(request: NextRequest) {
         }
       })
       
-    } catch (fsError) {
-      console.error('Erreur écriture fichier:', fsError)
+    } catch (conversionError) {
+      console.error('💥 Erreur conversion base64:', conversionError)
       return NextResponse.json(
-        { success: false, error: 'Erreur lors de la sauvegarde du fichier' },
+        { success: false, error: 'Erreur lors de la conversion de l\'image' },
         { status: 500 }
       )
     }
