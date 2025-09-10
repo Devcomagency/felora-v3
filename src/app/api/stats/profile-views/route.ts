@@ -1,19 +1,45 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
+import { prisma } from '@/lib/prisma'
 
-export async function GET(req: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions as any)
-    const uid = (session as any)?.user?.id as string | undefined
-    if (!uid) return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
-    const { searchParams } = new URL(req.url)
-    const interval = searchParams.get('interval') || 'day'
-    const n = interval === 'month' ? 12 : interval === 'week' ? 12 : 14
-    const series = Array.from({ length: n }).map((_, i) => ({ t: Date.now() - (n-i)*86400000, v: Math.round(10 + Math.random()*90) }))
-    return NextResponse.json({ series, interval })
-  } catch (e:any) {
-    return NextResponse.json({ error: e?.message || 'server_error' }, { status: 500 })
+    const session = await getServerSession(authOptions)
+    
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { success: false, error: 'Non authentifié' },
+        { status: 401 }
+      )
+    }
+
+    const userId = session.user.id
+
+    // Générer des données simulées pour l'évolution des vues
+    const now = new Date()
+    const viewsData = []
+    
+    for (let i = 11; i >= 0; i--) {
+      const date = new Date(now)
+      date.setMonth(date.getMonth() - i)
+      
+      viewsData.push({
+        month: date.toLocaleDateString('fr-FR', { month: 'short' }),
+        views: Math.floor(Math.random() * 200) + 50
+      })
+    }
+
+    return NextResponse.json({
+      success: true,
+      viewsData
+    })
+
+  } catch (error) {
+    console.error('Erreur récupération profile views:', error)
+    return NextResponse.json(
+      { success: false, error: 'Erreur serveur' },
+      { status: 500 }
+    )
   }
 }
-

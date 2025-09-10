@@ -3,8 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "sqlite"
+  url      = "file:./dev.db"
 }
 
 model User {
@@ -245,19 +245,29 @@ model SalonProfile {
 }
 
 model ClubProfile {
-  id           String   @id @default(cuid())
-  userId       String   @unique
-  handle       String   @unique
-  name         String
-  description  String?
-  address      String?
-  openingHours String?
-  avatarUrl    String?
-  coverUrl     String?
-  isActive     Boolean  @default(false)
-  updatedAt    DateTime @updatedAt
-  createdAt    DateTime @default(now())
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  handle         String   @unique
+  name           String
+  description    String?
+  address        String?
+  city           String?
+  postalCode     String?
+  country        String?  @default("Suisse")
+  openingHours   String?
+  websiteUrl     String?
+  email          String?
+  phone          String?
+  capacity       Int?
+  languages      Json?    // Array of languages stored as JSON
+  paymentMethods Json?    // Array of payment methods stored as JSON
+  services       Json?    // Array of services stored as JSON
+  avatarUrl      String?
+  coverUrl       String?
+  isActive       Boolean  @default(false)
+  updatedAt      DateTime @updatedAt
+  createdAt      DateTime @default(now())
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("club_profiles")
 }

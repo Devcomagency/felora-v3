@@ -3,13 +3,10 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useSession } from 'next-auth/react'
 import { useSearchParams, useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Download, Wallet, CreditCard, Gift, MessageCircle, Home } from 'lucide-react'
 
 interface WalletTransaction {
   id: string
@@ -19,7 +16,7 @@ interface WalletTransaction {
   createdAt: string
 }
 
-function WalletTestContent() {
+function WalletContent() {
   const { data: session, status } = useSession()
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -121,7 +118,7 @@ function WalletTestContent() {
 
   const getTransactionColor = (type: string, amount: number) => {
     if (amount > 0) return 'text-green-400'
-    if (type === 'PURCHASE_GIFT') return 'text-felora-aurora'
+    if (type === 'PURCHASE_GIFT') return 'text-pink-400'
     return 'text-red-400'
   }
 
@@ -137,33 +134,33 @@ function WalletTestContent() {
 
   if (status === 'loading') {
     return (
-      <div className="min-h-screen bg-felora-void flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-felora-aurora"></div>
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
       </div>
     )
   }
 
   if (!session) {
     return (
-      <div className="min-h-screen bg-felora-void flex items-center justify-center">
-        <Card className="glass-card max-w-md mx-auto">
-          <CardContent className="pt-6 text-center">
-            <p className="text-felora-silver mb-4">Vous devez être connecté pour accéder au wallet</p>
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="max-w-md mx-auto p-6 bg-gray-900/50 backdrop-blur border border-gray-700/50 rounded-2xl">
+          <div className="text-center">
+            <p className="text-white/70 mb-4">Vous devez être connecté pour accéder au wallet</p>
             <Link href="/login">
-              <Button className="bg-gradient-to-r from-felora-aurora to-felora-plasma">
+              <button className="px-4 py-2 rounded-lg bg-gradient-to-r from-pink-500 to-purple-600 text-white">
                 Se connecter
-              </Button>
+              </button>
             </Link>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-felora-void">
+    <div className="min-h-screen bg-black">
       {/* Header avec gradient */}
-      <div className="bg-gradient-to-r from-felora-void via-felora-obsidian to-felora-void">
+      <div className="bg-gradient-to-r from-black via-gray-900 to-black">
         <div className="container mx-auto px-4 py-8">
           <div className="flex items-center justify-between mb-2">
             <button
@@ -172,13 +169,13 @@ function WalletTestContent() {
                 else if (typeof window !== 'undefined' && document.referrer) window.history.back()
                 else router.push('/marketplace-test/gifts')
               }}
-              className="inline-flex items-center gap-2 text-felora-silver/80 hover:text-felora-silver transition-colors"
+              className="inline-flex items-center gap-2 text-white/80 hover:text-white transition-colors"
             >
               <ArrowLeft size={18} />
               <span className="text-sm">Retour</span>
             </button>
             {need && (
-              <div className="text-felora-aurora text-xs">Montant suggéré: +{need} 💎</div>
+              <div className="text-purple-400 text-xs">Montant suggéré: +{need} 💎</div>
             )}
           </div>
           <motion.div
@@ -186,10 +183,10 @@ function WalletTestContent() {
             animate={{ opacity: 1, y: 0 }}
             className="text-center"
           >
-            <h1 className="text-4xl font-bold text-felora-silver mb-2">
+            <h1 className="text-4xl font-bold text-white mb-2">
               💎 Wallet Diamants
             </h1>
-            <p className="text-felora-silver/70">Gérez votre solde de diamants virtuels</p>
+            <p className="text-white/70">Gérez votre solde de diamants virtuels</p>
           </motion.div>
         </div>
       </div>
@@ -203,23 +200,21 @@ function WalletTestContent() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.1 }}
           >
-            <Card className="glass-card">
-              <CardHeader className="text-center">
-                <CardTitle className="text-felora-silver flex items-center justify-center space-x-2">
-                  <span>💎</span>
-                  <span>Solde actuel</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="text-center">
+            <div className="bg-gray-900/50 backdrop-blur border border-gray-700/50 rounded-2xl p-6">
+              <div className="text-center">
+                <div className="text-white flex items-center justify-center space-x-2 mb-4">
+                  <Wallet className="w-6 h-6" />
+                  <span className="text-lg font-semibold">Solde actuel</span>
+                </div>
                 {loadingBalance ? (
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-felora-aurora mx-auto"></div>
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500 mx-auto"></div>
                 ) : (
-                  <div className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-felora-aurora to-felora-plasma">
+                  <div className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-600">
                     {balance.toLocaleString()} diamants
                   </div>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </motion.div>
 
           {/* Actions rapides */}
@@ -229,104 +224,96 @@ function WalletTestContent() {
             transition={{ delay: 0.2 }}
             className="lg:col-span-2"
           >
-            <Card className="glass-card">
-              <CardHeader>
-                <CardTitle className="text-felora-silver">Actions rapides</CardTitle>
-                <CardDescription className="text-felora-silver/70">
+            <div className="bg-gray-900/50 backdrop-blur border border-gray-700/50 rounded-2xl p-6">
+              <div className="mb-4">
+                <h3 className="text-lg font-semibold text-white">Actions rapides</h3>
+                <p className="text-white/70 text-sm">
                   Acheter des diamants ou tester le système
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  
-                  {/* Packs de diamants */}
-                  <div className="space-y-3">
-                    <h3 className="text-felora-silver font-medium">Acheter des diamants</h3>
-                    <div className="space-y-2">
-                      <Button
-                        onClick={() => simulateFunding(100)}
-                        className="w-full bg-gradient-to-r from-felora-aurora to-felora-plasma text-sm"
-                        size="sm"
-                      >
-                        100 💎 - 5€
-                      </Button>
-                      <Button
-                        onClick={() => simulateFunding(500)}
-                        className="w-full bg-gradient-to-r from-felora-plasma to-felora-quantum text-sm"
-                        size="sm"
-                      >
-                        500 💎 - 20€
-                      </Button>
-                      <Button
-                        onClick={() => simulateFunding(1000)}
-                        className="w-full bg-gradient-to-r from-felora-quantum to-felora-neural text-sm"
-                        size="sm"
-                      >
-                        1000 💎 - 35€
-                      </Button>
-                    </div>
-                  </div>
-
-                  {/* Mode développement */}
-                  {process.env.NODE_ENV === 'development' && (
-                    <div className="space-y-3">
-                      <h3 className="text-felora-silver font-medium">Mode Dev</h3>
-                      <div className="space-y-2">
-                        <Button
-                          onClick={() => simulateFunding(100)}
-                          disabled={loading}
-                          variant="outline"
-                          className="w-full text-sm"
-                          size="sm"
-                        >
-                          +100 💎 (test)
-                        </Button>
-                        <Button
-                          onClick={() => simulateFunding(500)}
-                          disabled={loading}
-                          variant="outline"
-                          className="w-full text-sm"
-                          size="sm"
-                        >
-                          +500 💎 (test)
-                        </Button>
-                        <Button
-                          onClick={() => simulateFunding(1000)}
-                          disabled={loading}
-                          variant="outline"
-                          className="w-full text-sm"
-                          size="sm"
-                        >
-                          +1000 💎 (test)
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Navigation */}
-                  <div className="space-y-3">
-                    <h3 className="text-felora-silver font-medium">Navigation</h3>
-                    <div className="space-y-2">
-                      <Link href="/marketplace-test/gifts">
-                        <Button variant="outline" className="w-full text-sm" size="sm">
-                          🎁 Catalogue cadeaux
-                        </Button>
-                      </Link>
-                      <Link href="/messages">
-                        <Button variant="outline" className="w-full text-sm" size="sm">
-                          💬 Messagerie
-                        </Button>
-                      </Link>
-                      <Link href="/">
-                        <Button variant="outline" className="w-full text-sm" size="sm">
-                          🏠 Accueil
-                        </Button>
-                      </Link>
-                    </div>
+                </p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                
+                {/* Packs de diamants */}
+                <div className="space-y-3">
+                  <h3 className="text-white font-medium">Acheter des diamants</h3>
+                  <div className="space-y-2">
+                    <button
+                      onClick={() => simulateFunding(100)}
+                      className="w-full px-4 py-2 rounded-lg bg-gradient-to-r from-pink-500 to-purple-600 text-white text-sm hover:shadow-lg transition-shadow"
+                    >
+                      100 💎 - 5€
+                    </button>
+                    <button
+                      onClick={() => simulateFunding(500)}
+                      className="w-full px-4 py-2 rounded-lg bg-gradient-to-r from-purple-600 to-blue-600 text-white text-sm hover:shadow-lg transition-shadow"
+                    >
+                      500 💎 - 20€
+                    </button>
+                    <button
+                      onClick={() => simulateFunding(1000)}
+                      className="w-full px-4 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-cyan-600 text-white text-sm hover:shadow-lg transition-shadow"
+                    >
+                      1000 💎 - 35€
+                    </button>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+
+                {/* Mode développement */}
+                {process.env.NODE_ENV === 'development' && (
+                  <div className="space-y-3">
+                    <h3 className="text-white font-medium">Mode Dev</h3>
+                    <div className="space-y-2">
+                      <button
+                        onClick={() => simulateFunding(100)}
+                        disabled={loading}
+                        className="w-full px-4 py-2 rounded-lg border border-white/20 text-white text-sm hover:bg-white/10 disabled:opacity-50"
+                      >
+                        +100 💎 (test)
+                      </button>
+                      <button
+                        onClick={() => simulateFunding(500)}
+                        disabled={loading}
+                        className="w-full px-4 py-2 rounded-lg border border-white/20 text-white text-sm hover:bg-white/10 disabled:opacity-50"
+                      >
+                        +500 💎 (test)
+                      </button>
+                      <button
+                        onClick={() => simulateFunding(1000)}
+                        disabled={loading}
+                        className="w-full px-4 py-2 rounded-lg border border-white/20 text-white text-sm hover:bg-white/10 disabled:opacity-50"
+                      >
+                        +1000 💎 (test)
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Navigation */}
+                <div className="space-y-3">
+                  <h3 className="text-white font-medium">Navigation</h3>
+                  <div className="space-y-2">
+                    <Link href="/marketplace-test/gifts">
+                      <button className="w-full px-4 py-2 rounded-lg border border-white/20 text-white text-sm hover:bg-white/10 flex items-center gap-2">
+                        <Gift className="w-4 h-4" />
+                        Catalogue cadeaux
+                      </button>
+                    </Link>
+                    <Link href="/messages">
+                      <button className="w-full px-4 py-2 rounded-lg border border-white/20 text-white text-sm hover:bg-white/10 flex items-center gap-2">
+                        <MessageCircle className="w-4 h-4" />
+                        Messagerie
+                      </button>
+                    </Link>
+                    <Link href="/">
+                      <button className="w-full px-4 py-2 rounded-lg border border-white/20 text-white text-sm hover:bg-white/10 flex items-center gap-2">
+                        <Home className="w-4 h-4" />
+                        Accueil
+                      </button>
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </div>
           </motion.div>
         </div>
 
@@ -337,50 +324,48 @@ function WalletTestContent() {
           transition={{ delay: 0.3 }}
           className="mt-8"
         >
-          <Card className="glass-card">
-            <CardHeader>
-              <CardTitle className="text-felora-silver">Historique des transactions</CardTitle>
-              <CardDescription className="text-felora-silver/70">
+          <div className="bg-gray-900/50 backdrop-blur border border-gray-700/50 rounded-2xl p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-white">Historique des transactions</h3>
+              <p className="text-white/70 text-sm">
                 Dernières opérations sur votre wallet
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {loadingBalance ? (
-                <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-felora-aurora mx-auto"></div>
-                </div>
-              ) : transactions.length === 0 ? (
-                <div className="text-center py-8 text-felora-silver/50">
-                  Aucune transaction pour le moment
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {transactions.map((tx) => (
-                    <div key={tx.id} className="flex items-center justify-between p-4 rounded-lg bg-white/5 border border-white/10">
-                      <div className="flex items-center space-x-3">
-                        <Badge variant="outline" className="text-xs">
-                          {getTransactionLabel(tx.type)}
-                        </Badge>
-                        <div>
-                          <div className="text-felora-silver text-sm">
-                            {formatDate(tx.createdAt)}
-                          </div>
-                          {tx.meta?.giftCode && (
-                            <div className="text-felora-silver/70 text-xs">
-                              Cadeau: {tx.meta.giftCode}
-                            </div>
-                          )}
-                        </div>
+              </p>
+            </div>
+            {loadingBalance ? (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500 mx-auto"></div>
+              </div>
+            ) : transactions.length === 0 ? (
+              <div className="text-center py-8 text-white/50">
+                Aucune transaction pour le moment
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {transactions.map((tx) => (
+                  <div key={tx.id} className="flex items-center justify-between p-4 rounded-lg bg-white/5 border border-white/10">
+                    <div className="flex items-center space-x-3">
+                      <div className="px-2 py-1 rounded text-xs border border-white/20">
+                        {getTransactionLabel(tx.type)}
                       </div>
-                      <div className={`font-semibold ${getTransactionColor(tx.type, tx.amount)}`}>
-                        {tx.amount > 0 ? '+' : ''}{tx.amount} 💎
+                      <div>
+                        <div className="text-white text-sm">
+                          {formatDate(tx.createdAt)}
+                        </div>
+                        {tx.meta?.giftCode && (
+                          <div className="text-white/70 text-xs">
+                            Cadeau: {tx.meta.giftCode}
+                          </div>
+                        )}
                       </div>
                     </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                    <div className={`font-semibold ${getTransactionColor(tx.type, tx.amount)}`}>
+                      {tx.amount > 0 ? '+' : ''}{tx.amount} 💎
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </motion.div>
       </div>
     </div>
@@ -390,11 +375,11 @@ function WalletTestContent() {
 export default function WalletTestPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-felora-void flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-felora-aurora"></div>
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
       </div>
     }>
-      <WalletTestContent />
+      <WalletContent />
     </Suspense>
   )
 }

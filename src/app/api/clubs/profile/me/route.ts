@@ -15,10 +15,10 @@ export async function GET(request: NextRequest) {
     }
 
     // Récupérer le profil club
-    const club = await prisma.club.findUnique({
-      where: { ownerId: session.user.id },
+    const club = await prisma.clubProfile.findUnique({
+      where: { userId: session.user.id },
       include: {
-        owner: {
+        user: {
           select: {
             email: true,
             phone: true,

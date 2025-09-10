@@ -24,22 +24,22 @@ export async function POST(req: NextRequest) {
     const input = parsed.data
 
     // Vérifier que l'utilisateur a un club
-    const club = await prisma.club.findUnique({ where: { ownerId: userId } })
+    const club = await prisma.clubProfile.findUnique({ where: { userId } })
     
     if (!club) {
       return NextResponse.json({ ok: false, error: 'Club non trouvé' }, { status: 404 })
     }
 
-    // Construire les données à mettre à jour (stockage en CSV pour compatibilité)
+    // Construire les données à mettre à jour (stockage en JSON)
     const dataToUpdate: any = {}
-    if (input.languages) dataToUpdate.languages = input.languages.join(', ')
-    if (input.paymentMethods) dataToUpdate.paymentMethods = input.paymentMethods.join(', ')
-    if (input.services) dataToUpdate.services = input.services.join(', ')
+    if (input.languages) dataToUpdate.languages = input.languages
+    if (input.paymentMethods) dataToUpdate.paymentMethods = input.paymentMethods
+    if (input.services) dataToUpdate.services = input.services
 
     console.log('🏢 Club services update data:', JSON.stringify(dataToUpdate, null, 2))
     
     // Mettre à jour le club
-    await prisma.club.update({
+    await prisma.clubProfile.update({
       where: { id: club.id },
       data: dataToUpdate
     })

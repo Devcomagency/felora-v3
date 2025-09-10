@@ -15,8 +15,8 @@ export async function GET(request: NextRequest) {
     }
 
     // Récupérer les services du club
-    const club = await prisma.club.findUnique({
-      where: { ownerId: session.user.id },
+    const club = await prisma.clubProfile.findUnique({
+      where: { userId: session.user.id },
       select: {
         languages: true,
         paymentMethods: true,
@@ -31,15 +31,12 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Parser les CSV en arrays
-    const parseCSV = (csv: string | null) => csv ? csv.split(',').map(s => s.trim()).filter(Boolean) : []
-
     return NextResponse.json({
       success: true,
       services: {
-        languages: parseCSV(club.languages),
-        paymentMethods: parseCSV(club.paymentMethods),
-        services: parseCSV(club.services)
+        languages: Array.isArray(club.languages) ? club.languages : [],
+        paymentMethods: Array.isArray(club.paymentMethods) ? club.paymentMethods : [],
+        services: Array.isArray(club.services) ? club.services : []
       }
     })
 
