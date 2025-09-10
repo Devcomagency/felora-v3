@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
 import { escortPreSignupLite } from '@/components/signup-v2/validation'
 import { rateLimit, getClientIp } from '@/lib/rateLimit'
-import { sendEmail, emailTemplates } from '@/lib/email'
+import { sendEmailResend, emailTemplates } from '@/lib/resend'
 
 export async function POST(req: NextRequest) {
   try {
@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
     // Envoyer l'email de bienvenue à l'escorte
     try {
       const welcomeEmail = emailTemplates.welcome(handle || email.split('@')[0])
-      const emailResult = await sendEmail({
+      const emailResult = await sendEmailResend({
         to: email,
         subject: welcomeEmail.subject,
         html: welcomeEmail.html

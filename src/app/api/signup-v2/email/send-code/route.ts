@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import crypto from 'crypto'
-import { sendMail } from '@/lib/mail'
+import { sendEmailResend, emailTemplates } from '@/lib/resend'
 import { rateLimit, getClientIp } from '@/lib/rateLimit'
 
 export async function POST(req: NextRequest) {
@@ -28,17 +28,14 @@ export async function POST(req: NextRequest) {
       update: { codeHash, expiresAt, verifiedAt: null }
     })
 
-    const baseUrl = process.env.NEXTAUTH_URL || (req.headers.get('origin') || '') || 'http://localhost:3000'
-    const html = `
-      <div style="font-family:Inter,system-ui,sans-serif;font-size:14px;color:#111">
-        <p>Bonjour,</p>
-        <p>Votre code de vérification FELORA est :</p>
-        <p style="font-size:24px;font-weight:700;letter-spacing:2px">${code}</p>
-        <p style="color:#666">Ce code expire dans 10 minutes.</p>
-      </div>
-    `
-    const mailRes = await sendMail(safeEmail, 'Votre code de vérification', html)
-    if (!mailRes?.ok) {
+    // Utiliser le template Resend pour l'email de vérification
+    const emailTemplate = emailTemplates.verification(code)
+    const mailRes = await sendEmailResend({ 
+      to: safeEmail, 
+      subject: emailTemplate.subject, 
+      html: emailTemplate.html 
+    })
+    if (!mailRes?.success) {
       return NextResponse.json({ error: 'mail_failed' }, { status: 500 })
     }
 
