@@ -16,24 +16,58 @@ export async function GET(request: NextRequest) {
 
     const userId = session.user.id
 
-    // Générer des données simulées pour la répartition des revenus
+    // Récupérer la répartition réelle des revenus
+    const [privateOrders, mediaSales, gifts] = await Promise.all([
+      // Commandes privées
+      prisma.diamondTransaction.aggregate({
+        where: {
+          toUserId: userId,
+          status: 'COMPLETED',
+          type: 'TRANSFER'
+        },
+        _sum: { amount: true }
+      }),
+      
+      // Médias payants
+      prisma.diamondTransaction.aggregate({
+        where: {
+          toUserId: userId,
+          status: 'COMPLETED',
+          type: 'PURCHASE'
+        },
+        _sum: { amount: true }
+      }),
+      
+      // Cadeaux
+      prisma.diamondTransaction.aggregate({
+        where: {
+          toUserId: userId,
+          status: 'COMPLETED',
+          type: 'GIFT'
+        },
+        _sum: { amount: true }
+      })
+    ])
+
+    const totalRevenue = (privateOrders._sum.amount || 0) + (mediaSales._sum.amount || 0) + (gifts._sum.amount || 0)
+    
     const revenueBreakdown = [
       {
         source: 'Commandes privées',
-        amount: 2080,
-        percentage: 54,
+        amount: privateOrders._sum.amount || 0,
+        percentage: totalRevenue > 0 ? Math.round(((privateOrders._sum.amount || 0) / totalRevenue) * 100) : 0,
         color: '#8B5CF6'
       },
       {
         source: 'Médias payants',
-        amount: 1115,
-        percentage: 29,
+        amount: mediaSales._sum.amount || 0,
+        percentage: totalRevenue > 0 ? Math.round(((mediaSales._sum.amount || 0) / totalRevenue) * 100) : 0,
         color: '#06B6D4'
       },
       {
         source: 'Cadeaux',
-        amount: 652,
-        percentage: 17,
+        amount: gifts._sum.amount || 0,
+        percentage: totalRevenue > 0 ? Math.round(((gifts._sum.amount || 0) / totalRevenue) * 100) : 0,
         color: '#10B981'
       }
     ]

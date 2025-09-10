@@ -2,99 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { EscortStatus } from '@prisma/client'
 
-// Fonction pour générer des profils de démonstration
-function generateDemoProfiles(count: number) {
-  const feedPhotos = [
-    "https://picsum.photos/600/900?random=1",
-    "https://picsum.photos/600/900?random=2", 
-    "https://picsum.photos/600/900?random=3",
-    "https://picsum.photos/600/900?random=4",
-    "https://picsum.photos/600/900?random=5",
-    "https://picsum.photos/600/900?random=6",
-    "https://picsum.photos/600/900?random=7",
-    "https://picsum.photos/600/900?random=8",
-    "https://picsum.photos/600/900?random=9",
-    "https://picsum.photos/600/900?random=10"
-  ]
-  
-  const profilePhotos = [
-    "https://picsum.photos/300/300?random=11",
-    "https://picsum.photos/300/300?random=12", 
-    "https://picsum.photos/300/300?random=13",
-    "https://picsum.photos/300/300?random=14",
-    "https://picsum.photos/300/300?random=15",
-    "https://picsum.photos/300/300?random=16",
-    "https://picsum.photos/300/300?random=17",
-    "https://picsum.photos/300/300?random=18",
-    "https://picsum.photos/300/300?random=19",
-    "https://picsum.photos/300/300?random=20"
-  ]
-
-  const names = ["Sofia", "Isabella", "Emma", "Camila", "Victoria", "Natasha", "Valentina", "Aria", "Luna", "Zoe"]
-  const cities = ["Genève", "Lausanne", "Zurich", "Berne", "Bâle", "Lucerne", "Montreux", "Neuchâtel"]
-  const descriptions = [
-    "✨ Élégance et raffinement suisse 💎 Moments inoubliables garantis",
-    "🌟 Compagnie de luxe • Discrétion absolue • Expérience premium",
-    "💫 Sophistication naturelle • Disponible pour gentlemen exigeants",
-    "🌸 Beauté authentique • Service d'exception • Rencontres de qualité",
-    "✨ Charme irrésistible • Moments magiques • Standards les plus élevés"
-  ]
-
-  return Array.from({ length: count }, (_, index) => {
-    const photoIndex = index % feedPhotos.length
-    const nameIndex = index % names.length
-    const cityIndex = index % cities.length
-    const descIndex = index % descriptions.length
-    
-    // Ajouter quelques profils en pause pour tester (indices 2 et 6)
-    const isPaused = index === 2 || index === 6
-    
-    return {
-      id: `demo-${Date.now()}-${index}`,
-      name: names[nameIndex],
-      username: `@${names[nameIndex].toLowerCase()}`,
-      age: 22 + Math.floor(Math.random() * 8), // 22-30 ans
-      location: cities[cityIndex],
-      media: feedPhotos[photoIndex],
-      profileImage: profilePhotos[photoIndex],
-      image: profilePhotos[photoIndex],
-      mediaType: "image",
-      verified: true,
-      premium: true,
-      online: Math.random() > 0.4,
-      description: descriptions[descIndex],
-      likes: 150 + Math.floor(Math.random() * 500),
-      followers: 50 + Math.floor(Math.random() * 200),
-      following: Math.floor(Math.random() * 100),
-      isLiked: false,
-      isFollowing: false,
-      rating: 4.2 + Math.random() * 0.8,
-      reviews: 10 + Math.floor(Math.random() * 50),
-      price: 400 + Math.floor(Math.random() * 300),
-      height: 160 + Math.floor(Math.random() * 20),
-      bodyType: ["Mince", "Athlétique", "Courbes"][Math.floor(Math.random() * 3)],
-      breastSize: ["B", "C", "D"][Math.floor(Math.random() * 3)],
-      hairColor: ["Blonde", "Brune", "Châtain"][Math.floor(Math.random() * 3)],
-      eyeColor: ["Bleus", "Verts", "Marrons"][Math.floor(Math.random() * 3)],
-      outcall: true,
-      incall: true,
-      acceptCards: true,
-      languages: ["Français", "Anglais"],
-      practices: ["Massage", "Companionship", "Dinner Date"],
-      services: ["Massage", "Companionship", "Dinner Date"],
-      gallery: [
-        feedPhotos[photoIndex],
-        feedPhotos[(photoIndex + 1) % feedPhotos.length],
-        feedPhotos[(photoIndex + 2) % feedPhotos.length]
-      ],
-      status: isPaused ? ('PAUSED' as EscortStatus) : ('ACTIVE' as EscortStatus), // Statut pour tester les profils en pause
-      views: 100 + Math.floor(Math.random() * 500),
-      userId: `demo-user-${index}`,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    }
-  })
-}
 
 export async function GET(request: NextRequest) {
   try {
@@ -189,12 +96,12 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    // 2) Fallback demo if few results
-    const demoNeeded = transformedDb.length < limit
-    const demoProfiles = demoNeeded ? generateDemoProfiles(limit - transformedDb.length) : []
-    const escorts = [...transformedDb, ...demoProfiles]
-
-    return NextResponse.json({ success: true, escorts, total: escorts.length, hasMore: escorts.length >= limit })
+    return NextResponse.json({ 
+      success: true, 
+      escorts: transformedDb, 
+      total: transformedDb.length, 
+      hasMore: transformedDb.length >= limit 
+    })
   } catch (error) {
     console.error('Erreur récupération escorts:', error)
     return NextResponse.json({ success: false, error: 'Erreur serveur' }, { status: 500 })

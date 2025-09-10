@@ -16,17 +16,34 @@ export async function GET(request: NextRequest) {
 
     const userId = session.user.id
 
-    // Générer des données simulées pour les revenus mensuels
+    // Récupérer les revenus réels des 12 derniers mois
     const now = new Date()
     const monthlyRevenue = []
     
     for (let i = 11; i >= 0; i--) {
       const date = new Date(now)
       date.setMonth(date.getMonth() - i)
+      const startOfMonth = new Date(date.getFullYear(), date.getMonth(), 1)
+      const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0)
+      
+      // Compter les revenus de ce mois
+      const monthlyRevenueData = await prisma.diamondTransaction.aggregate({
+        where: {
+          toUserId: userId,
+          status: 'COMPLETED',
+          createdAt: {
+            gte: startOfMonth,
+            lte: endOfMonth
+          }
+        },
+        _sum: {
+          amount: true
+        }
+      })
       
       monthlyRevenue.push({
         month: date.toLocaleDateString('fr-FR', { month: 'short' }),
-        revenue: Math.floor(Math.random() * 3000) + 1000
+        revenue: monthlyRevenueData._sum.amount || 0
       })
     }
 
