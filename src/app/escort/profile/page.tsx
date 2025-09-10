@@ -69,6 +69,8 @@ interface EscortProfile {
   avatarUrl?: string
   publicPhotos: string[]
   privatePhotos: string[]
+  publicVideos: string[]
+  privateVideos: string[]
   
   // Statut et activation
   isActive: boolean
@@ -150,6 +152,8 @@ export default function EscortProfile() {
     avatarUrl: '',
     publicPhotos: [],
     privatePhotos: [],
+    publicVideos: [],
+    privateVideos: [],
     
     // Statut et activation
     isActive: false,
@@ -264,6 +268,8 @@ export default function EscortProfile() {
             avatarUrl: p.avatarUrl || '',
             publicPhotos: p.publicPhotos ? (Array.isArray(p.publicPhotos) ? p.publicPhotos : []) : [],
             privatePhotos: p.privatePhotos ? (Array.isArray(p.privatePhotos) ? p.privatePhotos : []) : [],
+            publicVideos: p.publicVideos ? (Array.isArray(p.publicVideos) ? p.publicVideos : []) : [],
+            privateVideos: p.privateVideos ? (Array.isArray(p.privateVideos) ? p.privateVideos : []) : [],
             
             // Statut et activation
             isActive: !!p.isActive,
@@ -420,6 +426,7 @@ export default function EscortProfile() {
 
       if (response.ok && result.success) {
         const imageUrl = result.url
+        console.log('✅ Upload réussi - URL reçue:', imageUrl)
 
         if (type === 'avatar') {
           setProfile(prev => ({ ...prev, avatarUrl: imageUrl }))
@@ -436,6 +443,15 @@ export default function EscortProfile() {
         }
 
         setMessage({ type: 'success', text: 'Photo uploadée avec succès!' })
+        
+        // Forcer un refresh du state pour la prévisualisation
+        console.log('🔄 Profil mis à jour avec nouvelle image')
+        
+        // Test de chargement de l'image
+        const img = new Image()
+        img.onload = () => console.log('✅ Image accessible:', imageUrl)
+        img.onerror = () => console.error('❌ Image non accessible:', imageUrl)
+        img.src = imageUrl
       } else {
         setMessage({ type: 'error', text: result.error || 'Erreur lors de l\'upload' })
       }
