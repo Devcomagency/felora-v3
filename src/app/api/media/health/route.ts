@@ -1,64 +1,93 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
+import { prisma } from '@/lib/prisma'
+import { mediaStorage } from '@/lib/storage'
 
-export const runtime = 'nodejs'
-export const dynamic = 'force-dynamic'
-
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const endpointRaw = process.env.CLOUDFLARE_R2_ENDPOINT || ''
-    const accountId = process.env.CLOUDFLARE_R2_ACCOUNT_ID || ''
-    const accessKey = process.env.CLOUDFLARE_R2_ACCESS_KEY || ''
-    const secretKey = process.env.CLOUDFLARE_R2_SECRET_KEY || ''
-    const bucket = process.env.CLOUDFLARE_R2_BUCKET || ''
-
-    // Normaliser endpoint comme dans storage.ts
-    let endpoint = endpointRaw
-    if (!endpoint && accountId) {
-      endpoint = `https://${accountId}.r2.cloudflarestorage.com`
-    }
-    if (endpoint && !endpoint.startsWith('https://')) {
-      endpoint = `https://${endpoint.replace(/^https?:\/\//, '')}`
-    }
-    endpoint = endpoint.replace(/\/$/, '')
-    if (endpoint.includes('/')) {
-      const u = new URL(endpoint)
-      endpoint = `${u.protocol}//${u.host}`
+    const session = await getServerSession(authOptions)
+    
+    if (!session?.user?.id) {
+      return NextResponse.json({
+        success: false,
+        error: 'Non authentifié'
+      }, { status: 401 })
     }
 
-    const cfg = {
-      endpointConfigured: !!endpoint,
-      accessKeyConfigured: !!accessKey,
-      secretKeyConfigured: !!secretKey,
-      bucketConfigured: !!bucket,
-      endpoint,
-    }
+    // Test de connexion à la base de données
+    const dbTest = await prisma.media.count()
 
-    if (!endpoint || !accessKey || !secretKey || !bucket) {
-      return NextResponse.json({ ok: false, stage: 'config', cfg })
-    }
+    // Test de stockage (simulation d'upload)
+    const testFile = new File(['test content'], 'test.txt', { type: 'text/plain' })
+    const storageTest = await mediaStorage.upload(testFile, 'health-test')
 
-    // Test TLS + auth via un PutObject de 1 octet
-    try {
-      const { S3Client, PutObjectCommand } = await import('@aws-sdk/client-s3')
-      const s3 = new S3Client({
-        region: 'auto',
-        endpoint,
-        credentials: { accessKeyId: accessKey, secretAccessKey: secretKey },
-        forcePathStyle: true,
-      })
-      const key = `healthcheck-${Date.now()}.txt`
-      await s3.send(new PutObjectCommand({
-        Bucket: bucket,
-        Key: key,
-        Body: Buffer.from('ok'),
-        ContentType: 'text/plain',
-      }))
-      return NextResponse.json({ ok: true, stage: 'put', cfg })
-    } catch (e: any) {
-      return NextResponse.json({ ok: false, stage: 'put', error: e?.message || String(e), cfg }, { status: 500 })
-    }
-  } catch (e: any) {
-    return NextResponse.json({ ok: false, stage: 'unexpected', error: e?.message || String(e) }, { status: 500 })
+    // Récupérer les statistiques des médias
+    const mediaStats = await prisma.media.groupBy({
+      by: ['type', 'visibility'],
+      _count: { _all: true }
+    })
+
+    // Récupérer les médias récents
+    const recentMedia = await prisma.media.findMany({
+      take: 5,
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        type: true,
+        url: true,
+        visibility: true,
+        isActive: true,
+        createdAt: true
+      }
+    })
+
+    return NextResponse.json({
+      success: true,
+      debug: {
+        database: {
+          connected: true,
+          mediaCount: dbTest,
+          stats: mediaStats
+        },
+        storage: {
+          provider: process.env.STORAGE_PROVIDER || 'base64',
+          testResult: {
+            success: storageTest.success,
+            url: storageTest.url?.substring(0, 50) + '...',
+            error: storageTest.error
+          }
+        },
+        recentMedia: recentMedia.map(m => ({
+          id: m.id,
+          type: m.type,
+          url: m.url?.substring(0, 50) + '...',
+          visibility: m.visibility,
+          isActive: m.isActive,
+          createdAt: m.createdAt
+        })),
+        environment: {
+          nodeEnv: process.env.NODE_ENV,
+          storageProvider: process.env.STORAGE_PROVIDER,
+          hasR2Config: !!(
+            process.env.CLOUDFLARE_R2_ENDPOINT &&
+            process.env.CLOUDFLARE_R2_ACCESS_KEY &&
+            process.env.CLOUDFLARE_R2_SECRET_KEY &&
+            process.env.CLOUDFLARE_R2_BUCKET
+          )
+        }
+      }
+    })
+
+  } catch (error) {
+    console.error('Erreur health check médias:', error)
+    return NextResponse.json({
+      success: false,
+      error: 'Erreur serveur',
+      debug: {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined
+      }
+    }, { status: 500 })
   }
 }
-

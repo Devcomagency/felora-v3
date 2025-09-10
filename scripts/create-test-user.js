@@ -18,9 +18,10 @@ async function createTestUser() {
         data: {
           email: 'test@felora.com',
           password: hashedPassword,
+          passwordHash: hashedPassword, // Ajouter les deux champs pour compatibilité
           name: 'Test User',
           phone: '+41791234567',
-          role: 'CLIENT'
+          role: 'ESCORT' // Changer en ESCORT pour accéder au dashboard
         }
       })
 

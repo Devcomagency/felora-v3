@@ -1,106 +1,178 @@
-import { NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth/next'
+import { NextRequest, NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
-export const runtime = 'nodejs'
-export const dynamic = 'force-dynamic'
-
-function splitCsv(v?: string | null): string[] | undefined {
-  if (!v) return undefined
+export async function GET(request: NextRequest) {
   try {
-    const s = String(v)
-    if (s.trim().startsWith('[')) {
-      const arr = JSON.parse(s)
-      return Array.isArray(arr) ? arr.map((x: any) => String(x).trim()).filter(Boolean) : undefined
+    const session = await getServerSession(authOptions)
+    
+    if (!session?.user?.id) {
+      return NextResponse.json({
+        success: false,
+        error: 'Non authentifié',
+        debug: {
+          hasSession: false,
+          sessionData: null
+        }
+      }, { status: 401 })
     }
-    return s.split(',').map(x => x.trim()).filter(Boolean)
-  } catch {
-    return undefined
-  }
-}
 
-export async function GET() {
-  try {
-    const session = await getServerSession(authOptions as any)
-    const userId = (session as any)?.user?.id as string | undefined
-    if (!userId) return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 })
-
-    const p = await prisma.escortProfile.findUnique({
-      where: { userId },
+    // Récupérer l'utilisateur complet
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
       select: {
         id: true,
-        stageName: true,
-        description: true,
-        canton: true,
-        // legacy
-        city: true,
-        workingArea: true,
-        // new fields
-        ville: true,
-        rue: true,
-        numero: true,
-        codePostal: true,
-        latitude: true,
-        longitude: true,
-        // lists
-        languages: true,
-        services: true,
-        practices: true,
-        // misc
-        phoneVisibility: true,
-        outcall: true,
-        incall: true,
-        rate1H: true,
-        dateOfBirth: true,
-        updatedAt: true,
+        email: true,
+        name: true,
+        role: true,
+        password: true,
+        passwordHash: true,
         createdAt: true,
+        updatedAt: true
       }
     })
 
-    if (!p) return NextResponse.json({ ok: false, error: 'profile_not_found' }, { status: 404 })
-
-    const normalized = {
-      id: p.id,
-      stageName: p.stageName,
-      description: p.description,
-      canton: p.canton,
-      // preferred + legacy
-      ville: p.ville || undefined,
-      city_legacy: p.city || undefined,
-      address: {
-        rue: p.rue || undefined,
-        numero: p.numero || undefined,
-        codePostal: p.codePostal || undefined,
-        workingArea_legacy: p.workingArea || undefined,
-        composed: [
-          [p.rue, p.numero].filter(Boolean).join(' ').trim(),
-          [p.codePostal, p.ville || p.city || ''].filter(Boolean).join(' ').trim(),
-        ].filter(Boolean).join(', '),
-      },
-      coords: (typeof p.latitude === 'number' && typeof p.longitude === 'number') ? { lat: p.latitude, lng: p.longitude } : undefined,
-      lists: {
-        languages_csv: p.languages,
-        languages: splitCsv(p.languages) || [],
-        services_csv: p.services,
-        services: splitCsv(p.services) || [],
-        practices_csv: p.practices || undefined,
-        practices: splitCsv(p.practices) || [],
-      },
-      flags: {
-        phoneVisibility: p.phoneVisibility || 'hidden',
-        outcall: !!p.outcall,
-        incall: !!p.incall,
-      },
-      rates: { oneHour: p.rate1H ?? undefined },
-      dateOfBirth: p.dateOfBirth ?? undefined,
-      updatedAt: p.updatedAt,
-      createdAt: p.createdAt,
+    if (!user) {
+      return NextResponse.json({
+        success: false,
+        error: 'Utilisateur non trouvé',
+        debug: {
+          userId: session.user.id,
+          userFound: false
+        }
+      }, { status: 404 })
     }
 
-    return NextResponse.json({ ok: true, profile: normalized })
-  } catch (e: any) {
-    return NextResponse.json({ ok: false, error: e?.message || 'server_error' }, { status: 500 })
+    // Récupérer le profil escort
+    const escortProfile = await prisma.escortProfile.findUnique({
+      where: { userId: session.user.id },
+      select: {
+        id: true,
+        stageName: true,
+        firstName: true,
+        city: true,
+        status: true,
+        isVerifiedBadge: true,
+        hasProfilePhoto: true,
+        profilePhoto: true,
+        createdAt: true,
+        updatedAt: true
+      }
+    })
+
+    // Récupérer le profil club
+    const clubProfile = await prisma.clubProfile.findUnique({
+      where: { userId: session.user.id },
+      select: {
+        id: true,
+        name: true,
+        handle: true,
+        city: true,
+        isActive: true,
+        createdAt: true,
+        updatedAt: true
+      }
+    })
+
+    // Récupérer le wallet
+    const wallet = await prisma.wallet.findUnique({
+      where: { userId: session.user.id },
+      select: {
+        id: true,
+        balance: true,
+        createdAt: true,
+        updatedAt: true
+      }
+    })
+
+    // Récupérer les médias
+    const media = await prisma.media.findMany({
+      where: {
+        ownerType: 'escort',
+        ownerId: session.user.id
+      },
+      select: {
+        id: true,
+        type: true,
+        url: true,
+        visibility: true,
+        isActive: true,
+        createdAt: true
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 5
+    })
+
+    return NextResponse.json({
+      success: true,
+      debug: {
+        session: {
+          userId: session.user.id,
+          email: session.user.email,
+          name: session.user.name,
+          role: session.user.role
+        },
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          role: user.role,
+          hasPassword: !!user.password,
+          hasPasswordHash: !!user.passwordHash,
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt
+        },
+        escortProfile: escortProfile ? {
+          id: escortProfile.id,
+          stageName: escortProfile.stageName,
+          firstName: escortProfile.firstName,
+          city: escortProfile.city,
+          status: escortProfile.status,
+          isVerifiedBadge: escortProfile.isVerifiedBadge,
+          hasProfilePhoto: escortProfile.hasProfilePhoto,
+          profilePhoto: escortProfile.profilePhoto,
+          createdAt: escortProfile.createdAt,
+          updatedAt: escortProfile.updatedAt
+        } : null,
+        clubProfile: clubProfile ? {
+          id: clubProfile.id,
+          name: clubProfile.name,
+          handle: clubProfile.handle,
+          city: clubProfile.city,
+          isActive: clubProfile.isActive,
+          createdAt: clubProfile.createdAt,
+          updatedAt: clubProfile.updatedAt
+        } : null,
+        wallet: wallet ? {
+          id: wallet.id,
+          balance: wallet.balance,
+          createdAt: wallet.createdAt,
+          updatedAt: wallet.updatedAt
+        } : null,
+        media: {
+          count: media.length,
+          items: media.map(m => ({
+            id: m.id,
+            type: m.type,
+            url: m.url?.substring(0, 50) + '...',
+            visibility: m.visibility,
+            isActive: m.isActive,
+            createdAt: m.createdAt
+          }))
+        }
+      }
+    })
+
+  } catch (error) {
+    console.error('Erreur health check:', error)
+    return NextResponse.json({
+      success: false,
+      error: 'Erreur serveur',
+      debug: {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined
+      }
+    }, { status: 500 })
   }
 }
-
