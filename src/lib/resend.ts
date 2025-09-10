@@ -25,9 +25,9 @@ export async function sendEmailResend({ to, subject, text, html }: EmailOptions)
   try {
     const resend = getResend()
     if (!resend) {
-      // Graceful fallback (do not crash during build/preview)
-      console.log('[RESEND:SKIP] API key missing — simulating send', { to, subject })
-      return { success: true, messageId: undefined, provider: 'resend' as const }
+      // Graceful behavior: no throw, but indicate failure so caller can fallback (SMTP/dev)
+      console.log('[RESEND:SKIP] API key missing — cannot send via Resend', { to, subject })
+      return { success: false, messageId: undefined, provider: 'resend' as const, error: 'missing_api_key' as any }
     }
 
     const { data, error } = await resend.emails.send({

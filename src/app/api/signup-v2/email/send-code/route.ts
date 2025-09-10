@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import crypto from 'crypto'
 import { sendEmailResend, emailTemplates } from '@/lib/resend'
+import { sendMail } from '@/lib/mail'
 import { rateLimit, getClientIp } from '@/lib/rateLimit'
 
 export async function POST(req: NextRequest) {
@@ -30,13 +31,17 @@ export async function POST(req: NextRequest) {
 
     // Utiliser le template Resend pour l'email de vérification
     const emailTemplate = emailTemplates.verification(code)
-    const mailRes = await sendEmailResend({ 
+    const resendRes = await sendEmailResend({ 
       to: safeEmail, 
       subject: emailTemplate.subject, 
       html: emailTemplate.html 
     })
-    if (!mailRes?.success) {
-      return NextResponse.json({ error: 'mail_failed' }, { status: 500 })
+    if (!resendRes?.success) {
+      // Fallback to SMTP/dev helper
+      const smtpRes = await sendMail(safeEmail, emailTemplate.subject, emailTemplate.html)
+      if (!smtpRes?.ok) {
+        return NextResponse.json({ error: 'mail_failed' }, { status: 500 })
+      }
     }
 
     const dev = process.env.NODE_ENV !== 'production'
