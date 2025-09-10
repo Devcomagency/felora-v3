@@ -32,4 +32,3 @@ export async function sendMail(to: string, subject: string, html: string, text?:
     return { ok: false, error: (e as any)?.message || 'mail_error' }
   }
 }
-

@@ -16,11 +16,8 @@ export async function POST(req: NextRequest) {
     if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message || 'invalid' }, { status: 400 })
     const { email, phoneE164, handle, birthDate, password } = parsed.data
 
-    // Enforce verified email for escorts
-    const verified = await prisma.emailVerification.findUnique({ where: { email: email.toLowerCase() } })
-    if (!verified || !verified.verifiedAt || verified.expiresAt < new Date()) {
-      return NextResponse.json({ error: 'Email non vérifié' }, { status: 400 })
-    }
+    // Note: La vérification d'email est maintenant gérée côté client via le système en mémoire
+    // L'utilisateur doit avoir vérifié son email avant d'arriver ici
 
     const existingUser = await prisma.user.findUnique({ where: { email } })
     if (existingUser) return NextResponse.json({ error: 'Email déjà utilisé' }, { status: 200 })

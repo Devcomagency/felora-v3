@@ -1,22 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import crypto from 'crypto'
-import { sendEmail } from '@/lib/email'
+import { sendMail } from '@/lib/mail'
 import { rateLimit, getClientIp } from '@/lib/rateLimit'
 
 export async function POST(req: NextRequest) {
   try {
-    // Rate limit per IP (simple)
+    // Rate limit per IP+email
     const ip = getClientIp(req)
-    const ipKey = `email-send-code:${ip}`
-    const rlIp = rateLimit(ipKey, 60_000, 5)
-    if (!rlIp.ok) return NextResponse.json({ error: 'rate_limited' }, { status: 429 })
-
-    // Rate limit per IP+email (stricter)
     const { email } = await req.json()
     const safeEmail = String(email || '').trim().toLowerCase()
-    const rlEmail = rateLimit(`sendcode:${ip}:${safeEmail}`, 60_000, 3)
-    if (!rlEmail.ok) {
+    const rl = rateLimit(`sendcode:${ip}:${safeEmail}`, 60_000, 3)
+    if (!rl.ok) {
       return NextResponse.json({ error: 'too_many_requests' }, { status: 429 })
     }
     if (!safeEmail || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(safeEmail)) {
@@ -37,17 +32,13 @@ export async function POST(req: NextRequest) {
     const html = `
       <div style="font-family:Inter,system-ui,sans-serif;font-size:14px;color:#111">
         <p>Bonjour,</p>
-        <p>Votre code de vérification FELORA est :</p>
+        <p>Votre code de vérification FELORA est :</p>
         <p style="font-size:24px;font-weight:700;letter-spacing:2px">${code}</p>
         <p style="color:#666">Ce code expire dans 10 minutes.</p>
       </div>
     `
-    const mailRes = await sendEmail({
-      to: safeEmail,
-      subject: 'Votre code de vérification FELORA',
-      html: html
-    })
-    if (!mailRes.success) {
+    const mailRes = await sendMail(safeEmail, 'Votre code de vérification', html)
+    if (!mailRes?.ok) {
       return NextResponse.json({ error: 'mail_failed' }, { status: 500 })
     }
 

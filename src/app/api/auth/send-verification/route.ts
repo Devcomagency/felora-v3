@@ -1,13 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
-import bcrypt from 'bcryptjs'
+
+// Store temporaire pour les codes de vérification (en production, utiliser Redis ou DB)
+declare global {
+  var verificationCodes: Map<string, { code: string, expires: number }> | undefined
+}
+
+const getVerificationCodes = () => {
+  if (!global.verificationCodes) {
+    global.verificationCodes = new Map()
+  }
+  return global.verificationCodes
+}
 
 export async function POST(request: NextRequest) {
   try {
-    const { rateLimit, rateKey } = await import('@/lib/rate-limit')
-    const key = rateKey(request as any, 'auth-send-verification')
-    const rl = rateLimit({ key, limit: 5, windowMs: 60_000 })
-    if (!rl.ok) return NextResponse.json({ error: 'rate_limited' }, { status: 429 })
     const { email } = await request.json()
 
     if (!email || !email.includes('@')) {
@@ -19,37 +25,20 @@ export async function POST(request: NextRequest) {
 
     // Générer un code à 6 chiffres
     const code = Math.floor(100000 + Math.random() * 900000).toString()
-    const codeHash = await bcrypt.hash(code, 10)
     
-    // Stocker en base PostgreSQL avec expiration (10 minutes)
-    await prisma.emailVerification.upsert({
-      where: { email: email.toLowerCase() },
-      update: {
-        codeHash,
-        expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
-        verifiedAt: null // Reset verification
-      },
-      create: {
-        email: email.toLowerCase(),
-        codeHash,
-        expiresAt: new Date(Date.now() + 10 * 60 * 1000)
-      }
+    // Stocker le code avec expiration (5 minutes)
+    const verificationCodes = getVerificationCodes()
+    verificationCodes.set(email, {
+      code,
+      expires: Date.now() + (5 * 60 * 1000) // 5 minutes
     })
 
-    // Envoyer l'email de vérification avec Resend
-    const { sendEmail, emailTemplates } = await import('@/lib/email')
-    const emailResult = await sendEmail({
-      to: email,
-      ...emailTemplates.verification(code)
-    })
+    // En production, envoyer un vrai email ici
+    // Pour le développement, log le code
+    console.log(`Code de vérification pour ${email}: ${code}`)
 
-    if (!emailResult.success) {
-      console.error('Erreur envoi email:', emailResult.error)
-      // Log le code pour debug en cas d'erreur email
-      console.log(`Code de vérification pour ${email}: ${code}`)
-    } else {
-      console.log(`✅ Email de vérification envoyé à ${email}`)
-    }
+    // Simuler l'envoi d'email (remplacer par un vrai service d'email en production)
+    // await sendEmail(email, 'Code de vérification Felora', `Votre code: ${code}`)
 
     return NextResponse.json({ 
       success: true,

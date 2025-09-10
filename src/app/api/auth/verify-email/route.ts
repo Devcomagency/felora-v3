@@ -1,6 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
-import bcrypt from 'bcryptjs'
+
+// Import du même store que dans send-verification
+// En production, utiliser une base de données partagée
+declare global {
+  var verificationCodes: Map<string, { code: string, expires: number }> | undefined
+}
+
+const getVerificationCodes = () => {
+  if (!global.verificationCodes) {
+    global.verificationCodes = new Map()
+  }
+  return global.verificationCodes
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,14 +24,16 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Récupérer les données de vérification depuis PostgreSQL
-    const verification = await prisma.emailVerification.findUnique({
-      where: { email: email.toLowerCase() }
-    })
+    const verificationCodes = getVerificationCodes()
+    const storedData = verificationCodes.get(email)
 
-    console.log(`Vérification pour ${email}: code reçu = ${code}`)
+    // Log de débogage
+    console.log(`Vérification pour ${email}:`)
+    console.log(`Code reçu: ${code}`)
+    console.log(`Données stockées:`, storedData)
+    console.log(`Tous les codes stockés:`, Array.from(verificationCodes.keys()))
 
-    if (!verification) {
+    if (!storedData) {
       return NextResponse.json(
         { error: 'Code non trouvé ou expiré' },
         { status: 400 }
@@ -28,30 +41,24 @@ export async function POST(request: NextRequest) {
     }
 
     // Vérifier expiration
-    if (verification.expiresAt < new Date()) {
-      await prisma.emailVerification.delete({
-        where: { email: email.toLowerCase() }
-      })
+    if (Date.now() > storedData.expires) {
+      verificationCodes.delete(email)
       return NextResponse.json(
         { error: 'Code expiré' },
         { status: 400 }
       )
     }
 
-    // Vérifier le code avec bcrypt
-    const isCodeValid = await bcrypt.compare(code, verification.codeHash)
-    if (!isCodeValid) {
+    // Vérifier le code
+    if (storedData.code !== code) {
       return NextResponse.json(
         { error: 'Code incorrect' },
         { status: 400 }
       )
     }
 
-    // Code valide - marquer comme vérifié
-    await prisma.emailVerification.update({
-      where: { email: email.toLowerCase() },
-      data: { verifiedAt: new Date() }
-    })
+    // Code valide - supprimer de la mémoire
+    verificationCodes.delete(email)
 
     return NextResponse.json({ 
       success: true,

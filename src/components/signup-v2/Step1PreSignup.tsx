@@ -115,11 +115,11 @@ export default function Step1PreSignup({ mode = 'ESCORT', onSubmit }:{ mode?:Mod
                   setError(null)
                   setInfo('')
                   try {
-                    const res = await fetch('/api/signup-v2/email/send-code', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ email: form.email }) })
+                    const res = await fetch('/api/auth/send-verification', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ email: form.email }) })
                     const d = await res.json()
                     if (!res.ok || !d?.success) throw new Error(d?.error || 'send_failed')
                     setEmailSent(true)
-                    if (d?.devCode) { setEmailCode(d.devCode); setDevHint(`Code dev: ${d.devCode}`) }
+                    if (d?.developmentCode) { setEmailCode(d.developmentCode); setDevHint(`Code dev: ${d.developmentCode}`) }
                     setInfo('Code envoyé. Consultez votre email et entrez le code ci-dessous.')
                     // Start 5s cooldown
                     setCooldownSec(5)
@@ -164,7 +164,7 @@ export default function Step1PreSignup({ mode = 'ESCORT', onSubmit }:{ mode?:Mod
                   onClick={async ()=>{
                     setError(null)
                     try {
-                      const res = await fetch('/api/signup-v2/email/verify-code', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ email: form.email, code: emailCode }) })
+                      const res = await fetch('/api/auth/verify-email', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ email: form.email, code: emailCode }) })
                       const d = await res.json()
                       if (!res.ok || !d?.success) throw new Error(d?.error || 'code_invalid')
                       update('emailVerified', true)
