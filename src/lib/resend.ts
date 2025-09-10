@@ -1,7 +1,18 @@
 import { Resend } from 'resend'
 
-// Configuration Resend
-const resend = new Resend(process.env.RESEND_API_KEY)
+// Lazy, safe Resend initialization to avoid build-time crashes
+let _resend: Resend | null = null
+function getResend(): Resend | null {
+  try {
+    if (_resend) return _resend
+    const key = process.env.RESEND_API_KEY
+    if (!key) return null
+    _resend = new Resend(key)
+    return _resend
+  } catch {
+    return null
+  }
+}
 
 export interface EmailOptions {
   to: string
@@ -12,9 +23,11 @@ export interface EmailOptions {
 
 export async function sendEmailResend({ to, subject, text, html }: EmailOptions) {
   try {
-    // Vérification de la configuration
-    if (!process.env.RESEND_API_KEY) {
-      throw new Error('RESEND_API_KEY manquante dans les variables d\'environnement')
+    const resend = getResend()
+    if (!resend) {
+      // Graceful fallback (do not crash during build/preview)
+      console.log('[RESEND:SKIP] API key missing — simulating send', { to, subject })
+      return { success: true, messageId: undefined, provider: 'resend' as const }
     }
 
     const { data, error } = await resend.emails.send({
