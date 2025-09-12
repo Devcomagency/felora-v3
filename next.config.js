@@ -41,37 +41,9 @@ const nextConfig = {
     ],
   },
 
-  // Server Actions: limite de taille pour uploads
-  experimental: {
-    serverActions: { bodySizeLimit: '10mb' },
-  },
-
-  // Webpack: WASM async + éviter les built-ins Node côté client
-  webpack: (config) => {
-    config.experiments = {
-      ...(config.experiments || {}),
-      asyncWebAssembly: true,
-      layers: true,
-    }
-    config.resolve = config.resolve || {}
-    config.resolve.fallback = {
-      ...(config.resolve.fallback || {}),
-      fs: false,
-      path: false,
-      os: false,
-      process: false,
-    }
-    
-    // Définir process.env côté client
-    const webpack = require('webpack')
-    config.plugins = config.plugins || []
-    config.plugins.push(
-      new webpack.DefinePlugin({
-        'process.env': JSON.stringify(process.env),
-      })
-    )
-    return config
-  },
+  // Désactive les expérimentations et la surcharge Webpack pour stabiliser le build prod
+  experimental: undefined,
+  webpack: undefined,
 
   // Redirects: Canonical route consolidation
   async redirects() { return [] },

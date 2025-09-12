@@ -1,5 +1,5 @@
 import { Suspense } from 'react'
-import HomeClient from './home-client'
+import ClientFeedPage from './client-page'
 
 // Types pour le feed (extraits de V2)
 interface MediaAuthor {
@@ -78,7 +78,7 @@ export default async function HomePage() {
 
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      <HomeClient initialItems={items} initialCursor={nextCursor} />
+      <ClientFeedPage initialItems={items} initialCursor={nextCursor} />
     </Suspense>
   )
 }

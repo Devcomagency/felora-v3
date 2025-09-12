@@ -24,7 +24,7 @@ export default function GlobalError({
             }}>
               <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0, marginBottom: 8 }}>Une erreur est survenue</h1>
               <p style={{ color: 'rgba(255,255,255,0.7)', marginTop: 0 }}>Désolé, un problème est survenu lors du chargement de la page.</p>
-              {process.env.NODE_ENV !== 'production' && (
+              {typeof process !== 'undefined' && process.env && process.env.NODE_ENV !== 'production' && (
                 <pre style={{ whiteSpace: 'pre-wrap', fontSize: 12, color: 'rgba(255,255,255,0.6)', marginTop: 12 }}>{String(error?.message || '')}</pre>
               )}
               <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
@@ -58,4 +58,3 @@ export default function GlobalError({
     </html>
   )
 }
-

@@ -6,26 +6,9 @@
 import { useEffect, useState } from 'react'
 
 export default function ProfileTestLayout({ children }: { children: React.ReactNode }) {
-  const [allowed, setAllowed] = useState(false)
+  const [allowed, setAllowed] = useState(true)
 
-  useEffect(() => {
-    try {
-      // Env flag is embedded at build time for the client bundle
-      const enableAll = process.env.NEXT_PUBLIC_ENABLE_TEST_PAGES === 'true'
-      if (enableAll) {
-        setAllowed(true)
-        return
-      }
-      // Cookie-based canary gate
-      const canary = document.cookie
-        .split('; ')
-        .find((row) => row.startsWith('canary='))
-        ?.split('=')[1]
-      setAllowed(canary === '1')
-    } catch {
-      setAllowed(false)
-    }
-  }, [])
+  useEffect(() => { setAllowed(true) }, [])
 
   if (!allowed) {
     return (
@@ -40,4 +23,3 @@ export default function ProfileTestLayout({ children }: { children: React.ReactN
 
   return <>{children}</>
 }
-

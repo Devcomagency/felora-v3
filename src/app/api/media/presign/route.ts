@@ -22,13 +22,7 @@ interface PresignRequest {
 
 export async function POST(request: NextRequest) {
   try {
-    // 🚩 Feature flag check
-    if (!isFeatureEnabled('FEATURE_UPLOAD')) {
-      return NextResponse.json({
-        error: 'Upload temporairement désactivé',
-        code: 'FEATURE_DISABLED'
-      }, { status: 503 })
-    }
+    // Feature flag bypass: upload activé par défaut en production
 
     // Rate limiting
     const { rateLimit, rateKey } = await import('@/lib/rate-limit')

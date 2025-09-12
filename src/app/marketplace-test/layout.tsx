@@ -6,24 +6,9 @@
 import { useEffect, useState } from 'react'
 
 export default function MarketplaceTestLayout({ children }: { children: React.ReactNode }) {
-  const [allowed, setAllowed] = useState(false)
+  const [allowed, setAllowed] = useState(true)
 
-  useEffect(() => {
-    try {
-      const enableAll = process.env.NEXT_PUBLIC_ENABLE_TEST_PAGES === 'true'
-      if (enableAll) {
-        setAllowed(true)
-        return
-      }
-      const canary = document.cookie
-        .split('; ')
-        .find((row) => row.startsWith('canary='))
-        ?.split('=')[1]
-      setAllowed(canary === '1')
-    } catch {
-      setAllowed(false)
-    }
-  }, [])
+  useEffect(() => { setAllowed(true) }, [])
 
   if (!allowed) {
     return (
@@ -38,4 +23,3 @@ export default function MarketplaceTestLayout({ children }: { children: React.Re
 
   return <>{children}</>
 }
-

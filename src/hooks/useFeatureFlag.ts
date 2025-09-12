@@ -1,57 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-
-/**
- * Hook pour gérer les feature flags
- * Supporte les variables d'environnement et les cookies canary
- */
-export function useFeatureFlag(flagName: string): boolean {
-  const [isEnabled, setIsEnabled] = useState(false)
-
-  useEffect(() => {
-    // Vérifier les variables d'environnement côté client
-    // Supporte deux conventions: 'FEATURE_X' et 'NEXT_PUBLIC_FEATURE_X'
-    const envKeysToTry = [flagName, `NEXT_PUBLIC_${flagName}`]
-    for (const k of envKeysToTry) {
-      const v = (process.env as any)?.[k]
-      if (v === 'true') {
-        setIsEnabled(true)
-        return
-      }
-    }
-
-    // Vérifier le cookie canary pour les tests
-    if (typeof window !== 'undefined') {
-      const canaryCookie = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('canary='))
-        ?.split('=')[1]
-      
-      if (canaryCookie === '1') {
-        setIsEnabled(true)
-        return
-      }
-    }
-
-    // Vérifier les cookies spécifiques au flag
-    if (typeof window !== 'undefined') {
-      const cookieName = flagName.toLowerCase()
-      const flagCookie = document.cookie
-        .split('; ')
-        .find(row => row.startsWith(`${cookieName}=`))
-        ?.split('=')[1]
-      
-      if (flagCookie === 'true') {
-        setIsEnabled(true)
-        return
-      }
-    }
-
-    setIsEnabled(false)
-  }, [flagName])
-
-  return isEnabled
+// Mode production simple: toutes les nouvelles UIs sont activées par défaut.
+// Ce hook retourne toujours true afin d'éviter toute dépendance aux cookies/env.
+// On rétablira un vrai pilotage par flags si besoin plus tard.
+export function useFeatureFlag(_flagName: string): boolean {
+  return true
 }
 
 /**
