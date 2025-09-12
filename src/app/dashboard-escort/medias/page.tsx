@@ -2,6 +2,7 @@
 
 import MediaManager from './MediaManager'
 import { useFeatureFlag } from '@/hooks/useFeatureFlag'
+import R2UploadClient from '@/components/upload/R2UploadClient'
 
 // Old medias page (V3 original)
 function OldMediasPage() {
@@ -40,6 +41,33 @@ function NewMediasPage() {
           Gérez vos photos et vidéos pour attirer plus de clients
         </p>
       </div>
+      
+      {/* Upload R2 (Canary) */}
+      <div className="mb-6">
+        <h3 
+          className="text-lg font-semibold mb-3"
+          style={{
+            background: 'linear-gradient(135deg, var(--felora-aurora) 0%, var(--felora-plasma) 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text'
+          }}
+        >
+          Upload R2 (Canary)
+        </h3>
+        <R2UploadClient
+          accept="image/*,video/*"
+          maxSize={50}
+          onUploadComplete={(url) => {
+            console.log('Upload R2 réussi:', url)
+            // Ici tu peux ajouter l'URL à la liste des médias
+          }}
+          onUploadError={(error) => {
+            console.error('Erreur upload R2:', error)
+          }}
+        />
+      </div>
+      
       <MediaManager />
     </div>
   )
