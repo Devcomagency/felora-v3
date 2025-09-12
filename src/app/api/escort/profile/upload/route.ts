@@ -18,6 +18,7 @@ function createR2Client() {
   return new S3Client({
     region: 'auto',
     endpoint: R2_ENDPOINT,
+    forcePathStyle: true,
     credentials: {
       accessKeyId: R2_ACCESS_KEY,
       secretAccessKey: R2_SECRET_KEY
@@ -31,10 +32,22 @@ export async function POST(request: NextRequest) {
   console.log('🔧 API Upload - Node version:', process.version)
   
   try {
+    // Test rapide avant authentification
+    console.log('🧪 API Upload - Test de base OK')
+    
     // Vérifier l'authentification
     console.log('🔐 API Upload - Vérification de l\'authentification...')
-    const session = await getServerSession(authOptions)
-    console.log('👤 API Upload - Session:', session ? `User ID: ${session.user?.id}` : 'Pas de session')
+    let session
+    try {
+      session = await getServerSession(authOptions)
+      console.log('👤 API Upload - Session obtenue:', session ? `User ID: ${session.user?.id}` : 'Pas de session')
+    } catch (authError) {
+      console.error('💥 API Upload - Erreur auth:', authError)
+      return NextResponse.json(
+        { success: false, error: 'Erreur d\'authentification', details: (authError as Error).message },
+        { status: 500 }
+      )
+    }
     
     if (!session?.user?.id) {
       console.log('❌ API Upload - Authentification échouée')
@@ -130,7 +143,7 @@ export async function POST(request: NextRequest) {
           console.log('☁️ API Upload - R2 upload réussi')
           
           // URL publique R2 via API proxy
-          const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3004'
+          const baseUrl = process.env.NEXT_PUBLIC_APP_URL || request.nextUrl.origin
           publicUrl = `${baseUrl}/api/uploads/${fileName}`
           
           console.log('✅ API Upload - Succès R2! URL:', publicUrl)
