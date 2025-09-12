@@ -101,18 +101,22 @@ const nextConfig = {
       // App domains
       'https://felora-v3.vercel.app',
       'https://felora.ch',
-      
+
       // Storage R2
       'https://*.r2.cloudflarestorage.com',
-      
+
       // Maps & Location Services
       'https://api.mapbox.com',
       'https://events.mapbox.com',
       'https://*.tiles.mapbox.com',
-      
+
       // Observability & Analytics
       'https://*.sentry.io',
       'https://vitals.vercel-analytics.com',
+
+      // Vercel Live (feedback / overlays)
+      'https://vercel.live',
+      'https://*.vercel.live',
       
       // Development only
       ...(isDev ? ['http://localhost:*', 'ws://localhost:*'] : [])
@@ -120,7 +124,7 @@ const nextConfig = {
     
     const csp = [
       "default-src 'self'",
-      `script-src 'self' ${isDev ? "'unsafe-inline' 'unsafe-eval'" : "'unsafe-inline'"} blob: https://api.mapbox.com https://*.sentry.io`,
+      `script-src 'self' ${isDev ? "'unsafe-inline' 'unsafe-eval'" : "'unsafe-inline'"} blob: https://api.mapbox.com https://*.sentry.io https://vercel.live https://*.vercel.live`,
       "style-src 'self' 'unsafe-inline' https://api.mapbox.com",
       `img-src 'self' data: blob: ${trustedDomains}`,
       `media-src 'self' blob: data: ${trustedDomains}`,
