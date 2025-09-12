@@ -2,6 +2,7 @@
 
 import dynamic from 'next/dynamic'
 import { Suspense } from 'react'
+import { useFeatureFlag } from '@/hooks/useFeatureFlag'
 
 // Import dynamique pour éviter les erreurs SSR avec MapLibre
 const MapTest = dynamic(() => import('@packages/ui/map-test/MapTest'), {
@@ -9,19 +10,40 @@ const MapTest = dynamic(() => import('@packages/ui/map-test/MapTest'), {
   loading: () => <MapSkeleton />
 })
 
+// Old map page (V3 original)
+function OldMapPage() {
+  return (
+    <div className="min-h-screen bg-black text-white flex items-center justify-center">
+      <div className="text-center">
+        <h1 className="text-2xl font-bold mb-4">Map (Version Originale)</h1>
+        <p className="text-gray-400">Cette page utilise l'ancienne interface V3</p>
+      </div>
+    </div>
+  )
+}
+
+// New map page (V2 design)
+function NewMapPage() {
+  return (
+    <Suspense fallback={<MapSkeleton />}>
+      <MapTest />
+    </Suspense>
+  )
+}
+
 function MapSkeleton() {
   return (
     <div 
       className="w-full h-screen flex items-center justify-center relative overflow-hidden"
       style={{
-        background: 'linear-gradient(135deg, #0D0D0D 0%, #1A1A1A 50%, #0D0D0D 100%)'
+        background: 'linear-gradient(135deg, var(--felora-void) 0%, var(--felora-void-50) 50%, var(--felora-void) 100%)'
       }}
     >
       {/* Background Pattern */}
       <div 
         className="absolute inset-0 opacity-20"
         style={{
-          background: 'linear-gradient(135deg, rgba(255, 107, 157, 0.1) 0%, rgba(183, 148, 246, 0.08) 50%, rgba(79, 209, 199, 0.06) 100%)'
+          background: 'linear-gradient(135deg, var(--felora-aurora-10) 0%, var(--felora-plasma-08) 50%, var(--felora-quantum-06) 100%)'
         }}
       />
       
@@ -30,14 +52,14 @@ function MapSkeleton() {
         <div 
           className="w-16 h-16 rounded-full mb-6 mx-auto animate-spin"
           style={{
-            background: 'linear-gradient(135deg, #FF6B9D 0%, #B794F6 50%, #4FD1C7 100%)',
+            background: 'linear-gradient(135deg, var(--felora-aurora) 0%, var(--felora-plasma) 50%, var(--felora-quantum) 100%)',
             mask: 'radial-gradient(circle at center, transparent 6px, black 8px)'
           }}
         />
         <h2 
           className="text-2xl font-bold mb-2"
           style={{
-            background: 'linear-gradient(135deg, #FF6B9D 0%, #B794F6 50%, #4FD1C7 100%)',
+            background: 'linear-gradient(135deg, var(--felora-aurora) 0%, var(--felora-plasma) 50%, var(--felora-quantum) 100%)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
             fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif'
@@ -45,7 +67,7 @@ function MapSkeleton() {
         >
           Chargement de la carte...
         </h2>
-        <p className="text-white/70">
+        <p className="text-sm" style={{ color: 'var(--felora-silver-70)' }}>
           Initialisation des données géographiques
         </p>
       </div>
@@ -54,28 +76,11 @@ function MapSkeleton() {
 }
 
 export default function MapPage() {
-  const hasToken = !!process.env.NEXT_PUBLIC_MAPBOX_TOKEN || !!process.env.NEXT_PUBLIC_GOOGLE_PLACES_KEY
-  if (!hasToken) {
-    return (
-      <div className="w-full h-screen flex items-center justify-center">
-        <div className="max-w-md text-center text-white/80 p-6 rounded-2xl border border-white/10 bg-white/5">
-          <h2 className="text-xl font-semibold mb-2">Configuration requise</h2>
-          <p className="text-sm mb-3">La carte nécessite un token Mapbox ou une clé Google Places.</p>
-          <pre className="text-xs bg-black/50 rounded p-3 text-left whitespace-pre-wrap">
-NEXT_PUBLIC_MAPBOX_TOKEN=…
-ou
-NEXT_PUBLIC_GOOGLE_PLACES_KEY=…
-          </pre>
-          <p className="text-xs mt-3">Ajoutez les variables dans <code>.env.local</code>, puis redémarrez le serveur.</p>
-        </div>
-      </div>
-    )
+  const isNewMapEnabled = useFeatureFlag('NEXT_PUBLIC_FEATURE_UI_MAP')
+  
+  if (isNewMapEnabled) {
+    return <NewMapPage />
   }
-  return (
-    <div className="w-full h-screen">
-      <Suspense fallback={<MapSkeleton />}>
-        <MapTest />
-      </Suspense>
-    </div>
-  )
+  
+  return <OldMapPage />
 }
