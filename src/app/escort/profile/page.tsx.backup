@@ -171,7 +171,7 @@ export default function EscortProfile() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<{type: 'success' | 'error', text: string} | null>(null)
-  const [activeTab, setActiveTab] = useState<'basic' | 'physical' | 'services' | 'rates' | 'location' | 'preferences' | 'media' | 'calendar' | 'stats'>('media')
+  const [activeTab, setActiveTab] = useState<'media' | 'basic' | 'physical' | 'clientele' | 'rates' | 'calendar'>('media')
   const [uploading, setUploading] = useState(false)
 
   // Auth check
@@ -553,7 +553,7 @@ export default function EscortProfile() {
             { key: 'media', label: 'Médias', subtitle: 'Photos et vidéos' },
             { key: 'basic', label: 'Informations de base', subtitle: 'Profil général' },
             { key: 'physical', label: 'Apparence physique', subtitle: 'Caractéristiques physiques' },
-            { key: 'services', label: 'Clientèle & Services', subtitle: 'Groupes + tags' },
+            { key: 'clientele', label: 'Clientèle & Services', subtitle: 'Groupes + tags' },
             { key: 'rates', label: 'Tarifs & Paiements', subtitle: 'Prix et horaires' },
             { key: 'calendar', label: 'Agenda', subtitle: 'Disponibilités & absences' }
           ].map(tab => (
@@ -855,8 +855,8 @@ export default function EscortProfile() {
           </div>
         )}
 
-        {/* Onglet: Clientèle & Services */}
-        {activeTab === 'services' && (
+        {/* Onglet: Clientèle & Services */}  
+        {activeTab === 'clientele' && (
           <div className="space-y-8">
             {/* Section Services */}
             <div className="bg-gray-800/40 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6">
@@ -923,7 +923,7 @@ export default function EscortProfile() {
             </div>
             </div>
 
-            {/* Section Préférences Clientèle (tirée de l'ancien onglet preferences) */}
+            {/* Section Préférences Clientèle */}
             <div className="bg-gray-800/40 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6">
               <h2 className="text-xl font-semibold text-white mb-4">Préférences clientèle</h2>
               
@@ -1106,9 +1106,11 @@ export default function EscortProfile() {
             </div>
             </div>
 
-            {/* Section Localisation & Horaires (intégrée dans Tarifs) */}
+            {/* Section Localisation */}
             <div className="bg-gray-800/40 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6">
               <h2 className="text-xl font-semibold text-white mb-4">Localisation & Horaires</h2>
+          <div className="bg-gray-800/40 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6">
+            <h2 className="text-xl font-semibold text-white mb-4">Localisation</h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -1211,12 +1213,11 @@ export default function EscortProfile() {
                 ))}
               </div>
             </div>
-            </div>
           </div>
         )}
 
-        {/* ANCIEN ONGLET SUPPRIMÉ: Préférences (maintenant dans Services) */}
-        {false && activeTab === 'preferences' && (
+        {/* Onglet: Préférences */}
+        {activeTab === 'preferences' && (
           <div className="bg-gray-800/40 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6">
             <h2 className="text-xl font-semibold text-white mb-4">Préférences clientèle</h2>
             
@@ -1295,11 +1296,6 @@ export default function EscortProfile() {
               </label>
             </div>
           </div>
-        )}
-
-        {/* ANCIEN ONGLET SUPPRIMÉ: Localisation (maintenant dans Tarifs) */}
-        {false && activeTab === 'location' && (
-          <div>Ancien onglet localisation</div>
         )}
 
         {/* Onglet: Médias */}
@@ -1534,8 +1530,8 @@ export default function EscortProfile() {
           </div>
         )}
 
-        {/* ANCIEN ONGLET SUPPRIMÉ: Statistiques */}
-        {false && activeTab === 'stats' && (
+        {/* Onglet: Statistiques */}
+        {activeTab === 'stats' && (
           <div className="space-y-6">
             {/* Cartes de statistiques */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
