@@ -2,10 +2,24 @@
 
 import React, { useState, useEffect } from 'react'
 import { Comment, CommentStats, AdminAction, BLOCK_DURATIONS } from '@/types/comments'
+import { useFeatureFlag } from '@/hooks/useFeatureFlag'
 
 interface AdminCommentsPageProps {}
 
-export default function AdminCommentsPage({}: AdminCommentsPageProps) {
+// Old admin comments page (V3 original)
+function OldAdminCommentsPage() {
+  return (
+    <div className="min-h-screen bg-black text-white flex items-center justify-center">
+      <div className="text-center">
+        <h1 className="text-2xl font-bold mb-4">Admin Comments (Version Originale)</h1>
+        <p className="text-gray-400">Cette page utilise l'ancienne interface V3</p>
+      </div>
+    </div>
+  )
+}
+
+// New admin comments page (V2 design)
+function NewAdminCommentsPage() {
   const [comments, setComments] = useState<Comment[]>([])
   const [stats, setStats] = useState<CommentStats | null>(null)
   const [loading, setLoading] = useState(true)
@@ -110,13 +124,31 @@ export default function AdminCommentsPage({}: AdminCommentsPageProps) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black">
-      {/* Header */}
-      <div className="border-b border-gray-700 bg-black/50 backdrop-blur-sm">
+      {/* Header avec style V2 */}
+      <div 
+        className="border-b backdrop-blur-sm"
+        style={{
+          background: 'rgba(0, 0, 0, 0.7)',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
+        }}
+      >
         <div className="px-6 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-white">Gestion des Commentaires</h1>
-              <p className="text-gray-400 mt-1">Interface d'administration Felora</p>
+              <h1 
+                className="text-2xl font-bold"
+                style={{
+                  background: 'linear-gradient(135deg, var(--felora-aurora) 0%, var(--felora-plasma) 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text'
+                }}
+              >
+                Gestion des Commentaires
+              </h1>
+              <p className="text-sm mt-1" style={{ color: 'var(--felora-silver-70)' }}>
+                Interface d'administration Felora
+              </p>
             </div>
             
             {/* Stats en temps réel */}
@@ -500,4 +532,14 @@ function AdminCommentCard({
       )}
     </div>
   )
+}
+
+export default function AdminCommentsPage({}: AdminCommentsPageProps) {
+  const isNewAdminCommentsEnabled = useFeatureFlag('NEXT_PUBLIC_FEATURE_UI_ADMIN_COMMENTS')
+  
+  if (isNewAdminCommentsEnabled) {
+    return <NewAdminCommentsPage />
+  }
+  
+  return <OldAdminCommentsPage />
 }
