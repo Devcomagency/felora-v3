@@ -233,7 +233,7 @@ export default function ClubProfileTestPage() {
   }, [resolvedId])
 
   // Vue en temps réel (même système que page escorte)
-  const { stats: viewStats } = useProfileViewTracker(resolvedId, true)
+  try { useProfileViewTracker({ profileId: resolvedId, profileType: 'club', enabled: true }) } catch {}
 
   // Fetch escorts linked to this club (demo endpoint). Optional section.
   useEffect(() => {

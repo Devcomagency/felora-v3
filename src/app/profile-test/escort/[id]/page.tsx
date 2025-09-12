@@ -330,7 +330,7 @@ export default function EscortProfileTestPage() {
   const [lastReceivedGift, setLastReceivedGift] = useState<any>(null)
   
   // Tracking des vues de profil
-  const { stats: viewStats } = useProfileViewTracker(resolvedId, true)
+  try { useProfileViewTracker({ profileId: resolvedId, profileType: 'escort', enabled: true }) } catch {}
   // Permissions utilisateur (simulation)
   const [userPermissions] = useState({
     isAdmin: false, // Serait récupéré depuis l'auth en vrai
