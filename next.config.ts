@@ -89,7 +89,7 @@ const nextConfig: NextConfig = {
     const isDev = process.env.NODE_ENV !== 'production'
     const csp = [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://api.mapbox.com https://*.sentry.io https://vercel.live https://*.vercel.live",
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob: https:",
       "connect-src 'self' https: http: ws: wss:",
