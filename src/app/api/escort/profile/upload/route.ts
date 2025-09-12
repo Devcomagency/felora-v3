@@ -10,44 +10,24 @@ const R2_ACCESS_KEY = process.env.CLOUDFLARE_R2_ACCESS_KEY
 const R2_SECRET_KEY = process.env.CLOUDFLARE_R2_SECRET_KEY
 const R2_BUCKET = process.env.CLOUDFLARE_R2_BUCKET
 
-// Fonction pour créer le client R2 seulement si nécessaire
-function createR2Client() {
-  if (!R2_ENDPOINT || !R2_ACCESS_KEY || !R2_SECRET_KEY) {
-    throw new Error('Configuration R2 incomplète')
+// Initialisation du client R2
+const r2Client = new S3Client({
+  region: 'auto',
+  endpoint: R2_ENDPOINT,
+  credentials: {
+    accessKeyId: R2_ACCESS_KEY || '',
+    secretAccessKey: R2_SECRET_KEY || ''
   }
-  return new S3Client({
-    region: 'auto',
-    endpoint: R2_ENDPOINT,
-    forcePathStyle: true,
-    credentials: {
-      accessKeyId: R2_ACCESS_KEY,
-      secretAccessKey: R2_SECRET_KEY
-    }
-  })
-}
+})
 
 export async function POST(request: NextRequest) {
   console.log('🚀 API Upload - Début de la requête')
-  console.log('🔧 API Upload - Runtime:', process.env.VERCEL_ENV || 'local')
-  console.log('🔧 API Upload - Node version:', process.version)
   
   try {
-    // Test rapide avant authentification
-    console.log('🧪 API Upload - Test de base OK')
-    
     // Vérifier l'authentification
     console.log('🔐 API Upload - Vérification de l\'authentification...')
-    let session
-    try {
-      session = await getServerSession(authOptions)
-      console.log('👤 API Upload - Session obtenue:', session ? `User ID: ${session.user?.id}` : 'Pas de session')
-    } catch (authError) {
-      console.error('💥 API Upload - Erreur auth:', authError)
-      return NextResponse.json(
-        { success: false, error: 'Erreur d\'authentification', details: (authError as Error).message },
-        { status: 500 }
-      )
-    }
+    const session = await getServerSession(authOptions)
+    console.log('👤 API Upload - Session:', session ? `User ID: ${session.user?.id}` : 'Pas de session')
     
     if (!session?.user?.id) {
       console.log('❌ API Upload - Authentification échouée')
@@ -91,14 +71,14 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Vérifier la configuration R2 - si manquante, utiliser stockage local
-    const useR2 = R2_ENDPOINT && R2_ACCESS_KEY && R2_SECRET_KEY && R2_BUCKET
-    console.log('🔧 API Upload - Variables R2:')
-    console.log('  - R2_ENDPOINT:', R2_ENDPOINT ? 'présent' : 'manquant')
-    console.log('  - R2_ACCESS_KEY:', R2_ACCESS_KEY ? 'présent' : 'manquant') 
-    console.log('  - R2_SECRET_KEY:', R2_SECRET_KEY ? 'présent' : 'manquant')
-    console.log('  - R2_BUCKET:', R2_BUCKET ? 'présent' : 'manquant')
-    console.log('🔧 API Upload - Mode stockage:', useR2 ? 'Cloudflare R2' : 'Base64 (fallback)')
+    // Vérifier la configuration R2
+    if (!R2_ENDPOINT || !R2_ACCESS_KEY || !R2_SECRET_KEY || !R2_BUCKET) {
+      console.error('❌ API Upload - Configuration R2 manquante')
+      return NextResponse.json(
+        { success: false, error: 'Configuration de stockage manquante' },
+        { status: 500 }
+      )
+    }
 
     // Créer le nom de fichier unique
     const fileExtension = file.name.split('.').pop()
@@ -107,84 +87,47 @@ export async function POST(request: NextRequest) {
     console.log('📁 API Upload - Nom de fichier généré:', fileName)
 
     try {
-      console.log('🔄 API Upload - Conversion du fichier...')
-      
       // Convertir le fichier en buffer
       const bytes = await file.arrayBuffer()
-      console.log('📦 API Upload - ArrayBuffer créé, taille:', bytes.byteLength)
-      
       const buffer = Buffer.from(bytes)
-      console.log('📦 API Upload - Buffer créé, taille:', buffer.length)
       
-      let publicUrl: string
+      console.log('☁️ API Upload - Upload vers Cloudflare R2...')
       
-      if (useR2) {
-        console.log('☁️ API Upload - Upload vers Cloudflare R2...')
-        
-        try {
-          // Créer le client R2 dynamiquement
-          const r2Client = createR2Client()
-          
-          // Upload vers Cloudflare R2
-          const uploadCommand = new PutObjectCommand({
-            Bucket: R2_BUCKET,
-            Key: fileName,
-            Body: buffer,
-            ContentType: file.type,
-            ContentLength: buffer.length,
-            Metadata: {
-              originalName: file.name,
-              userId: session.user.id,
-              uploadedAt: new Date().toISOString()
-            }
-          })
-          
-          await r2Client.send(uploadCommand)
-          console.log('☁️ API Upload - R2 upload réussi')
-          
-          // URL publique R2 via API proxy
-          const baseUrl = process.env.NEXT_PUBLIC_APP_URL || request.nextUrl.origin
-          publicUrl = `${baseUrl}/api/uploads/${fileName}`
-          
-          console.log('✅ API Upload - Succès R2! URL:', publicUrl)
-          
-        } catch (r2Error) {
-          console.error('💥 API Upload - Erreur R2 spécifique:', r2Error)
-          throw r2Error
+      // Upload vers Cloudflare R2
+      const uploadCommand = new PutObjectCommand({
+        Bucket: R2_BUCKET,
+        Key: fileName,
+        Body: buffer,
+        ContentType: file.type,
+        ContentLength: buffer.length,
+        Metadata: {
+          originalName: file.name,
+          userId: session.user.id,
+          uploadedAt: new Date().toISOString()
         }
-        
-      } else {
-        console.log('💾 API Upload - Fallback: stockage temporaire en base64...')
-        
-        // En attendant la config R2, utiliser un stockage temporaire
-        // Convertir en base64 pour stockage temporaire
-        const base64Data = buffer.toString('base64')
-        const dataUrl = `data:${file.type};base64,${base64Data}`
-        
-        // Pour le développement/test, retourner directement la data URL
-        publicUrl = dataUrl
-        
-        console.log('✅ API Upload - Succès temporaire! Taille:', buffer.length)
-      }
+      })
+      
+      await r2Client.send(uploadCommand)
+      
+      // Construire l'URL publique 
+      // En production: utilise un domaine R2 personnalisé si disponible, sinon API proxy
+      // En développement: utilise l'API proxy locale
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || request.nextUrl.origin
+      const publicUrl = `${baseUrl}/api/uploads/${fileName}`
+      
+      console.log('✅ API Upload - Succès R2! URL:', publicUrl)
       
       return NextResponse.json({
         success: true,
         url: publicUrl,
         fileName,
-        message: `Photo uploadée avec succès${useR2 ? ' vers R2' : ' (local)'}`
+        message: 'Photo uploadée avec succès vers R2'
       })
       
-    } catch (uploadError) {
-      console.error('💥 API Upload - Erreur upload:', uploadError)
-      console.error('💥 API Upload - Stack:', (uploadError as Error).stack)
+    } catch (r2Error) {
+      console.error('💥 API Upload - Erreur R2:', r2Error)
       return NextResponse.json(
-        { 
-          success: false, 
-          error: 'Erreur lors de l\'upload vers le stockage', 
-          details: (uploadError as Error).message,
-          stack: process.env.NODE_ENV === 'development' ? (uploadError as Error).stack : undefined,
-          useR2: useR2
-        },
+        { success: false, error: 'Erreur lors de l\'upload vers le stockage', details: (r2Error as Error).message },
         { status: 500 }
       )
     }
