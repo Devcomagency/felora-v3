@@ -45,12 +45,25 @@ export async function POST(req: NextRequest) {
       })
       
       if (!emailResult.success) {
-        console.log('Resend failed, trying SMTP fallback...')
-        const smtpRes = await sendMail(email, welcomeEmail.subject, welcomeEmail.html)
-        if (smtpRes) {
-          console.log('✅ Email de bienvenue escorte envoyé via SMTP')
+        // En production, forcer Resend uniquement avec logging détaillé
+        if (process.env.NODE_ENV === 'production') {
+          console.error('[MAIL] Escort signup - Resend failed in production:', {
+            error: emailResult?.error,
+            to: email,
+            from: process.env.RESEND_FROM,
+            hasApiKey: !!process.env.RESEND_API_KEY,
+            provider: emailResult?.provider
+          })
+          // On continue l'inscription même si l'email échoue
         } else {
-          console.error('❌ Erreur envoi email de bienvenue escorte (Resend + SMTP failed)')
+          // En développement seulement: fallback SMTP
+          console.log('Resend failed, trying SMTP fallback...')
+          const smtpRes = await sendMail(email, welcomeEmail.subject, welcomeEmail.html)
+          if (smtpRes?.ok) {
+            console.log('✅ Email de bienvenue escorte envoyé via SMTP')
+          } else {
+            console.error('❌ Erreur envoi email de bienvenue escorte (Resend + SMTP failed)')
+          }
         }
       } else {
         console.log('✅ Email de bienvenue escorte envoyé via Resend:', emailResult.messageId)
