@@ -63,9 +63,10 @@ const nextConfig = {
     }
     
     // Définir process.env côté client
+    const webpack = require('webpack')
     config.plugins = config.plugins || []
     config.plugins.push(
-      new config.webpack.DefinePlugin({
+      new webpack.DefinePlugin({
         'process.env': JSON.stringify(process.env),
       })
     )
