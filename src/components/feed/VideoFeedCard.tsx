@@ -5,24 +5,34 @@ import { Heart, Crown, Diamond, Flame, VolumeX, Volume2, Play, Pause, BadgeCheck
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { InView } from 'react-intersection-observer'
-// import { useFeedActions } from '../../hooks/useFeedActions'
 import { useVideoIntersection } from '../../hooks/useVideoIntersection'
 import { useFeedStore } from '../../stores/feedStore'
 import useReactions from '@/hooks/useReactions'
 import { stableMediaId } from '@/lib/reactions/stableMediaId'
-import type { MediaItem as CoreMediaItem } from '../../../packages/core/services/media/MediaService'
-import type { TIntersectingVideo } from '../../stores/feedStore'
 
-// Étend le type de base pour supporter les champs UI (stats, counts, verified)
-type UIMediaItem = CoreMediaItem & {
-  stats?: { likes?: number; comments?: number; reactions?: number }
-  likeCount?: number
-  reactCount?: number
-  author: CoreMediaItem['author'] & { verified?: boolean }
+// Types pour le feed
+interface MediaAuthor {
+  id: string
+  handle: string
+  name: string
+  avatar: string
+  verified?: boolean
+}
+
+interface MediaItem {
+  id: string
+  type: 'IMAGE' | 'VIDEO'
+  url: string
+  thumb: string
+  visibility: string
+  author: MediaAuthor
+  likeCount: number
+  reactCount: number
+  createdAt: string
 }
 
 interface VideoFeedCardProps {
-  item: UIMediaItem
+  item: MediaItem
   initialTotal?: number
 }
 
@@ -128,14 +138,12 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
   const pillRef = useRef<HTMLDivElement>(null)
 
   // Hooks
-  // Reactions are handled via /api/reactions with optimistic updates
-  
   const { handleIntersectingChange, togglePlayPause, currentVideo, isMute } = useVideoIntersection()
   const { toggleMute } = useFeedStore()
-  // No local reaction store: single source of truth is the API
 
   // Build a stable mediaId and a stable guest user id
   const mediaId = stableMediaId({ rawId: item.id, profileId: item.author.id, url: item.url })
+  const authorHandleSlug = (item.author.handle || '').replace(/^@/, '') || 'escort'
   // Robust check: only treat as video if URL looks like a video
   const isVideoUrl = typeof item.url === 'string' && /(\.mp4|\.webm|\.mov)(\?.*)?$/i.test(item.url)
   const shouldShowVideo = item.type === 'VIDEO' && isVideoUrl
@@ -180,6 +188,21 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
 
   // Gestionnaire de clic unifié
   const handleVideoClick = useClickHandler(handleSingleClick, handleDoubleClick)
+
+  // Click outside to close pill
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (radialOpen) {
+        setRadialOpen(false)
+        setShowReactions(false)
+      }
+    }
+    
+    if (radialOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+      return () => document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [radialOpen])
 
   // Gestion de l'intersection
   const onIntersectingChange = useCallback((inView: boolean) => {
@@ -228,7 +251,8 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
   const onLike = useCallback(() => {
     toggleReaction('LIKE')
   }, [toggleReaction])
-  // Partage / Follow retirés de l'UI selon demande
+
+  // Variables dupliquées supprimées - déjà déclarées ligne 148
 
   return (
     <InView
@@ -291,7 +315,7 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
         onComplete={() => setShowPauseIcon(false)}
       />
 
-      {/* Explosion d'emojis comme sur la page profil */}
+      {/* Explosion d'emojis */}
       <AnimatePresence>
         {explosionEmojis.map((item, index) => (
           <motion.div
@@ -329,7 +353,7 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
               <Diamond className="w-5 h-5 text-[#4FD1C7] drop-shadow" />
             </div>
 
-            {/* Type de média uniquement (pas de commentaires, date/heure) */}
+            {/* Type de média */}
             <div className="space-y-2 text-white/90 drop-shadow">
               <div className="text-xs">
                 <span className="text-[#4FD1C7] font-semibold">
@@ -342,10 +366,10 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
 
         {/* Actions - Right */}
         <div className="flex flex-col items-center justify-center gap-6 p-6 pb-6 pointer-events-auto">
-          {/* Avatar (accueil) – clique pour ouvrir le profil */}
+          {/* Avatar */}
           <div className="relative">
             <Link 
-              href={`/profile/${item.author.id}`} 
+              href={`/profile-test/escort/${authorHandleSlug}`} 
               aria-label={`Voir le profil de ${item.author.name}`}
               onClick={(e) => e.stopPropagation()}
               className="block"
@@ -371,30 +395,30 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
           {/* Mute Button (vidéos seulement) */}
           {item.type === 'VIDEO' && (
             <button
-              onClick={() => toggleMute()}
+              onClick={toggleMute}
               className="p-3 rounded-full bg-black/20 backdrop-blur-sm text-white hover:bg-black/30 transition-all duration-200 shadow-lg"
             >
               {isMute ? <VolumeX className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
             </button>
           )}
 
-          {/* Like (style identique au fullscreen profil) */}
+          {/* Like */}
           <div className="relative flex flex-col items-center gap-2">
             <button
               onClick={onLike}
-              disabled={likeLoading}
               className={`w-14 h-14 backdrop-blur-sm rounded-full flex items-center justify-center transition-colors ${
                 userHasLiked 
                   ? 'bg-rose-500/20 text-rose-300 hover:bg-rose-500/30' 
                   : 'bg-black/70 text-white hover:bg-black/90'
-              } ${likeLoading ? 'opacity-70' : ''}`}
+              }`}
               aria-label={userHasLiked ? 'Retirer le like' : 'Aimer'}
             >
               <Heart size={24} className={userHasLiked ? 'fill-current' : ''} />
             </button>
+            <span className="text-xs text-white/70">{totalDisplay}</span>
           </div>
 
-          {/* Réactions (cercle flamme, style fullscreen profil) */}
+          {/* Réactions */}
           <div className="relative flex flex-col items-center gap-2">
             {radialOpen && (
               <div
@@ -405,17 +429,17 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
             <button
               onClick={() => { setShowReactions(v => !v); setRadialOpen(v => !v) }}
               className={`relative z-10 w-14 h-14 backdrop-blur-sm rounded-full flex items-center justify-center transition-colors ${
-                (userReactions?.length ?? 0) > 0
+                showReactions
                   ? 'bg-violet-500/20 text-violet-300 hover:bg-violet-500/30'
                   : 'bg-black/70 text-white hover:bg-black/90'
               }`}
               aria-haspopup="true"
               aria-expanded={radialOpen}
             >
-              <Flame size={24} className={(userReactions?.length ?? 0) > 0 ? '' : 'text-violet-300'} />
+              <Flame size={24} className={showReactions ? '' : 'text-violet-300'} />
             </button>
             
-            {/* Menu radial (identique au fullscreen profil) */}
+            {/* Menu radial */}
             {radialOpen && (
               <motion.div
                 initial={{ opacity: 0 }}
@@ -471,7 +495,6 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
               </motion.div>
             )}
           </div>
-
         </div>
       </div>
     </InView>

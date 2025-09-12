@@ -47,7 +47,7 @@ export async function GET(
           break
       }
       
-      return new NextResponse(fileBuffer, {
+      return new Response(fileBuffer, {
         status: 200,
         headers: {
           'Content-Type': contentType,

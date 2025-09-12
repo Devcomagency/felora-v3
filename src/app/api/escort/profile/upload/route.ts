@@ -72,12 +72,24 @@ export async function POST(request: NextRequest) {
     }
 
     // Vérifier la configuration R2
-    if (!R2_ENDPOINT || !R2_ACCESS_KEY || !R2_SECRET_KEY || !R2_BUCKET) {
-      console.error('❌ API Upload - Configuration R2 manquante')
-      return NextResponse.json(
-        { success: false, error: 'Configuration de stockage manquante' },
-        { status: 500 }
-      )
+    const useR2 = R2_ENDPOINT && R2_ACCESS_KEY && R2_SECRET_KEY && R2_BUCKET
+    console.log('🔧 API Upload - Mode stockage:', useR2 ? 'Cloudflare R2' : 'Base64 (fallback)')
+    
+    if (!useR2) {
+      // Mode fallback base64 pour développement
+      const bytes = await file.arrayBuffer()
+      const buffer = Buffer.from(bytes)
+      const base64Data = buffer.toString('base64')
+      const dataUrl = `data:${file.type};base64,${base64Data}`
+      
+      console.log('✅ API Upload - Succès base64! Taille:', buffer.length)
+      
+      return NextResponse.json({
+        success: true,
+        url: dataUrl,
+        fileName: `local-${uuidv4()}.${file.name.split('.').pop()}`,
+        message: 'Photo uploadée en local (base64)'
+      })
     }
 
     // Créer le nom de fichier unique

@@ -94,19 +94,25 @@ export class MediaStorage {
     }
   }
 
-  // Stockage cloud pour la production (à implémenter plus tard)
+  // Stockage cloud pour la production - Prefer presign flow
   private async uploadToCloud(file: File, folder: string): Promise<UploadResult> {
-    // Sélection du provider cloud
+    // Note: This is legacy direct upload. New uploads should use presign/confirm flow.
+    // Keeping for backward compatibility with existing upload route.
+    
     if (process.env.CLOUDFLARE_R2_ENDPOINT) {
-      console.log('📦 Storage: Cloudflare R2')
+      console.log('📦 Storage: Cloudflare R2 (legacy direct upload)')
       return await this.uploadToR2(file, folder)
     } else if (process.env.AWS_S3_BUCKET) {
       console.log('📦 Storage: AWS S3 (non implémenté)')
       return await this.uploadToS3(file, folder)
     } else {
-      // Fallback vers local même en production si pas de config cloud
-      console.warn('⚠️ Production mode but no cloud storage configured, using local storage')
-      return await this.uploadLocal(file, folder)
+      // Fallback vers base64 ou local selon la taille
+      console.warn('⚠️ Production mode but no cloud storage configured')
+      if (file.size <= 4 * 1024 * 1024) {
+        return await this.uploadBase64(file, folder)
+      } else {
+        return await this.uploadLocal(file, folder)
+      }
     }
   }
 

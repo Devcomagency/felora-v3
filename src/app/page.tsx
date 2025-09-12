@@ -1,7 +1,8 @@
+import { Suspense } from 'react'
 import ClientFeedPage from './client-page'
-import { prisma } from '@/lib/prisma'
+import OldHomePage from './old-home-page'
 
-// Types locaux pour le feed
+// Types pour le feed (extraits de V2)
 interface MediaAuthor {
   id: string
   handle: string
@@ -16,103 +17,70 @@ interface MediaItem {
   thumb: string
   visibility: string
   author: MediaAuthor
+  likeCount: number
+  reactCount: number
   createdAt: string
 }
 
 export default async function HomePage() {
-  let items: MediaItem[] = []
+  // Données mock directes pour éviter les erreurs de service
+  const items: MediaItem[] = [
+    {
+      id: 'feed-1',
+      type: 'IMAGE',
+      url: 'https://picsum.photos/400/600?random=1',
+      thumb: 'https://picsum.photos/400/600?random=1',
+      visibility: 'PUBLIC',
+      author: {
+        id: 'sofia-elite-1',
+        handle: '@sofia_elite',
+        name: 'Sofia Elite',
+        avatar: 'https://picsum.photos/100/100?random=10'
+      },
+      likeCount: 1247,
+      reactCount: 89,
+      createdAt: new Date(Date.now() - 3600000).toISOString()
+    },
+    {
+      id: 'feed-2',
+      type: 'VIDEO',
+      url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+      thumb: 'https://picsum.photos/400/600?random=2',
+      visibility: 'PUBLIC',
+      author: {
+        id: 'bella-dreams-2',
+        handle: '@bella_dreams',
+        name: 'Bella Dreams',
+        avatar: 'https://picsum.photos/100/100?random=20'
+      },
+      likeCount: 892,
+      reactCount: 124,
+      createdAt: new Date(Date.now() - 7200000).toISOString()
+    },
+    {
+      id: 'feed-3',
+      type: 'IMAGE',
+      url: 'https://picsum.photos/400/600?random=3',
+      thumb: 'https://picsum.photos/400/600?random=3',
+      visibility: 'PUBLIC',
+      author: {
+        id: 'v-diamond-3',
+        handle: '@v_diamond',
+        name: 'V Diamond',
+        avatar: 'https://picsum.photos/100/100?random=30'
+      },
+      likeCount: 2156,
+      reactCount: 267,
+      createdAt: new Date(Date.now() - 10800000).toISOString()
+    }
+  ]
   
-  try {
-    // Protection Vercel - éviter crash si pas de vraie DB
-    if (process.env.DATABASE_URL && !process.env.DATABASE_URL.includes('file:')) {
-      // Récupérer tous les profils escorts avec leurs médias
-      const escortProfiles = await prisma.escortProfile.findMany({
-      where: {
-        status: 'ACTIVE'
-      },
-      include: {
-        user: {
-          select: {
-            name: true,
-            email: true
-          }
-        }
-      },
-      orderBy: {
-        createdAt: 'desc'
-      },
-      take: 20
-    })
+  const nextCursor = 'initial-cursor'
 
-    console.log('🔍 Profils trouvés pour le feed:', escortProfiles.length)
-
-    // Transformer les médias en items de feed
-    for (const profile of escortProfiles) {
-      if (profile.galleryPhotos) {
-        try {
-          const galleryParsed = JSON.parse(profile.galleryPhotos)
-          console.log(`📸 Médias trouvés pour ${profile.stageName}:`, galleryParsed.length)
-          
-          // Créer un item uniquement pour les médias autorisés dans le feed:
-          // - médias OBLIGATOIRES (slots 0..5) toujours
-          // - médias PUBLICS (isPrivate !== true)
-          for (const media of galleryParsed) {
-            const url: string = String(media?.url || '')
-            if (!url) continue
-            const slot = Number(media?.slot)
-            const isMandatory = Number.isFinite(slot) && slot >= 0 && slot <= 5
-            const isPublic = media?.isPrivate !== true
-            if (!isMandatory && !isPublic) continue
-
-            items.push({
-              id: `${profile.id}-${url.split('/').pop()}`,
-              type: media?.type === 'video' ? 'VIDEO' : 'IMAGE',
-              url,
-              thumb: url,
-              visibility: isMandatory ? 'MANDATORY' : 'PUBLIC',
-              author: {
-                id: profile.id,
-                handle: `@${profile.stageName?.toLowerCase().replace(/\s+/g, '_') || 'escort'}`,
-                name: profile.stageName || profile.firstName || 'Escort',
-                avatar: profile.profilePhoto || '/placeholder-avatar.jpg'
-              },
-              createdAt: profile.createdAt?.toISOString() || new Date().toISOString()
-            })
-          }
-        } catch (parseError) {
-          console.error('❌ Erreur parsing galleryPhotos pour', profile.stageName, parseError)
-        }
-      }
-    }
-
-    console.log('✅ Items de feed créés:', items.length)
-    }
-
-  } catch (error) {
-    console.error('❌ Erreur récupération feed:', error)
-    
-    // Fallback avec quelques données mock si erreur
-    items = [
-      {
-        id: 'fallback-1',
-        type: 'IMAGE',
-        url: 'https://picsum.photos/400/600?random=1',
-        thumb: 'https://picsum.photos/400/600?random=1',
-        visibility: 'PUBLIC',
-        author: {
-          id: 'fallback-user',
-          handle: '@felora_demo',
-          name: 'Demo Account',
-          avatar: 'https://picsum.photos/100/100?random=10'
-        },
-        createdAt: new Date().toISOString()
-      }
-    ]
-  }
-
-  // Mélanger les items pour un feed plus dynamique
-  const shuffledItems = items.sort(() => Math.random() - 0.5)
-  const nextCursor = 'db-cursor-1'
-
-  return <ClientFeedPage initialItems={shuffledItems} initialCursor={nextCursor} />
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      {/* Pour l'instant, utilisons directement l'ancienne page */}
+      <OldHomePage />
+    </Suspense>
+  )
 }

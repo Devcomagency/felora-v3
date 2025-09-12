@@ -11,6 +11,7 @@ interface LoginForm {
   rememberMe: boolean
 }
 
+// Composant séparé pour le contenu avec useSearchParams
 function LoginContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -82,7 +83,6 @@ function LoginContent() {
     }
   }
 
-
   const updateForm = (field: keyof LoginForm, value: any) => {
     setForm({ ...form, [field]: value })
   }
@@ -121,7 +121,6 @@ function LoginContent() {
             ))}
           </div>
         )}
-
 
         {/* Formulaire */}
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -190,16 +189,24 @@ function LoginContent() {
   )
 }
 
-export default function LoginPage() {
+// Composant de fallback pour le Suspense
+function LoginFallback() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-b from-black via-[#0D0D0D] to-[#1A1A1A] text-white px-6 py-12 grid place-items-center">
-        <div className="w-full max-w-md rounded-2xl border border-white/10 bg-white/[0.06] backdrop-blur-xl p-8 text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-400 mx-auto mb-4"></div>
-          <p>Loading...</p>
+    <div className="min-h-screen bg-gradient-to-b from-black via-[#0D0D0D] to-[#1A1A1A] text-white px-6 py-12 grid place-items-center">
+      <div className="w-full max-w-md rounded-2xl border border-white/10 bg-white/[0.06] backdrop-blur-xl p-8">
+        <div className="text-center">
+          <div className="inline-block w-6 h-6 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+          <p className="mt-4 text-white/70">Chargement...</p>
         </div>
       </div>
-    }>
+    </div>
+  )
+}
+
+// Composant principal avec Suspense
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<LoginFallback />}>
       <LoginContent />
     </Suspense>
   )

@@ -16,19 +16,28 @@ const nextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
 
-  // Images: fusion des patterns .ts et .js
+  // Images: production domains + development testing
   images: {
-    domains: ['localhost', 'felora-v3.vercel.app'],
+    domains: ['localhost'],
     remotePatterns: [
-      // existants (.js)
+      // Production storage - Cloudflare R2
       { protocol: 'https', hostname: '*.r2.cloudflarestorage.com', port: '', pathname: '/**' },
+      
+      // Fallback/legacy storage
       { protocol: 'https', hostname: '*.amazonaws.com', port: '', pathname: '/**' },
-      // ajoutés (.ts)
-      { protocol: 'https', hostname: 'picsum.photos', port: '', pathname: '/**' },
-      { protocol: 'https', hostname: 'cdn.sanity.io', port: '', pathname: '/**' },
       { protocol: 'https', hostname: '*.supabase.co', port: '', pathname: '/**' },
+      
+      // Production app domains
+      { protocol: 'https', hostname: 'felora-v3.vercel.app', port: '', pathname: '/**' },
+      { protocol: 'https', hostname: 'felora.ch', port: '', pathname: '/**' },
+      
+      // Development/testing only
+      { protocol: 'https', hostname: 'picsum.photos', port: '', pathname: '/**' },
       { protocol: 'https', hostname: 'images.unsplash.com', port: '', pathname: '/**' },
       { protocol: 'https', hostname: 'commondatastorage.googleapis.com', port: '', pathname: '/**' },
+      
+      // CMS (if used)
+      { protocol: 'https', hostname: 'cdn.sanity.io', port: '', pathname: '/**' },
     ],
   },
 
@@ -54,31 +63,73 @@ const nextConfig = {
     return config
   },
 
-  // Redirects: /dashboard-escort/* → /escort/*
+  // Redirects: Canonical route consolidation
   async redirects() {
     return [
+      // Escort dashboard routes → /escort/*
       {
         source: '/dashboard-escort/:path*',
         destination: '/escort/:path*',
         permanent: true,
       },
+      {
+        source: '/(dashboard)/escort/:path*',
+        destination: '/escort/:path*',
+        permanent: true,
+      },
+      // API Profile standardization
+      {
+        source: '/api/profiles/:id',
+        destination: '/api/profile/:id',
+        permanent: true,
+      },
+      // Geographic API consolidation  
+      {
+        source: '/api/geocode/:path*',
+        destination: '/api/geo/:path*',
+        permanent: true,
+      },
     ];
   },
 
-  // En-têtes de sécurité (+ CSP souple en dev)
+  // En-têtes de sécurité - CSP optimisée R2 + services
   async headers() {
     const isDev = process.env.NODE_ENV !== 'production'
+    
+    // Domaines de confiance spécifiques
+    const trustedDomains = [
+      // App domains
+      'https://felora-v3.vercel.app',
+      'https://felora.ch',
+      
+      // Storage R2
+      'https://*.r2.cloudflarestorage.com',
+      
+      // Maps & Location Services
+      'https://api.mapbox.com',
+      'https://events.mapbox.com',
+      'https://*.tiles.mapbox.com',
+      
+      // Observability & Analytics
+      'https://*.sentry.io',
+      'https://vitals.vercel-analytics.com',
+      
+      // Development only
+      ...(isDev ? ['http://localhost:*', 'ws://localhost:*'] : [])
+    ].join(' ')
+    
     const csp = [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:",
-      "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' data: blob: https:",
-      "media-src 'self' blob: data: https:",
+      `script-src 'self' ${isDev ? "'unsafe-inline' 'unsafe-eval'" : "'unsafe-inline'"} blob: https://api.mapbox.com https://*.sentry.io`,
+      "style-src 'self' 'unsafe-inline' https://api.mapbox.com",
+      `img-src 'self' data: blob: ${trustedDomains}`,
+      `media-src 'self' blob: data: ${trustedDomains}`,
       "worker-src 'self' blob:",
-      "connect-src 'self' https: http: ws: wss:",
-      "font-src 'self' data:",
+      `connect-src 'self' ${trustedDomains} wss: ws:`,
+      "font-src 'self' data: https://api.mapbox.com",
       "frame-ancestors 'none'",
       "base-uri 'self'",
+      "form-action 'self'",
       isDev ? '' : 'upgrade-insecure-requests',
     ].filter(Boolean).join('; ')
 

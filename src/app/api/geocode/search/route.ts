@@ -12,6 +12,9 @@ function chooseProvider(): Provider {
 }
 
 export async function GET(req: Request) {
+  // 🚨 DEPRECATION WARNING
+  console.warn('🚨 DEPRECATED: /api/geocode/* will be removed. Use /api/geo/* instead.')
+  
   const { searchParams } = new URL(req.url)
   const q = (searchParams.get('q') || '').trim()
   const limit = Math.min(parseInt(searchParams.get('limit') || '10', 10) || 10, 15)

@@ -815,3 +815,12 @@ enum ReactionType {
   WOW
   SMILE
 }
+
+// Upload session for presign/confirm flow
+model UploadSession {
+  uploadId  String   @id
+  data      String   // JSON data with upload details
+  createdAt DateTime @default(now())
+
+  @@map("upload_sessions")
+}

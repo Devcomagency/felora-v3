@@ -19,10 +19,11 @@ const r2Client = new S3Client({
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { path: string[] } }
+  { params }: { params: Promise<{ path: string[] }> }
 ) {
   try {
-    const filePath = params.path.join('/')
+    const { path } = await params
+    const filePath = path.join('/')
     console.log('🔍 Demande fichier:', filePath)
     
     // Vérifier si c'est un fichier local (fallback)
@@ -45,7 +46,7 @@ export async function GET(
         else if (fileName.endsWith('.gif')) contentType = 'image/gif'
         else if (fileName.endsWith('.webp')) contentType = 'image/webp'
         
-        return new NextResponse(buffer, {
+        return new Response(buffer, {
           headers: {
             'Content-Type': contentType,
             'Content-Length': buffer.length.toString(),
@@ -93,7 +94,7 @@ export async function GET(
     const buffer = Buffer.concat(chunks.map(chunk => Buffer.from(chunk)))
 
     // Retourner le fichier avec les bons headers
-    return new NextResponse(buffer, {
+    return new Response(buffer, {
       headers: {
         'Content-Type': response.ContentType || 'application/octet-stream',
         'Content-Length': response.ContentLength?.toString() || buffer.length.toString(),

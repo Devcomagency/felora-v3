@@ -10,10 +10,10 @@ build/
 out/
 
 # Environment variables
+# Ignore all env files by default, keep only the example template tracked
 .env
-.env.local
-.env.production.local
-.env.test.local
+.env.*
+!.env.example
 
 # Logs
 logs/

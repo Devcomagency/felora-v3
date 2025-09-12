@@ -5,10 +5,10 @@ import { join } from 'path'
 // API endpoint pour servir les fichiers uploadés depuis /tmp en production
 export async function GET(
   request: NextRequest,
-  { params }: { params: { filename: string } }
+  { params }: { params: Promise<{ filename: string }> }
 ) {
   try {
-    const filename = params.filename
+    const { filename } = await params
     
     if (!filename) {
       return new NextResponse('Nom de fichier requis', { status: 400 })
@@ -27,7 +27,7 @@ export async function GET(
       const fileBuffer = await readFile(filePath)
       
       // Déterminer le type MIME basé sur l'extension
-      const extension = filename.split('.').pop()?.toLowerCase()
+    const extension = filename.split('.').pop()?.toLowerCase()
       let contentType = 'image/jpeg' // défaut
       
       switch (extension) {
@@ -48,7 +48,7 @@ export async function GET(
       
       console.log('✅ API Uploads - Fichier trouvé, type:', contentType, 'taille:', fileBuffer.length)
 
-      return new NextResponse(fileBuffer, {
+      return new Response(fileBuffer, {
         headers: {
           'Content-Type': contentType,
           'Cache-Control': 'public, max-age=86400', // Cache 24h

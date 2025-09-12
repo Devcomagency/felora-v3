@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+RED="\033[0;31m"; GREEN="\033[0;32m"; YELLOW="\033[0;33m"; NC="\033[0m"
+
+echo -e "${YELLOW}[secrets-scan] Pré-push — vérification qu'aucun .env n'est suivi par Git...${NC}"
+
+tracked_env=$(git ls-files | grep -E '^(.*/)?\.env(\..*)?$' || true)
+if [[ -n "${tracked_env}" ]]; then
+  echo -e "${RED}[secrets-scan] Des fichiers .env sont TRACKÉS par Git :\n${tracked_env}${NC}"
+  echo "Corrigez: git rm --cached <fichier .env>; assurez-vous que .gitignore ignore .env*; re-committez, puis poussez."
+  exit 1
+fi
+
+echo -e "${GREEN}[secrets-scan] OK — aucun fichier .env suivi par Git.${NC}"
+exit 0
+

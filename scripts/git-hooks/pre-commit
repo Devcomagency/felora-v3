@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+RED="\033[0;31m"; GREEN="\033[0;32m"; YELLOW="\033[0;33m"; NC="\033[0m"
+
+echo -e "${YELLOW}[secrets-scan] Vérification secrets et fichiers .env...${NC}"
+
+# 1) Bloquer tout fichier .env* dans l'index
+blocked_env=$(git diff --cached --name-only | grep -E '^(.*/)?\.env(\..*)?$' || true)
+if [[ -n "${blocked_env}" ]]; then
+  echo -e "${RED}[secrets-scan] Des fichiers .env sont dans l'index (staged) :\n${blocked_env}${NC}"
+  echo "Retirez-les de l'index: git rm --cached <fichier>"
+  exit 1
+fi
+
+# 2) Scanner les lignes ajoutées pour des patterns sensibles courants
+added_lines=$(git diff --cached -U0 | sed -n 's/^+//p' || true)
+
+patterns=(
+  'DATABASE_URL='
+  'NEXTAUTH_SECRET='
+  'SMTP_PASS='
+  'RESEND_API_KEY='
+  'CLOUDFLARE_R2_SECRET_KEY='
+  'CLOUDFLARE_R2_ACCESS_KEY='
+  'AWS_SECRET_ACCESS_KEY='
+  'UMAMI_API_TOKEN='
+  'SENTRY_DSN='
+  'GOOGLE_PLACES_KEY='
+  'NEXT_PUBLIC_GOOGLE_PLACES_KEY='
+  'NEXT_PUBLIC_MAPBOX_TOKEN='
+)
+
+for p in "${patterns[@]}"; do
+  if echo "${added_lines}" | grep -E "${p}" >/dev/null 2>&1; then
+    echo -e "${RED}[secrets-scan] Détection d'un pattern sensible dans les changements: '${p}'${NC}"
+    echo "Veuillez déplacer ces valeurs dans les variables d'environnement de l'hébergeur et utiliser .env (non versionné)."
+    exit 1
+  fi
+done
+
+echo -e "${GREEN}[secrets-scan] OK — aucun secret détecté dans l'index.${NC}"
+exit 0
+

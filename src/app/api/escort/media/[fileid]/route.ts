@@ -33,7 +33,7 @@ export async function GET(
     const safe = basename(file)
     const path = join(process.cwd(), 'uploads', 'profiles', safe)
     const buf = await readFile(path)
-    return new NextResponse(buf, {
+    return new Response(buf, {
       headers: {
         'Content-Type': contentTypeFor(safe),
         'Cache-Control': 'public, max-age=31536000, immutable'
@@ -43,4 +43,3 @@ export async function GET(
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
 }
-

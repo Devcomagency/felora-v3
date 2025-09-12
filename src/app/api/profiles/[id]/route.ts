@@ -3,10 +3,13 @@ import { prisma } from '@/lib/prisma'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const profileId = params.id
+    // 🚨 DEPRECATION WARNING
+    console.warn('🚨 DEPRECATED: /api/profiles/[id] will be removed. Use /api/profile/[id] instead.')
+    
+    const { id: profileId } = await params
     
     if (!profileId) {
       return NextResponse.json(
