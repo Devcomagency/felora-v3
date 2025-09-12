@@ -10,15 +10,20 @@ const R2_ACCESS_KEY = process.env.CLOUDFLARE_R2_ACCESS_KEY
 const R2_SECRET_KEY = process.env.CLOUDFLARE_R2_SECRET_KEY
 const R2_BUCKET = process.env.CLOUDFLARE_R2_BUCKET
 
-// Initialisation du client R2
-const r2Client = new S3Client({
-  region: 'auto',
-  endpoint: R2_ENDPOINT,
-  credentials: {
-    accessKeyId: R2_ACCESS_KEY || '',
-    secretAccessKey: R2_SECRET_KEY || ''
+// Fonction pour créer le client R2 seulement si nécessaire
+function createR2Client() {
+  if (!R2_ENDPOINT || !R2_ACCESS_KEY || !R2_SECRET_KEY) {
+    throw new Error('Configuration R2 incomplète')
   }
-})
+  return new S3Client({
+    region: 'auto',
+    endpoint: R2_ENDPOINT,
+    credentials: {
+      accessKeyId: R2_ACCESS_KEY,
+      secretAccessKey: R2_SECRET_KEY
+    }
+  })
+}
 
 export async function POST(request: NextRequest) {
   console.log('🚀 API Upload - Début de la requête')
@@ -103,27 +108,37 @@ export async function POST(request: NextRequest) {
       if (useR2) {
         console.log('☁️ API Upload - Upload vers Cloudflare R2...')
         
-        // Upload vers Cloudflare R2
-        const uploadCommand = new PutObjectCommand({
-          Bucket: R2_BUCKET,
-          Key: fileName,
-          Body: buffer,
-          ContentType: file.type,
-          ContentLength: buffer.length,
-          Metadata: {
-            originalName: file.name,
-            userId: session.user.id,
-            uploadedAt: new Date().toISOString()
-          }
-        })
-        
-        await r2Client.send(uploadCommand)
-        
-        // URL publique R2 via API proxy
-        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3004'
-        publicUrl = `${baseUrl}/api/uploads/${fileName}`
-        
-        console.log('✅ API Upload - Succès R2! URL:', publicUrl)
+        try {
+          // Créer le client R2 dynamiquement
+          const r2Client = createR2Client()
+          
+          // Upload vers Cloudflare R2
+          const uploadCommand = new PutObjectCommand({
+            Bucket: R2_BUCKET,
+            Key: fileName,
+            Body: buffer,
+            ContentType: file.type,
+            ContentLength: buffer.length,
+            Metadata: {
+              originalName: file.name,
+              userId: session.user.id,
+              uploadedAt: new Date().toISOString()
+            }
+          })
+          
+          await r2Client.send(uploadCommand)
+          console.log('☁️ API Upload - R2 upload réussi')
+          
+          // URL publique R2 via API proxy
+          const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3004'
+          publicUrl = `${baseUrl}/api/uploads/${fileName}`
+          
+          console.log('✅ API Upload - Succès R2! URL:', publicUrl)
+          
+        } catch (r2Error) {
+          console.error('💥 API Upload - Erreur R2 spécifique:', r2Error)
+          throw r2Error
+        }
         
       } else {
         console.log('💾 API Upload - Fallback: stockage temporaire en base64...')
