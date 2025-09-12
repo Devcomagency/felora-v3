@@ -59,7 +59,16 @@ const nextConfig = {
       fs: false,
       path: false,
       os: false,
+      process: false,
     }
+    
+    // Définir process.env côté client
+    config.plugins = config.plugins || []
+    config.plugins.push(
+      new config.webpack.DefinePlugin({
+        'process.env': JSON.stringify(process.env),
+      })
+    )
     return config
   },
 
