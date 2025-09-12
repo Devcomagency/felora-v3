@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
     })
 
     if (!escortProfile) {
-      // Créer un profil vide s'il n'existe pas
+      // Créer un profil vide s'il n'existe pas (auto-création pour cohérence V2)
       try {
         const newProfile = await prisma.escortProfile.create({
           data: {
