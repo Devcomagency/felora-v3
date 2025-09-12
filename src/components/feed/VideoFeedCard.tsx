@@ -157,7 +157,13 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
     } catch {}
   }, [])
 
-  const { stats, userReactions, userHasLiked, loading, toggleReaction } = useReactions(mediaId, userId ?? undefined)
+  // Sécuriser l'appel au hook de réactions (évite le destructuring sur undefined)
+  const reactionsRes = useReactions(mediaId, userId ?? undefined)
+  const stats = reactionsRes?.stats || { reactions: {}, total: 0 }
+  const userReactions = reactionsRes?.userReactions || []
+  const userHasLiked = reactionsRes?.userHasLiked || false
+  const loading = reactionsRes?.loading || false
+  const toggleReaction = reactionsRes?.toggleReaction || (async (_t: any) => {})
 
   // États dérivés (UI)
   const likeLoading = !!loading
