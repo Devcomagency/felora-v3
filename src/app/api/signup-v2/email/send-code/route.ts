@@ -39,8 +39,18 @@ export async function POST(req: NextRequest) {
     if (!resendRes?.success) {
       // En production, on force l'utilisation de Resend et on échoue clairement si indisponible
       if (process.env.NODE_ENV === 'production') {
-        console.error('[MAIL] Resend failed in production:', resendRes?.error)
-        return NextResponse.json({ error: 'mail_failed_resend' }, { status: 500 })
+        console.error('[MAIL] Resend failed in production:', {
+          error: resendRes?.error,
+          to: safeEmail,
+          from: process.env.RESEND_FROM,
+          hasApiKey: !!process.env.RESEND_API_KEY,
+          provider: resendRes?.provider
+        })
+        return NextResponse.json({ 
+          error: 'mail_failed_resend', 
+          details: resendRes?.error,
+          debug: { to: safeEmail, from: process.env.RESEND_FROM }
+        }, { status: 500 })
       }
       // En développement seulement: fallback SMTP/dev pour faciliter les tests
       const smtpRes = await sendMail(safeEmail, emailTemplate.subject, emailTemplate.html)
