@@ -314,6 +314,26 @@ npm install [packages nécessaires]
 
 ---
 
+## 🚀 TÂCHES À FAIRE EN FIN DE PROJET
+
+### 📧 Configuration Email Production
+**Problème** : Les emails n'arrivent pas aux adresses professionnelles (ex: `nordine@devcom.ch`)
+**Cause** : Conflit SPF entre Zoho (domaine principal) et Resend  
+**Solution** : Configurer sous-domaine `mail.felora.ch` pour Resend
+**Coût** : Resend facture les domaines personnalisés
+
+**Étapes** :
+1. **Resend** → Add domain `mail.felora.ch` (payant)
+2. **Cloudflare DNS** → Ajouter :
+   ```
+   mail.felora.ch          TXT    v=spf1 include:_spf.resend.com ~all
+   _dmarc.mail.felora.ch   TXT    v=DMARC1; p=reject;
+   ```
+3. **Vercel** → Changer `RESEND_FROM = "Felora <no-reply@mail.felora.ch>"`
+4. **Test** → Les emails pro devraient arriver
+
+---
+
 *Ce prompt garantit un développement professionnel, structuré et de qualité production pour FELORA.*
 
 
