@@ -1,6 +1,5 @@
 import { Suspense } from 'react'
-import ClientFeedPage from './client-page'
-import OldHomePage from './old-home-page'
+import HomeClient from './home-client'
 
 // Types pour le feed (extraits de V2)
 interface MediaAuthor {
@@ -82,16 +81,4 @@ export default async function HomePage() {
       <HomeClient initialItems={items} initialCursor={nextCursor} />
     </Suspense>
   )
-}
-
-'use client'
-
-import { useFeatureFlag } from '@/hooks/useFeatureFlag'
-
-function HomeClient({ initialItems, initialCursor }: { initialItems: MediaItem[]; initialCursor: string }) {
-  const showNewUI = useFeatureFlag('NEXT_PUBLIC_FEATURE_UI_HOME')
-  if (showNewUI) {
-    return <ClientFeedPage initialItems={initialItems} initialCursor={initialCursor} />
-  }
-  return <OldHomePage />
 }
