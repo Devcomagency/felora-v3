@@ -2,12 +2,13 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '../../contexts/AuthContext'
+import { useSession, signOut } from 'next-auth/react'
 import { Bell, Search, Menu, X } from 'lucide-react'
 
 export default function DashboardHeader() {
   const router = useRouter()
-  const { user, logout } = useAuth()
+  const { data: session } = useSession()
+  const user = session?.user
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [showMobileMenu, setShowMobileMenu] = useState(false)
 
@@ -35,10 +36,10 @@ export default function DashboardHeader() {
                 </div>
                 <div className="hidden sm:block text-left">
                   <p className="text-sm font-medium text-white">
-                    {user?.stageName || user?.firstName || user?.name || 'Utilisateur'}
+                    {user?.name || 'Utilisateur'}
                   </p>
                   <p className="text-xs text-gray-400">
-                    {user?.role === 'ESCORT' ? 'Escorte' : 'Club'}
+                    Escorte
                   </p>
                 </div>
               </button>
@@ -53,7 +54,7 @@ export default function DashboardHeader() {
                   <div className="absolute right-0 mt-2 w-56 bg-gray-900 border border-gray-700 rounded-xl shadow-2xl z-20">
                     <div className="p-4 border-b border-gray-700">
                       <p className="text-sm font-medium text-white">
-                        {user?.stageName || user?.firstName || user?.name}
+                        {user?.name || 'Utilisateur'}
                       </p>
                       <p className="text-xs text-gray-400">
                         {user?.email}
@@ -73,7 +74,7 @@ export default function DashboardHeader() {
                       
                       <button
                         onClick={() => {
-                          logout()
+                          signOut()
                           setShowUserMenu(false)
                         }}
                         className="w-full px-4 py-2 text-left text-sm text-red-400 hover:text-red-300 hover:bg-gray-800 transition-colors"
@@ -112,7 +113,7 @@ export default function DashboardHeader() {
             </button>
             <button
               onClick={() => {
-                logout()
+                signOut()
                 setShowMobileMenu(false)
               }}
               className="block w-full text-left px-4 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-gray-800 rounded-lg transition-colors"
