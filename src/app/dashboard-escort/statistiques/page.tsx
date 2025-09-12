@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Eye, Heart, Users, MessageCircle, TrendingUp, Calendar, Clock, Download, BarChart3, PieChart, Wallet, ArrowRight } from 'lucide-react'
 import { useNotification } from '@/components/providers/NotificationProvider'
+import { useFeatureFlag } from '@/hooks/useFeatureFlag'
 
 type PeriodKey = 'week' | 'month' | 'year' | 'custom'
 type ScopeKey = 'all' | 'public' | 'ondemand' | 'private'
@@ -15,7 +16,20 @@ function fmtDiamond(n: number) {
   return `${fmt(n)} \u2666`
 }
 
-export default function StatistiquesPage() {
+// Old statistics page (V3 original)
+function OldStatistiquesPage() {
+  return (
+    <div className="min-h-screen bg-black text-white flex items-center justify-center">
+      <div className="text-center">
+        <h1 className="text-2xl font-bold mb-4">Statistiques (Version Originale)</h1>
+        <p className="text-gray-400">Cette page utilise l'ancienne interface V3</p>
+      </div>
+    </div>
+  )
+}
+
+// New statistics page (V2 design)
+function NewStatistiquesPage() {
   const { error: notifyError, success: notifySuccess } = useNotification()
 
   // Global filters
@@ -152,206 +166,267 @@ export default function StatistiquesPage() {
   const kpis = overviewQ.data
 
   return (
-    <div className="min-h-screen bg-black text-white p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-white">Statistiques</h1>
-          <p className="text-sm text-white/70">Analysez vos performances et votre audience</p>
-        </div>
+    <div 
+      className="space-y-6 rounded-2xl p-6"
+      style={{
+        background: 'rgba(255, 255, 255, 0.03)',
+        backdropFilter: 'blur(20px)',
+        border: '1px solid rgba(255, 255, 255, 0.1)',
+        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)'
+      }}
+    >
+      <div>
+        <h1 
+          className="text-2xl font-bold mb-2"
+          style={{
+            background: 'linear-gradient(135deg, var(--felora-aurora) 0%, var(--felora-plasma) 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text'
+          }}
+        >
+          Statistiques
+        </h1>
+        <p className="text-sm" style={{ color: 'var(--felora-silver-70)' }}>
+          Analysez vos performances et votre audience
+        </p>
+      </div>
 
-        {/* Filters header */}
-        <div className="sticky top-[118px] z-20 bg-black/70 backdrop-blur rounded-xl border border-white/10 p-3">
-          <div className="flex flex-col md:flex-row items-center gap-3">
-            {/* Période */}
-            <div className="flex items-center gap-1 bg-gray-800/40 border border-gray-700/50 rounded-xl p-1">
-              {([
-                { key:'week', label:'Cette semaine' },
-                { key:'month', label:'Ce mois' },
-                { key:'year', label:'Cette année' },
-                { key:'custom', label:'Personnalisée' },
-              ] as Array<{key:PeriodKey,label:string}>).map(p => (
-                <button key={p.key} onClick={() => setPeriod(p.key)} className={`px-3 py-1.5 text-xs rounded-lg ${period===p.key?'bg-white/10 text-white':'text-white/70 hover:bg-white/5'}`}>{p.label}</button>
-              ))}
-            </div>
-            {/* Custom dates */}
-            {period==='custom' && (
-              <div className="flex items-center gap-2 text-xs">
-                <input type="date" value={customFrom} onChange={e=>setCustomFrom(e.target.value)} className="bg-black border border-white/10 rounded-lg px-2 py-1"/>
-                <span className="text-white/60">→</span>
-                <input type="date" value={customTo} onChange={e=>setCustomTo(e.target.value)} className="bg-black border border-white/10 rounded-lg px-2 py-1"/>
-              </div>
-            )}
-            <div className="flex-1"/>
-            {/* Scope */}
-            <div className="flex items-center gap-1 bg-gray-800/40 border border-gray-700/50 rounded-xl p-1">
-              {([
-                { key:'all', label:'Tous les médias' },
-                { key:'public', label:'Publics' },
-                { key:'ondemand', label:'À la demande' },
-                { key:'private', label:'Privés' },
-              ] as Array<{key:ScopeKey,label:string}>).map(s => (
-                <button key={s.key} onClick={() => setScope(s.key)} className={`px-3 py-1.5 text-xs rounded-lg ${scope===s.key?'bg-white/10 text-white':'text-white/70 hover:bg-white/5'}`}>{s.label}</button>
-              ))}
-            </div>
+      {/* Filters header avec style V2 */}
+      <div 
+        className="sticky top-[118px] z-20 rounded-xl p-3"
+        style={{
+          background: 'rgba(0, 0, 0, 0.7)',
+          backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(255, 255, 255, 0.1)'
+        }}
+      >
+        <div className="flex flex-col md:flex-row items-center gap-3">
+          {/* Période */}
+          <div 
+            className="flex items-center gap-1 rounded-xl p-1"
+            style={{
+              background: 'rgba(255, 255, 255, 0.05)',
+              border: '1px solid rgba(255, 255, 255, 0.1)'
+            }}
+          >
+            {([
+              { key:'week', label:'Cette semaine' },
+              { key:'month', label:'Ce mois' },
+              { key:'year', label:'Cette année' },
+              { key:'custom', label:'Personnalisée' },
+            ] as Array<{key:PeriodKey,label:string}>).map(p => (
+              <button 
+                key={p.key} 
+                onClick={() => setPeriod(p.key)} 
+                className={`px-3 py-1.5 text-xs rounded-lg transition-colors ${
+                  period===p.key
+                    ? 'text-white' 
+                    : 'text-white/70 hover:bg-white/5'
+                }`}
+                style={period===p.key ? {
+                  background: 'linear-gradient(135deg, var(--felora-aurora) 0%, var(--felora-plasma) 100%)',
+                  boxShadow: '0 2px 8px rgba(255, 107, 157, 0.3)'
+                } : {}}
+              >
+                {p.label}
+              </button>
+            ))}
           </div>
-        </div>
-
-        {/* KPIs */}
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          <KpiCard icon={<Eye className="text-blue-400" size={22}/>} label="Vues profil" value={kpis?.vuesProfil} delta={kpis?.delta?.vuesProfil} loading={overviewQ.isLoading}/>
-          <KpiCard icon={<Heart className="text-pink-400" size={22}/>} label="Réactions" value={kpis?.reactions} delta={kpis?.delta?.reactions} loading={overviewQ.isLoading}/>
-          <KpiCard icon={<Users className="text-purple-400" size={22}/>} label="Nouveaux fans" value={kpis?.fans} delta={kpis?.delta?.fans} loading={overviewQ.isLoading}/>
-          <KpiCard icon={<MessageCircle className="text-green-400" size={22}/>} label="Messages" value={kpis?.messages} delta={kpis?.delta?.messages} loading={overviewQ.isLoading}/>
-          <KpiCard icon={<Wallet className="text-yellow-300" size={22}/>} label="Revenus" value={kpis?.revenus} delta={kpis?.delta?.revenus} suffix=" ♦" loading={overviewQ.isLoading}/>
-          <KpiCard icon={<TrendingUp className="text-emerald-400" size={22}/>} label="Réservations" value={kpis?.reservations} delta={kpis?.delta?.reservations} loading={overviewQ.isLoading}/>
-        </div>
-
-        {/* Top Médias + Activité */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <div className="bg-gray-800/40 backdrop-blur border border-gray-700/50 rounded-2xl p-4">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">Médias les plus populaires</h3>
-              <button onClick={()=>exportCSV((topMediaQ.data||[]).map(i=>({rank:i.rank,type:i.type,title:i.title,likes:i.likes,views:i.views,score:i.score})), 'top-medias.csv')} className="text-xs text-white/70 hover:text-white flex items-center gap-1"><Download size={14}/> Export CSV</button>
+          {/* Custom dates */}
+          {period==='custom' && (
+            <div className="flex items-center gap-2 text-xs">
+              <input type="date" value={customFrom} onChange={e=>setCustomFrom(e.target.value)} className="bg-black border border-white/10 rounded-lg px-2 py-1"/>
+              <span className="text-white/60">→</span>
+              <input type="date" value={customTo} onChange={e=>setCustomTo(e.target.value)} className="bg-black border border-white/10 rounded-lg px-2 py-1"/>
             </div>
-            <div className="space-y-2">
-              {(topMediaQ.data||[]).map(m => (
-                <div key={m.id} className="flex items-center gap-3 p-3 rounded-xl border border-white/10 hover:bg-white/5">
-                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white text-sm font-bold">{m.rank}</div>
-                  <div className="w-12 h-12 rounded-lg overflow-hidden bg-white/10"><img src={m.thumb} alt={m.title} className="w-full h-full object-cover"/></div>
-                  <div className="flex-1">
-                    <div className="text-white text-sm font-medium">{m.type==='video'?'📹':'📸'} {m.title}</div>
-                    <div className="text-xs text-white/60">{m.publishedAgo}</div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-pink-300 text-sm font-semibold">❤️ {m.likes}</div>
-                    <div className="text-white/70 text-xs">Score {m.score}</div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <a href="#" className="px-2 py-1 text-xs rounded-lg border border-white/10 hover:bg-white/10">Voir</a>
-                    <button onClick={()=>notifySuccess('Mise en avant', 'Boost appliqué (mock)')} className="px-2 py-1 text-xs rounded-lg bg-pink-600/80 hover:bg-pink-600 text-white">Boost</button>
-                  </div>
-                </div>
-              ))}
-              {topMediaQ.isLoading && <div className="h-24 bg-white/5 rounded-xl animate-pulse"/>}
-            </div>
-          </div>
-
-          <div className="bg-gray-800/40 backdrop-blur border border-gray-700/50 rounded-2xl p-4">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">Activité récente</h3>
-              <a href="/dashboard-escort/activite" className="text-xs text-white/70 hover:text-white">Voir toute l'activité</a>
-            </div>
-            <div className="space-y-3">
-              {(activityQ.data?.items||[]).map((a, i) => (
-                <div key={i} className="flex items-start gap-3 p-2 rounded-xl hover:bg-white/5">
-                  <div className="mt-0.5">
-                    {a.type==='view' && <Eye size={16} className="text-blue-400"/>}
-                    {a.type==='like' && <Heart size={16} className="text-pink-400"/>}
-                    {a.type==='message' && <MessageCircle size={16} className="text-green-400"/>}
-                    {a.type==='reservation' && <Calendar size={16} className="text-purple-400"/>}
-                    {a.type==='reaction' && <span className="text-red-400">❤️</span>}
-                  </div>
-                  <div className="flex-1 text-sm">{a.text}
-                    <div className="text-xs text-white/60">{timeAgo(a.at)}</div>
-                  </div>
-                </div>
-              ))}
-              {activityQ.isLoading && <div className="h-24 bg-white/5 rounded-xl animate-pulse"/>}
-            </div>
-          </div>
-        </div>
-
-        {/* Views line (bar) + Revenue donut */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <div className="bg-gray-800/40 backdrop-blur border border-gray-700/50 rounded-2xl p-4">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-lg font-semibold">Évolution des vues de profil</h3>
-              <div className="text-xs text-white/60">Derniers 14 jours</div>
-            </div>
-            <div className="h-56 flex items-end gap-1">
-              {(viewsQ.data?.series||[]).map((p, i) => {
-                const maxValue = Math.max(...(viewsQ.data?.series||[]).map(s => s.v))
-                const normalizedHeight = maxValue > 0 ? (p.v / maxValue) * 100 : 0
-                return (
-                  <div key={i} className="flex-1 flex flex-col items-center">
-                    <div className="w-full bg-gradient-to-t from-purple-500 to-pink-500 rounded-t" style={{ height: `${Math.min(normalizedHeight, 100)}%` }} />
-                    <div className="text-[10px] text-white/50 mt-1">{i+1}</div>
-                  </div>
-                )
-              })}
-              {viewsQ.isLoading && <div className="w-full h-40 bg-white/5 rounded-xl animate-pulse"/>}
-            </div>
-          </div>
-
-          <div className="bg-gray-800/40 backdrop-blur border border-gray-700/50 rounded-2xl p-4">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">Sources de revenus</h3>
-            </div>
-            {revenueBreakdownQ.data ? (
-              <div className="grid grid-cols-2 gap-4 items-center">
-                {/* Donut via conic-gradient */}
-                <div className="flex items-center justify-center">
-                  <div className="relative w-40 h-40">
-                    {(() => {
-                      const d = revenueBreakdownQ.data!
-                      const a = d.orders.pct
-                      const b = a + d.paywalls.pct
-                      const c = 100
-                      const bg = `conic-gradient(#a855f7 0% ${a}%, #06b6d4 ${a}% ${b}%, #10b981 ${b}% ${c}%)`
-                      return (
-                        <div className="w-40 h-40 rounded-full" style={{ background: bg }}>
-                          <div className="absolute inset-4 bg-gray-900 rounded-full border border-white/10 flex items-center justify-center">
-                            <div className="text-center">
-                              <div className="text-xs text-white/60">Total</div>
-                              <div className="text-sm font-semibold">{fmtDiamond(d.total)}</div>
-                            </div>
-                          </div>
-                        </div>
-                      )
-                    })()}
-                  </div>
-                </div>
-                {/* Legend */}
-                <div className="space-y-3">
-                  <LegendRow color="from-purple-500 to-pink-500" label="Commandes privées" value={revenueBreakdownQ.data.orders.amount} pct={revenueBreakdownQ.data.orders.pct} onClick={()=>setScope('ondemand')} />
-                  <LegendRow color="from-blue-500 to-cyan-500" label="Médias payants" value={revenueBreakdownQ.data.paywalls.amount} pct={revenueBreakdownQ.data.paywalls.pct} onClick={()=>setScope('public')} />
-                  <LegendRow color="from-green-500 to-emerald-500" label="Cadeaux reçus" value={revenueBreakdownQ.data.gifts.amount} pct={revenueBreakdownQ.data.gifts.pct} onClick={()=>setScope('private')} />
-                </div>
-              </div>
-            ) : (
-              <div className="h-40 bg-white/5 rounded-xl animate-pulse"/>
-            )}
-          </div>
-        </div>
-
-        {/* Wallet block */}
-        <WalletBlock summaryQ={walletSummaryQ.data} txQ={walletTxQ.data} onExport={() => exportCSV((walletTxQ.data?.items||[]), 'transactions.csv')} />
-
-        {/* Monthly Revenue bars */}
-        <div className="bg-gray-800/40 backdrop-blur border border-gray-700/50 rounded-2xl p-4">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-lg font-semibold">Revenus — évolution mensuelle</h3>
-            <div className="text-xs text-white/60">Meilleur mois: <span className="text-white font-medium">{bestMonth.m}</span></div>
-          </div>
-          <div className="h-56 flex items-end gap-2">
-            {(months.length ? months : Array.from({length:12}, (_,i)=>({m:['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'][i], v:0}))).map((m,i) => (
-              <div key={i} className="flex-1 flex flex-col items-center">
-                <div className="w-full bg-gradient-to-t from-yellow-500 to-amber-300 rounded-t" style={{ height: `${Math.max(4, Math.min(100, Math.round((m.v/Math.max(1, Math.max(...months.map(mm=>mm.v), 100)))*100)))}%` }} />
-                <div className="text-[10px] text-white/60 mt-1">{m.m}</div>
-              </div>
+          )}
+          <div className="flex-1"/>
+          {/* Scope */}
+          <div 
+            className="flex items-center gap-1 rounded-xl p-1"
+            style={{
+              background: 'rgba(255, 255, 255, 0.05)',
+              border: '1px solid rgba(255, 255, 255, 0.1)'
+            }}
+          >
+            {([
+              { key:'all', label:'Tous les médias' },
+              { key:'public', label:'Publics' },
+              { key:'ondemand', label:'À la demande' },
+              { key:'private', label:'Privés' },
+            ] as Array<{key:ScopeKey,label:string}>).map(s => (
+              <button 
+                key={s.key} 
+                onClick={() => setScope(s.key)} 
+                className={`px-3 py-1.5 text-xs rounded-lg transition-colors ${
+                  scope===s.key
+                    ? 'text-white' 
+                    : 'text-white/70 hover:bg-white/5'
+                }`}
+                style={scope===s.key ? {
+                  background: 'linear-gradient(135deg, var(--felora-aurora) 0%, var(--felora-plasma) 100%)',
+                  boxShadow: '0 2px 8px rgba(255, 107, 157, 0.3)'
+                } : {}}
+              >
+                {s.label}
+              </button>
             ))}
           </div>
         </div>
-
-        {/* Sources detail cards */}
-        {revenueBreakdownQ.data && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <SourceCard emoji="📸" title="Commandes privées" pct={revenueBreakdownQ.data.orders.pct} amount={revenueBreakdownQ.data.orders.amount} delta={15} onClick={()=>setScope('ondemand')} />
-            <SourceCard emoji="💎" title="Médias payants" pct={revenueBreakdownQ.data.paywalls.pct} amount={revenueBreakdownQ.data.paywalls.amount} delta={8} onClick={()=>setScope('public')} />
-            <SourceCard emoji="🎁" title="Cadeaux" pct={revenueBreakdownQ.data.gifts.pct} amount={revenueBreakdownQ.data.gifts.amount} delta={22} onClick={()=>setScope('private')} />
-          </div>
-        )}
       </div>
+
+      {/* KPIs */}
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <KpiCard icon={<Eye className="text-blue-400" size={22}/>} label="Vues profil" value={kpis?.vuesProfil} delta={kpis?.delta?.vuesProfil} loading={overviewQ.isLoading}/>
+        <KpiCard icon={<Heart className="text-pink-400" size={22}/>} label="Réactions" value={kpis?.reactions} delta={kpis?.delta?.reactions} loading={overviewQ.isLoading}/>
+        <KpiCard icon={<Users className="text-purple-400" size={22}/>} label="Nouveaux fans" value={kpis?.fans} delta={kpis?.delta?.fans} loading={overviewQ.isLoading}/>
+        <KpiCard icon={<MessageCircle className="text-green-400" size={22}/>} label="Messages" value={kpis?.messages} delta={kpis?.delta?.messages} loading={overviewQ.isLoading}/>
+        <KpiCard icon={<Wallet className="text-yellow-300" size={22}/>} label="Revenus" value={kpis?.revenus} delta={kpis?.delta?.revenus} suffix=" ♦" loading={overviewQ.isLoading}/>
+        <KpiCard icon={<TrendingUp className="text-emerald-400" size={22}/>} label="Réservations" value={kpis?.reservations} delta={kpis?.delta?.reservations} loading={overviewQ.isLoading}/>
+      </div>
+
+      {/* Top Médias + Activité */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="bg-gray-800/40 backdrop-blur border border-gray-700/50 rounded-2xl p-4">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold">Médias les plus populaires</h3>
+            <button onClick={()=>exportCSV((topMediaQ.data||[]).map(i=>({rank:i.rank,type:i.type,title:i.title,likes:i.likes,views:i.views,score:i.score})), 'top-medias.csv')} className="text-xs text-white/70 hover:text-white flex items-center gap-1"><Download size={14}/> Export CSV</button>
+          </div>
+          <div className="space-y-2">
+            {(topMediaQ.data||[]).map(m => (
+              <div key={m.id} className="flex items-center gap-3 p-3 rounded-xl border border-white/10 hover:bg-white/5">
+                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white text-sm font-bold">{m.rank}</div>
+                <div className="w-12 h-12 rounded-lg overflow-hidden bg-white/10"><img src={m.thumb} alt={m.title} className="w-full h-full object-cover"/></div>
+                <div className="flex-1">
+                  <div className="text-white text-sm font-medium">{m.type==='video'?'📹':'📸'} {m.title}</div>
+                  <div className="text-xs text-white/60">{m.publishedAgo}</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-pink-300 text-sm font-semibold">❤️ {m.likes}</div>
+                  <div className="text-white/70 text-xs">Score {m.score}</div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <a href="#" className="px-2 py-1 text-xs rounded-lg border border-white/10 hover:bg-white/10">Voir</a>
+                  <button onClick={()=>notifySuccess('Mise en avant', 'Boost appliqué (mock)')} className="px-2 py-1 text-xs rounded-lg bg-pink-600/80 hover:bg-pink-600 text-white">Boost</button>
+                </div>
+              </div>
+            ))}
+            {topMediaQ.isLoading && <div className="h-24 bg-white/5 rounded-xl animate-pulse"/>}
+          </div>
+        </div>
+
+        <div className="bg-gray-800/40 backdrop-blur border border-gray-700/50 rounded-2xl p-4">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold">Activité récente</h3>
+            <a href="/dashboard-escort/activite" className="text-xs text-white/70 hover:text-white">Voir toute l'activité</a>
+          </div>
+          <div className="space-y-3">
+            {(activityQ.data?.items||[]).map((a, i) => (
+              <div key={i} className="flex items-start gap-3 p-2 rounded-xl hover:bg-white/5">
+                <div className="mt-0.5">
+                  {a.type==='view' && <Eye size={16} className="text-blue-400"/>}
+                  {a.type==='like' && <Heart size={16} className="text-pink-400"/>}
+                  {a.type==='message' && <MessageCircle size={16} className="text-green-400"/>}
+                  {a.type==='reservation' && <Calendar size={16} className="text-purple-400"/>}
+                  {a.type==='reaction' && <span className="text-red-400">❤️</span>}
+                </div>
+                <div className="flex-1 text-sm">{a.text}
+                  <div className="text-xs text-white/60">{timeAgo(a.at)}</div>
+                </div>
+              </div>
+            ))}
+            {activityQ.isLoading && <div className="h-24 bg-white/5 rounded-xl animate-pulse"/>}
+          </div>
+        </div>
+      </div>
+
+      {/* Views line (bar) + Revenue donut */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="bg-gray-800/40 backdrop-blur border border-gray-700/50 rounded-2xl p-4">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-lg font-semibold">Évolution des vues de profil</h3>
+            <div className="text-xs text-white/60">Derniers 14 jours</div>
+          </div>
+          <div className="h-56 flex items-end gap-1">
+            {(viewsQ.data?.series||[]).map((p, i) => (
+              <div key={i} className="flex-1 flex flex-col items-center">
+                <div className="w-full bg-gradient-to-t from-purple-500 to-pink-500 rounded-t" style={{ height: `${p.v}%` }} />
+                <div className="text-[10px] text-white/50 mt-1">{i+1}</div>
+              </div>
+            ))}
+            {viewsQ.isLoading && <div className="w-full h-40 bg-white/5 rounded-xl animate-pulse"/>}
+          </div>
+        </div>
+
+        <div className="bg-gray-800/40 backdrop-blur border border-gray-700/50 rounded-2xl p-4">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold">Sources de revenus</h3>
+          </div>
+          {revenueBreakdownQ.data ? (
+            <div className="grid grid-cols-2 gap-4 items-center">
+              {/* Donut via conic-gradient */}
+              <div className="flex items-center justify-center">
+                <div className="relative w-40 h-40">
+                  {(() => {
+                    const d = revenueBreakdownQ.data!
+                    const a = d.orders.pct
+                    const b = a + d.paywalls.pct
+                    const c = 100
+                    const bg = `conic-gradient(#a855f7 0% ${a}%, #06b6d4 ${a}% ${b}%, #10b981 ${b}% ${c}%)`
+                    return (
+                      <div className="w-40 h-40 rounded-full" style={{ background: bg }}>
+                        <div className="absolute inset-4 bg-gray-900 rounded-full border border-white/10 flex items-center justify-center">
+                          <div className="text-center">
+                            <div className="text-xs text-white/60">Total</div>
+                            <div className="text-sm font-semibold">{fmtDiamond(d.total)}</div>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })()}
+                </div>
+              </div>
+              {/* Legend */}
+              <div className="space-y-3">
+                <LegendRow color="from-purple-500 to-pink-500" label="Commandes privées" value={revenueBreakdownQ.data.orders.amount} pct={revenueBreakdownQ.data.orders.pct} onClick={()=>setScope('ondemand')} />
+                <LegendRow color="from-blue-500 to-cyan-500" label="Médias payants" value={revenueBreakdownQ.data.paywalls.amount} pct={revenueBreakdownQ.data.paywalls.pct} onClick={()=>setScope('public')} />
+                <LegendRow color="from-green-500 to-emerald-500" label="Cadeaux reçus" value={revenueBreakdownQ.data.gifts.amount} pct={revenueBreakdownQ.data.gifts.pct} onClick={()=>setScope('private')} />
+              </div>
+            </div>
+          ) : (
+            <div className="h-40 bg-white/5 rounded-xl animate-pulse"/>
+          )}
+        </div>
+      </div>
+
+      {/* Wallet block */}
+      <WalletBlock summaryQ={walletSummaryQ.data} txQ={walletTxQ.data} onExport={() => exportCSV((walletTxQ.data?.items||[]), 'transactions.csv')} />
+
+      {/* Monthly Revenue bars */}
+      <div className="bg-gray-800/40 backdrop-blur border border-gray-700/50 rounded-2xl p-4">
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-lg font-semibold">Revenus — évolution mensuelle</h3>
+          <div className="text-xs text-white/60">Meilleur mois: <span className="text-white font-medium">{bestMonth.m}</span></div>
+        </div>
+        <div className="h-56 flex items-end gap-2">
+          {(months.length ? months : Array.from({length:12}, (_,i)=>({m:['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'][i], v:0}))).map((m,i) => (
+            <div key={i} className="flex-1 flex flex-col items-center">
+              <div className="w-full bg-gradient-to-t from-yellow-500 to-amber-300 rounded-t" style={{ height: `${Math.max(4, Math.min(100, Math.round((m.v/Math.max(1, Math.max(...months.map(mm=>mm.v), 100)))*100)))}%` }} />
+              <div className="text-[10px] text-white/60 mt-1">{m.m}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Sources detail cards */}
+      {revenueBreakdownQ.data && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <SourceCard emoji="📸" title="Commandes privées" pct={revenueBreakdownQ.data.orders.pct} amount={revenueBreakdownQ.data.orders.amount} delta={15} onClick={()=>setScope('ondemand')} />
+          <SourceCard emoji="💎" title="Médias payants" pct={revenueBreakdownQ.data.paywalls.pct} amount={revenueBreakdownQ.data.paywalls.amount} delta={8} onClick={()=>setScope('public')} />
+          <SourceCard emoji="🎁" title="Cadeaux" pct={revenueBreakdownQ.data.gifts.pct} amount={revenueBreakdownQ.data.gifts.amount} delta={22} onClick={()=>setScope('private')} />
+        </div>
+      )}
     </div>
   )
 }
@@ -518,4 +593,14 @@ function timeAgo(ts: number) {
   if (h < 24) return `il y a ${h} h`
   const d = Math.round(h/24)
   return `il y a ${d} j`
+}
+
+export default function StatistiquesPage() {
+  const isNewStatistiquesEnabled = useFeatureFlag('NEXT_PUBLIC_FEATURE_UI_DASHBOARD_ESCORT_STATISTIQUES')
+  
+  if (isNewStatistiquesEnabled) {
+    return <NewStatistiquesPage />
+  }
+  
+  return <OldStatistiquesPage />
 }
