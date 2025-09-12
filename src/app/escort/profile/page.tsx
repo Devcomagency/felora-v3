@@ -171,8 +171,7 @@ export default function EscortProfile() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<{type: 'success' | 'error', text: string} | null>(null)
-  const [activeTab, setActiveTab] = useState<'profile' | 'agenda'>('profile')
-  const [activeSection, setActiveSection] = useState<'media' | 'basic' | 'physical' | 'clientele' | 'rates'>('media')
+  const [activeTab, setActiveTab] = useState<'media' | 'agenda' | 'stats'>('media')
   const [uploading, setUploading] = useState(false)
 
   // Auth check
@@ -552,18 +551,20 @@ export default function EscortProfile() {
         <div className="flex flex-wrap gap-2 p-1 bg-gray-800/40 rounded-xl border border-gray-700/50">
           {/* Grands onglets */}
           {[
-            { key: 'profile', label: 'Mon Profil' },
-            { key: 'agenda', label: 'Agenda' }
+            { key: 'media', label: 'Médias', icon: '🎬' },
+            { key: 'agenda', label: 'Agenda', icon: '📅' },
+            { key: 'stats', label: 'Statistiques', icon: '📊' }
           ].map(tab => (
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key as any)}
-              className={`px-6 py-3 rounded-lg text-lg font-semibold transition-all ${
+              className={`px-6 py-3 rounded-lg text-lg font-semibold transition-all flex items-center gap-2 ${
                 activeTab === tab.key
                   ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg'
                   : 'text-gray-400 hover:text-gray-300 hover:bg-gray-700/30'
               }`}
             >
+              <span className="text-xl">{tab.icon}</span>
               {tab.label}
             </button>
           ))}
@@ -584,48 +585,31 @@ export default function EscortProfile() {
       {/* Contenu des onglets */}
       <div className="grid gap-6">
         
-        {/* GRAND ONGLET: Mon Profil */}
-        {activeTab === 'profile' && (
+        {/* GRAND ONGLET: Médias */}
+        {activeTab === 'media' && (
           <div className="space-y-8">
-            {/* Navigation des sections */}
-            <div className="bg-gray-800/20 backdrop-blur-sm border border-gray-700/30 rounded-xl p-4">
-              <div className="flex flex-wrap gap-3">
-                {[
-                  { key: 'media', label: 'Médias', subtitle: '(obligatoire)', color: 'red' },
-                  { key: 'basic', label: 'Informations de base', color: 'blue' },
-                  { key: 'physical', label: 'Apparence physique', color: 'purple' },
-                  { key: 'clientele', label: 'Clientèle & Services', color: 'pink' },
-                  { key: 'rates', label: 'Tarifs & Paiements', color: 'green' }
-                ].map(section => (
-                  <button
-                    key={section.key}
-                    onClick={() => setActiveSection(section.key as any)}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${
-                      activeSection === section.key
-                        ? `bg-${section.color}-500 text-white shadow-lg`
-                        : 'text-gray-300 hover:text-white hover:bg-gray-700/50'
-                    }`}
-                  >
-                    {section.label}
-                    {section.subtitle && (
-                      <span className={`text-xs ${activeSection === section.key ? 'text-white/80' : 'text-red-400'}`}>
-                        {section.subtitle}
-                      </span>
-                    )}
+            {/* En-tête Médias */}
+            <div className="bg-gradient-to-r from-purple-800/20 to-pink-800/20 border border-purple-600/30 rounded-xl p-6 text-center">
+              <h2 className="text-3xl font-bold text-white mb-2">🎬 Médias</h2>
+              <p className="text-purple-300">Gérez vos photos publiques et privées</p>
+            </div>
+
+            {/* Navigation Médias Public/Privé */}
+            <div className="flex justify-center">
+              <div className="bg-gray-800/40 p-2 rounded-xl border border-gray-700/50">
+                <div className="flex gap-2">
+                  <button className="px-6 py-3 rounded-lg text-lg font-semibold bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg">
+                    📸 Médias Publics
                   </button>
-                ))}
+                  <button className="px-6 py-3 rounded-lg text-lg font-semibold text-gray-400 hover:text-white hover:bg-gray-700/50 transition-all">
+                    🔒 Médias Privés
+                  </button>
+                </div>
               </div>
             </div>
 
-            {/* Contenu des sections */}
-            
-            {/* Section: Médias (Obligatoire) */}
-            {activeSection === 'media' && (
-              <div className="space-y-6">
-                <div className="bg-red-800/10 border border-red-600/30 rounded-xl p-4 text-center">
-                  <h2 className="text-2xl font-bold text-red-400 mb-2">📸 Médias - Section Obligatoire</h2>
-                  <p className="text-red-300">Cette section est obligatoire pour activer votre profil</p>
-                </div>
+            {/* Section Médias Publics */}
+            <div className="space-y-6">
                 
                 {/* Photo de profil obligatoire */}
                 <div className="bg-red-800/20 backdrop-blur-sm border border-red-700/50 rounded-xl p-6">
@@ -769,11 +753,229 @@ export default function EscortProfile() {
                     Ces photos ne seront visibles qu'aux membres premium après validation.
                   </p>
                 </div>
-              </div>
-            )}
+            </div>
+          </div>
+        )}
 
-            {/* Section: Informations de base */}
-            {activeSection === 'basic' && (
+        {/* GRAND ONGLET: Agenda */}
+        {activeTab === 'agenda' && (
+          <div className="space-y-8">
+            {/* En-tête Agenda */}
+            <div className="bg-gradient-to-r from-green-800/20 to-blue-800/20 border border-green-600/30 rounded-xl p-6 text-center">
+              <h2 className="text-3xl font-bold text-white mb-2">📅 Agenda</h2>
+              <p className="text-green-300">Gérez vos disponibilités et rendez-vous</p>
+            </div>
+
+            {/* Disponibilités générales */}
+            <div className="bg-gray-800/40 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6">
+              <h3 className="text-xl font-semibold text-white mb-4">Disponibilités générales</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">Heures d'ouverture</label>
+                  <div className="flex space-x-2">
+                    <input 
+                      type="time" 
+                      className="flex-1 px-3 py-2 bg-gray-700/50 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-purple-500" 
+                      defaultValue="09:00"
+                    />
+                    <span className="text-gray-400 flex items-center">à</span>
+                    <input 
+                      type="time" 
+                      className="flex-1 px-3 py-2 bg-gray-700/50 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-purple-500" 
+                      defaultValue="22:00"
+                    />
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">Préavis minimum</label>
+                  <select className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-purple-500">
+                    <option value="30">30 minutes</option>
+                    <option value="60">1 heure</option>
+                    <option value="120">2 heures</option>
+                    <option value="240">4 heures</option>
+                    <option value="1440">24 heures</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Jours de la semaine */}
+            <div className="bg-gray-800/40 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6">
+              <h3 className="text-xl font-semibold text-white mb-4">Jours de travail</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'].map(day => (
+                  <label key={day} className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      checked={profile.availability.includes(day)}
+                      onChange={() => toggleArrayField('availability', day)}
+                      className="rounded bg-gray-700 border-gray-600 text-green-600 focus:ring-green-500"
+                    />
+                    <span className="text-gray-300">{day}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Calendrier rapide */}
+            <div className="bg-gray-800/40 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6">
+              <h3 className="text-xl font-semibold text-white mb-4">Indisponibilités</h3>
+              <div className="bg-gray-700/30 rounded-lg p-4">
+                <p className="text-gray-400 text-center mb-4">Calendrier interactif à implémenter</p>
+                <div className="flex justify-center space-x-4">
+                  <button className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors">
+                    Marquer indisponible
+                  </button>
+                  <button className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors">
+                    Marquer disponible
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Demandes de rendez-vous */}
+            <div className="bg-gray-800/40 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6">
+              <h3 className="text-xl font-semibold text-white mb-4">Demandes de rendez-vous</h3>
+              <div className="space-y-3">
+                <div className="bg-gray-700/30 rounded-lg p-4">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <p className="text-white font-medium">Client ****123</p>
+                      <p className="text-gray-400 text-sm">Demain 14:00 - 2h</p>
+                    </div>
+                    <div className="flex space-x-2">
+                      <button className="px-3 py-1 bg-green-500 text-white text-sm rounded-lg hover:bg-green-600 transition-colors">
+                        Accepter
+                      </button>
+                      <button className="px-3 py-1 bg-red-500 text-white text-sm rounded-lg hover:bg-red-600 transition-colors">
+                        Refuser
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                
+                <p className="text-gray-400 text-center">Aucune nouvelle demande</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* GRAND ONGLET: Stats */}
+        {activeTab === 'stats' && (
+          <div className="space-y-8">
+            {/* En-tête Stats */}
+            <div className="bg-gradient-to-r from-yellow-800/20 to-orange-800/20 border border-yellow-600/30 rounded-xl p-6 text-center">
+              <h2 className="text-3xl font-bold text-white mb-2">📊 Statistiques</h2>
+              <p className="text-yellow-300">Analysez votre performance et vos revenus</p>
+            </div>
+
+            {/* Cartes de statistiques */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="bg-blue-800/20 backdrop-blur-sm border border-blue-700/50 rounded-xl p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-blue-400 text-sm font-medium">Vues du profil</p>
+                    <p className="text-2xl font-bold text-white">{profile.stats.views.toLocaleString()}</p>
+                  </div>
+                  <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center">
+                    👁️
+                  </div>
+                </div>
+                <p className="text-xs text-gray-400 mt-2">+12% cette semaine</p>
+              </div>
+              
+              <div className="bg-green-800/20 backdrop-blur-sm border border-green-700/50 rounded-xl p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-green-400 text-sm font-medium">Contacts reçus</p>
+                    <p className="text-2xl font-bold text-white">{profile.stats.contacts.toLocaleString()}</p>
+                  </div>
+                  <div className="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center">
+                    💬
+                  </div>
+                </div>
+                <p className="text-xs text-gray-400 mt-2">+5% cette semaine</p>
+              </div>
+              
+              <div className="bg-purple-800/20 backdrop-blur-sm border border-purple-700/50 rounded-xl p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-purple-400 text-sm font-medium">Favoris</p>
+                    <p className="text-2xl font-bold text-white">{profile.stats.favorites.toLocaleString()}</p>
+                  </div>
+                  <div className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center">
+                    ❤️
+                  </div>
+                </div>
+                <p className="text-xs text-gray-400 mt-2">+8% cette semaine</p>
+              </div>
+              
+              <div className="bg-yellow-800/20 backdrop-blur-sm border border-yellow-700/50 rounded-xl p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-yellow-400 text-sm font-medium">Revenus</p>
+                    <p className="text-2xl font-bold text-white">{profile.stats.revenue.toLocaleString()} CHF</p>
+                  </div>
+                  <div className="w-10 h-10 bg-yellow-500/20 rounded-lg flex items-center justify-center">
+                    💰
+                  </div>
+                </div>
+                <p className="text-xs text-gray-400 mt-2">Ce mois-ci</p>
+              </div>
+            </div>
+
+            {/* Graphique des vues */}
+            <div className="bg-gray-800/40 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-white mb-4">Évolution des vues (7 derniers jours)</h3>
+              <div className="h-64 bg-gray-700/30 rounded-lg flex items-center justify-center">
+                <p className="text-gray-400">Graphique des statistiques à implémenter</p>
+              </div>
+            </div>
+
+            {/* Tableaux détaillés */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="bg-gray-800/40 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6">
+                <h3 className="text-lg font-semibold text-white mb-4">Sources de trafic</h3>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-300">Recherche directe</span>
+                    <span className="text-white font-medium">45%</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-300">Google</span>
+                    <span className="text-white font-medium">32%</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-300">Réseaux sociaux</span>
+                    <span className="text-white font-medium">23%</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-gray-800/40 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6">
+                <h3 className="text-lg font-semibold text-white mb-4">Heures de pointe</h3>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-300">14h - 16h</span>
+                    <span className="text-white font-medium">28%</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-300">20h - 22h</span>
+                    <span className="text-white font-medium">35%</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-300">22h - 00h</span>
+                    <span className="text-white font-medium">24%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ANCIENNES SECTIONS SUPPRIMÉES */}
+        {false && (
           <div className="bg-gray-800/40 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6">
             <h2 className="text-xl font-semibold text-white mb-4">Informations de base</h2>
             
@@ -834,8 +1036,8 @@ export default function EscortProfile() {
           </div>
         )}
 
-        {/* Onglet: Apparence physique */}
-        {activeTab === 'physical' && (
+        {/* ANCIEN ONGLET SUPPRIMÉ */}
+        {false && (
           <div className="bg-gray-800/40 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6">
             <h2 className="text-xl font-semibold text-white mb-4">Apparence physique</h2>
             
@@ -1041,8 +1243,8 @@ export default function EscortProfile() {
           </div>
         )}
 
-        {/* Onglet: Clientèle & Services */}
-        {activeTab === 'services' && (
+        {/* ANCIEN ONGLET SUPPRIMÉ */}
+        {false && (
           <div className="space-y-8">
             {/* Section Services */}
             <div className="bg-gray-800/40 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6">
@@ -1191,8 +1393,8 @@ export default function EscortProfile() {
           </div>
         )}
 
-        {/* Onglet: Tarifs & Paiements */}
-        {activeTab === 'rates' && (
+        {/* ANCIEN ONGLET SUPPRIMÉ */}
+        {false && (
           <div className="space-y-8">
             {/* Section Tarifs */}
             <div className="bg-gray-800/40 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6">
@@ -1402,7 +1604,7 @@ export default function EscortProfile() {
         )}
 
         {/* ANCIEN ONGLET SUPPRIMÉ: Préférences (maintenant dans Services) */}
-        {false && activeTab === 'preferences' && (
+        {false && (
           <div className="bg-gray-800/40 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6">
             <h2 className="text-xl font-semibold text-white mb-4">Préférences clientèle</h2>
             
@@ -1484,7 +1686,7 @@ export default function EscortProfile() {
         )}
 
         {/* ANCIEN ONGLET SUPPRIMÉ: Localisation (maintenant dans Tarifs) */}
-        {false && activeTab === 'location' && (
+        {false && (
           <div>Ancien onglet localisation</div>
         )}
 
@@ -1637,7 +1839,7 @@ export default function EscortProfile() {
         )}
 
         {/* Onglet: Agenda */}
-        {activeTab === 'calendar' && (
+        {false && (
           <div className="bg-gray-800/40 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6">
             <h2 className="text-xl font-semibold text-white mb-4">Gestion de l'agenda</h2>
             
