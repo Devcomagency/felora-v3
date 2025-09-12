@@ -126,6 +126,8 @@ const nextConfig = {
       "default-src 'self'",
       `script-src 'self' ${isDev ? "'unsafe-inline' 'unsafe-eval'" : "'unsafe-inline'"} blob: https://api.mapbox.com https://*.sentry.io https://vercel.live https://*.vercel.live`,
       "style-src 'self' 'unsafe-inline' https://api.mapbox.com",
+      // Autoriser l'application à embarquer (iframe) des outils Vercel Live
+      "frame-src 'self' https://vercel.live https://*.vercel.live",
       `img-src 'self' data: blob: ${trustedDomains}`,
       `media-src 'self' blob: data: ${trustedDomains}`,
       "worker-src 'self' blob:",
