@@ -4,10 +4,24 @@ import { useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useNotification } from '@/components/providers/NotificationProvider'
 import { Bell, Eye, Shield, Settings as SettingsIcon, CreditCard, Globe, Moon, Sun, Volume2, VolumeX, Lock, Mail, Phone } from 'lucide-react'
+import { useFeatureFlag } from '@/hooks/useFeatureFlag'
 
 type SectionKey = 'notifications' | 'privacy' | 'security' | 'preferences' | 'account'
 
-export default function ParametresPage() {
+// Old parameters page (V3 original)
+function OldParametresPage() {
+  return (
+    <div className="min-h-screen bg-black text-white flex items-center justify-center">
+      <div className="text-center">
+        <h1 className="text-2xl font-bold mb-4">Paramètres (Version Originale)</h1>
+        <p className="text-gray-400">Cette page utilise l'ancienne interface V3</p>
+      </div>
+    </div>
+  )
+}
+
+// New parameters page (V2 design)
+function NewParametresPage() {
   const { user } = useAuth()
   const { success, error } = useNotification()
   const [activeSection, setActiveSection] = useState<SectionKey>('notifications')
@@ -69,24 +83,55 @@ export default function ParametresPage() {
   ]
 
   return (
-    <div className="space-y-6">
+    <div 
+      className="space-y-6 rounded-2xl p-6"
+      style={{
+        background: 'rgba(255, 255, 255, 0.03)',
+        backdropFilter: 'blur(20px)',
+        border: '1px solid rgba(255, 255, 255, 0.1)',
+        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)'
+      }}
+    >
       <div>
-        <h1 className="text-xl font-semibold text-white">Paramètres</h1>
-        <p className="text-sm text-white/70">Personnalisez votre expérience et sécurisez votre compte</p>
+        <h1 
+          className="text-2xl font-bold mb-2"
+          style={{
+            background: 'linear-gradient(135deg, var(--felora-aurora) 0%, var(--felora-plasma) 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text'
+          }}
+        >
+          Paramètres
+        </h1>
+        <p className="text-sm" style={{ color: 'var(--felora-silver-70)' }}>
+          Personnalisez votre expérience et sécurisez votre compte
+        </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-        {/* Sidebar */}
+        {/* Sidebar avec style V2 */}
         <div className="lg:col-span-1">
-          <div className="bg-gray-800/40 border border-gray-700/50 rounded-xl p-2 sticky top-[118px]">
+          <div 
+            className="rounded-xl p-2 sticky top-[118px]"
+            style={{
+              background: 'rgba(255, 255, 255, 0.05)',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255, 255, 255, 0.1)'
+            }}
+          >
             <nav className="space-y-1">
               {sections.map((s) => (
                 <button
                   key={s.key}
                   onClick={() => setActiveSection(s.key)}
-                  className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left ${
-                    activeSection === s.key ? 'bg-white/10 text-white' : 'text-white/70 hover:bg-white/5'
+                  className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left transition-colors ${
+                    activeSection === s.key ? 'text-white' : 'text-white/70 hover:bg-white/5'
                   }`}
+                  style={activeSection === s.key ? {
+                    background: 'linear-gradient(135deg, var(--felora-aurora) 0%, var(--felora-plasma) 100%)',
+                    boxShadow: '0 2px 8px rgba(255, 107, 157, 0.3)'
+                  } : {}}
                 >
                   {s.icon}
                   <span className="text-sm">{s.label}</span>
@@ -96,9 +141,16 @@ export default function ParametresPage() {
           </div>
         </div>
 
-        {/* Content */}
+        {/* Content avec style V2 */}
         <div className="lg:col-span-3">
-          <div className="bg-gray-800/40 border border-gray-700/50 rounded-xl p-4">
+          <div 
+            className="rounded-xl p-4"
+            style={{
+              background: 'rgba(255, 255, 255, 0.03)',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255, 255, 255, 0.1)'
+            }}
+          >
             {activeSection === 'notifications' && (
               <div className="space-y-6">
                 <h2 className="text-lg font-semibold">Notifications</h2>
@@ -355,3 +407,12 @@ function ToggleRow({ title, description, checked, onChange, leftIcon }: { title:
   )
 }
 
+export default function ParametresPage() {
+  const isNewParametresEnabled = useFeatureFlag('NEXT_PUBLIC_FEATURE_UI_DASHBOARD_ESCORT_PARAMETRES')
+  
+  if (isNewParametresEnabled) {
+    return <NewParametresPage />
+  }
+  
+  return <OldParametresPage />
+}
