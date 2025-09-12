@@ -8,31 +8,50 @@ import { sendMail } from '@/lib/mail'
 
 export async function POST(req: NextRequest) {
   try {
+    console.log('[SIGNUP] Escort signup attempt started')
     const ip = getClientIp(req as any)
     const rl = rateLimit(`signup:escort:${ip}`, 10 * 60_000, 5)
     if (!rl.ok) return NextResponse.json({ error: 'too_many_requests' }, { status: 429 })
     const body = await req.json()
+    console.log('[SIGNUP] Body received:', { email: body?.email, handle: body?.handle })
     if (body?.hp) return NextResponse.json({ error: 'invalid' }, { status: 200 })
     const parsed = escortPreSignupLite.safeParse(body)
-    if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message || 'invalid' }, { status: 400 })
+    if (!parsed.success) {
+      console.error('[SIGNUP] Validation failed:', parsed.error.issues)
+      return NextResponse.json({ error: parsed.error.issues[0]?.message || 'invalid' }, { status: 400 })
+    }
     const { email, phoneE164, handle, birthDate, password } = parsed.data
+    console.log('[SIGNUP] Validation passed for:', { email, handle })
 
     // Note: La vérification d'email est maintenant gérée côté client via le système en mémoire
     // L'utilisateur doit avoir vérifié son email avant d'arriver ici
 
+    console.log('[SIGNUP] Checking existing user...')
     const existingUser = await prisma.user.findUnique({ where: { email } })
-    if (existingUser) return NextResponse.json({ error: 'Email déjà utilisé' }, { status: 200 })
+    if (existingUser) {
+      console.log('[SIGNUP] Email already exists:', email)
+      return NextResponse.json({ error: 'Email déjà utilisé' }, { status: 200 })
+    }
 
     if (handle) {
+      console.log('[SIGNUP] Checking existing handle...')
       const existingHandle = await prisma.escortProfileV2.findUnique({ where: { handle } })
-      if (existingHandle) return NextResponse.json({ error: 'Handle déjà pris' }, { status: 400 })
+      if (existingHandle) {
+        console.log('[SIGNUP] Handle already exists:', handle)
+        return NextResponse.json({ error: 'Handle déjà pris' }, { status: 400 })
+      }
     }
 
+    console.log('[SIGNUP] Creating user...')
     const passwordHash = await bcrypt.hash(password, 10)
     const user = await prisma.user.create({ data: { email, phoneE164, passwordHash, role: 'ESCORT' as any } })
+    console.log('[SIGNUP] User created:', user.id)
+    
     if (handle && birthDate) {
+      console.log('[SIGNUP] Creating escort profile...')
       await prisma.escortProfileV2.create({ data: { userId: user.id, handle, birthDate: new Date(birthDate) } })
     }
+    console.log('[SIGNUP] Creating KYC submission...')
     await prisma.kycSubmission.create({ data: { userId: user.id, role: 'ESCORT' as any, status: 'PENDING' as any } })
 
     // Envoyer l'email de bienvenue à l'escorte
@@ -73,8 +92,10 @@ export async function POST(req: NextRequest) {
       // On continue même si l'email échoue
     }
 
+    console.log('[SIGNUP] Escort signup completed successfully for:', email)
     return NextResponse.json({ ok: true, userId: user.id, next: '/profile-test-signup/escort?step=2' })
   } catch (e:any) {
+    console.error('[SIGNUP] Error during escort signup:', e)
     return NextResponse.json({ error: e?.message || 'server_error' }, { status: 500 })
   }
 }
