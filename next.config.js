@@ -64,33 +64,7 @@ const nextConfig = {
   },
 
   // Redirects: Canonical route consolidation
-  async redirects() {
-    return [
-      // Escort dashboard routes → /escort/*
-      {
-        source: '/dashboard-escort/:path*',
-        destination: '/escort/:path*',
-        permanent: true,
-      },
-      {
-        source: '/(dashboard)/escort/:path*',
-        destination: '/escort/:path*',
-        permanent: true,
-      },
-      // API Profile standardization
-      {
-        source: '/api/profiles/:id',
-        destination: '/api/profile/:id',
-        permanent: true,
-      },
-      // Geographic API consolidation  
-      {
-        source: '/api/geocode/:path*',
-        destination: '/api/geo/:path*',
-        permanent: true,
-      },
-    ];
-  },
+  async redirects() { return [] },
 
   // En-têtes de sécurité - CSP optimisée R2 + services
   async headers() {
