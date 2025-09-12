@@ -37,11 +37,18 @@ export async function POST(req: NextRequest) {
       html: emailTemplate.html 
     })
     if (!resendRes?.success) {
-      // Fallback to SMTP/dev helper
+      // En production, on force l'utilisation de Resend et on échoue clairement si indisponible
+      if (process.env.NODE_ENV === 'production') {
+        console.error('[MAIL] Resend failed in production:', resendRes?.error)
+        return NextResponse.json({ error: 'mail_failed_resend' }, { status: 500 })
+      }
+      // En développement seulement: fallback SMTP/dev pour faciliter les tests
       const smtpRes = await sendMail(safeEmail, emailTemplate.subject, emailTemplate.html)
       if (!smtpRes?.ok) {
         return NextResponse.json({ error: 'mail_failed' }, { status: 500 })
       }
+    } else {
+      console.log('[MAIL] Resend success:', { to: safeEmail, id: resendRes?.messageId })
     }
 
     const dev = process.env.NODE_ENV !== 'production'
