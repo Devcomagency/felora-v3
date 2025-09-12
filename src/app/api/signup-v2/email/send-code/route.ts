@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import crypto from 'crypto'
 import { sendEmailResend, emailTemplates } from '@/lib/resend'
 import { sendMail } from '@/lib/mail'
+import { sendMail } from '@/lib/mail'
 import { rateLimit, getClientIp } from '@/lib/rateLimit'
 
 export async function POST(req: NextRequest) {

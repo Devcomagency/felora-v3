@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs'
 import { escortPreSignupLite } from '@/components/signup-v2/validation'
 import { rateLimit, getClientIp } from '@/lib/rateLimit'
 import { sendEmailResend, emailTemplates } from '@/lib/resend'
+import { sendMail } from '@/lib/mail'
 
 export async function POST(req: NextRequest) {
   try {
@@ -44,10 +45,15 @@ export async function POST(req: NextRequest) {
       })
       
       if (!emailResult.success) {
-        console.error('❌ Erreur envoi email de bienvenue escorte:', emailResult.error)
-        // On ne fait pas échouer l'inscription si l'email échoue
+        console.log('Resend failed, trying SMTP fallback...')
+        const smtpRes = await sendMail(email, welcomeEmail.subject, welcomeEmail.html)
+        if (smtpRes) {
+          console.log('✅ Email de bienvenue escorte envoyé via SMTP')
+        } else {
+          console.error('❌ Erreur envoi email de bienvenue escorte (Resend + SMTP failed)')
+        }
       } else {
-        console.log('✅ Email de bienvenue escorte envoyé:', emailResult.messageId)
+        console.log('✅ Email de bienvenue escorte envoyé via Resend:', emailResult.messageId)
       }
     } catch (emailError) {
       console.error('❌ Exception envoi email bienvenue escorte:', emailError)

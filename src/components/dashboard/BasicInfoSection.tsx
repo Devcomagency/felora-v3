@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { ModernAddressSearch } from './ModernAddressSearch'
+import { useNotification } from '@/components/providers/NotificationProvider'
 
 
 interface ProfileData {
@@ -29,23 +30,68 @@ export function BasicInfoSection({ profileData, onProfileChange }: BasicInfoSect
   const [showPasswordModal, setShowPasswordModal] = useState(false)
   const [newEmail, setNewEmail] = useState('')
   const [emailLoading, setEmailLoading] = useState(false)
+  const { success: notifySuccess, error: notifyError } = useNotification()
+  const [emailStep, setEmailStep] = useState<'enter'|'verify'>('enter')
+  const [emailCode, setEmailCode] = useState('')
 
   // Fonction pour gérer le changement d'email
   const handleEmailChange = async () => {
     if (!newEmail) return
-    
+    // Validation rapide
+    const email = newEmail.trim().toLowerCase()
+    const emailRe = /^[^@\s]+@[^@\s]+\.[^@\s]+$/
+    if (!emailRe.test(email)) {
+      notifyError('Email invalide', 'Veuillez saisir une adresse valide')
+      return
+    }
+
     setEmailLoading(true)
     try {
-      // TODO: Implémenter l'API de changement d'email avec vérification
-      console.log('Changement email vers:', newEmail)
-      // Simuler une requête API
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      
-      alert(`Un email de vérification a été envoyé à ${newEmail}`)
+      // Envoi d'un code de vérification à la nouvelle adresse
+      const r = await fetch('/api/signup-v2/email/send-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      })
+      const d = await r.json().catch(() => null)
+      if (!r.ok || !d?.success) {
+        throw new Error(d?.error || 'mail_failed')
+      }
+      notifySuccess('Vérification envoyée', `Un code a été envoyé à ${email}`)
+      setEmailStep('verify')
+    } catch (e: any) {
+      notifyError('Échec de l’envoi', e?.message || 'Impossible d’envoyer l’email')
+    } finally {
+      setEmailLoading(false)
+    }
+  }
+
+  const confirmEmailChange = async () => {
+    const email = newEmail.trim().toLowerCase()
+    if (!email || !emailCode) {
+      notifyError('Champs manquants', 'Entrez l’email et le code reçu')
+      return
+    }
+    setEmailLoading(true)
+    try {
+      const r = await fetch('/api/me/email/change', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, code: emailCode })
+      })
+      const d = await r.json().catch(()=>null)
+      if (!r.ok || !d?.success) {
+        throw new Error(d?.error || 'invalid_code')
+      }
+      notifySuccess('Email mis à jour', 'Votre adresse a été changée')
       setShowEmailModal(false)
       setNewEmail('')
-    } catch (error) {
-      alert('Erreur lors du changement d\'email')
+      setEmailCode('')
+      setEmailStep('enter')
+      // Rafraîchir les données pour refléter le nouvel email
+      if (typeof window !== 'undefined') window.location.reload()
+    } catch (e: any) {
+      notifyError('Échec de la vérification', e?.message || 'Code invalide')
     } finally {
       setEmailLoading(false)
     }
@@ -160,20 +206,35 @@ export function BasicInfoSection({ profileData, onProfileChange }: BasicInfoSect
           <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-6 max-w-md w-full mx-4 border border-gray-700">
             <div className="text-center mb-6">
               <h3 className="text-xl font-bold text-white mb-2">Changer l'email</h3>
-              <p className="text-gray-400 text-sm">Un email de vérification sera envoyé à la nouvelle adresse</p>
+              <p className="text-gray-400 text-sm">Un code de vérification sera envoyé à la nouvelle adresse</p>
             </div>
             
             <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Nouvel email</label>
-                <input
-                  type="email"
-                  value={newEmail}
-                  onChange={(e) => setNewEmail(e.target.value)}
-                  placeholder="nouveau@email.com"
-                  className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:outline-none"
-                />
-              </div>
+              {emailStep === 'enter' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">Nouvel email</label>
+                  <input
+                    type="email"
+                    value={newEmail}
+                    onChange={(e) => setNewEmail(e.target.value)}
+                    placeholder="nouveau@email.com"
+                    className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:outline-none"
+                  />
+                </div>
+              )}
+              {emailStep === 'verify' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">Code reçu par email</label>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={emailCode}
+                    onChange={(e) => setEmailCode(e.target.value)}
+                    placeholder="6 chiffres"
+                    className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:outline-none tracking-widest"
+                  />
+                </div>
+              )}
             </div>
 
             <div className="flex space-x-3 mt-6">
@@ -184,20 +245,37 @@ export function BasicInfoSection({ profileData, onProfileChange }: BasicInfoSect
               >
                 Annuler
               </button>
-              <button
-                onClick={handleEmailChange}
-                disabled={emailLoading || !newEmail}
-                className="flex-1 px-4 py-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:shadow-lg text-white rounded-xl font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {emailLoading ? (
-                  <div className="flex items-center justify-center space-x-2">
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                    <span>Envoi...</span>
-                  </div>
-                ) : (
-                  'Envoyer la vérification'
-                )}
-              </button>
+              {emailStep === 'enter' ? (
+                <button
+                  onClick={handleEmailChange}
+                  disabled={emailLoading || !newEmail}
+                  className="flex-1 px-4 py-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:shadow-lg text-white rounded-xl font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {emailLoading ? (
+                    <div className="flex items-center justify-center space-x-2">
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      <span>Envoi...</span>
+                    </div>
+                  ) : (
+                    'Envoyer la vérification'
+                  )}
+                </button>
+              ) : (
+                <button
+                  onClick={confirmEmailChange}
+                  disabled={emailLoading || !emailCode}
+                  className="flex-1 px-4 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 hover:shadow-lg text-white rounded-xl font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {emailLoading ? (
+                    <div className="flex items-center justify-center space-x-2">
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      <span>Vérification...</span>
+                    </div>
+                  ) : (
+                    'Valider le code'
+                  )}
+                </button>
+              )}
             </div>
           </div>
         </div>

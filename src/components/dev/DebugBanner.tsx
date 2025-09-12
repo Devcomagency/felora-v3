@@ -28,7 +28,7 @@ interface MediaHealthData {
   error?: string
 }
 
-export function DebugBanner() {
+function DebugBanner() {
   const { data: session, status } = useSession()
   const [healthData, setHealthData] = useState<HealthData | null>(null)
   const [mediaHealthData, setMediaHealthData] = useState<MediaHealthData | null>(null)
@@ -259,3 +259,5 @@ export function DebugBanner() {
     </div>
   )
 }
+
+export default DebugBanner
