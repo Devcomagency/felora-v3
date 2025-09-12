@@ -71,14 +71,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Vérifier la configuration R2
-    if (!R2_ENDPOINT || !R2_ACCESS_KEY || !R2_SECRET_KEY || !R2_BUCKET) {
-      console.error('❌ API Upload - Configuration R2 manquante')
-      return NextResponse.json(
-        { success: false, error: 'Configuration de stockage manquante' },
-        { status: 500 }
-      )
-    }
+    // Vérifier la configuration R2 - si manquante, utiliser stockage local
+    const useR2 = R2_ENDPOINT && R2_ACCESS_KEY && R2_SECRET_KEY && R2_BUCKET
+    console.log('🔧 API Upload - Mode stockage:', useR2 ? 'Cloudflare R2' : 'Local (fallback)')
 
     // Créer le nom de fichier unique
     const fileExtension = file.name.split('.').pop()
@@ -91,43 +86,66 @@ export async function POST(request: NextRequest) {
       const bytes = await file.arrayBuffer()
       const buffer = Buffer.from(bytes)
       
-      console.log('☁️ API Upload - Upload vers Cloudflare R2...')
+      let publicUrl: string
       
-      // Upload vers Cloudflare R2
-      const uploadCommand = new PutObjectCommand({
-        Bucket: R2_BUCKET,
-        Key: fileName,
-        Body: buffer,
-        ContentType: file.type,
-        ContentLength: buffer.length,
-        Metadata: {
-          originalName: file.name,
-          userId: session.user.id,
-          uploadedAt: new Date().toISOString()
-        }
-      })
-      
-      await r2Client.send(uploadCommand)
-      
-      // Construire l'URL publique 
-      // En production: utilise un domaine R2 personnalisé si disponible, sinon API proxy
-      // En développement: utilise l'API proxy locale
-      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3004'
-      const publicUrl = `${baseUrl}/api/uploads/${fileName}`
-      
-      console.log('✅ API Upload - Succès R2! URL:', publicUrl)
+      if (useR2) {
+        console.log('☁️ API Upload - Upload vers Cloudflare R2...')
+        
+        // Upload vers Cloudflare R2
+        const uploadCommand = new PutObjectCommand({
+          Bucket: R2_BUCKET,
+          Key: fileName,
+          Body: buffer,
+          ContentType: file.type,
+          ContentLength: buffer.length,
+          Metadata: {
+            originalName: file.name,
+            userId: session.user.id,
+            uploadedAt: new Date().toISOString()
+          }
+        })
+        
+        await r2Client.send(uploadCommand)
+        
+        // URL publique R2 via API proxy
+        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3004'
+        publicUrl = `${baseUrl}/api/uploads/${fileName}`
+        
+        console.log('✅ API Upload - Succès R2! URL:', publicUrl)
+        
+      } else {
+        console.log('💾 API Upload - Fallback vers stockage local...')
+        
+        // Import dynamique pour éviter les erreurs en environnement Edge
+        const { writeFile } = await import('fs/promises')
+        const { join } = await import('path')
+        
+        // Créer le chemin de fichier simple pour le fallback
+        const simpleFileName = `${uuidv4()}.${fileExtension}`
+        const uploadDir = '/tmp'
+        const filePath = join(uploadDir, simpleFileName)
+        
+        // Écrire le fichier
+        await writeFile(filePath, buffer)
+        
+        // URL publique locale 
+        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3004'
+        publicUrl = `${baseUrl}/api/uploads/local/${simpleFileName}`
+        
+        console.log('✅ API Upload - Succès local! URL:', publicUrl)
+      }
       
       return NextResponse.json({
         success: true,
         url: publicUrl,
         fileName,
-        message: 'Photo uploadée avec succès vers R2'
+        message: `Photo uploadée avec succès${useR2 ? ' vers R2' : ' (local)'}`
       })
       
-    } catch (r2Error) {
-      console.error('💥 API Upload - Erreur R2:', r2Error)
+    } catch (uploadError) {
+      console.error('💥 API Upload - Erreur upload:', uploadError)
       return NextResponse.json(
-        { success: false, error: 'Erreur lors de l\'upload vers le stockage', details: (r2Error as Error).message },
+        { success: false, error: 'Erreur lors de l\'upload vers le stockage', details: (uploadError as Error).message },
         { status: 500 }
       )
     }
