@@ -79,8 +79,19 @@ export default async function HomePage() {
 
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      {/* Pour l'instant, utilisons directement l'ancienne page */}
-      <OldHomePage />
+      <HomeClient initialItems={items} initialCursor={nextCursor} />
     </Suspense>
   )
+}
+
+'use client'
+
+import { useFeatureFlag } from '@/hooks/useFeatureFlag'
+
+function HomeClient({ initialItems, initialCursor }: { initialItems: MediaItem[]; initialCursor: string }) {
+  const showNewUI = useFeatureFlag('NEXT_PUBLIC_FEATURE_UI_HOME')
+  if (showNewUI) {
+    return <ClientFeedPage initialItems={initialItems} initialCursor={initialCursor} />
+  }
+  return <OldHomePage />
 }

@@ -11,10 +11,14 @@ export function useFeatureFlag(flagName: string): boolean {
 
   useEffect(() => {
     // Vérifier les variables d'environnement côté client
-    const envValue = process.env[`NEXT_PUBLIC_${flagName}`]
-    if (envValue === 'true') {
-      setIsEnabled(true)
-      return
+    // Supporte deux conventions: 'FEATURE_X' et 'NEXT_PUBLIC_FEATURE_X'
+    const envKeysToTry = [flagName, `NEXT_PUBLIC_${flagName}`]
+    for (const k of envKeysToTry) {
+      const v = (process.env as any)?.[k]
+      if (v === 'true') {
+        setIsEnabled(true)
+        return
+      }
     }
 
     // Vérifier le cookie canary pour les tests
@@ -32,9 +36,10 @@ export function useFeatureFlag(flagName: string): boolean {
 
     // Vérifier les cookies spécifiques au flag
     if (typeof window !== 'undefined') {
+      const cookieName = flagName.toLowerCase()
       const flagCookie = document.cookie
         .split('; ')
-        .find(row => row.startsWith(`${flagName.toLowerCase()}=`))
+        .find(row => row.startsWith(`${cookieName}=`))
         ?.split('=')[1]
       
       if (flagCookie === 'true') {
