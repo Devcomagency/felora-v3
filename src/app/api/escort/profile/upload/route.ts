@@ -22,6 +22,8 @@ const r2Client = new S3Client({
 
 export async function POST(request: NextRequest) {
   console.log('🚀 API Upload - Début de la requête')
+  console.log('🔧 API Upload - Runtime:', process.env.VERCEL_ENV || 'local')
+  console.log('🔧 API Upload - Node version:', process.version)
   
   try {
     // Vérifier l'authentification
@@ -73,7 +75,12 @@ export async function POST(request: NextRequest) {
 
     // Vérifier la configuration R2 - si manquante, utiliser stockage local
     const useR2 = R2_ENDPOINT && R2_ACCESS_KEY && R2_SECRET_KEY && R2_BUCKET
-    console.log('🔧 API Upload - Mode stockage:', useR2 ? 'Cloudflare R2' : 'Local (fallback)')
+    console.log('🔧 API Upload - Variables R2:')
+    console.log('  - R2_ENDPOINT:', R2_ENDPOINT ? 'présent' : 'manquant')
+    console.log('  - R2_ACCESS_KEY:', R2_ACCESS_KEY ? 'présent' : 'manquant') 
+    console.log('  - R2_SECRET_KEY:', R2_SECRET_KEY ? 'présent' : 'manquant')
+    console.log('  - R2_BUCKET:', R2_BUCKET ? 'présent' : 'manquant')
+    console.log('🔧 API Upload - Mode stockage:', useR2 ? 'Cloudflare R2' : 'Base64 (fallback)')
 
     // Créer le nom de fichier unique
     const fileExtension = file.name.split('.').pop()
@@ -82,9 +89,14 @@ export async function POST(request: NextRequest) {
     console.log('📁 API Upload - Nom de fichier généré:', fileName)
 
     try {
+      console.log('🔄 API Upload - Conversion du fichier...')
+      
       // Convertir le fichier en buffer
       const bytes = await file.arrayBuffer()
+      console.log('📦 API Upload - ArrayBuffer créé, taille:', bytes.byteLength)
+      
       const buffer = Buffer.from(bytes)
+      console.log('📦 API Upload - Buffer créé, taille:', buffer.length)
       
       let publicUrl: string
       
@@ -114,25 +126,17 @@ export async function POST(request: NextRequest) {
         console.log('✅ API Upload - Succès R2! URL:', publicUrl)
         
       } else {
-        console.log('💾 API Upload - Fallback vers stockage local...')
+        console.log('💾 API Upload - Fallback: stockage temporaire en base64...')
         
-        // Import dynamique pour éviter les erreurs en environnement Edge
-        const { writeFile } = await import('fs/promises')
-        const { join } = await import('path')
+        // En attendant la config R2, utiliser un stockage temporaire
+        // Convertir en base64 pour stockage temporaire
+        const base64Data = buffer.toString('base64')
+        const dataUrl = `data:${file.type};base64,${base64Data}`
         
-        // Créer le chemin de fichier simple pour le fallback
-        const simpleFileName = `${uuidv4()}.${fileExtension}`
-        const uploadDir = '/tmp'
-        const filePath = join(uploadDir, simpleFileName)
+        // Pour le développement/test, retourner directement la data URL
+        publicUrl = dataUrl
         
-        // Écrire le fichier
-        await writeFile(filePath, buffer)
-        
-        // URL publique locale 
-        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3004'
-        publicUrl = `${baseUrl}/api/uploads/local/${simpleFileName}`
-        
-        console.log('✅ API Upload - Succès local! URL:', publicUrl)
+        console.log('✅ API Upload - Succès temporaire! Taille:', buffer.length)
       }
       
       return NextResponse.json({
@@ -144,8 +148,15 @@ export async function POST(request: NextRequest) {
       
     } catch (uploadError) {
       console.error('💥 API Upload - Erreur upload:', uploadError)
+      console.error('💥 API Upload - Stack:', (uploadError as Error).stack)
       return NextResponse.json(
-        { success: false, error: 'Erreur lors de l\'upload vers le stockage', details: (uploadError as Error).message },
+        { 
+          success: false, 
+          error: 'Erreur lors de l\'upload vers le stockage', 
+          details: (uploadError as Error).message,
+          stack: process.env.NODE_ENV === 'development' ? (uploadError as Error).stack : undefined,
+          useR2: useR2
+        },
         { status: 500 }
       )
     }
