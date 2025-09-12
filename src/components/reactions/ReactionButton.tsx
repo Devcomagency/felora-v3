@@ -27,13 +27,18 @@ const reactionColors = {
 }
 
 export function ReactionButton({ mediaId, userId, className = '' }: ReactionButtonProps) {
-  const { stats, userReactions, loading, addReaction } = useReactions({ mediaId, userId })
+  // Correct signature: useReactions(mediaId, userId?)
+  const result = useReactions(mediaId, userId)
+  const stats = result?.stats || { reactions: {}, total: 0 }
+  const userReactions = result?.userReactions || []
+  const loading = result?.loading || false
+  const toggleReaction = result?.toggleReaction || (async () => {})
   const [showAll, setShowAll] = useState(false)
 
   const reactions: ReactionType[] = ['LIKE', 'LOVE', 'FIRE', 'WOW', 'SMILE']
 
   const handleReaction = async (type: ReactionType) => {
-    await addReaction(type)
+    await toggleReaction(type)
   }
 
   const totalReactions = stats.total
@@ -68,7 +73,7 @@ export function ReactionButton({ mediaId, userId, className = '' }: ReactionButt
       <div className="flex gap-1">
         {reactions.slice(0, showAll ? 5 : 3).map((type) => {
           const Icon = reactionIcons[type]
-          const count = stats.reactions[type] || 0
+          const count = (stats.reactions && stats.reactions[type]) || 0
           const isActive = userReactions.includes(type)
 
           return (

@@ -17,7 +17,7 @@ export default async function DashboardIndex() {
     redirect('/admin/kyc')
   }
   if (role === 'ESCORT') {
-    redirect('/escort/profile')
+  redirect('/dashboard-escort/profil')
   }
 
   // Fallback: accueil

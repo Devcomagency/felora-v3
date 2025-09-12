@@ -15,7 +15,7 @@ function EscortAgendaContent() {
     const tab = searchParams.get('tab')
     if (tab !== 'agenda') {
       // Force agenda tab param for the editor
-      router.replace('/escort/agenda?tab=agenda')
+      router.replace('/dashboard-escort/activite?tab=agenda')
     }
   }, [router, searchParams])
 

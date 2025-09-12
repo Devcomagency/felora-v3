@@ -73,7 +73,7 @@ export default function CertificationPage() {
       setShowCongrats(true)
       // Redirection automatique vers le dashboard après un court délai
       setTimeout(() => {
-        try { router.push('/escort/profile') } catch {}
+        try { router.push('/dashboard-escort/profil') } catch {}
       }, 1400)
     } catch (e:any) { setErr(e?.message || 'Erreur d' + 'envoi') } finally { setBusy(false) }
   }
@@ -246,7 +246,7 @@ export default function CertificationPage() {
           <h3 className="text-xl font-bold mb-2">Félicitations 🎉</h3>
           <p className="text-white/80 text-sm mb-4">Votre demande de certification a été transmise. Notre équipe procède aux vérifications — vous recevrez votre badge sous 48h ouvrées.</p>
           <div className="flex items-center justify-end">
-            <a href="/escort/profile" className="px-4 py-2 rounded-lg bg-gradient-to-r from-purple-500 to-violet-600 text-white font-medium">OK, direction dashboard</a>
+            <a href="/dashboard-escort/profil" className="px-4 py-2 rounded-lg bg-gradient-to-r from-purple-500 to-violet-600 text-white font-medium">OK, direction dashboard</a>
           </div>
         </div>
       </div>
@@ -264,7 +264,7 @@ export default function CertificationPage() {
           <p className="text-white/60 text-sm mb-4">Vous pouvez revenir plus tard compléter la procédure, mais nous recommandons de la terminer maintenant pour activer pleinement votre profil.</p>
           <div className="flex items-center justify-end gap-2">
             <button onClick={()=>setShowSkip(false)} className="px-3 py-2 rounded-lg bg-white/10 hover:bg-white/15">Continuer la certification</button>
-            <a href="/escort/profile" className="px-4 py-2 rounded-lg bg-gradient-to-r from-pink-500 to-violet-600 text-white font-medium">Passer et aller au dashboard</a>
+            <a href="/dashboard-escort/profil" className="px-4 py-2 rounded-lg bg-gradient-to-r from-pink-500 to-violet-600 text-white font-medium">Passer et aller au dashboard</a>
           </div>
         </div>
       </div>

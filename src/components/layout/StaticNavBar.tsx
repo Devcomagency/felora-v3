@@ -105,7 +105,7 @@ export default function StaticNavBar() {
       items.push({ id: 'messages', icon: MessageCircle, label: 'Messages', href: '/messages', active: pathname === '/messages' })
     }
     if (role === 'ESCORT') {
-      items.push({ id: 'dashboard', icon: BarChart3, label: 'Dashboard', href: '/escort/profile', active: pathname?.startsWith('/escort') || pathname?.startsWith('/dashboard-escort') })
+      items.push({ id: 'dashboard', icon: BarChart3, label: 'Dashboard', href: '/dashboard-escort/profil', active: pathname?.startsWith('/dashboard-escort') })
     } else if (role === 'CLUB') {
       items.push({ id: 'dashboard', icon: BarChart3, label: 'Dashboard', href: '/club/profile', active: pathname?.startsWith('/club') })
     }
@@ -341,7 +341,7 @@ export default function StaticNavBar() {
                         <motion.button
                           whileHover={{ backgroundColor: "rgba(255, 255, 255, 0.04)" }}
                           whileTap={{ scale: 0.98 }}
-                          onClick={() => { router.push('/escort/profile'); setShowMenu(false) }}
+                          onClick={() => { router.push('/dashboard-escort/profil'); setShowMenu(false) }}
                           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/90 hover:text-white transition-colors text-left"
                         >
                           <BarChart3 size={18} className="text-white/70" />
@@ -351,7 +351,7 @@ export default function StaticNavBar() {
                         <motion.button
                           whileHover={{ backgroundColor: "rgba(255, 255, 255, 0.04)" }}
                           whileTap={{ scale: 0.98 }}
-                          onClick={() => { router.push('/escort/profile'); setShowMenu(false) }}
+                          onClick={() => { router.push('/dashboard-escort/activite'); setShowMenu(false) }}
                           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/90 hover:text-white transition-colors text-left"
                         >
                           <Calendar size={18} className="text-white/70" />

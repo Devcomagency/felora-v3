@@ -52,7 +52,7 @@ export default function MediaUploader({ onUploadSuccess, className = '' }: Media
               Cela permet d'associer tes médias à ton profil public.
             </p>
             <a 
-              href="/escort/profile" 
+              href="/dashboard-escort/profil" 
               className="inline-flex items-center space-x-2 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg font-medium transition-colors"
             >
               <User size={16} />

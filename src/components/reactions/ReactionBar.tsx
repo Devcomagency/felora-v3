@@ -6,7 +6,11 @@ import useReactions from '@/hooks/useReactions'
 type Props = { mediaId: string; userId?: string|null; onChange?: () => void }
 
 function ReactionBarBase({ mediaId, userId, onChange }: Props) {
-  const { stats, loading, error, toggleReaction } = useReactions(mediaId, userId ?? null)
+  const res = useReactions(mediaId, userId ?? null)
+  const stats = res?.stats || { reactions: {}, total: 0 }
+  const loading = res?.loading || false
+  const error = res?.error || null
+  const toggleReaction = res?.toggleReaction || (async () => {})
   const [open, setOpen] = useState(false)
 
   const total = stats?.total ?? 0
