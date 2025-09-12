@@ -171,7 +171,8 @@ export default function EscortProfile() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<{type: 'success' | 'error', text: string} | null>(null)
-  const [activeTab, setActiveTab] = useState<'basic' | 'physical' | 'services' | 'rates' | 'location' | 'preferences' | 'media' | 'calendar' | 'stats'>('media')
+  const [activeTab, setActiveTab] = useState<'profile' | 'agenda'>('profile')
+  const [activeSection, setActiveSection] = useState<'media' | 'basic' | 'physical' | 'clientele' | 'rates'>('media')
   const [uploading, setUploading] = useState(false)
 
   // Auth check
@@ -549,18 +550,15 @@ export default function EscortProfile() {
       {/* Onglets de navigation */}
       <div className="mb-6">
         <div className="flex flex-wrap gap-2 p-1 bg-gray-800/40 rounded-xl border border-gray-700/50">
+          {/* Grands onglets */}
           {[
-            { key: 'media', label: 'Médias', subtitle: 'Photos et vidéos' },
-            { key: 'basic', label: 'Informations de base', subtitle: 'Profil général' },
-            { key: 'physical', label: 'Apparence physique', subtitle: 'Caractéristiques physiques' },
-            { key: 'services', label: 'Clientèle & Services', subtitle: 'Groupes + tags' },
-            { key: 'rates', label: 'Tarifs & Paiements', subtitle: 'Prix et horaires' },
-            { key: 'calendar', label: 'Agenda', subtitle: 'Disponibilités & absences' }
+            { key: 'profile', label: 'Mon Profil' },
+            { key: 'agenda', label: 'Agenda' }
           ].map(tab => (
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key as any)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+              className={`px-6 py-3 rounded-lg text-lg font-semibold transition-all ${
                 activeTab === tab.key
                   ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg'
                   : 'text-gray-400 hover:text-gray-300 hover:bg-gray-700/30'
@@ -586,8 +584,196 @@ export default function EscortProfile() {
       {/* Contenu des onglets */}
       <div className="grid gap-6">
         
-        {/* Onglet: Informations de base */}
-        {activeTab === 'basic' && (
+        {/* GRAND ONGLET: Mon Profil */}
+        {activeTab === 'profile' && (
+          <div className="space-y-8">
+            {/* Navigation des sections */}
+            <div className="bg-gray-800/20 backdrop-blur-sm border border-gray-700/30 rounded-xl p-4">
+              <div className="flex flex-wrap gap-3">
+                {[
+                  { key: 'media', label: 'Médias', subtitle: '(obligatoire)', color: 'red' },
+                  { key: 'basic', label: 'Informations de base', color: 'blue' },
+                  { key: 'physical', label: 'Apparence physique', color: 'purple' },
+                  { key: 'clientele', label: 'Clientèle & Services', color: 'pink' },
+                  { key: 'rates', label: 'Tarifs & Paiements', color: 'green' }
+                ].map(section => (
+                  <button
+                    key={section.key}
+                    onClick={() => setActiveSection(section.key as any)}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${
+                      activeSection === section.key
+                        ? `bg-${section.color}-500 text-white shadow-lg`
+                        : 'text-gray-300 hover:text-white hover:bg-gray-700/50'
+                    }`}
+                  >
+                    {section.label}
+                    {section.subtitle && (
+                      <span className={`text-xs ${activeSection === section.key ? 'text-white/80' : 'text-red-400'}`}>
+                        {section.subtitle}
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Contenu des sections */}
+            
+            {/* Section: Médias (Obligatoire) */}
+            {activeSection === 'media' && (
+              <div className="space-y-6">
+                <div className="bg-red-800/10 border border-red-600/30 rounded-xl p-4 text-center">
+                  <h2 className="text-2xl font-bold text-red-400 mb-2">📸 Médias - Section Obligatoire</h2>
+                  <p className="text-red-300">Cette section est obligatoire pour activer votre profil</p>
+                </div>
+                
+                {/* Photo de profil obligatoire */}
+                <div className="bg-red-800/20 backdrop-blur-sm border border-red-700/50 rounded-xl p-6">
+                  <h3 className="text-xl font-semibold text-white mb-4 flex items-center">
+                    <span className="w-2 h-2 bg-red-500 rounded-full mr-2"></span>
+                    Photo de profil (OBLIGATOIRE)
+                  </h3>
+                  
+                  <div className="flex items-center space-x-4">
+                    {profile.avatarUrl ? (
+                      <img src={profile.avatarUrl} alt="Photo de profil" className="w-20 h-20 rounded-lg object-cover" />
+                    ) : (
+                      <div className="w-20 h-20 bg-gray-600 rounded-lg flex items-center justify-center">
+                        <span className="text-gray-400">Aucune photo</span>
+                      </div>
+                    )}
+                    
+                    <div>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0]
+                          if (file) handlePhotoUpload(file, 'avatar')
+                        }}
+                        className="hidden"
+                        id="avatar-upload"
+                        disabled={uploading}
+                      />
+                      <label 
+                        htmlFor="avatar-upload" 
+                        className={`px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors cursor-pointer inline-block ${
+                          uploading ? 'opacity-50 cursor-not-allowed' : ''
+                        }`}
+                      >
+                        {uploading ? 'Upload...' : 'Choisir une photo'}
+                      </label>
+                      <p className="text-sm text-gray-400 mt-2">JPG, PNG - Max 5MB</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Photos publiques */}
+                <div className="bg-blue-800/20 backdrop-blur-sm border border-blue-700/50 rounded-xl p-6">
+                  <h3 className="text-xl font-semibold text-white mb-4 flex items-center">
+                    <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+                    Galerie publique (minimum 3 photos)
+                  </h3>
+                  
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                    {(profile.publicPhotos || []).map((photo, index) => (
+                      <div key={index} className="relative group">
+                        <img src={photo} alt={`Photo ${index + 1}`} className="w-full h-32 object-cover rounded-lg" />
+                        <button 
+                          onClick={() => removePhoto(photo, 'public')}
+                          className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                    
+                    <div className="relative">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0]
+                          if (file) handlePhotoUpload(file, 'public')
+                        }}
+                        className="hidden"
+                        id="public-upload"
+                        disabled={uploading}
+                      />
+                      <label 
+                        htmlFor="public-upload" 
+                        className={`w-full h-32 border-2 border-dashed border-gray-600 rounded-lg flex flex-col items-center justify-center hover:border-blue-500 transition-colors cursor-pointer ${
+                          uploading ? 'opacity-50 cursor-not-allowed' : ''
+                        }`}
+                      >
+                        <span className="text-2xl text-gray-400">+</span>
+                        <span className="text-sm text-gray-400">
+                          {uploading ? 'Upload...' : 'Ajouter une photo'}
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+                  
+                  <p className="text-sm text-gray-400">
+                    Ces photos seront visibles par tous les visiteurs. Minimum 3 photos requises pour activer le profil.
+                  </p>
+                </div>
+
+                {/* Photos privées */}
+                <div className="bg-purple-800/20 backdrop-blur-sm border border-purple-700/50 rounded-xl p-6">
+                  <h3 className="text-xl font-semibold text-white mb-4 flex items-center">
+                    <span className="w-2 h-2 bg-purple-500 rounded-full mr-2"></span>
+                    Galerie privée (optionnel)
+                  </h3>
+                  
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                    {(profile.privatePhotos || []).map((photo, index) => (
+                      <div key={index} className="relative group">
+                        <img src={photo} alt={`Photo privée ${index + 1}`} className="w-full h-32 object-cover rounded-lg" />
+                        <button 
+                          onClick={() => removePhoto(photo, 'private')}
+                          className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                    
+                    <div className="relative">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0]
+                          if (file) handlePhotoUpload(file, 'private')
+                        }}
+                        className="hidden"
+                        id="private-upload"
+                        disabled={uploading}
+                      />
+                      <label 
+                        htmlFor="private-upload" 
+                        className={`w-full h-32 border-2 border-dashed border-gray-600 rounded-lg flex flex-col items-center justify-center hover:border-purple-500 transition-colors cursor-pointer ${
+                          uploading ? 'opacity-50 cursor-not-allowed' : ''
+                        }`}
+                      >
+                        <span className="text-2xl text-gray-400">+</span>
+                        <span className="text-sm text-gray-400">
+                          {uploading ? 'Upload...' : 'Ajouter une photo'}
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+                  
+                  <p className="text-sm text-gray-400">
+                    Ces photos ne seront visibles qu'aux membres premium après validation.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Section: Informations de base */}
+            {activeSection === 'basic' && (
           <div className="bg-gray-800/40 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6">
             <h2 className="text-xl font-semibold text-white mb-4">Informations de base</h2>
             
