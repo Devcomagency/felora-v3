@@ -550,7 +550,7 @@ export default function ClubProfileTestPage() {
               stats={{
                 likes: totalReactions || 0,
                 followers: profile.stats?.followers || 0,
-                views: viewStats?.profileViews || profile.stats?.views || 0
+                views: profile.stats?.views || 0
               }}
               description={profile.description}
               availability={clubAvailability}

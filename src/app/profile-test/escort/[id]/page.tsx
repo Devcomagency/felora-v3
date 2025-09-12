@@ -615,10 +615,10 @@ export default function EscortProfileTestPage() {
             languages={[]}
             services={profile.services}
             stats={{
-      likes: totalReactions || 0,
-      followers: profile.stats?.followers || 0,
-      views: viewStats?.profileViews || profile.stats?.views || 0
-    }}
+              likes: totalReactions || 0,
+              followers: profile.stats?.followers || 0,
+              views: profile.stats?.views || 0
+            }}
             availability={profile.availability}
             description={profile.description}
             mediaCount={Array.isArray(profile.media) ? profile.media.length : 0}
