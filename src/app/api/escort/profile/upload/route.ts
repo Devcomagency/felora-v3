@@ -1,9 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
-import { writeFile, mkdir } from 'fs/promises'
-import { join } from 'path'
 import { v4 as uuidv4 } from 'uuid'
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
+
+// Configuration Cloudflare R2
+const R2_ENDPOINT = process.env.CLOUDFLARE_R2_ENDPOINT
+const R2_ACCESS_KEY = process.env.CLOUDFLARE_R2_ACCESS_KEY  
+const R2_SECRET_KEY = process.env.CLOUDFLARE_R2_SECRET_KEY
+const R2_BUCKET = process.env.CLOUDFLARE_R2_BUCKET
+
+// Initialisation du client R2
+const r2Client = new S3Client({
+  region: 'auto',
+  endpoint: R2_ENDPOINT,
+  credentials: {
+    accessKeyId: R2_ACCESS_KEY || '',
+    secretAccessKey: R2_SECRET_KEY || ''
+  }
+})
 
 export async function POST(request: NextRequest) {
   console.log('🚀 API Upload - Début de la requête')
@@ -56,50 +71,63 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Vérifier la configuration R2
+    if (!R2_ENDPOINT || !R2_ACCESS_KEY || !R2_SECRET_KEY || !R2_BUCKET) {
+      console.error('❌ API Upload - Configuration R2 manquante')
+      return NextResponse.json(
+        { success: false, error: 'Configuration de stockage manquante' },
+        { status: 500 }
+      )
+    }
+
     // Créer le nom de fichier unique
     const fileExtension = file.name.split('.').pop()
-    const fileName = `${uuidv4()}.${fileExtension}`
+    const fileName = `escorts/${session.user.id}/${uuidv4()}.${fileExtension}`
     
     console.log('📁 API Upload - Nom de fichier généré:', fileName)
-    
-    // Sur Vercel, utiliser /tmp au lieu de public/uploads
-    const uploadDir = process.env.NODE_ENV === 'production' 
-      ? '/tmp' 
-      : join(process.cwd(), 'public', 'uploads', 'escorts')
-    
-    const filePath = join(uploadDir, fileName)
-    
-    console.log('📂 API Upload - Répertoire:', uploadDir)
-    console.log('📄 API Upload - Chemin complet:', filePath)
 
     try {
-      // Créer le dossier s'il n'existe pas (seulement en dev)
-      if (process.env.NODE_ENV !== 'production') {
-        await mkdir(uploadDir, { recursive: true })
-      }
-      
-      // Convertir le fichier en buffer et l'écrire
+      // Convertir le fichier en buffer
       const bytes = await file.arrayBuffer()
       const buffer = Buffer.from(bytes)
-      await writeFile(filePath, buffer)
-
-      // Retourner l'URL publique
-      const publicUrl = process.env.NODE_ENV === 'production'
-        ? `/api/uploads/${fileName}` // API endpoint pour servir le fichier depuis /tmp
-        : `/uploads/escorts/${fileName}` // Fichier statique en dev
       
-      console.log('✅ API Upload - Succès! URL:', publicUrl)
+      console.log('☁️ API Upload - Upload vers Cloudflare R2...')
+      
+      // Upload vers Cloudflare R2
+      const uploadCommand = new PutObjectCommand({
+        Bucket: R2_BUCKET,
+        Key: fileName,
+        Body: buffer,
+        ContentType: file.type,
+        ContentLength: buffer.length,
+        Metadata: {
+          originalName: file.name,
+          userId: session.user.id,
+          uploadedAt: new Date().toISOString()
+        }
+      })
+      
+      await r2Client.send(uploadCommand)
+      
+      // Construire l'URL publique 
+      // En production: utilise un domaine R2 personnalisé si disponible, sinon API proxy
+      // En développement: utilise l'API proxy locale
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3004'
+      const publicUrl = `${baseUrl}/api/uploads/${fileName}`
+      
+      console.log('✅ API Upload - Succès R2! URL:', publicUrl)
       
       return NextResponse.json({
         success: true,
         url: publicUrl,
-        message: 'Photo uploadée avec succès'
+        fileName,
+        message: 'Photo uploadée avec succès vers R2'
       })
       
-    } catch (fsError) {
-      console.error('💥 API Upload - Erreur écriture fichier:', fsError)
+    } catch (r2Error) {
+      console.error('💥 API Upload - Erreur R2:', r2Error)
       return NextResponse.json(
-        { success: false, error: 'Erreur lors de la sauvegarde du fichier', details: (fsError as Error).message },
+        { success: false, error: 'Erreur lors de l\'upload vers le stockage', details: (r2Error as Error).message },
         { status: 500 }
       )
     }

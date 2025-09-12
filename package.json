@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.10.0",
-    "@aws-sdk/client-s3": "^3.884.0",
+    "@aws-sdk/client-s3": "^3.887.0",
     "@aws-sdk/s3-request-presigner": "^3.884.0",
     "@prisma/client": "^6.14.0",
     "@radix-ui/react-dialog": "^1.1.15",
