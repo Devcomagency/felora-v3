@@ -24,7 +24,7 @@ export default function UploadDrop({ label, accept, maxMb = 20, onUploaded, onUp
     
     // Vérification spéciale pour vidéos (limite plus haute)
     const isVideo = file.type.startsWith('video/')
-    const videoMaxMb = isVideo ? 100 : maxMb // 100MB pour vidéos vs 20MB pour images
+    const videoMaxMb = isVideo ? 25 : maxMb // 25MB pour vidéos vs 20MB pour images
     
     if (file.size > videoMaxMb * 1024 * 1024) {
       setError(`Fichier trop volumineux. Max ${videoMaxMb}MB pour ${isVideo ? 'vidéos' : 'images'}`)

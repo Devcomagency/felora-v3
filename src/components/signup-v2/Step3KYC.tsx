@@ -36,9 +36,9 @@ export default function Step3KYC({ userId, role='ESCORT', onSubmitted }:{ userId
           <li>Photo nette de votre pièce d'identité — recto</li>
           <li>Photo nette de votre pièce d'identité — verso</li>
           <li>Selfie où l'on vous voit tenir un papier avec le mot « FELORA »</li>
-          <li>Vidéo courte (max 30s) où vous vous présentez en disant votre nom</li>
+          <li>Vidéo courte (max 30s, max 25MB) où vous vous présentez en disant votre nom</li>
         </ul>
-        <p className="text-white/60 text-xs mt-2">Formats acceptés: JPG/PNG pour les photos, WEBM/MP4/MOV pour la vidéo. Lumière naturelle et fond neutre recommandés.</p>
+        <p className="text-white/60 text-xs mt-2">Formats acceptés: JPG/PNG (max 10MB) pour les photos, WEBM/MP4/MOV (max 25MB) pour la vidéo. Lumière naturelle et fond neutre recommandés.</p>
       </div>
 
       {/* Uploads documentaires */}
@@ -50,12 +50,12 @@ export default function Step3KYC({ userId, role='ESCORT', onSubmitted }:{ userId
 
       {/* Upload vidéo de vérification */}
       <div className="glass-card p-4 rounded-xl border border-white/10">
-        <p className="text-white/80 mb-3 text-sm">Vidéo de présentation (max 30s)</p>
-        <p className="text-white/60 text-xs mb-3">Présentez-vous en disant votre nom complet. Filmez en mode portrait avec une bonne luminosité.</p>
+        <p className="text-white/80 mb-3 text-sm">Vidéo de présentation (max 30s, max 25MB)</p>
+        <p className="text-white/60 text-xs mb-3">Présentez-vous en disant votre nom complet. Filmez en mode portrait avec une bonne luminosité. Gardez la vidéo courte pour rester sous 25MB.</p>
         <UploadDrop 
           label="Sélectionner votre vidéo" 
           accept="video/mp4,video/webm,video/quicktime,video/mov" 
-          maxMb={50}
+          maxMb={25}
           onUploaded={url=>setDocs(s=>({ ...s, livenessVideoUrl: url }))} 
         />
       </div>

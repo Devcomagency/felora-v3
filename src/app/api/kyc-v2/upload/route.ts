@@ -4,14 +4,18 @@ import path from 'path'
 import { mediaStorage } from '@/lib/storage'
 import { initSentryServerOnce, captureServerException } from '@/lib/sentry-server'
 
-const MAX_BYTES_IMAGE = 20 * 1024 * 1024 // 20 MB pour images
-const MAX_BYTES_VIDEO = 100 * 1024 * 1024 // 100 MB pour vidéos
+const MAX_BYTES_IMAGE = 10 * 1024 * 1024 // 10 MB pour images
+const MAX_BYTES_VIDEO = 25 * 1024 * 1024 // 25 MB pour vidéos (limite Vercel)
 const ALLOWED_MIME = new Set([
   'image/jpeg','image/jpg','image/png','image/webp',
   'video/webm','video/mp4','video/quicktime','video/mov'
 ])
 
 export const dynamic = 'force-dynamic'
+
+// Configuration pour accepter les gros fichiers
+export const maxDuration = 30 // 30 secondes timeout
+export const runtime = 'nodejs'
 
 export async function POST(req: Request) {
   try {

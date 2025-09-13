@@ -116,9 +116,16 @@ const nextConfig = {
     ]
   },
 
+  // Configuration des limites de requête
+  experimental: {
+    serverComponentsExternalPackages: ['@prisma/client'],
+    // Force la limite à 100MB pour les uploads
+    isrMemoryCacheSize: 0,
+  },
+
   // Conservé depuis .js (si utilisé par getConfig côté serveur)
   serverRuntimeConfig: {
-    maxRequestBodySize: '50mb',
+    maxRequestBodySize: '100mb',
   },
 }
 
