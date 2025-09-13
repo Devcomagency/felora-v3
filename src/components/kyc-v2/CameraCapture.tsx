@@ -42,7 +42,10 @@ export default function CameraCapture({ onPhoto, onVideo }:{ onPhoto?:(blob:Blob
       if (!ctx) return
       ctx.drawImage(v, 0, 0)
       const blob = await new Promise<Blob | null>(res => canvas.toBlob(b => res(b), 'image/jpeg', 0.85))
-      if (blob) onPhoto(blob)
+      if (blob) {
+        console.log('Generated photo blob:', blob.type, blob.size)
+        onPhoto(blob)
+      }
     } catch (e) {
       console.error('capturePhoto failed', e)
     }

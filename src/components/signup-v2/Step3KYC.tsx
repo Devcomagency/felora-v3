@@ -14,10 +14,13 @@ export default function Step3KYC({ userId, role='ESCORT', onSubmitted }:{ userId
   const isComplete = missing.length === 0
 
   const uploadBlob = async (blob: Blob, name: string) => {
+    console.log('Uploading blob:', blob.type, blob.size, 'as', name)
     const fd = new FormData()
     fd.append('file', blob, name)
     const r = await fetch('/api/kyc-v2/upload', { method:'POST', body: fd })
-    const d = await r.json(); if (!r.ok) throw new Error(d?.error || 'upload_failed')
+    const d = await r.json()
+    console.log('Upload response:', r.status, d)
+    if (!r.ok) throw new Error(d?.error || 'upload_failed')
     return d.url as string
   }
 
