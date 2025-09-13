@@ -1,6 +1,6 @@
 "use client"
 import { useCallback, useId, useState } from 'react'
-import { Upload, CheckCircle, AlertCircle, Image, Video, FileText } from 'lucide-react'
+import { CheckCircle, AlertCircle, Image, Video, FileText } from 'lucide-react'
 
 interface UploadDropProps {
   label: string
@@ -135,13 +135,21 @@ export default function UploadDrop({
     if (accept && !accept.split(',').some(a => file.type.includes(a.trim()) || file.name.toLowerCase().endsWith(a.trim()))) {
       setError('Type de fichier non supporté'); return
     }
-    if (file.size > maxMb * 1024 * 1024) { setError(`Max ${maxMb}MB`); return }
+    
+    const isVideo = file.type.startsWith('video/')
+    
+    // Pour les vidéos, on permet jusqu'à 200MB avant compression
+    // Pour les images, on garde la limite stricte
+    const initialMaxMb = isVideo ? 200 : maxMb
+    if (file.size > initialMaxMb * 1024 * 1024) { 
+      setError(`Fichier trop volumineux. Max ${initialMaxMb}MB${isVideo ? ' (sera comprimé automatiquement)' : ''}`); 
+      return 
+    }
     
     // Create immediate preview from file
     const fileUrl = URL.createObjectURL(file)
     setPreviewUrl(fileUrl)
     
-    const isVideo = file.type.startsWith('video/')
     let finalFile = file
     
     // Compresser la vidéo si elle est trop grosse
@@ -280,7 +288,7 @@ export default function UploadDrop({
                'Glissez-déposez ou cliquez pour sélectionner'}
             </p>
             <p className="text-white/60 text-xs">
-              {isVideo ? `Vidéo (max ${maxMb}MB)` : `Image (max ${maxMb}MB)`}
+              {isVideo ? `Vidéo (compression automatique si >25MB)` : `Image (max ${maxMb}MB)`}
             </p>
           </div>
         </div>
