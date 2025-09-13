@@ -182,13 +182,16 @@ export default function UploadDrop({
     setBusy(true)
     try {
       const r = await fetch('/api/kyc-v2/upload', { method:'POST', body: fd })
+      
+      // Lire la réponse une seule fois
+      const responseText = await r.text()
       let d
+      
       try {
-        d = await r.json()
+        d = JSON.parse(responseText)
       } catch (jsonError) {
         // Si ce n'est pas du JSON, c'est probablement du HTML (erreur 500)
-        const text = await r.text()
-        console.error('Upload response not JSON:', r.status, text)
+        console.error('Upload response not JSON:', r.status, responseText)
         throw new Error(`Server error ${r.status}`)
       }
       if (!r.ok || !d?.url) throw new Error(d?.error || 'upload_failed')

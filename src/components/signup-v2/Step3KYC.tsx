@@ -27,12 +27,14 @@ export default function Step3KYC({ userId, role='ESCORT', onSubmitted }:{ userId
       console.log('Submitting KYC with data:', { userId, role, docs })
       const r = await fetch('/api/kyc-v2/submit', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ userId, role, ...docs }) })
       
+      // Lire la réponse une seule fois
+      const responseText = await r.text()
       let d
+      
       try {
-        d = await r.json()
+        d = JSON.parse(responseText)
       } catch (jsonError) {
-        console.error('Response is not JSON:', r.status)
-        // Note: r.text() can only be called once, so we can't call it again here
+        console.error('Response is not JSON:', r.status, responseText)
         throw new Error(`Erreur serveur ${r.status} - Réponse invalide`)
       }
       
