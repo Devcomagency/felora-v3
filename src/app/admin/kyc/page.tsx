@@ -1,106 +1,208 @@
 "use client"
-import { useEffect, useState } from 'react'
+import { useState, useEffect } from 'react'
+import { CheckCircle, XCircle, Clock, Eye, Download } from 'lucide-react'
 
-type Item = {
+interface KYCSubmission {
   id: string
   userId: string
   role: string
   status: string
+  docFrontUrl?: string
+  docBackUrl?: string
+  selfieSignUrl?: string
+  livenessVideoUrl?: string
+  notes?: string
+  createdAt: string
   updatedAt: string
-  keys?: {
-    selfieKey?: string
-    selfieSignKey?: string
-    docFrontKey?: string
-    docBackKey?: string
-    livenessKey?: string
-  }
 }
 
-export default function AdminKycPage(){
-  const [items, setItems] = useState<Item[]>([])
+export default function AdminKYCPage() {
+  const [submissions, setSubmissions] = useState<KYCSubmission[]>([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string|undefined>()
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    let stop = false
-    ;(async () => {
-      try {
-        setLoading(true)
-        const r = await fetch('/api/admin/kyc/submissions', { cache: 'no-store' })
-        const d = await r.json()
-        if (!r.ok) throw new Error(d?.error || 'load_failed')
-        if (!stop) setItems(Array.isArray(d.items) ? d.items : [])
-      } catch(e:any) {
-        if (!stop) setError(e?.message || 'Erreur chargement')
-      } finally { if (!stop) setLoading(false) }
-    })()
-    return () => { stop = true }
+    fetchSubmissions()
   }, [])
 
-  const sign = async (key?: string) => {
-    if (!key) return alert('Aucune clé')
+  const fetchSubmissions = async () => {
     try {
-      const r = await fetch('/api/admin/kyc/sign', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key, expiresInSeconds: 1800 }) })
-      const d = await r.json()
-      if (!r.ok || !d?.url) throw new Error(d?.error || 'sign_failed')
-      window.open(d.url, '_blank')
-    } catch (e:any) {
-      alert(e?.message || 'Signature échouée')
+      setLoading(true)
+      const response = await fetch('/api/admin/kyc')
+      const data = await response.json()
+      
+      if (data.success) {
+        setSubmissions(data.submissions)
+      } else {
+        setError(data.error || 'Erreur lors du chargement')
+      }
+    } catch (e) {
+      setError('Erreur de connexion')
+    } finally {
+      setLoading(false)
     }
   }
-  const setStatus = async (id: string, status: 'PENDING'|'APPROVED'|'REJECTED') => {
-    try {
-      const r = await fetch('/api/admin/kyc/update', { method: 'POST', headers: { 'Content-Type':'application/json' }, body: JSON.stringify({ id, status }) })
-      const d = await r.json()
-      if (!r.ok || !d?.ok) throw new Error(d?.error || 'update_failed')
-      setItems(prev => prev.map(it => it.id === id ? { ...it, status } : it))
-    } catch (e:any) {
-      alert(e?.message || 'Mise à jour échouée')
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'APPROVED': return <CheckCircle className="text-green-500" size={20} />
+      case 'REJECTED': return <XCircle className="text-red-500" size={20} />
+      case 'PENDING': return <Clock className="text-yellow-500" size={20} />
+      default: return <Clock className="text-gray-500" size={20} />
     }
+  }
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'APPROVED': return 'bg-green-500/20 text-green-400'
+      case 'REJECTED': return 'bg-red-500/20 text-red-400'
+      case 'PENDING': return 'bg-yellow-500/20 text-yellow-400'
+      default: return 'bg-gray-500/20 text-gray-400'
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-red-400 text-center">
+          <h2 className="text-xl font-semibold mb-2">Erreur</h2>
+          <p>{error}</p>
+          <button 
+            onClick={fetchSubmissions}
+            className="mt-4 px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600"
+          >
+            Réessayer
+          </button>
+        </div>
+      </div>
+    )
   }
 
   return (
-    <main className="max-w-5xl mx-auto p-6 text-white">
-      <h1 className="text-2xl font-bold mb-4">KYC — Soumissions</h1>
-      {loading && <div className="text-white/70">Chargement…</div>}
-      {error && <div className="text-red-400">{error}</div>}
-      {!loading && !items.length && <div className="text-white/70">Aucune soumission</div>}
-      {!!items.length && (
-        <div className="space-y-3">
-          {items.map(it => (
-            <div key={it.id} className="p-3 rounded-xl border border-white/10 bg-white/5">
-              <div className="flex items-center justify-between">
-                <div className="text-sm text-white/80">{it.id} · <span className="text-white/60">user:</span> {it.userId} · <span className="text-white/60">rôle:</span> {it.role} · <span className="text-white/60">statut:</span> {it.status}</div>
-                <div className="text-xs text-white/60">{new Date(it.updatedAt).toLocaleString('fr-CH')}</div>
-              </div>
-              <div className="mt-2 flex items-center gap-2">
-                <div className="text-xs text-white/70">Actions:</div>
-                <button onClick={()=> setStatus(it.id, 'APPROVED')} className="text-xs px-2 py-1 rounded bg-emerald-600/70 hover:bg-emerald-600">Approuver</button>
-                <button onClick={()=> setStatus(it.id, 'REJECTED')} className="text-xs px-2 py-1 rounded bg-red-600/70 hover:bg-red-600">Refuser</button>
-                <button onClick={()=> setStatus(it.id, 'PENDING')} className="text-xs px-2 py-1 rounded bg-yellow-600/70 hover:bg-yellow-600">Remettre en attente</button>
-              </div>
-              <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                {([
-                  ['Selfie', it.keys?.selfieKey],
-                  ['Selfie signé', it.keys?.selfieSignKey],
-                  ['Recto ID', it.keys?.docFrontKey],
-                  ['Verso ID', it.keys?.docBackKey],
-                  ['Liveness', it.keys?.livenessKey],
-                ] as const).map(([label, key]) => (
-                  <div key={label} className="p-2 rounded-lg bg-black/40 border border-white/10">
-                    <div className="text-xs text-white/60">{label}</div>
-                    <div className="text-xs break-all">{key || '—'}</div>
-                    <div className="mt-1 flex items-center gap-2">
-                      <button disabled={!key} onClick={()=> sign(key)} className="text-xs px-2 py-1 rounded bg-white/10 hover:bg-white/15 disabled:opacity-50">Signer & ouvrir</button>
-                      <button disabled={!key} onClick={()=> { try { navigator.clipboard.writeText(String(key)) } catch {} }} className="text-xs px-2 py-1 rounded bg-white/10 hover:bg-white/15 disabled:opacity-50">Copier</button>
+    <div className="min-h-screen bg-black text-white p-6">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-3xl font-bold">Administration KYC</h1>
+          <button 
+            onClick={fetchSubmissions}
+            className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600"
+          >
+            Actualiser
+          </button>
+        </div>
+
+        {submissions.length === 0 ? (
+          <div className="text-center py-12">
+            <h2 className="text-xl font-semibold mb-2">Aucune soumission KYC</h2>
+            <p className="text-white/60">Aucun document de vérification n'a été soumis.</p>
+          </div>
+        ) : (
+          <div className="grid gap-6">
+            {submissions.map((submission) => (
+              <div key={submission.id} className="bg-white/5 border border-white/10 rounded-xl p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <h3 className="text-xl font-semibold">Soumission {submission.id}</h3>
+                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(submission.status)}`}>
+                      {getStatusIcon(submission.status)} {submission.status}
+                    </span>
+                  </div>
+                  <div className="text-sm text-white/60">
+                    {new Date(submission.createdAt).toLocaleDateString('fr-FR')}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <h4 className="font-medium mb-2">Informations</h4>
+                    <div className="space-y-1 text-sm text-white/80">
+                      <p><strong>User ID:</strong> {submission.userId}</p>
+                      <p><strong>Rôle:</strong> {submission.role}</p>
+                      <p><strong>Créé:</strong> {new Date(submission.createdAt).toLocaleString('fr-FR')}</p>
+                      <p><strong>Modifié:</strong> {new Date(submission.updatedAt).toLocaleString('fr-FR')}</p>
                     </div>
                   </div>
-                ))}
+
+                  <div>
+                    <h4 className="font-medium mb-2">Documents</h4>
+                    <div className="space-y-2">
+                      {submission.docFrontUrl && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm">📄 Recto:</span>
+                          <a 
+                            href={submission.docFrontUrl} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-purple-400 hover:text-purple-300 text-sm flex items-center gap-1"
+                          >
+                            <Eye size={14} /> Voir
+                          </a>
+                        </div>
+                      )}
+                      {submission.docBackUrl && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm">📄 Verso:</span>
+                          <a 
+                            href={submission.docBackUrl} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-purple-400 hover:text-purple-300 text-sm flex items-center gap-1"
+                          >
+                            <Eye size={14} /> Voir
+                          </a>
+                        </div>
+                      )}
+                      {submission.selfieSignUrl && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm">🤳 Selfie:</span>
+                          <a 
+                            href={submission.selfieSignUrl} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-purple-400 hover:text-purple-300 text-sm flex items-center gap-1"
+                          >
+                            <Eye size={14} /> Voir
+                          </a>
+                        </div>
+                      )}
+                      {submission.livenessVideoUrl && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm">🎥 Vidéo:</span>
+                          <a 
+                            href={submission.livenessVideoUrl} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-purple-400 hover:text-purple-300 text-sm flex items-center gap-1"
+                          >
+                            <Eye size={14} /> Voir
+                          </a>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {submission.notes && (
+                  <div className="mt-4 p-3 bg-white/5 rounded-lg">
+                    <h4 className="font-medium mb-2">Notes techniques</h4>
+                    <pre className="text-xs text-white/60 overflow-x-auto">
+                      {JSON.stringify(JSON.parse(submission.notes), null, 2)}
+                    </pre>
+                  </div>
+                )}
               </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </main>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
   )
 }
