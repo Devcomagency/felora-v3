@@ -1,9 +1,10 @@
 "use client"
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 export default function SalonPreSignupQuick({ onSubmitted }:{ onSubmitted:(ok:boolean,userId?:string)=>void }){
   const [companyName, setCompanyName] = useState('')
   const [city, setCity] = useState('')
+  const [cities, setCities] = useState<string[]>([])
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
   const [password, setPassword] = useState('')
@@ -13,6 +14,17 @@ export default function SalonPreSignupQuick({ onSubmitted }:{ onSubmitted:(ok:bo
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string|null>(null)
   const [captchaOK, setCaptchaOK] = useState(false)
+
+  // Charger les villes suisses prédéfinies pour normaliser la saisie
+  useEffect(() => {
+    (async () => {
+      try {
+        const r = await fetch('/api/geo/geocode', { cache: 'force-cache' })
+        const d = await r.json()
+        if (Array.isArray(d?.cities)) setCities(d.cities as string[])
+      } catch {}
+    })()
+  }, [])
 
   function normalizeSwissPhone(input?: string): string | null {
     if (!input) return null
@@ -28,6 +40,7 @@ export default function SalonPreSignupQuick({ onSubmitted }:{ onSubmitted:(ok:bo
   const submit = async () => {
     setError(null)
     if (!companyName.trim()) { setError('Nom du salon requis'); return }
+    if (!email || !email.includes('@')) { setError('Email obligatoire et valide'); return }
     const e164 = normalizeSwissPhone(phone)
     if (!e164) { setError('Téléphone CH invalide'); return }
     if (!password || password.length < 6) { setError('Mot de passe trop court'); return }
@@ -35,12 +48,19 @@ export default function SalonPreSignupQuick({ onSubmitted }:{ onSubmitted:(ok:bo
     if (!isAdult || !acceptTos) { setError('Veuillez confirmer 18+ et CGU'); return }
     const captchaRequired = process.env.NEXT_PUBLIC_CAPTCHA_DISABLED !== 'true'
     if (captchaRequired && !captchaOK) { setError('Vérification “Je ne suis pas un robot” requise'); return }
+
+    // Vérifier que la ville correspond à la liste (si disponible)
+    const hasCanonicalCities = Array.isArray(cities) && cities.length > 0
+    if (hasCanonicalCities) {
+      const match = cities.find(c => c.toLowerCase() === String(city).trim().toLowerCase())
+      if (!match) { setError('Veuillez sélectionner une ville de la liste'); return }
+    }
     setLoading(true)
     try {
       // Générer handle à partir du nom
       const handleBase = companyName.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '').slice(0,24) || 'salon'
       const payload = {
-        email: email || `${handleBase}@salon.local`,
+        email,
         phoneE164: e164,
         password,
         confirm,
@@ -73,15 +93,18 @@ export default function SalonPreSignupQuick({ onSubmitted }:{ onSubmitted:(ok:bo
         </label>
         <label className="block">
           <span className="text-sm text-white/80">Ville</span>
-          <input className="mt-1 w-full bg-black/40 rounded-lg px-3 py-2 text-white border border-white/10" value={city} onChange={e=>setCity(e.target.value)} placeholder="ex: Genève" />
+          <input list="city-list" className="mt-1 w-full bg-black/40 rounded-lg px-3 py-2 text-white border border-white/10" value={city} onChange={e=>setCity(e.target.value)} placeholder="ex: Genève" />
+          <datalist id="city-list">
+            {cities.map((c) => (<option key={c} value={c} />))}
+          </datalist>
         </label>
         <label className="block">
           <span className="text-sm text-white/80">Téléphone CH (obligatoire)</span>
           <input className="mt-1 w-full bg-black/40 rounded-lg px-3 py-2 text-white border border-white/10" value={phone} onChange={e=>setPhone(e.target.value)} placeholder="079 888 88 88 ou +41 79 888 88 88" />
         </label>
         <label className="block">
-          <span className="text-sm text-white/80">Email (optionnel)</span>
-          <input className="mt-1 w-full bg-black/40 rounded-lg px-3 py-2 text-white border border-white/10" value={email} onChange={e=>setEmail(e.target.value)} placeholder="contact@votre-salon.ch (conseillé)" />
+          <span className="text-sm text-white/80">Email (obligatoire)</span>
+          <input className="mt-1 w-full bg-black/40 rounded-lg px-3 py-2 text-white border border-white/10" value={email} onChange={e=>setEmail(e.target.value)} placeholder="contact@votre-salon.ch" />
         </label>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <label className="block">

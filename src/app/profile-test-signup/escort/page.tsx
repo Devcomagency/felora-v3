@@ -49,7 +49,7 @@ function EscortSignupContent(){
 
       {step === 2 && (
         <div className="space-y-4">
-          <Step2Plan userId={userId} onSuccess={()=>{ setStep(3); router.push('/register/indepandante?step=3') }} />
+          <Step2Plan onSelect={(plan)=>{ setStep(3); router.push('/register/indepandante?step=3') }} />
         </div>
       )}
 

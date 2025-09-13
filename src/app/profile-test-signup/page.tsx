@@ -54,7 +54,8 @@ function SalonPlansStep() {
     setLoading(true)
     try {
       const msg = encodeURIComponent('Félicitations, votre compte salon est créé')
-      router.push(`/dashboard/club/profile?message=${msg}`)
+      // Redirige vers le profil club (route existante)
+      router.push(`/club/profile?message=${msg}`)
     } finally { setLoading(false) }
   }
 
