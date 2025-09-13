@@ -77,7 +77,7 @@ export default function Step3KYC({ userId, role='ESCORT', onSubmitted }:{ userId
         </div>
       </div>
 
-      {/* Uploads documentaires avec exemples */}
+      {/* Uploads documentaires */}
       <div className="grid sm:grid-cols-2 gap-4">
         <UploadDrop 
           label="Pièce d'identité — recto" 
@@ -87,13 +87,11 @@ export default function Step3KYC({ userId, role='ESCORT', onSubmitted }:{ userId
           requirements={[
             "Photo nette et lisible",
             "Toutes les informations visibles",
-            "Pas de reflets ou d'ombres",
-            "Format JPG ou PNG"
+            "Pas de reflets ou d'ombres"
           ]}
           tips={[
             "Placez le document sur une surface plane",
-            "Évitez les reflets en utilisant une lumière naturelle",
-            "Assurez-vous que tous les textes sont lisibles"
+            "Évitez les reflets en utilisant une lumière naturelle"
           ]}
           isRequired={true}
         />
@@ -106,13 +104,11 @@ export default function Step3KYC({ userId, role='ESCORT', onSubmitted }:{ userId
           requirements={[
             "Photo nette et lisible",
             "Code-barres visible",
-            "Pas de reflets ou d'ombres",
-            "Format JPG ou PNG"
+            "Pas de reflets ou d'ombres"
           ]}
           tips={[
             "Vérifiez que le code-barres est visible",
-            "Évitez les plis ou déformations",
-            "Utilisez un éclairage uniforme"
+            "Évitez les plis ou déformations"
           ]}
           isRequired={true}
         />
@@ -125,14 +121,11 @@ export default function Step3KYC({ userId, role='ESCORT', onSubmitted }:{ userId
           requirements={[
             "Votre visage bien visible",
             "Papier avec 'FELORA' lisible",
-            "Bonne luminosité",
-            "Format JPG ou PNG"
+            "Bonne luminosité"
           ]}
           tips={[
             "Tenez le papier près de votre visage",
-            "Assurez-vous que le texte 'FELORA' est lisible",
-            "Regardez directement la caméra",
-            "Utilisez un fond neutre si possible"
+            "Assurez-vous que le texte 'FELORA' est lisible"
           ]}
           isRequired={true}
         />
@@ -155,14 +148,12 @@ export default function Step3KYC({ userId, role='ESCORT', onSubmitted }:{ userId
           requirements={[
             "Durée maximum 30 secondes",
             "Votre visage bien visible",
-            "Dites votre nom complet",
-            "Mode portrait recommandé"
+            "Dites votre nom complet"
           ]}
           tips={[
             "Filmez en mode portrait (vertical)",
             "Assurez-vous d'avoir une bonne luminosité",
-            "Parlez clairement et regardez la caméra",
-            "Gardez la vidéo courte pour éviter les gros fichiers"
+            "Parlez clairement et regardez la caméra"
           ]}
           isRequired={true}
         />

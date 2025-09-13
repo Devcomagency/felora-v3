@@ -1,6 +1,6 @@
 "use client"
 import { useCallback, useId, useState } from 'react'
-import { CheckCircle, AlertCircle, Image, Video, FileText } from 'lucide-react'
+import { CheckCircle, AlertCircle, Image, Video, FileText, HelpCircle, X } from 'lucide-react'
 
 interface UploadDropProps {
   label: string
@@ -30,6 +30,7 @@ export default function UploadDrop({
   const [uploadedUrl, setUploadedUrl] = useState<string|null>(null)
   const [previewUrl, setPreviewUrl] = useState<string|null>(null)
   const [compressing, setCompressing] = useState(false)
+  const [showExample, setShowExample] = useState(false)
   const uid = useId()
   const inputId = `file-${uid}`
 
@@ -214,12 +215,24 @@ export default function UploadDrop({
   const isImage = accept.includes('image/')
   
   return (
-    <div className="space-y-3">
-      {/* Header avec statut */}
+    <div className="space-y-2">
+      {/* Header compact avec aide */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <label className="text-sm text-white/90 font-medium">{label}</label>
           {isRequired && <span className="text-xs bg-red-500/20 text-red-400 px-2 py-1 rounded">Requis</span>}
+          {exampleImage && (
+            <button
+              onClick={(e) => {
+                e.preventDefault()
+                setShowExample(!showExample)
+              }}
+              className="text-white/60 hover:text-white/80 transition-colors"
+              title="Voir l'exemple"
+            >
+              <HelpCircle size={14} />
+            </button>
+          )}
         </div>
         <div className="flex items-center gap-2">
           {uploadedUrl && <CheckCircle size={16} className="text-green-400" />}
@@ -227,38 +240,7 @@ export default function UploadDrop({
         </div>
       </div>
 
-      {/* Exemple visuel si fourni */}
-      {exampleImage && !previewUrl && (
-        <div className="p-3 bg-black/20 rounded-lg border border-white/5">
-          <div className="relative w-full h-24 rounded-lg overflow-hidden">
-            <img 
-              src={exampleImage} 
-              alt={`Exemple ${label}`}
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-            <div className="absolute bottom-1 left-2 text-white text-xs font-medium">
-              Exemple
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Preview du fichier uploadé */}
-      {previewUrl && (
-        <div className="relative">
-          {isVideo ? (
-            <video src={previewUrl} className="w-full h-32 object-cover rounded-lg border border-white/10" controls />
-          ) : (
-            <img src={previewUrl} alt="Preview" className="w-full h-32 object-cover rounded-lg border border-white/10" />
-          )}
-          <div className="absolute top-2 right-2 px-2 py-1 rounded bg-black/70 text-white text-xs">
-            {uploadedUrl ? '✓ Uploadé' : '⏳ Upload...'}
-          </div>
-        </div>
-      )}
-      
-      {/* Zone d'upload améliorée */}
+      {/* Zone d'upload avec exemple intégré */}
       <input type="file" className="hidden" id={inputId} accept={accept} onChange={e => e.target.files && handle(e.target.files[0])} />
       
       <label 
@@ -271,32 +253,74 @@ export default function UploadDrop({
             : error 
             ? 'border-red-500/50 bg-red-500/5' 
             : 'border-white/20 bg-white/5 hover:border-white/40 hover:bg-white/10'
-        } cursor-pointer`}
+        } cursor-pointer relative`}
       >
-        <div className="flex flex-col items-center justify-center text-center space-y-2">
-          <div className="p-3 rounded-full bg-white/10 group-hover:bg-white/20 transition-colors">
-            {isVideo ? <Video size={24} className="text-white/80" /> : 
-             isImage ? <Image size={24} className="text-white/80" /> : 
-             <FileText size={24} className="text-white/80" />}
+        {/* Exemple intégré dans la zone d'upload */}
+        {exampleImage && !previewUrl && showExample && (
+          <div className="absolute inset-0 p-4">
+            <div className="relative w-full h-full rounded-lg overflow-hidden">
+              <img 
+                src={exampleImage} 
+                alt={`Exemple ${label}`}
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+              <div className="absolute bottom-2 left-2 text-white text-xs font-medium">
+                Exemple
+              </div>
+              <button
+                onClick={(e) => {
+                  e.preventDefault()
+                  setShowExample(false)
+                }}
+                className="absolute top-2 right-2 w-6 h-6 bg-black/50 rounded-full flex items-center justify-center text-white hover:bg-black/70 transition-colors"
+              >
+                <X size={12} />
+              </button>
+            </div>
           </div>
-          
-          <div className="space-y-1">
-            <p className="text-white/90 font-medium text-sm">
-              {compressing ? 'Compression vidéo...' : 
-               busy ? 'Upload en cours...' : 
-               previewUrl ? 'Changer le fichier' : 
-               'Glissez-déposez ou cliquez pour sélectionner'}
-            </p>
-            <p className="text-white/60 text-xs">
-              {isVideo ? `Vidéo (compression automatique si >25MB)` : `Image (max ${maxMb}MB)`}
-            </p>
+        )}
+
+        {/* Preview du fichier uploadé */}
+        {previewUrl && (
+          <div className="relative w-full h-32 rounded-lg overflow-hidden">
+            {isVideo ? (
+              <video src={previewUrl} className="w-full h-full object-cover" controls />
+            ) : (
+              <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
+            )}
+            <div className="absolute top-2 right-2 px-2 py-1 rounded bg-black/70 text-white text-xs">
+              {uploadedUrl ? '✓ Uploadé' : '⏳ Upload...'}
+            </div>
           </div>
-        </div>
+        )}
+
+        {/* Contenu par défaut */}
+        {!previewUrl && !(showExample && exampleImage) && (
+          <div className="flex flex-col items-center justify-center text-center space-y-2">
+            <div className="p-3 rounded-full bg-white/10 group-hover:bg-white/20 transition-colors">
+              {isVideo ? <Video size={24} className="text-white/80" /> : 
+               isImage ? <Image size={24} className="text-white/80" /> : 
+               <FileText size={24} className="text-white/80" />}
+            </div>
+            
+            <div className="space-y-1">
+              <p className="text-white/90 font-medium text-sm">
+                {compressing ? 'Compression vidéo...' : 
+                 busy ? 'Upload en cours...' : 
+                 'Glissez-déposez ou cliquez pour sélectionner'}
+              </p>
+              <p className="text-white/60 text-xs">
+                {isVideo ? `Vidéo (compression automatique si >25MB)` : `Image (max ${maxMb}MB)`}
+              </p>
+            </div>
+          </div>
+        )}
       </label>
 
-      {/* Exigences et conseils */}
-      {(requirements.length > 0 || tips.length > 0) && (
-        <div className="space-y-2 text-xs">
+      {/* Aide compacte */}
+      {(requirements.length > 0 || tips.length > 0) && showExample && (
+        <div className="p-3 bg-black/20 rounded-lg border border-white/5 text-xs space-y-2">
           {requirements.length > 0 && (
             <div>
               <h5 className="text-white/80 font-medium mb-1">Exigences :</h5>
