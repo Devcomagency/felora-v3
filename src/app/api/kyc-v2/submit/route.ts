@@ -129,15 +129,15 @@ export async function POST(req: NextRequest) {
       } catch { return undefined }
     }
     // Validate required documents
-    const required = ['docFrontUrl','docBackUrl','selfieSignUrl','selfieUrl','livenessVideoUrl']
+    const required = ['docFrontUrl','docBackUrl','selfieSignUrl','livenessVideoUrl']
     const missing = required.filter((k)=> !urls?.[k])
     if (missing.length) {
+      console.log('Missing documents:', missing, 'Received URLs:', Object.keys(urls || {}))
       return NextResponse.json({ error: 'missing_documents', missing }, { status: 400 })
     }
 
     const notes = {
       kycKeys: {
-        selfieKey: deriveKey(urls?.selfieUrl),
         selfieSignKey: deriveKey(urls?.selfieSignUrl),
         docFrontKey: deriveKey(urls?.docFrontUrl),
         docBackKey: deriveKey(urls?.docBackUrl),
