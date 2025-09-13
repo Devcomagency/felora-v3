@@ -41,7 +41,7 @@ function EscortSignupContent(){
   }, [stepParam])
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
+    <main className="min-h-screen bg-black">
       {/* Header mobile-first */}
       <div className="sticky top-0 z-10 bg-black/20 backdrop-blur-sm border-b border-white/10">
         <div className="max-w-2xl mx-auto px-4 py-4">
