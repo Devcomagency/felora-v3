@@ -21,9 +21,33 @@ export default function SalonPreSignupQuick({ onSubmitted }:{ onSubmitted:(ok:bo
   useEffect(() => {
     (async () => {
       try {
-        const r = await fetch('/data/ch-cities.json', { cache: 'force-cache' })
-        const d = await r.json()
-        const arr = Array.isArray(d) ? d.map((x:any)=>String(x)).filter(Boolean) : []
+        // Tente d'abord la liste complète des communes si disponible
+        let arr: string[] = []
+        try {
+          const r1 = await fetch('/data/ch-communes.json', { cache: 'force-cache' })
+          if (r1.ok) {
+            const d1 = await r1.json()
+            arr = Array.isArray(d1) ? d1.map((x:any)=>String(x?.name || x)).filter(Boolean) : []
+          }
+        } catch {}
+        // Fallback txt brut: une commune par ligne
+        if (!arr.length) {
+          try {
+            const rtxt = await fetch('/data/ch-communes.txt', { cache: 'force-cache' })
+            if (rtxt.ok) {
+              const txt = await rtxt.text()
+              arr = String(txt)
+                .split(/\r?\n+/)
+                .map((s:string)=>s.trim())
+                .filter(Boolean)
+            }
+          } catch {}
+        }
+        if (!arr.length) {
+          const r = await fetch('/data/ch-cities.json', { cache: 'force-cache' })
+          const d = await r.json()
+          arr = Array.isArray(d) ? d.map((x:any)=>String(x)).filter(Boolean) : []
+        }
         setAllCities(arr)
       } catch {}
     })()
