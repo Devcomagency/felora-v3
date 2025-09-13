@@ -9,6 +9,7 @@ export default function UploadDrop({ label, accept, maxMb = 20, onUploaded, onUp
   const uid = useId()
   const inputId = `file-${uid}`
 
+
   const handle = useCallback(async (file: File) => {
     setError(null)
     if (!file) return
@@ -21,18 +22,38 @@ export default function UploadDrop({ label, accept, maxMb = 20, onUploaded, onUp
     const fileUrl = URL.createObjectURL(file)
     setPreviewUrl(fileUrl)
     
+    // Vérification spéciale pour vidéos (limite plus haute)
+    const isVideo = file.type.startsWith('video/')
+    const videoMaxMb = isVideo ? 100 : maxMb // 100MB pour vidéos vs 20MB pour images
+    
+    if (file.size > videoMaxMb * 1024 * 1024) {
+      setError(`Fichier trop volumineux. Max ${videoMaxMb}MB pour ${isVideo ? 'vidéos' : 'images'}`)
+      if (fileUrl) URL.revokeObjectURL(fileUrl)
+      setPreviewUrl(null)
+      return
+    }
+    
     const fd = new FormData()
     fd.append('file', file)
     setBusy(true)
     try {
       const r = await fetch('/api/kyc-v2/upload', { method:'POST', body: fd })
-      const d = await r.json()
+      let d
+      try {
+        d = await r.json()
+      } catch (jsonError) {
+        // Si ce n'est pas du JSON, c'est probablement du HTML (erreur 500)
+        const text = await r.text()
+        console.error('Upload response not JSON:', r.status, text)
+        throw new Error(`Server error ${r.status}`)
+      }
       if (!r.ok || !d?.url) throw new Error(d?.error || 'upload_failed')
       setUploadedUrl(d.url)
       onUploaded(d.url)
       try { onUploadedMeta?.({ url: d.url, key: d.key }) } catch {}
     } catch (e:any) { 
       setError(e?.message || 'Erreur upload')
+      console.error('Upload error:', e)
       // Clean up preview on error
       if (fileUrl) URL.revokeObjectURL(fileUrl)
       setPreviewUrl(null)

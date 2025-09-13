@@ -4,7 +4,8 @@ import path from 'path'
 import { mediaStorage } from '@/lib/storage'
 import { initSentryServerOnce, captureServerException } from '@/lib/sentry-server'
 
-const MAX_BYTES = 20 * 1024 * 1024 // 20 MB (certaines photos smartphone >10MB)
+const MAX_BYTES_IMAGE = 20 * 1024 * 1024 // 20 MB pour images
+const MAX_BYTES_VIDEO = 100 * 1024 * 1024 // 100 MB pour vidéos
 const ALLOWED_MIME = new Set([
   'image/jpeg','image/jpg','image/png','image/webp',
   'video/webm','video/mp4','video/quicktime','video/mov'
@@ -35,8 +36,17 @@ export async function POST(req: Request) {
     if (!ALLOWED_MIME.has(mime)) {
       return NextResponse.json({ error: 'unsupported_type' }, { status: 415 })
     }
-    if (typeof size === 'number' && size > MAX_BYTES) {
-      return NextResponse.json({ error: 'file_too_large', maxBytes: MAX_BYTES }, { status: 413 })
+    
+    // Limite différente selon le type de fichier
+    const isVideo = mime.startsWith('video/')
+    const maxBytes = isVideo ? MAX_BYTES_VIDEO : MAX_BYTES_IMAGE
+    
+    if (typeof size === 'number' && size > maxBytes) {
+      return NextResponse.json({ 
+        error: 'file_too_large', 
+        maxBytes,
+        type: isVideo ? 'video' : 'image'
+      }, { status: 413 })
     }
 
     // Utiliser R2/S3 seulement si configuration COMPLETE, sinon fallback local
@@ -55,8 +65,8 @@ export async function POST(req: Request) {
 
     if (hasR2 || hasS3) {
       const res = await mediaStorage.upload(file, 'kyc').catch((e:any)=>({ success:false, error:e?.message }))
-      if (!res?.success || !res?.url) return NextResponse.json({ error: res?.error || 'upload_failed' }, { status: 502 })
-      return NextResponse.json({ url: res.url, key: (res as any).key })
+      if (!res?.success) return NextResponse.json({ error: (res as any)?.error || 'upload_failed' }, { status: 502 })
+      return NextResponse.json({ url: (res as any).url, key: (res as any).key })
     }
 
     {
@@ -70,6 +80,11 @@ export async function POST(req: Request) {
         // fallback from mime
         const t = file.type || ''
         if (t.startsWith('image/')) return t.split('/')[1]
+        if (t.startsWith('video/')) {
+          const sub = t.split('/')[1]
+          if (sub === 'quicktime') return 'mov'
+          return sub // mp4, webm, etc.
+        }
         return 'bin'
       })()
       const filename = `${Date.now()}-${Math.random().toString(36).slice(2)}.${extFromName}`
