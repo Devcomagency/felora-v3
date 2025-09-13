@@ -4,7 +4,9 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useMemo, useState } from 'react'
 import Stepper from '@/components/signup-v2/Stepper'
 import Step1PreSignup from '@/components/signup-v2/Step1PreSignup'
+import Step1PreSignupMobile from '@/components/signup-v2/Step1PreSignupMobile'
 import Step2Plan from '@/components/signup-v2/Step2Plan'
+import Step2PlanMobile from '@/components/signup-v2/Step2PlanMobile'
 import Step3KYC from '@/components/signup-v2/Step3KYC'
 
 function EscortSignupContent(){
@@ -39,21 +41,41 @@ function EscortSignupContent(){
   }, [stepParam])
 
   return (
-    <main className="max-w-2xl mx-auto p-4">
-      <h1 className="text-white text-2xl font-bold mb-2">Inscription Escort</h1>
-      <Stepper steps={steps} current={step} />
+    <main className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
+      {/* Header mobile-first */}
+      <div className="sticky top-0 z-10 bg-black/20 backdrop-blur-sm border-b border-white/10">
+        <div className="max-w-2xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-white text-xl sm:text-2xl font-bold">Inscription Escort</h1>
+              <p className="text-white/60 text-sm">Rejoignez la communauté Felora</p>
+            </div>
+            <div className="text-right">
+              <div className="text-white/80 text-sm">Étape {step}/3</div>
+              <div className="w-16 h-1 bg-white/20 rounded-full mt-1">
+                <div 
+                  className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full transition-all duration-300"
+                  style={{ width: `${(step / 3) * 100}%` }}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="max-w-2xl mx-auto px-4 py-6">
+        <Stepper steps={steps} current={step} />
 
       {step === 1 && (
-        <Step1PreSignup mode="ESCORT" onSubmit={async (data)=>{
+        <Step1PreSignupMobile mode="ESCORT" onSubmit={async (data)=>{
           const r = await fetch('/api/signup-v2/escort', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data) })
           const d = await r.json(); if (d?.ok) { setUserId(d.userId); try { localStorage.setItem('felora-signup-userId', d.userId) } catch {}; setStep(2); router.push('/register/indepandante?step=2') } else alert(d?.error || 'Erreur')
         }} />
       )}
 
       {step === 2 && (
-        <div className="space-y-4">
-          <Step2Plan onSelect={(plan)=>{ setStep(3); router.push('/register/indepandante?step=3') }} />
-        </div>
+        <Step2PlanMobile onSelect={(plan)=>{ setStep(3); router.push('/register/indepandante?step=3') }} />
       )}
 
       {step === 3 && (
@@ -70,6 +92,7 @@ function EscortSignupContent(){
           }} />
         </div>
       )}
+      </div>
     </main>
   )
 }
