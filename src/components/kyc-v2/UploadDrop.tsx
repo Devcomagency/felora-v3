@@ -50,10 +50,10 @@ export default function UploadDrop({
 
       video.onloadedmetadata = () => {
         try {
-          // Réduire la résolution pour compression (max 720p)
+          // Réduire la résolution pour compression (max 480p pour 4MB)
           const { videoWidth: origWidth, videoHeight: origHeight } = video
-          const maxWidth = 720
-          const maxHeight = 720
+          const maxWidth = 854  // 480p large
+          const maxHeight = 480 // 480p
           
           let width = origWidth
           let height = origHeight
@@ -74,7 +74,7 @@ export default function UploadDrop({
           // Utiliser MediaRecorder pour compresser
           const mediaRecorder = new MediaRecorder(stream, {
             mimeType: 'video/webm;codecs=vp8',
-            videoBitsPerSecond: 500000 // 500kbps - compression agressive
+            videoBitsPerSecond: 200000 // 200kbps - compression très agressive pour 4MB
           })
           
           const chunks: Blob[] = []
@@ -153,8 +153,8 @@ export default function UploadDrop({
     
     let finalFile = file
     
-    // Compresser la vidéo si elle est trop grosse
-    if (isVideo && file.size > 25 * 1024 * 1024) {
+    // Compresser la vidéo si elle est trop grosse (limite Vercel: 4MB)
+    if (isVideo && file.size > 4 * 1024 * 1024) {
       setCompressing(true)
       setError('Compression de la vidéo en cours...')
       try {
@@ -323,9 +323,9 @@ export default function UploadDrop({
                  busy ? 'Upload en cours...' : 
                  'Glissez-déposez ou cliquez pour sélectionner'}
               </p>
-              <p className="text-white/60 text-xs">
-                {isVideo ? `Vidéo (compression automatique si >25MB)` : `Image (max ${maxMb}MB)`}
-              </p>
+        <p className="text-white/60 text-xs">
+          {isVideo ? `Vidéo (compression automatique si >4MB)` : `Image (max ${maxMb}MB)`}
+        </p>
             </div>
           </div>
         )}
