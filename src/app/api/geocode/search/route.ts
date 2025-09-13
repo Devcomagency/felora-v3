@@ -35,23 +35,38 @@ export async function GET(req: Request) {
       url.searchParams.set('country', 'ch')
       url.searchParams.set('limit', String(limit))
       url.searchParams.set('language', 'fr')
-      url.searchParams.set('types', 'address,place,locality,neighborhood,poi')
+      // Limiter aux entités de type ville/localité pour éviter les adresses complètes
+      url.searchParams.set('types', 'place,locality,region')
       url.searchParams.set('access_token', MAPBOX_TOKEN)
 
       const r = await fetch(url.toString())
       if (!r.ok) throw new Error(`Mapbox error ${r.status}`)
       const data = await r.json()
 
-      const hits = (data.features || []).map((f: any) => ({
+      const hitsRaw = (data.features || []).map((f: any) => ({
         score: Math.round((f.relevance || 0) * 100),
         identifier: `mapbox:${f.id}`,
         countryCode: (f.context || []).find((c: any) => c.id?.startsWith('country'))?.short_code?.toUpperCase() || 'CH',
         addressId: f.id,
         buildingId: f.properties?.mapbox_id || f.id,
+        name: f.text_fr || f.text,
         address: f.place_name_fr || f.place_name || f.text,
         latitude: f.center?.[1] || f.geometry?.coordinates?.[1] || 0,
-        longitude: f.center?.[0] || f.geometry?.coordinates?.[0] || 0
+        longitude: f.center?.[0] || f.geometry?.coordinates?.[0] || 0,
+        type: f.place_type?.[0] || 'place'
       }))
+      // Dédupliquer par nom, garder villes/localités
+      const seen = new Set<string>()
+      const hits = hitsRaw
+        .filter((h:any) => ['place','locality','region'].includes(h.type))
+        .filter((h:any) => {
+          const key = String(h.name || '').toLowerCase()
+          if (!key) return false
+          if (seen.has(key)) return false
+          seen.add(key)
+          return true
+        })
+        .map(h => ({ ...h, address: h.name }))
 
       return NextResponse.json({ hits })
     }
@@ -71,16 +86,32 @@ export async function GET(req: Request) {
       if (!r.ok) throw new Error(`Google error ${r.status}`)
       const data = await r.json()
 
-      const hits = (data.results || []).slice(0, limit).map((res: any) => ({
-        score: 90, // Google no explicit score; assume high relevance
-        identifier: `google:${res.place_id}`,
-        countryCode: (res.address_components || []).find((c: any) => c.types?.includes('country'))?.short_name || 'CH',
-        addressId: res.place_id,
-        buildingId: res.place_id,
-        address: res.formatted_address,
-        latitude: res.geometry?.location?.lat || 0,
-        longitude: res.geometry?.location?.lng || 0
-      }))
+      const hitsRaw = (data.results || []).slice(0, limit).map((res: any) => {
+        const comps = res.address_components || []
+        const locality = comps.find((c:any)=> (c.types||[]).includes('locality'))?.long_name
+        const admin2 = comps.find((c:any)=> (c.types||[]).includes('administrative_area_level_2'))?.long_name
+        const name = locality || admin2 || (res.formatted_address || '').split(',')[0]
+        return {
+          score: 90,
+          identifier: `google:${res.place_id}`,
+          countryCode: comps.find((c: any) => c.types?.includes('country'))?.short_name || 'CH',
+          addressId: res.place_id,
+          buildingId: res.place_id,
+          name,
+          address: name,
+          latitude: res.geometry?.location?.lat || 0,
+          longitude: res.geometry?.location?.lng || 0
+        }
+      })
+      // Dédupliquer par nom
+      const seen = new Set<string>()
+      const hits = hitsRaw.filter((h:any)=>{
+        const key = String(h.name||'').toLowerCase()
+        if (!key) return false
+        if (seen.has(key)) return false
+        seen.add(key)
+        return true
+      })
 
       return NextResponse.json({ hits })
     }
@@ -104,22 +135,32 @@ export async function GET(req: Request) {
     if (!r.ok) throw new Error(`Nominatim error ${r.status}`)
     const data = await r.json()
 
-    const hits = (data || []).map((item: any) => {
-      const street = item.address?.road || item.address?.pedestrian || item.address?.path || item.address?.footway || ''
-      const house = item.address?.house_number ? ` ${item.address.house_number}` : ''
-      const city = item.address?.city || item.address?.town || item.address?.village || item.address?.municipality || ''
-      const postal = item.address?.postcode || ''
-      const label = [street + house, [postal, city].filter(Boolean).join(' ')].filter(Boolean).join(', ')
-      return {
-        score: Math.round(((item.importance || 0.5) / 1.0) * 100),
-        identifier: `osm:${item.place_id}`,
-        countryCode: (item.address?.country_code || 'ch').toUpperCase(),
-        addressId: String(item.osm_id || item.place_id || ''),
-        buildingId: String(item.osm_id || item.place_id || ''),
-        address: label || item.display_name,
-        latitude: parseFloat(item.lat),
-        longitude: parseFloat(item.lon)
-      }
+    // Filtrer uniquement les villes/localités et retourner le nom court
+    const allowedTypes = new Set(['city','town','village','hamlet','locality','municipality'])
+    const hitsRaw = (data || [])
+      .filter((item:any)=> allowedTypes.has(String(item.type||'').toLowerCase()))
+      .map((item: any) => {
+        const name = (item.display_name || '').split(',')[0]
+        return {
+          score: Math.round(((item.importance || 0.5) / 1.0) * 100),
+          identifier: `osm:${item.place_id}`,
+          countryCode: (item.address?.country_code || 'ch').toUpperCase(),
+          addressId: String(item.osm_id || item.place_id || ''),
+          buildingId: String(item.osm_id || item.place_id || ''),
+          name,
+          address: name,
+          latitude: parseFloat(item.lat),
+          longitude: parseFloat(item.lon),
+          type: item.type
+        }
+      })
+    const seen = new Set<string>()
+    const hits = hitsRaw.filter((h:any)=>{
+      const key = String(h.name||'').toLowerCase()
+      if (!key) return false
+      if (seen.has(key)) return false
+      seen.add(key)
+      return true
     })
 
     return NextResponse.json({ hits })

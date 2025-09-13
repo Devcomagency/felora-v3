@@ -36,7 +36,18 @@ export default function SalonPreSignupQuick({ onSubmitted }:{ onSubmitted:(ok:bo
           const r = await fetch(url.toString(), { signal: ctrl.signal, cache:'no-store' })
           const d = await r.json()
           const hits = Array.isArray(d?.hits) ? d.hits : []
-          const items = hits.map((h:any) => ({ label: String(h.address || ''), value: String(h.address || '') }))
+          // Ne montrer que des noms de villes dédupliqués
+          const names: string[] = []
+          const seen = new Set<string>()
+          for (const h of hits) {
+            const name = String((h.name || h.address || '')).trim()
+            if (!name) continue
+            const key = name.toLowerCase()
+            if (seen.has(key)) continue
+            seen.add(key)
+            names.push(name)
+          }
+          const items = names.map((n:string) => ({ label: n, value: n }))
           setSuggestions(items)
           setShowSuggest(true)
         } catch { /* noop */ } finally { setLoadingSuggest(false) }
