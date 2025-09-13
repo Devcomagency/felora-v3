@@ -253,21 +253,71 @@ export default function Step3KYC({ userId, role='ESCORT', onSubmitted }:{ userId
         </div>
       </div>
 
-      {/* Checklist */}
-      <div className="text-xs text-white/70 mt-2">
-        Requis:
-        {(
-          [
-            ['docFrontUrl','Pièce — recto'],
-            ['docBackUrl','Pièce — verso'],
-            ['selfieSignUrl','Selfie "FELORA"'],
-            ['livenessVideoUrl','Vidéo présentation'],
-          ] as Array<[keyof typeof docs, string]>
-        ).map(([key,label]) => (
-          <span key={String(key)} className={`inline-flex items-center gap-1 mr-3 ${docs[key] ? 'text-emerald-400' : 'text-white/50'}`}>
-            <span>{docs[key] ? '✓' : '•'}</span> {label}
-          </span>
-        ))}
+      {/* Checklist améliorée avec icônes */}
+      <div className="glass-card p-4 rounded-xl border border-white/10 mt-4">
+        <h4 className="text-white/90 font-medium mb-3 text-sm flex items-center gap-2">
+          <CheckCircle size={16} className="text-green-400" />
+          Checklist des documents
+        </h4>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {(
+            [
+              ['docFrontUrl','Pièce d\'identité — recto', '📄'],
+              ['docBackUrl','Pièce d\'identité — verso', '📄'],
+              ['selfieSignUrl','Selfie avec papier "FELORA"', '🤳'],
+              ['livenessVideoUrl','Vidéo de présentation', '🎥'],
+            ] as Array<[keyof typeof docs, string, string]>
+          ).map(([key, label, emoji]) => (
+            <div key={String(key)} className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${
+              docs[key] 
+                ? 'bg-green-500/10 border border-green-500/20' 
+                : 'bg-white/5 border border-white/10'
+            }`}>
+              <div className="flex items-center gap-2">
+                {docs[key] ? (
+                  <BadgeCheck size={18} className="text-green-400" />
+                ) : (
+                  <div className="w-4 h-4 border-2 border-white/30 rounded-full" />
+                )}
+                <span className="text-lg">{emoji}</span>
+              </div>
+              <div className="flex-1">
+                <p className={`text-sm font-medium ${docs[key] ? 'text-green-400' : 'text-white/70'}`}>
+                  {label}
+                </p>
+                <p className={`text-xs ${docs[key] ? 'text-green-300' : 'text-white/50'}`}>
+                  {docs[key] ? 'Document fourni' : 'En attente'}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+        
+        {/* Badges de statut */}
+        <div className="mt-4 pt-4 border-t border-white/10">
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-2">
+              <div className={`w-3 h-3 rounded-full ${isComplete ? 'bg-green-400' : 'bg-orange-400'}`} />
+              <span className="text-sm text-white/80">
+                {isComplete ? 'Tous les documents sont fournis' : `${missing.length} document(s) manquant(s)`}
+              </span>
+            </div>
+            
+            {isComplete && (
+              <div className="flex items-center gap-2 px-3 py-1 bg-green-500/20 border border-green-500/30 rounded-full">
+                <ShieldCheck size={14} className="text-green-400" />
+                <span className="text-xs font-medium text-green-400">Prêt pour validation</span>
+              </div>
+            )}
+            
+            {!isComplete && (
+              <div className="flex items-center gap-2 px-3 py-1 bg-orange-500/20 border border-orange-500/30 rounded-full">
+                <AlertCircle size={14} className="text-orange-400" />
+                <span className="text-xs font-medium text-orange-400">Documents incomplets</span>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Modal "Vérifier plus tard" */}
