@@ -50,7 +50,7 @@ function EscortSignupContent(){
               <h1 className="text-white text-xl sm:text-2xl font-bold">Inscription Escort</h1>
               <p className="text-white/60 text-sm">Rejoignez la communauté Felora</p>
             </div>
-            <div className="text-right">
+            <div className="text-right ml-16">
               <div className="text-white/80 text-sm">Étape {step}/3</div>
               <div className="w-16 h-1 bg-white/20 rounded-full mt-1">
                 <div 
