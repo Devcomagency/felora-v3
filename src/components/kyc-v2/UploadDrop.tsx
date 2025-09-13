@@ -6,9 +6,105 @@ export default function UploadDrop({ label, accept, maxMb = 20, onUploaded, onUp
   const [busy, setBusy] = useState(false)
   const [uploadedUrl, setUploadedUrl] = useState<string|null>(null)
   const [previewUrl, setPreviewUrl] = useState<string|null>(null)
+  const [compressing, setCompressing] = useState(false)
   const uid = useId()
   const inputId = `file-${uid}`
 
+  // Compresseur vidéo efficace pour mobile
+  const compressVideo = useCallback(async (file: File): Promise<File> => {
+    if (!file.type.startsWith('video/')) return file
+    
+    return new Promise((resolve) => {
+      const video = document.createElement('video')
+      const canvas = document.createElement('canvas')
+      const ctx = canvas.getContext('2d')
+      
+      if (!ctx) {
+        resolve(file)
+        return
+      }
+
+      video.onloadedmetadata = () => {
+        try {
+          // Réduire la résolution pour compression (max 720p)
+          const { videoWidth: origWidth, videoHeight: origHeight } = video
+          const maxWidth = 720
+          const maxHeight = 720
+          
+          let width = origWidth
+          let height = origHeight
+          
+          // Calculer la nouvelle taille en gardant le ratio
+          if (width > maxWidth || height > maxHeight) {
+            const ratio = Math.min(maxWidth / width, maxHeight / height)
+            width = Math.round(width * ratio)
+            height = Math.round(height * ratio)
+          }
+          
+          canvas.width = width
+          canvas.height = height
+          
+          // Créer un stream depuis le canvas
+          const stream = canvas.captureStream(30) // 30 FPS
+          
+          // Utiliser MediaRecorder pour compresser
+          const mediaRecorder = new MediaRecorder(stream, {
+            mimeType: 'video/webm;codecs=vp8',
+            videoBitsPerSecond: 500000 // 500kbps - compression agressive
+          })
+          
+          const chunks: Blob[] = []
+          
+          mediaRecorder.ondataavailable = (event) => {
+            if (event.data.size > 0) {
+              chunks.push(event.data)
+            }
+          }
+          
+          mediaRecorder.onstop = () => {
+            const compressedBlob = new Blob(chunks, { type: 'video/webm' })
+            
+            // Vérifier si la compression a réduit la taille
+            if (compressedBlob.size < file.size) {
+              const compressedFile = new File(
+                [compressedBlob], 
+                file.name.replace(/\.[^/.]+$/, '.webm'), 
+                { type: 'video/webm', lastModified: Date.now() }
+              )
+              resolve(compressedFile)
+            } else {
+              resolve(file) // Pas de gain, garder l'original
+            }
+          }
+          
+          // Dessiner chaque frame du video sur le canvas
+          const drawFrame = () => {
+            if (video.ended || video.paused) {
+              mediaRecorder.stop()
+              return
+            }
+            
+            ctx.drawImage(video, 0, 0, width, height)
+            requestAnimationFrame(drawFrame)
+          }
+          
+          // Démarrer l'enregistrement
+          mediaRecorder.start(1000) // Chunk toutes les 1s
+          video.play()
+          drawFrame()
+          
+        } catch (error) {
+          console.log('Video compression failed:', error)
+          resolve(file)
+        }
+      }
+      
+      video.onerror = () => resolve(file)
+      video.src = URL.createObjectURL(file)
+      video.muted = true
+      video.load()
+    })
+  }, [])
 
   const handle = useCallback(async (file: File) => {
     setError(null)
@@ -22,19 +118,35 @@ export default function UploadDrop({ label, accept, maxMb = 20, onUploaded, onUp
     const fileUrl = URL.createObjectURL(file)
     setPreviewUrl(fileUrl)
     
-    // Vérification spéciale pour vidéos (limite plus haute)
     const isVideo = file.type.startsWith('video/')
-    const videoMaxMb = isVideo ? 25 : maxMb // 25MB pour vidéos vs 20MB pour images
+    let finalFile = file
     
-    if (file.size > videoMaxMb * 1024 * 1024) {
-      setError(`Fichier trop volumineux. Max ${videoMaxMb}MB pour ${isVideo ? 'vidéos' : 'images'}`)
+    // Compresser la vidéo si elle est trop grosse
+    if (isVideo && file.size > 25 * 1024 * 1024) {
+      setCompressing(true)
+      setError('Compression de la vidéo en cours...')
+      try {
+        finalFile = await compressVideo(file)
+        setError(null)
+        console.log(`Video compressed: ${file.size} → ${finalFile.size} bytes`)
+      } catch (e) {
+        console.log('Compression failed, trying with original file')
+        setError(null)
+      }
+      setCompressing(false)
+    }
+    
+    // Vérification finale de taille
+    const videoMaxMb = isVideo ? 25 : maxMb
+    if (finalFile.size > videoMaxMb * 1024 * 1024) {
+      setError(`Fichier encore trop volumineux après compression. Max ${videoMaxMb}MB pour ${isVideo ? 'vidéos' : 'images'}`)
       if (fileUrl) URL.revokeObjectURL(fileUrl)
       setPreviewUrl(null)
       return
     }
     
     const fd = new FormData()
-    fd.append('file', file)
+    fd.append('file', finalFile)
     setBusy(true)
     try {
       const r = await fetch('/api/kyc-v2/upload', { method:'POST', body: fd })
@@ -87,7 +199,7 @@ export default function UploadDrop({ label, accept, maxMb = 20, onUploaded, onUp
       )}
       
       <label htmlFor={inputId} onDragOver={e=>{e.preventDefault(); e.stopPropagation()}} onDrop={onDrop} className={`block p-4 rounded-xl border border-dashed border-white/20 bg-white/5 text-white/80 cursor-pointer hover:bg-white/10 transition-colors ${previewUrl ? 'h-16' : ''}`}>
-        {busy ? 'Upload…' : previewUrl ? 'Changer le fichier' : 'Glissez-déposez ou cliquez pour sélectionner'}
+        {compressing ? 'Compression vidéo...' : busy ? 'Upload…' : previewUrl ? 'Changer le fichier' : 'Glissez-déposez ou cliquez pour sélectionner'}
       </label>
       {error && <div className="text-red-400 text-sm">{error}</div>}
     </div>

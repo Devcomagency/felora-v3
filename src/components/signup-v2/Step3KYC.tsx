@@ -7,6 +7,7 @@ export default function Step3KYC({ userId, role='ESCORT', onSubmitted }:{ userId
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string|null>(null)
   const [showLater, setShowLater] = useState(false)
+  const [showSuccess, setShowSuccess] = useState(false)
   // Requis: recto, verso, selfie papier "FELORA", vidéo de vérification
   const requiredKeys = ['docFrontUrl','docBackUrl','selfieSignUrl','livenessVideoUrl'] as const
   const missing = requiredKeys.filter(k => !docs[k])
@@ -23,7 +24,7 @@ export default function Step3KYC({ userId, role='ESCORT', onSubmitted }:{ userId
       }
       const r = await fetch('/api/kyc-v2/submit', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ userId, role, ...docs }) })
       const d = await r.json(); if (!r.ok || !d?.ok) throw new Error(d?.error || 'submit_failed')
-      onSubmitted(true)
+      setShowSuccess(true)
     } catch (e:any) { setError(e.message); onSubmitted(false) } finally { setBusy(false) }
   }
 
@@ -100,6 +101,47 @@ export default function Step3KYC({ userId, role='ESCORT', onSubmitted }:{ userId
             <div className="flex items-center justify-end gap-2">
               <button onClick={()=>setShowLater(false)} className="px-3 py-2 rounded-lg bg-white/10 hover:bg-white/15">Continuer la vérification</button>
               <button onClick={()=>{ setShowLater(false); onSubmitted(false) }} className="px-3 py-2 rounded-lg bg-gradient-to-r from-pink-500 to-purple-600">Compris, je ferai plus tard</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de succès */}
+      {showSuccess && (
+        <div className="fixed inset-0 z-[10000] flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/80" />
+          <div className="relative w-[min(92vw,36rem)] rounded-xl border border-emerald-500/20 bg-gradient-to-br from-gray-900/95 to-emerald-900/20 backdrop-blur-xl p-6 text-white">
+            <div className="text-center">
+              <div className="w-16 h-16 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl">✅</span>
+              </div>
+              <h3 className="text-xl font-bold mb-3 text-emerald-400">Vérification envoyée avec succès !</h3>
+              <div className="space-y-2 text-sm text-white/80 mb-6">
+                <p><strong>Félicitations !</strong> Vos documents ont été transmis à notre équipe.</p>
+                <p>Vous pouvez maintenant <strong>compléter toutes les informations</strong> dans votre espace personnel.</p>
+                <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-3 mt-3">
+                  <p className="font-semibold text-emerald-300">📋 Prochaines étapes :</p>
+                  <ul className="list-disc list-inside text-xs space-y-1 mt-2">
+                    <li>Complétez votre profil dans le dashboard</li>
+                    <li>Ajoutez vos photos et informations</li>
+                    <li>La vérification se fait sous <strong>48h ouvrées</strong></li>
+                    <li>Votre badge apparaîtra automatiquement une fois validé</li>
+                  </ul>
+                </div>
+              </div>
+              <button 
+                onClick={() => {
+                  setShowSuccess(false)
+                  onSubmitted(true)
+                  // Redirection vers dashboard après un court délai
+                  setTimeout(() => {
+                    window.location.href = '/dashboard-escort/profil'
+                  }, 100)
+                }}
+                className="w-full px-6 py-3 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold hover:from-emerald-600 hover:to-teal-700 transition-all"
+              >
+                Aller au Dashboard
+              </button>
             </div>
           </div>
         </div>

@@ -3,6 +3,10 @@ import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 
+// Configuration pour accepter les gros payloads JSON
+export const maxDuration = 30
+export const runtime = 'nodejs'
+
 export async function POST(req: NextRequest) {
   try {
     // Basic rate limit: 10 requests / 60s per IP
