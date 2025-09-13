@@ -50,9 +50,11 @@ export default function Step1PreSignupMobile({ mode = 'ESCORT', onSubmit }:{ mod
       const checks = schema.safeParse(form)
       if (!checks.success) {
         const errors: Record<string,string> = {}
-        checks.error.errors.forEach(e => {
-          if (e.path[0]) errors[e.path[0] as string] = e.message
-        })
+        if (checks.error?.errors) {
+          checks.error.errors.forEach(e => {
+            if (e.path?.[0]) errors[e.path[0] as string] = e.message
+          })
+        }
         setFieldErrors(errors)
         setLoading(false)
         return
