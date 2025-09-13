@@ -25,9 +25,12 @@ function EscortSignupContent(){
     try {
       if (!userId) {
         const saved = localStorage.getItem('felora-signup-userId') || ''
+        console.log('Restoring userId from localStorage:', saved)
         if (saved) setUserId(saved)
       }
-    } catch {}
+    } catch (e) {
+      console.error('Error restoring userId from localStorage:', e)
+    }
   }, [userId])
 
   // Keep step in sync with URL (if user navigates directly to ?step=2/3)
@@ -55,6 +58,7 @@ function EscortSignupContent(){
 
       {step === 3 && (
         <div className="space-y-4">
+          {console.log('Rendering Step3KYC with userId:', userId)}
           <Step3KYC userId={userId} onSubmitted={(ok)=>{ 
             try { if (ok) localStorage.removeItem('felora-signup-userId') } catch {}
             if (ok) {

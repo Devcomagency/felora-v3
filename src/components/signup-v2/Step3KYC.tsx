@@ -4,6 +4,7 @@ import UploadDrop from '@/components/kyc-v2/UploadDrop'
 import { CheckCircle, BadgeCheck, ShieldCheck, AlertCircle } from 'lucide-react'
 
 export default function Step3KYC({ userId, role='ESCORT', onSubmitted }:{ userId:string; role:'ESCORT'|'CLUB'|'CLIENT'; onSubmitted:(ok:boolean)=>void }){
+  console.log('Step3KYC received userId:', userId, 'role:', role)
   const [docs, setDocs] = useState<{[k:string]: string}>({})
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string|null>(null)
@@ -20,6 +21,13 @@ export default function Step3KYC({ userId, role='ESCORT', onSubmitted }:{ userId
     try {
       if (!isComplete) {
         setError(`Pièces manquantes: ${missing.join(', ')}`)
+        setBusy(false)
+        return
+      }
+      
+      if (!userId || userId === '') {
+        console.error('No userId provided to Step3KYC')
+        setError('ID utilisateur manquant - veuillez recharger la page')
         setBusy(false)
         return
       }
