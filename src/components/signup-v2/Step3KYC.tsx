@@ -1,6 +1,5 @@
 "use client"
 import { useState } from 'react'
-import CameraCapture from '@/components/kyc-v2/CameraCapture'
 import UploadDrop from '@/components/kyc-v2/UploadDrop'
 
 export default function Step3KYC({ userId, role='ESCORT', onSubmitted }:{ userId:string; role:'ESCORT'|'CLUB'|'CLIENT'; onSubmitted:(ok:boolean)=>void }){
@@ -8,28 +7,11 @@ export default function Step3KYC({ userId, role='ESCORT', onSubmitted }:{ userId
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string|null>(null)
   const [showLater, setShowLater] = useState(false)
-  // Requis: recto, verso, selfie papier "FELORA", selfie caméra, vidéo 5s
-  const requiredKeys = ['docFrontUrl','docBackUrl','selfieSignUrl','selfieUrl','livenessVideoUrl'] as const
+  // Requis: recto, verso, selfie papier "FELORA", vidéo de vérification
+  const requiredKeys = ['docFrontUrl','docBackUrl','selfieSignUrl','livenessVideoUrl'] as const
   const missing = requiredKeys.filter(k => !docs[k])
   const isComplete = missing.length === 0
 
-  const uploadBlob = async (blob: Blob, name: string) => {
-    console.log('Uploading blob:', blob.type, blob.size, 'as', name)
-    const fd = new FormData()
-    fd.append('file', blob, name)
-    const r = await fetch('/api/kyc-v2/upload', { method:'POST', body: fd })
-    const d = await r.json()
-    console.log('Upload response:', r.status, d)
-    if (!r.ok) throw new Error(d?.error || 'upload_failed')
-    return d.url as string
-  }
-
-  const onPhoto = async (blob:Blob) => {
-    try { const url = await uploadBlob(blob, 'selfie.jpg'); setDocs(s=>({ ...s, selfieUrl: url })) } catch (e:any){ setError(e.message) }
-  }
-  const onVideo = async (blob:Blob) => {
-    try { const url = await uploadBlob(blob, 'liveness.webm'); setDocs(s=>({ ...s, livenessVideoUrl: url })) } catch (e:any){ setError(e.message) }
-  }
 
   const submit = async () => {
     setBusy(true); setError(null)
@@ -51,26 +33,31 @@ export default function Step3KYC({ userId, role='ESCORT', onSubmitted }:{ userId
       <div className="glass-card p-4 rounded-xl border border-white/10">
         <h3 className="text-white font-semibold mb-2">Vérification d’identité — étapes à suivre</h3>
         <ul className="list-disc list-inside text-white/80 text-sm space-y-1">
-          <li>Photo nette de votre pièce d’identité — recto</li>
-          <li>Photo nette de votre pièce d’identité — verso</li>
-          <li>Selfie où l’on vous voit tenir un papier avec le mot « FELORA »</li>
-          <li>Selfie caméra (portrait)</li>
-          <li>Courte vidéo (5s) en mode portrait pour vérifier la présence réelle</li>
+          <li>Photo nette de votre pièce d'identité — recto</li>
+          <li>Photo nette de votre pièce d'identité — verso</li>
+          <li>Selfie où l'on vous voit tenir un papier avec le mot « FELORA »</li>
+          <li>Vidéo courte (max 30s) où vous vous présentez en disant votre nom</li>
         </ul>
-        <p className="text-white/60 text-xs mt-2">Formats acceptés: JPG/PNG pour les photos, WEBM/MP4 selon l’appareil pour la vidéo. Lumière naturelle et fond neutre recommandés.</p>
+        <p className="text-white/60 text-xs mt-2">Formats acceptés: JPG/PNG pour les photos, WEBM/MP4/MOV pour la vidéo. Lumière naturelle et fond neutre recommandés.</p>
       </div>
 
       {/* Uploads documentaires */}
       <div className="grid sm:grid-cols-2 gap-4">
-        <UploadDrop label="Pièce d’identité — recto" accept="image/jpeg,image/png" onUploaded={url=>setDocs(s=>({ ...s, docFrontUrl: url }))} />
-        <UploadDrop label="Pièce d’identité — verso" accept="image/jpeg,image/png" onUploaded={url=>setDocs(s=>({ ...s, docBackUrl: url }))} />
-        <UploadDrop label="Selfie avec ‘FELORA’" accept="image/jpeg,image/png" onUploaded={url=>setDocs(s=>({ ...s, selfieSignUrl: url }))} />
+        <UploadDrop label="Pièce d'identité — recto" accept="image/jpeg,image/png" onUploaded={url=>setDocs(s=>({ ...s, docFrontUrl: url }))} />
+        <UploadDrop label="Pièce d'identité — verso" accept="image/jpeg,image/png" onUploaded={url=>setDocs(s=>({ ...s, docBackUrl: url }))} />
+        <UploadDrop label="Selfie avec 'FELORA'" accept="image/jpeg,image/png" onUploaded={url=>setDocs(s=>({ ...s, selfieSignUrl: url }))} />
       </div>
 
-      {/* Capture caméra portrait */}
+      {/* Upload vidéo de vérification */}
       <div className="glass-card p-4 rounded-xl border border-white/10">
-        <p className="text-white/80 mb-3 text-sm">Capture caméra (portrait): selfie + vidéo 5 secondes</p>
-        <CameraCapture onPhoto={onPhoto} onVideo={onVideo} />
+        <p className="text-white/80 mb-3 text-sm">Vidéo de présentation (max 30s)</p>
+        <p className="text-white/60 text-xs mb-3">Présentez-vous en disant votre nom complet. Filmez en mode portrait avec une bonne luminosité.</p>
+        <UploadDrop 
+          label="Sélectionner votre vidéo" 
+          accept="video/mp4,video/webm,video/quicktime,video/mov" 
+          maxMb={50}
+          onUploaded={url=>setDocs(s=>({ ...s, livenessVideoUrl: url }))} 
+        />
       </div>
 
       {error && <div className="text-red-400 text-sm">{error}</div>}
@@ -88,9 +75,8 @@ export default function Step3KYC({ userId, role='ESCORT', onSubmitted }:{ userId
           [
             ['docFrontUrl','Pièce — recto'],
             ['docBackUrl','Pièce — verso'],
-            ['selfieSignUrl','Selfie “FELORA”'],
-            ['selfieUrl','Selfie caméra'],
-            ['livenessVideoUrl','Vidéo 5s'],
+            ['selfieSignUrl','Selfie "FELORA"'],
+            ['livenessVideoUrl','Vidéo présentation'],
           ] as Array<[keyof typeof docs, string]>
         ).map(([key,label]) => (
           <span key={String(key)} className={`inline-flex items-center gap-1 mr-3 ${docs[key] ? 'text-emerald-400' : 'text-white/50'}`}>

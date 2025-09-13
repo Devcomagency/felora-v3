@@ -54,7 +54,11 @@ export default function UploadDrop({ label, accept, maxMb = 20, onUploaded, onUp
       {/* Preview */}
       {previewUrl && (
         <div className="relative">
-          <img src={previewUrl} alt="Preview" className="w-full h-32 object-cover rounded-lg border border-white/10" />
+          {accept.includes('video/') ? (
+            <video src={previewUrl} className="w-full h-32 object-cover rounded-lg border border-white/10" controls />
+          ) : (
+            <img src={previewUrl} alt="Preview" className="w-full h-32 object-cover rounded-lg border border-white/10" />
+          )}
           <div className="absolute top-2 right-2 px-2 py-1 rounded bg-black/70 text-white text-xs">
             {uploadedUrl ? '✓ Uploadé' : '⏳ Upload...'}
           </div>
