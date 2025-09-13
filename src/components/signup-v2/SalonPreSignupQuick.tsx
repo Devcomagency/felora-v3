@@ -4,10 +4,9 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 export default function SalonPreSignupQuick({ onSubmitted }:{ onSubmitted:(ok:boolean,userId?:string)=>void }){
   const [companyName, setCompanyName] = useState('')
   const [city, setCity] = useState('')
-  const [suggestions, setSuggestions] = useState<Array<{ label:string; value:string }>>([])
+  const [allCities, setAllCities] = useState<string[]>([])
+  const [suggestions, setSuggestions] = useState<string[]>([])
   const [showSuggest, setShowSuggest] = useState(false)
-  const [loadingSuggest, setLoadingSuggest] = useState(false)
-  const suggestAbortRef = useRef<AbortController|null>(null)
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
   const [password, setPassword] = useState('')
@@ -18,42 +17,40 @@ export default function SalonPreSignupQuick({ onSubmitted }:{ onSubmitted:(ok:bo
   const [error, setError] = useState<string|null>(null)
   const [captchaOK, setCaptchaOK] = useState(false)
 
-  const fetchSuggestions = useMemo(() => {
-    let t: any
+  // Charger la liste statique (offline)
+  useEffect(() => {
+    (async () => {
+      try {
+        const r = await fetch('/data/ch-cities.json', { cache: 'force-cache' })
+        const d = await r.json()
+        const arr = Array.isArray(d) ? d.map((x:any)=>String(x)).filter(Boolean) : []
+        setAllCities(arr)
+      } catch {}
+    })()
+  }, [])
+
+  const normalize = (s: string) => s
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/\p{Diacritic}+/gu, '')
+    .replace(/[^a-z0-9\s\-']/g, '')
+    .trim()
+
+  const updateSuggestions = useMemo(() => {
+    let t:any
     return (q: string) => {
       window.clearTimeout(t)
-      if (suggestAbortRef.current) suggestAbortRef.current.abort()
-      if (!q || q.trim().length < 1) { setSuggestions([]); setShowSuggest(false); return }
-      t = window.setTimeout(async () => {
-        try {
-          setLoadingSuggest(true)
-          const ctrl = new AbortController()
-          suggestAbortRef.current = ctrl
-          const url = new URL('/api/geocode/search', window.location.origin)
-          url.searchParams.set('q', q)
-          url.searchParams.set('limit', '8')
-          url.searchParams.set('provider', 'nominatim')
-          const r = await fetch(url.toString(), { signal: ctrl.signal, cache:'no-store' })
-          const d = await r.json()
-          const hits = Array.isArray(d?.hits) ? d.hits : []
-          // Ne montrer que des noms de villes dédupliqués
-          const names: string[] = []
-          const seen = new Set<string>()
-          for (const h of hits) {
-            const name = String((h.name || h.address || '')).trim()
-            if (!name) continue
-            const key = name.toLowerCase()
-            if (seen.has(key)) continue
-            seen.add(key)
-            names.push(name)
-          }
-          const items = names.map((n:string) => ({ label: n, value: n }))
-          setSuggestions(items)
-          setShowSuggest(true)
-        } catch { /* noop */ } finally { setLoadingSuggest(false) }
-      }, 200)
+      if (!q || !q.trim()) { setSuggestions([]); setShowSuggest(false); return }
+      t = window.setTimeout(() => {
+        const nq = normalize(q)
+        const list = allCities
+          .filter(name => normalize(name).startsWith(nq))
+          .slice(0, 12)
+        setSuggestions(list)
+        setShowSuggest(true)
+      }, 120)
     }
-  }, [])
+  }, [allCities])
 
   function normalizeSwissPhone(input?: string): string | null {
     if (!input) return null
@@ -79,7 +76,10 @@ export default function SalonPreSignupQuick({ onSubmitted }:{ onSubmitted:(ok:bo
     if (captchaRequired && !captchaOK) { setError('Vérification “Je ne suis pas un robot” requise'); return }
 
     // Vérifier que la ville correspond à la liste (si disponible)
-    // Optionnel: on pourrait valider via /api/geo/geocode?city=...
+    // Valider que la ville correspond à la liste offline
+    if (!allCities.some(name => normalize(name) === normalize(String(city)))) {
+      setError('Veuillez sélectionner une ville de la liste'); return
+    }
     setLoading(true)
     try {
       // Générer handle à partir du nom
@@ -121,7 +121,7 @@ export default function SalonPreSignupQuick({ onSubmitted }:{ onSubmitted:(ok:bo
           <input
             className="mt-1 w-full bg-black/40 rounded-lg px-3 py-2 text-white border border-white/10"
             value={city}
-            onChange={(e)=>{ setCity(e.target.value); fetchSuggestions(e.target.value) }}
+            onChange={(e)=>{ setCity(e.target.value); updateSuggestions(e.target.value) }}
             onFocus={()=>{ if (suggestions.length) setShowSuggest(true) }}
             onBlur={()=>{ setTimeout(()=>setShowSuggest(false), 150) }}
             placeholder="ex: Montreux"
@@ -129,18 +129,17 @@ export default function SalonPreSignupQuick({ onSubmitted }:{ onSubmitted:(ok:bo
           />
           {showSuggest && (
             <div className="absolute z-50 left-0 right-0 mt-1 rounded-lg border border-white/10 bg-[#0e0e10] shadow-xl max-h-56 overflow-auto">
-              {loadingSuggest && <div className="px-3 py-2 text-white/60 text-sm">Recherche…</div>}
-              {!loadingSuggest && suggestions.length === 0 && (
+              {suggestions.length === 0 && (
                 <div className="px-3 py-2 text-white/60 text-sm">Aucun résultat</div>
               )}
               {suggestions.map((s, idx) => (
                 <button
-                  key={`${s.value}-${idx}`}
+                  key={`${s}-${idx}`}
                   type="button"
                   className="block w-full text-left px-3 py-2 hover:bg-white/5 text-white/90 text-sm"
-                  onMouseDown={(e)=>{ e.preventDefault(); setCity(s.value); setShowSuggest(false) }}
+                  onMouseDown={(e)=>{ e.preventDefault(); setCity(s); setShowSuggest(false) }}
                 >
-                  {s.label}
+                  {s}
                 </button>
               ))}
             </div>
