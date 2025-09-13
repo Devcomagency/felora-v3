@@ -32,10 +32,38 @@ export async function POST(req: NextRequest) {
     } catch (e) {
       return NextResponse.json({ error: 'invalid_json' }, { status: 400 })
     }
+    
+    // Debug logging
+    console.log('KYC Submit Debug:', {
+      hasSession: !!session,
+      sessionUserId: (session as any)?.user?.id,
+      bodyUserId: body?.userId,
+      bodyKeys: Object.keys(body || {})
+    })
+    
     const bodyUserId = String(body?.userId || '').trim()
     const sessionUid = (session as any)?.user?.id as string | undefined
-    const uid = sessionUid || (bodyUserId || undefined)
-    if (!uid) return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
+    
+    // Priorité: session > body > fallback pour signup
+    let uid = sessionUid || bodyUserId || undefined
+    
+    // Si toujours pas d'ID mais qu'on a une session, utiliser l'email comme fallback
+    if (!uid && session?.user?.email) {
+      console.log('Fallback: trying to find user by email:', session.user.email)
+      const userByEmail = await prisma.user.findUnique({ 
+        where: { email: session.user.email },
+        select: { id: true }
+      })
+      uid = userByEmail?.id
+    }
+    
+    if (!uid) {
+      console.error('No valid userId found:', { sessionUid, bodyUserId, sessionEmail: session?.user?.email })
+      return NextResponse.json({ 
+        error: 'unauthorized', 
+        debug: { hasSession: !!session, bodyUserId: !!bodyUserId, email: !!session?.user?.email }
+      }, { status: 401 })
+    }
 
     // Security: ensure the target user exists and is ESCORT or in signup flow
     const user = await prisma.user.findUnique({ where: { id: uid }, select: { id: true, role: true } })
