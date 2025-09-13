@@ -54,6 +54,12 @@ export async function POST(req: NextRequest) {
       uid = userByEmail?.id
     }
     
+    // Si toujours pas d'ID mais qu'on a un bodyUserId valide, l'utiliser directement
+    if (!uid && bodyUserId && bodyUserId !== '') {
+      console.log('Using bodyUserId directly:', bodyUserId)
+      uid = bodyUserId
+    }
+    
     if (!uid) {
       console.error('No valid userId found:', { 
         sessionUid, 
@@ -77,18 +83,18 @@ export async function POST(req: NextRequest) {
     // Security: ensure the target user exists and is ESCORT or in signup flow
     let user = await prisma.user.findUnique({ where: { id: uid }, select: { id: true, role: true } })
     
-    // Si l'utilisateur n'existe pas mais qu'on a une session, créer un utilisateur temporaire
-    if (!user && sessionUser?.email) {
-      console.log('Creating temporary user for KYC:', { email: sessionUser.email, role })
+    // Si l'utilisateur n'existe pas, créer un utilisateur temporaire
+    if (!user) {
+      console.log('Creating temporary user for KYC:', { uid, role, hasSession: !!sessionUser })
       try {
         user = await prisma.user.create({
           data: {
             id: uid,
-            email: sessionUser.email,
+            email: sessionUser?.email || `temp-${uid}@felora.com`,
             role: role || 'ESCORT',
-            name: sessionUser.name || 'Temporary User',
+            name: sessionUser?.name || 'Temporary User',
             emailVerified: null,
-            image: sessionUser.image || null,
+            image: sessionUser?.image || null,
             createdAt: new Date(),
             updatedAt: new Date()
           },
