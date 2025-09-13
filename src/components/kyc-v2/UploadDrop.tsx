@@ -1,7 +1,30 @@
 "use client"
 import { useCallback, useId, useState } from 'react'
+import { Upload, CheckCircle, AlertCircle, Image, Video, FileText } from 'lucide-react'
 
-export default function UploadDrop({ label, accept, maxMb = 20, onUploaded, onUploadedMeta }:{ label:string; accept:string; maxMb?:number; onUploaded:(url:string)=>void; onUploadedMeta?: (meta:{ url:string; key?: string })=>void }){
+interface UploadDropProps {
+  label: string
+  accept: string
+  maxMb?: number
+  onUploaded: (url: string) => void
+  onUploadedMeta?: (meta: { url: string; key?: string }) => void
+  exampleImage?: string
+  requirements?: string[]
+  tips?: string[]
+  isRequired?: boolean
+}
+
+export default function UploadDrop({ 
+  label, 
+  accept, 
+  maxMb = 20, 
+  onUploaded, 
+  onUploadedMeta,
+  exampleImage,
+  requirements = [],
+  tips = [],
+  isRequired = false
+}: UploadDropProps){
   const [error, setError] = useState<string|null>(null)
   const [busy, setBusy] = useState(false)
   const [uploadedUrl, setUploadedUrl] = useState<string|null>(null)
@@ -179,15 +202,44 @@ export default function UploadDrop({ label, accept, maxMb = 20, onUploaded, onUp
     if (f) handle(f)
   }, [handle])
 
+  const isVideo = accept.includes('video/')
+  const isImage = accept.includes('image/')
+  
   return (
-    <div className="space-y-2">
-      <label className="text-sm text-white/80">{label}</label>
-      <input type="file" className="hidden" id={inputId} accept={accept} onChange={e => e.target.files && handle(e.target.files[0])} />
-      
-      {/* Preview */}
+    <div className="space-y-3">
+      {/* Header avec statut */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <label className="text-sm text-white/90 font-medium">{label}</label>
+          {isRequired && <span className="text-xs bg-red-500/20 text-red-400 px-2 py-1 rounded">Requis</span>}
+        </div>
+        <div className="flex items-center gap-2">
+          {uploadedUrl && <CheckCircle size={16} className="text-green-400" />}
+          {error && <AlertCircle size={16} className="text-red-400" />}
+        </div>
+      </div>
+
+      {/* Exemple visuel si fourni */}
+      {exampleImage && !previewUrl && (
+        <div className="p-3 bg-black/20 rounded-lg border border-white/5">
+          <div className="relative w-full h-24 rounded-lg overflow-hidden">
+            <img 
+              src={exampleImage} 
+              alt={`Exemple ${label}`}
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+            <div className="absolute bottom-1 left-2 text-white text-xs font-medium">
+              Exemple
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Preview du fichier uploadé */}
       {previewUrl && (
         <div className="relative">
-          {accept.includes('video/') ? (
+          {isVideo ? (
             <video src={previewUrl} className="w-full h-32 object-cover rounded-lg border border-white/10" controls />
           ) : (
             <img src={previewUrl} alt="Preview" className="w-full h-32 object-cover rounded-lg border border-white/10" />
@@ -198,9 +250,75 @@ export default function UploadDrop({ label, accept, maxMb = 20, onUploaded, onUp
         </div>
       )}
       
-      <label htmlFor={inputId} onDragOver={e=>{e.preventDefault(); e.stopPropagation()}} onDrop={onDrop} className={`block p-4 rounded-xl border border-dashed border-white/20 bg-white/5 text-white/80 cursor-pointer hover:bg-white/10 transition-colors ${previewUrl ? 'h-16' : ''}`}>
-        {compressing ? 'Compression vidéo...' : busy ? 'Upload…' : previewUrl ? 'Changer le fichier' : 'Glissez-déposez ou cliquez pour sélectionner'}
+      {/* Zone d'upload améliorée */}
+      <input type="file" className="hidden" id={inputId} accept={accept} onChange={e => e.target.files && handle(e.target.files[0])} />
+      
+      <label 
+        htmlFor={inputId} 
+        onDragOver={e=>{e.preventDefault(); e.stopPropagation()}} 
+        onDrop={onDrop} 
+        className={`group block p-4 rounded-xl border-2 border-dashed transition-all duration-200 ${
+          uploadedUrl 
+            ? 'border-green-500/50 bg-green-500/5' 
+            : error 
+            ? 'border-red-500/50 bg-red-500/5' 
+            : 'border-white/20 bg-white/5 hover:border-white/40 hover:bg-white/10'
+        } cursor-pointer`}
+      >
+        <div className="flex flex-col items-center justify-center text-center space-y-2">
+          <div className="p-3 rounded-full bg-white/10 group-hover:bg-white/20 transition-colors">
+            {isVideo ? <Video size={24} className="text-white/80" /> : 
+             isImage ? <Image size={24} className="text-white/80" /> : 
+             <FileText size={24} className="text-white/80" />}
+          </div>
+          
+          <div className="space-y-1">
+            <p className="text-white/90 font-medium text-sm">
+              {compressing ? 'Compression vidéo...' : 
+               busy ? 'Upload en cours...' : 
+               previewUrl ? 'Changer le fichier' : 
+               'Glissez-déposez ou cliquez pour sélectionner'}
+            </p>
+            <p className="text-white/60 text-xs">
+              {isVideo ? `Vidéo (max ${maxMb}MB)` : `Image (max ${maxMb}MB)`}
+            </p>
+          </div>
+        </div>
       </label>
+
+      {/* Exigences et conseils */}
+      {(requirements.length > 0 || tips.length > 0) && (
+        <div className="space-y-2 text-xs">
+          {requirements.length > 0 && (
+            <div>
+              <h5 className="text-white/80 font-medium mb-1">Exigences :</h5>
+              <ul className="space-y-1">
+                {requirements.map((req, index) => (
+                  <li key={index} className="flex items-start gap-2 text-white/60">
+                    <div className="w-1 h-1 bg-white/40 rounded-full mt-2 flex-shrink-0" />
+                    {req}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          
+          {tips.length > 0 && (
+            <div>
+              <h5 className="text-white/80 font-medium mb-1">💡 Conseils :</h5>
+              <ul className="space-y-1">
+                {tips.map((tip, index) => (
+                  <li key={index} className="flex items-start gap-2 text-white/60">
+                    <div className="w-1 h-1 bg-yellow-400/60 rounded-full mt-2 flex-shrink-0" />
+                    {tip}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
+
       {error && <div className="text-red-400 text-sm">{error}</div>}
     </div>
   )

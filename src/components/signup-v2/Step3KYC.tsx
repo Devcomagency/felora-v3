@@ -29,44 +29,193 @@ export default function Step3KYC({ userId, role='ESCORT', onSubmitted }:{ userId
   }
 
   return (
-    <div className="space-y-5">
-      {/* Instructions claires */}
-      <div className="glass-card p-4 rounded-xl border border-white/10">
-        <h3 className="text-white font-semibold mb-2">Vérification d’identité — étapes à suivre</h3>
-        <ul className="list-disc list-inside text-white/80 text-sm space-y-1">
-          <li>Photo nette de votre pièce d'identité — recto</li>
-          <li>Photo nette de votre pièce d'identité — verso</li>
-          <li>Selfie où l'on vous voit tenir un papier avec le mot « FELORA »</li>
-          <li>Vidéo courte (max 30s, max 25MB) où vous vous présentez en disant votre nom</li>
-        </ul>
-        <p className="text-white/60 text-xs mt-2">Formats acceptés: JPG/PNG (max 10MB) pour les photos, WEBM/MP4/MOV (max 25MB) pour la vidéo. Lumière naturelle et fond neutre recommandés.</p>
+    <div className="space-y-6">
+      {/* Header amélioré */}
+      <div className="glass-card p-6 rounded-xl border border-white/10 bg-gradient-to-r from-purple-500/10 to-pink-500/10">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center">
+            <span className="text-white font-bold text-lg">3</span>
+          </div>
+          <div>
+            <h3 className="text-white font-semibold text-lg">Vérification d'identité</h3>
+            <p className="text-white/70 text-sm">Dernière étape pour activer votre compte</p>
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <h4 className="text-white/90 font-medium mb-2 text-sm">Documents requis :</h4>
+            <ul className="space-y-1 text-white/80 text-sm">
+              <li className="flex items-center gap-2">
+                <div className="w-1.5 h-1.5 bg-green-400 rounded-full" />
+                Photo recto de votre pièce d'identité
+              </li>
+              <li className="flex items-center gap-2">
+                <div className="w-1.5 h-1.5 bg-green-400 rounded-full" />
+                Photo verso de votre pièce d'identité
+              </li>
+              <li className="flex items-center gap-2">
+                <div className="w-1.5 h-1.5 bg-green-400 rounded-full" />
+                Selfie avec papier "FELORA"
+              </li>
+              <li className="flex items-center gap-2">
+                <div className="w-1.5 h-1.5 bg-green-400 rounded-full" />
+                Vidéo de présentation (30s max)
+              </li>
+            </ul>
+          </div>
+          
+          <div className="bg-black/20 rounded-lg p-3">
+            <h4 className="text-white/90 font-medium mb-2 text-sm">💡 Conseils généraux :</h4>
+            <ul className="space-y-1 text-white/70 text-xs">
+              <li>• Utilisez une lumière naturelle</li>
+              <li>• Évitez les reflets et ombres</li>
+              <li>• Assurez-vous que tout est lisible</li>
+              <li>• Formats : JPG/PNG (photos), MP4/WEBM (vidéo)</li>
+            </ul>
+          </div>
+        </div>
       </div>
 
-      {/* Uploads documentaires */}
+      {/* Uploads documentaires avec exemples */}
       <div className="grid sm:grid-cols-2 gap-4">
-        <UploadDrop label="Pièce d'identité — recto" accept="image/jpeg,image/png" onUploaded={url=>setDocs(s=>({ ...s, docFrontUrl: url }))} />
-        <UploadDrop label="Pièce d'identité — verso" accept="image/jpeg,image/png" onUploaded={url=>setDocs(s=>({ ...s, docBackUrl: url }))} />
-        <UploadDrop label="Selfie avec 'FELORA'" accept="image/jpeg,image/png" onUploaded={url=>setDocs(s=>({ ...s, selfieSignUrl: url }))} />
+        <UploadDrop 
+          label="Pièce d'identité — recto" 
+          accept="image/jpeg,image/png" 
+          onUploaded={url=>setDocs(s=>({ ...s, docFrontUrl: url }))}
+          exampleImage="/examples/id-front.jpg"
+          requirements={[
+            "Photo nette et lisible",
+            "Toutes les informations visibles",
+            "Pas de reflets ou d'ombres",
+            "Format JPG ou PNG"
+          ]}
+          tips={[
+            "Placez le document sur une surface plane",
+            "Évitez les reflets en utilisant une lumière naturelle",
+            "Assurez-vous que tous les textes sont lisibles"
+          ]}
+          isRequired={true}
+        />
+        
+        <UploadDrop 
+          label="Pièce d'identité — verso" 
+          accept="image/jpeg,image/png" 
+          onUploaded={url=>setDocs(s=>({ ...s, docBackUrl: url }))}
+          exampleImage="/examples/id-back.jpg"
+          requirements={[
+            "Photo nette et lisible",
+            "Code-barres visible",
+            "Pas de reflets ou d'ombres",
+            "Format JPG ou PNG"
+          ]}
+          tips={[
+            "Vérifiez que le code-barres est visible",
+            "Évitez les plis ou déformations",
+            "Utilisez un éclairage uniforme"
+          ]}
+          isRequired={true}
+        />
+        
+        <UploadDrop 
+          label="Selfie avec 'FELORA'" 
+          accept="image/jpeg,image/png" 
+          onUploaded={url=>setDocs(s=>({ ...s, selfieSignUrl: url }))}
+          exampleImage="/examples/selfie-felora.jpg"
+          requirements={[
+            "Votre visage bien visible",
+            "Papier avec 'FELORA' lisible",
+            "Bonne luminosité",
+            "Format JPG ou PNG"
+          ]}
+          tips={[
+            "Tenez le papier près de votre visage",
+            "Assurez-vous que le texte 'FELORA' est lisible",
+            "Regardez directement la caméra",
+            "Utilisez un fond neutre si possible"
+          ]}
+          isRequired={true}
+        />
       </div>
 
       {/* Upload vidéo de vérification */}
       <div className="glass-card p-4 rounded-xl border border-white/10">
-        <p className="text-white/80 mb-3 text-sm">Vidéo de présentation (max 30s, max 25MB)</p>
-        <p className="text-white/60 text-xs mb-3">Présentez-vous en disant votre nom complet. Filmez en mode portrait avec une bonne luminosité. Gardez la vidéo courte pour rester sous 25MB.</p>
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-white/80 text-sm font-medium">Vidéo de présentation (max 30s, max 25MB)</p>
+          <span className="text-xs bg-red-500/20 text-red-400 px-2 py-1 rounded">Requis</span>
+        </div>
+        <p className="text-white/60 text-xs mb-4">Présentez-vous en disant votre nom complet. Filmez en mode portrait avec une bonne luminosité. Gardez la vidéo courte pour rester sous 25MB.</p>
+        
         <UploadDrop 
           label="Sélectionner votre vidéo" 
           accept="video/mp4,video/webm,video/quicktime,video/mov" 
           maxMb={25}
-          onUploaded={url=>setDocs(s=>({ ...s, livenessVideoUrl: url }))} 
+          onUploaded={url=>setDocs(s=>({ ...s, livenessVideoUrl: url }))}
+          exampleImage="/examples/video-presentation.jpg"
+          requirements={[
+            "Durée maximum 30 secondes",
+            "Votre visage bien visible",
+            "Dites votre nom complet",
+            "Mode portrait recommandé"
+          ]}
+          tips={[
+            "Filmez en mode portrait (vertical)",
+            "Assurez-vous d'avoir une bonne luminosité",
+            "Parlez clairement et regardez la caméra",
+            "Gardez la vidéo courte pour éviter les gros fichiers"
+          ]}
+          isRequired={true}
         />
       </div>
 
       {error && <div className="text-red-400 text-sm">{error}</div>}
 
-      {/* Actions */}
-      <div className="flex items-center justify-between">
-        <button onClick={()=>setShowLater(true)} className="text-white/70 text-sm hover:text-white underline decoration-white/30">Vérifier plus tard</button>
-        <button disabled={busy || !isComplete} onClick={submit} className={`px-4 py-2 rounded-lg text-white font-medium ${(!isComplete||busy)?'opacity-60 cursor-not-allowed bg-white/10':'bg-gradient-to-r from-teal-500 to-emerald-600'}`}>{busy ? 'Envoi…' : 'Envoyer'}</button>
+      {/* Actions améliorées */}
+      <div className="glass-card p-4 rounded-xl border border-white/10">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            {!isComplete ? (
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-orange-400 rounded-full animate-pulse" />
+                <span className="text-white/80 text-sm">
+                  {missing.length} document{missing.length > 1 ? 's' : ''} manquant{missing.length > 1 ? 's' : ''}
+                </span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-green-400 rounded-full" />
+                <span className="text-green-400 text-sm font-medium">
+                  Tous les documents sont prêts
+                </span>
+              </div>
+            )}
+          </div>
+          
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={() => setShowLater(true)} 
+              disabled={busy}
+              className="px-4 py-2 text-white/60 hover:text-white/80 transition-colors disabled:opacity-50 text-sm"
+            >
+              Compléter plus tard
+            </button>
+            
+            <button
+              onClick={submit}
+              disabled={busy || !isComplete}
+              className="px-6 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm"
+            >
+              {busy ? (
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Envoi...
+                </div>
+              ) : (
+                'Valider la vérification'
+              )}
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Checklist */}
