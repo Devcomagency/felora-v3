@@ -1,6 +1,6 @@
 "use client"
 import { useCallback, useId, useState } from 'react'
-import { CheckCircle, AlertCircle, Image, Video, FileText, HelpCircle, X } from 'lucide-react'
+import { CheckCircle, AlertCircle, Image, Video, FileText, HelpCircle, X, Check, BadgeCheck } from 'lucide-react'
 
 interface UploadDropProps {
   label: string
@@ -235,7 +235,7 @@ export default function UploadDrop({
           )}
         </div>
         <div className="flex items-center gap-2">
-          {uploadedUrl && <CheckCircle size={16} className="text-green-400" />}
+          {uploadedUrl && <BadgeCheck size={16} className="text-green-400" />}
           {error && <AlertCircle size={16} className="text-red-400" />}
         </div>
       </div>
@@ -289,8 +289,18 @@ export default function UploadDrop({
             ) : (
               <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
             )}
-            <div className="absolute top-2 right-2 px-2 py-1 rounded bg-black/70 text-white text-xs">
-              {uploadedUrl ? '✓ Uploadé' : '⏳ Upload...'}
+            <div className="absolute top-2 right-2 px-2 py-1 rounded bg-black/70 text-white text-xs flex items-center gap-1">
+              {uploadedUrl ? (
+                <>
+                  <Check size={12} className="text-green-400" />
+                  Uploadé
+                </>
+              ) : (
+                <>
+                  <div className="w-3 h-3 border border-white/30 border-t-white rounded-full animate-spin" />
+                  Upload...
+                </>
+              )}
             </div>
           </div>
         )}

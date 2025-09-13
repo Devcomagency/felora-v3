@@ -1,6 +1,7 @@
 "use client"
 import { useState } from 'react'
 import UploadDrop from '@/components/kyc-v2/UploadDrop'
+import { CheckCircle, BadgeCheck, ShieldCheck, AlertCircle } from 'lucide-react'
 
 export default function Step3KYC({ userId, role='ESCORT', onSubmitted }:{ userId:string; role:'ESCORT'|'CLUB'|'CLIENT'; onSubmitted:(ok:boolean)=>void }){
   const [docs, setDocs] = useState<{[k:string]: string}>({})
@@ -59,8 +60,11 @@ export default function Step3KYC({ userId, role='ESCORT', onSubmitted }:{ userId
           <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center">
             <span className="text-white font-bold text-lg">3</span>
           </div>
-          <div>
-            <h3 className="text-white font-semibold text-lg">Vérification d'identité</h3>
+          <div className="flex-1">
+            <div className="flex items-center gap-2">
+              <h3 className="text-white font-semibold text-lg">Vérification d'identité</h3>
+              <ShieldCheck size={20} className="text-green-400" />
+            </div>
             <p className="text-white/70 text-sm">Dernière étape pour activer votre compte</p>
           </div>
         </div>
@@ -70,19 +74,19 @@ export default function Step3KYC({ userId, role='ESCORT', onSubmitted }:{ userId
             <h4 className="text-white/90 font-medium mb-2 text-sm">Documents requis :</h4>
             <ul className="space-y-1 text-white/80 text-sm">
               <li className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 bg-green-400 rounded-full" />
+                <CheckCircle size={14} className="text-green-400" />
                 Photo recto de votre pièce d'identité
               </li>
               <li className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 bg-green-400 rounded-full" />
+                <CheckCircle size={14} className="text-green-400" />
                 Photo verso de votre pièce d'identité
               </li>
               <li className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 bg-green-400 rounded-full" />
+                <CheckCircle size={14} className="text-green-400" />
                 Selfie avec papier "FELORA"
               </li>
               <li className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 bg-green-400 rounded-full" />
+                <CheckCircle size={14} className="text-green-400" />
                 Vidéo de présentation (30s max)
               </li>
             </ul>
@@ -190,14 +194,14 @@ export default function Step3KYC({ userId, role='ESCORT', onSubmitted }:{ userId
           <div className="flex items-center gap-3">
             {!isComplete ? (
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-orange-400 rounded-full animate-pulse" />
+                <AlertCircle size={16} className="text-orange-400" />
                 <span className="text-white/80 text-sm">
                   {missing.length} document{missing.length > 1 ? 's' : ''} manquant{missing.length > 1 ? 's' : ''}
                 </span>
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-green-400 rounded-full" />
+                <BadgeCheck size={16} className="text-green-400" />
                 <span className="text-green-400 text-sm font-medium">
                   Tous les documents sont prêts
                 </span>
@@ -217,15 +221,18 @@ export default function Step3KYC({ userId, role='ESCORT', onSubmitted }:{ userId
             <button
               onClick={submit}
               disabled={busy || !isComplete}
-              className="px-6 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm"
+              className="px-6 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm flex items-center gap-2"
             >
               {busy ? (
-                <div className="flex items-center gap-2">
+                <>
                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   Envoi...
-                </div>
+                </>
               ) : (
-                'Valider la vérification'
+                <>
+                  <ShieldCheck size={16} />
+                  Valider la vérification
+                </>
               )}
             </button>
           </div>
