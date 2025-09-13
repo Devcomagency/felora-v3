@@ -5,7 +5,10 @@ import { mediaStorage } from '@/lib/storage'
 import { initSentryServerOnce, captureServerException } from '@/lib/sentry-server'
 
 const MAX_BYTES = 10 * 1024 * 1024 // 10 MB
-const ALLOWED_MIME = new Set(['image/jpeg','image/jpg','image/png','image/webp'])
+const ALLOWED_MIME = new Set([
+  'image/jpeg','image/jpg','image/png','image/webp',
+  'video/webm','video/mp4','video/quicktime','video/mov'
+])
 
 export const dynamic = 'force-dynamic'
 

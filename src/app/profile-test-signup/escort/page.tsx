@@ -55,9 +55,14 @@ function EscortSignupContent(){
 
       {step === 3 && (
         <div className="space-y-4">
-          <Step3KYC userId={userId} onSuccess={()=>{ 
-            try { localStorage.removeItem('felora-signup-userId') } catch {}
-            router.push('/dashboard-escort/statistiques?welcome=1') 
+          <Step3KYC userId={userId} onSubmitted={(ok)=>{ 
+            try { if (ok) localStorage.removeItem('felora-signup-userId') } catch {}
+            if (ok) {
+              router.push('/dashboard-escort/statistiques?welcome=1')
+            } else {
+              // Vérifier plus tard: amener au dashboard escort minimal
+              router.push('/dashboard-escort/profil?kyc=deferred')
+            }
           }} />
         </div>
       )}

@@ -42,7 +42,7 @@ export default function Step3KYC({ userId, role='ESCORT', onSubmitted }:{ userId
           <li>Photo nette de votre pièce d’identité — recto</li>
           <li>Photo nette de votre pièce d’identité — verso</li>
           <li>Selfie où l’on vous voit tenir un papier avec le mot « FELORA »</li>
-          <li>Courte vidéo (10s) en mode portrait pour vérifier la présence réelle</li>
+          <li>Courte vidéo (5s) en mode portrait pour vérifier la présence réelle</li>
         </ul>
         <p className="text-white/60 text-xs mt-2">Formats acceptés: JPG/PNG pour les photos, WEBM/MP4 selon l’appareil pour la vidéo. Lumière naturelle et fond neutre recommandés.</p>
       </div>
@@ -56,8 +56,8 @@ export default function Step3KYC({ userId, role='ESCORT', onSubmitted }:{ userId
 
       {/* Capture caméra portrait */}
       <div className="glass-card p-4 rounded-xl border border-white/10">
-        <p className="text-white/80 mb-3 text-sm">Capture caméra (portrait): selfie et vidéo de 10 secondes</p>
-        <CameraCapture onPhoto={onPhoto} onVideo={onVideo} />
+        <p className="text-white/80 mb-3 text-sm">Capture caméra (portrait): courte vidéo (5 secondes)</p>
+        <CameraCapture onVideo={onVideo} />
       </div>
 
       {error && <div className="text-red-400 text-sm">{error}</div>}

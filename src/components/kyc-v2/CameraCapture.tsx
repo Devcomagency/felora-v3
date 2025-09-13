@@ -1,7 +1,7 @@
 "use client"
 import { useEffect, useRef, useState } from 'react'
 
-export default function CameraCapture({ onPhoto, onVideo }:{ onPhoto:(blob:Blob)=>void; onVideo:(blob:Blob)=>void }){
+export default function CameraCapture({ onPhoto, onVideo }:{ onPhoto?:(blob:Blob)=>void; onVideo:(blob:Blob)=>void }){
   const videoRef = useRef<HTMLVideoElement>(null)
   const [rec, setRec] = useState<MediaRecorder|null>(null)
   const [stream, setStream] = useState<MediaStream|null>(null)
@@ -30,14 +30,16 @@ export default function CameraCapture({ onPhoto, onVideo }:{ onPhoto:(blob:Blob)
     return () => { stream?.getTracks().forEach(t=>t.stop()) }
   }, [])
 
+  // Photo désactivée pour KYC rapide (video uniquement)
   const capturePhoto = async () => {
+    if (!onPhoto) return
     if (!videoRef.current) return
     const v = videoRef.current
     const canvas = document.createElement('canvas')
     canvas.width = v.videoWidth
     canvas.height = v.videoHeight
     canvas.getContext('2d')!.drawImage(v, 0, 0)
-    const blob = await new Promise<Blob>(res => canvas.toBlob(b => res(b!), 'image/jpeg', 0.92))
+    const blob = await new Promise<Blob>(res => canvas.toBlob(b => res(b!), 'image/jpeg', 0.85))
     onPhoto(blob)
   }
 
@@ -60,9 +62,9 @@ export default function CameraCapture({ onPhoto, onVideo }:{ onPhoto:(blob:Blob)
     // Timeslice to ensure periodic dataavailable events
     mr.start(1000)
     setRec(mr)
-    // 10s max
+    // 5s max (demande produit)
     if (stopTimerRef.current) window.clearTimeout(stopTimerRef.current)
-    stopTimerRef.current = window.setTimeout(()=>{ if (mr.state !== 'inactive') mr.stop() }, 10_000)
+    stopTimerRef.current = window.setTimeout(()=>{ if (mr.state !== 'inactive') mr.stop() }, 5_000)
   }
 
   const stopRecord = () => {
@@ -96,11 +98,12 @@ export default function CameraCapture({ onPhoto, onVideo }:{ onPhoto:(blob:Blob)
         )}
       </div>
       <div className="flex items-center gap-3">
-        <button onClick={startCountdown} className="px-3 py-2 rounded-lg bg-white/10 text-white border border-white/20">Photo</button>
+        {/* Photo désactivée pour réduire la complexité: on force la vidéo courte */}
+        {/* <button onClick={startCountdown} className="px-3 py-2 rounded-lg bg-white/10 text-white border border-white/20">Photo</button> */}
         {rec ? (
           <button onClick={stopRecord} className="px-3 py-2 rounded-lg bg-red-600 text-white">Stop</button>
         ) : (
-          <button onClick={startRecord} className="px-3 py-2 rounded-lg bg-pink-600 text-white">Vidéo 10s</button>
+          <button onClick={startRecord} className="px-3 py-2 rounded-lg bg-pink-600 text-white">Vidéo 5s</button>
         )}
       </div>
     </div>

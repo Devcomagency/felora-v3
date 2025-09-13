@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 export default function SalonPreSignupQuick({ onSubmitted }:{ onSubmitted:(ok:boolean,userId?:string)=>void }){
   const [companyName, setCompanyName] = useState('')
   const [city, setCity] = useState('')
-  const [cities, setCities] = useState<string[]>([])
+  const [cities, setCities] = useState<Array<string|{name:string}>>([])
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
   const [password, setPassword] = useState('')
@@ -21,7 +21,7 @@ export default function SalonPreSignupQuick({ onSubmitted }:{ onSubmitted:(ok:bo
       try {
         const r = await fetch('/api/geo/geocode', { cache: 'force-cache' })
         const d = await r.json()
-        if (Array.isArray(d?.cities)) setCities(d.cities as string[])
+        if (Array.isArray(d?.cities)) setCities(d.cities)
       } catch {}
     })()
   }, [])
@@ -52,7 +52,8 @@ export default function SalonPreSignupQuick({ onSubmitted }:{ onSubmitted:(ok:bo
     // Vérifier que la ville correspond à la liste (si disponible)
     const hasCanonicalCities = Array.isArray(cities) && cities.length > 0
     if (hasCanonicalCities) {
-      const match = cities.find(c => c.toLowerCase() === String(city).trim().toLowerCase())
+      const cityNames = cities.map((c:any) => typeof c === 'string' ? c : (c?.name || '')).filter(Boolean)
+      const match = cityNames.find((n:string) => n.toLowerCase() === String(city).trim().toLowerCase())
       if (!match) { setError('Veuillez sélectionner une ville de la liste'); return }
     }
     setLoading(true)
@@ -95,7 +96,10 @@ export default function SalonPreSignupQuick({ onSubmitted }:{ onSubmitted:(ok:bo
           <span className="text-sm text-white/80">Ville</span>
           <input list="city-list" className="mt-1 w-full bg-black/40 rounded-lg px-3 py-2 text-white border border-white/10" value={city} onChange={e=>setCity(e.target.value)} placeholder="ex: Genève" />
           <datalist id="city-list">
-            {cities.map((c) => (<option key={c} value={c} />))}
+            {cities.map((c:any) => {
+              const name = typeof c === 'string' ? c : (c?.name || '')
+              return name ? <option key={name} value={name} /> : null
+            })}
           </datalist>
         </label>
         <label className="block">
