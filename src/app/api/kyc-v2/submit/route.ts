@@ -8,8 +8,7 @@ export const maxDuration = 30
 export const runtime = 'nodejs'
 export const preferredRegion = 'auto'
 
-// Force la limite de taille pour les JSON (URLs longues R2/S3)
-export const maxBytes = 50 * 1024 * 1024 // 50MB
+// Configuration pour les gros payloads JSON (URLs longues R2/S3)
 
 export async function POST(req: NextRequest) {
   try {
@@ -21,15 +20,12 @@ export async function POST(req: NextRequest) {
     
     const session = await getServerSession(authOptions as any)
     
-    // Lecture robuste du JSON avec gestion des gros payloads
+    // Lecture du JSON - utilisation directe pour éviter body stream conflicts
     let body
     try {
-      const text = await req.text()
-      if (text.length > maxBytes) {
-        return NextResponse.json({ error: 'payload_too_large' }, { status: 413 })
-      }
-      body = JSON.parse(text)
+      body = await req.json()
     } catch (e) {
+      console.error('Failed to parse JSON:', e)
       return NextResponse.json({ error: 'invalid_json' }, { status: 400 })
     }
     
@@ -48,20 +44,21 @@ export async function POST(req: NextRequest) {
     let uid = sessionUid || bodyUserId || undefined
     
     // Si toujours pas d'ID mais qu'on a une session, utiliser l'email comme fallback
-    if (!uid && session?.user?.email) {
-      console.log('Fallback: trying to find user by email:', session.user.email)
+    const sessionUser = (session as any)?.user
+    if (!uid && sessionUser?.email) {
+      console.log('Fallback: trying to find user by email:', sessionUser.email)
       const userByEmail = await prisma.user.findUnique({ 
-        where: { email: session.user.email },
+        where: { email: sessionUser.email },
         select: { id: true }
       })
       uid = userByEmail?.id
     }
     
     if (!uid) {
-      console.error('No valid userId found:', { sessionUid, bodyUserId, sessionEmail: session?.user?.email })
+      console.error('No valid userId found:', { sessionUid, bodyUserId, sessionEmail: sessionUser?.email })
       return NextResponse.json({ 
         error: 'unauthorized', 
-        debug: { hasSession: !!session, bodyUserId: !!bodyUserId, email: !!session?.user?.email }
+        debug: { hasSession: !!session, bodyUserId: !!bodyUserId, email: !!sessionUser?.email }
       }, { status: 401 })
     }
 
