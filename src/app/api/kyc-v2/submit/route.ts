@@ -55,15 +55,52 @@ export async function POST(req: NextRequest) {
     }
     
     if (!uid) {
-      console.error('No valid userId found:', { sessionUid, bodyUserId, sessionEmail: sessionUser?.email })
+      console.error('No valid userId found:', { 
+        sessionUid, 
+        bodyUserId, 
+        sessionEmail: sessionUser?.email,
+        sessionUser: sessionUser,
+        body: body
+      })
       return NextResponse.json({ 
         error: 'unauthorized', 
-        debug: { hasSession: !!session, bodyUserId: !!bodyUserId, email: !!sessionUser?.email }
+        debug: { 
+          hasSession: !!session, 
+          bodyUserId: !!bodyUserId, 
+          email: !!sessionUser?.email,
+          sessionUser: sessionUser,
+          bodyKeys: Object.keys(body || {})
+        }
       }, { status: 401 })
     }
 
     // Security: ensure the target user exists and is ESCORT or in signup flow
-    const user = await prisma.user.findUnique({ where: { id: uid }, select: { id: true, role: true } })
+    let user = await prisma.user.findUnique({ where: { id: uid }, select: { id: true, role: true } })
+    
+    // Si l'utilisateur n'existe pas mais qu'on a une session, créer un utilisateur temporaire
+    if (!user && sessionUser?.email) {
+      console.log('Creating temporary user for KYC:', { email: sessionUser.email, role })
+      try {
+        user = await prisma.user.create({
+          data: {
+            id: uid,
+            email: sessionUser.email,
+            role: role || 'ESCORT',
+            name: sessionUser.name || 'Temporary User',
+            emailVerified: null,
+            image: sessionUser.image || null,
+            createdAt: new Date(),
+            updatedAt: new Date()
+          },
+          select: { id: true, role: true }
+        })
+        console.log('Temporary user created:', user)
+      } catch (createError) {
+        console.error('Failed to create temporary user:', createError)
+        return NextResponse.json({ error: 'user_creation_failed' }, { status: 500 })
+      }
+    }
+    
     if (!user) return NextResponse.json({ error: 'user_not_found' }, { status: 404 })
     if (user.role !== 'ESCORT' as any) {
       // Allow only escort role to submit KYC

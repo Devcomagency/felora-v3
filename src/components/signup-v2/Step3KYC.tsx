@@ -41,6 +41,10 @@ export default function Step3KYC({ userId, role='ESCORT', onSubmitted }:{ userId
       console.log('KYC submit response:', r.status, d)
       
       if (!r.ok || !d?.ok) {
+        console.error('KYC submit failed:', { status: r.status, response: d })
+        if (d?.debug) {
+          console.error('Debug info:', d.debug)
+        }
         throw new Error(d?.error || `Erreur ${r.status}`)
       }
       
