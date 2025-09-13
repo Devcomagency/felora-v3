@@ -4,7 +4,7 @@ import path from 'path'
 import { mediaStorage } from '@/lib/storage'
 import { initSentryServerOnce, captureServerException } from '@/lib/sentry-server'
 
-const MAX_BYTES = 10 * 1024 * 1024 // 10 MB
+const MAX_BYTES = 20 * 1024 * 1024 // 20 MB (certaines photos smartphone >10MB)
 const ALLOWED_MIME = new Set([
   'image/jpeg','image/jpg','image/png','image/webp',
   'video/webm','video/mp4','video/quicktime','video/mov'
@@ -39,11 +39,27 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'file_too_large', maxBytes: MAX_BYTES }, { status: 413 })
     }
 
-    if (process.env.CLOUDFLARE_R2_ENDPOINT || process.env.AWS_S3_BUCKET) {
-      const res = await mediaStorage.upload(file, 'kyc')
-      if (!res.success || !res.url) return NextResponse.json({ error: res.error || 'upload_failed' }, { status: 500 })
-      return NextResponse.json({ url: res.url, key: res.key })
-    } else {
+    // Utiliser R2/S3 seulement si configuration COMPLETE, sinon fallback local
+    const hasR2 = Boolean(
+      process.env.CLOUDFLARE_R2_ENDPOINT &&
+      process.env.CLOUDFLARE_R2_ACCESS_KEY &&
+      process.env.CLOUDFLARE_R2_SECRET_KEY &&
+      process.env.CLOUDFLARE_R2_BUCKET
+    )
+    const hasS3 = Boolean(
+      process.env.AWS_ACCESS_KEY_ID &&
+      process.env.AWS_SECRET_ACCESS_KEY &&
+      process.env.AWS_REGION &&
+      process.env.AWS_BUCKET_NAME
+    )
+
+    if (hasR2 || hasS3) {
+      const res = await mediaStorage.upload(file, 'kyc').catch((e:any)=>({ success:false, error:e?.message }))
+      if (!res?.success || !res?.url) return NextResponse.json({ error: res?.error || 'upload_failed' }, { status: 502 })
+      return NextResponse.json({ url: res.url, key: (res as any).key })
+    }
+
+    {
       const buffer = Buffer.from(await file.arrayBuffer())
       const uploadsDir = path.join(process.cwd(), 'uploads', 'kyc')
       await fs.mkdir(uploadsDir, { recursive: true })
