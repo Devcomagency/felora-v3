@@ -3,22 +3,22 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
-    
+
     if (!session?.user?.id) {
-      return NextResponse.json({
-        success: false,
-        error: 'Non authentifié',
-        debug: {
-          hasSession: false,
-          sessionData: null
-        }
-      }, { status: 401 })
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Non authentifié',
+          debug: { hasSession: false, sessionData: null },
+        },
+        { status: 401 },
+      )
     }
 
-    // Récupérer l'utilisateur complet
+    // Utilisateur (sélection minimale)
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
       select: {
@@ -29,69 +29,75 @@ export async function GET(request: NextRequest) {
         password: true,
         passwordHash: true,
         createdAt: true,
-        updatedAt: true
-      }
+        updatedAt: true,
+      },
     })
 
     if (!user) {
-      return NextResponse.json({
-        success: false,
-        error: 'Utilisateur non trouvé',
-        debug: {
-          userId: session.user.id,
-          userFound: false
-        }
-      }, { status: 404 })
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Utilisateur non trouvé',
+          debug: { userId: session.user.id, userFound: false },
+        },
+        { status: 404 },
+      )
     }
 
-    // Récupérer le profil escort
+    // Profil escort (retire city/isActive pour compat prod)
     const escortProfile = await prisma.escortProfile.findUnique({
       where: { userId: session.user.id },
-      status: true,
+      select: {
+        id: true,
+        userId: true,
+        firstName: true,
+        stageName: true,
+        dateOfBirth: true,
+        status: true,
         isVerifiedBadge: true,
         hasProfilePhoto: true,
         profilePhoto: true,
         createdAt: true,
-        updatedAt: true
-      }
+        updatedAt: true,
+      },
     })
 
-    // Récupérer le profil club
+    // Profil club (sélection sûre, sans dépendre d'isActive)
     const clubProfile = await prisma.clubProfile.findUnique({
       where: { userId: session.user.id },
-      isActive: true,
+      select: {
+        id: true,
+        userId: true,
+        handle: true,
+        name: true,
         createdAt: true,
-        updatedAt: true
-      }
+        updatedAt: true,
+      },
     })
 
-    // Récupérer le wallet
+    // Wallet
     const wallet = await prisma.wallet.findUnique({
       where: { userId: session.user.id },
       select: {
         id: true,
         balance: true,
         createdAt: true,
-        updatedAt: true
-      }
+        updatedAt: true,
+      },
     })
 
-    // Récupérer les médias
+    // Médias (retire isActive pour compat prod)
     const media = await prisma.media.findMany({
-      where: {
-        ownerType: 'escort',
-        ownerId: session.user.id
-      },
+      where: { ownerType: 'escort', ownerId: session.user.id },
       select: {
         id: true,
         type: true,
         url: true,
         visibility: true,
-        isActive: true,
-        createdAt: true
+        createdAt: true,
       },
       orderBy: { createdAt: 'desc' },
-      take: 5
+      take: 5,
     })
 
     return NextResponse.json({
@@ -101,7 +107,7 @@ export async function GET(request: NextRequest) {
           userId: session.user.id,
           email: session.user.email,
           name: session.user.name,
-          role: session.user.role
+          role: session.user.role,
         },
         user: {
           id: user.id,
@@ -111,48 +117,65 @@ export async function GET(request: NextRequest) {
           hasPassword: !!user.password,
           hasPasswordHash: !!user.passwordHash,
           createdAt: user.createdAt,
-          updatedAt: user.updatedAt
+          updatedAt: user.updatedAt,
         },
-        status: escortProfile.status,
-          isVerifiedBadge: escortProfile.isVerifiedBadge,
-          hasProfilePhoto: escortProfile.hasProfilePhoto,
-          profilePhoto: escortProfile.profilePhoto,
-          createdAt: escortProfile.createdAt,
-          updatedAt: escortProfile.updatedAt
-        } : null,
-        isActive: clubProfile.isActive,
-          createdAt: clubProfile.createdAt,
-          updatedAt: clubProfile.updatedAt
-        } : null,
-        wallet: wallet ? {
-          id: wallet.id,
-          balance: wallet.balance,
-          createdAt: wallet.createdAt,
-          updatedAt: wallet.updatedAt
-        } : null,
+        escortProfile: escortProfile
+          ? {
+              id: escortProfile.id,
+              userId: escortProfile.userId,
+              firstName: escortProfile.firstName,
+              stageName: escortProfile.stageName,
+              dateOfBirth: escortProfile.dateOfBirth,
+              status: escortProfile.status,
+              isVerifiedBadge: escortProfile.isVerifiedBadge,
+              hasProfilePhoto: escortProfile.hasProfilePhoto,
+              profilePhoto: escortProfile.profilePhoto,
+              createdAt: escortProfile.createdAt,
+              updatedAt: escortProfile.updatedAt,
+            }
+          : null,
+        clubProfile: clubProfile
+          ? {
+              id: clubProfile.id,
+              userId: clubProfile.userId,
+              handle: clubProfile.handle,
+              name: clubProfile.name,
+              createdAt: clubProfile.createdAt,
+              updatedAt: clubProfile.updatedAt,
+            }
+          : null,
+        wallet: wallet
+          ? {
+              id: wallet.id,
+              balance: wallet.balance,
+              createdAt: wallet.createdAt,
+              updatedAt: wallet.updatedAt,
+            }
+          : null,
         media: {
           count: media.length,
-          items: media.map(m => ({
+          items: media.map((m) => ({
             id: m.id,
             type: m.type,
-            url: m.url?.substring(0, 50) + '...',
+            url: (m.url || '').slice(0, 50) + (m.url && m.url.length > 50 ? '...' : ''),
             visibility: m.visibility,
-            isActive: m.isActive,
-            createdAt: m.createdAt
-          }))
-        }
-      }
+            createdAt: m.createdAt,
+          })),
+        },
+      },
     })
-
   } catch (error) {
     console.error('Erreur health check:', error)
-    return NextResponse.json({
-      success: false,
-      error: 'Erreur serveur',
-      debug: {
-        error: error instanceof Error ? error.message : 'Unknown error',
-        stack: error instanceof Error ? error.stack : undefined
-      }
-    }, { status: 500 })
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Erreur serveur',
+        debug: {
+          error: error instanceof Error ? error.message : 'Unknown error',
+          stack: error instanceof Error ? error.stack : undefined,
+        },
+      },
+      { status: 500 },
+    )
   }
 }

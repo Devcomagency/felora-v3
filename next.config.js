@@ -69,6 +69,9 @@ const nextConfig = {
       // OpenStreetMap tiles
       'https://tile.openstreetmap.org',
 
+      // Demo images (mock)
+      'https://picsum.photos',
+
       // Observability & Analytics
       'https://*.sentry.io',
       'https://vitals.vercel-analytics.com',
