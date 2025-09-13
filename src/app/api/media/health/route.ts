@@ -37,7 +37,6 @@ export async function GET(request: NextRequest) {
         type: true,
         url: true,
         visibility: true,
-        isActive: true,
         createdAt: true
       }
     })
@@ -63,7 +62,6 @@ export async function GET(request: NextRequest) {
           type: m.type,
           url: m.url?.substring(0, 50) + '...',
           visibility: m.visibility,
-          isActive: m.isActive,
           createdAt: m.createdAt
         })),
         environment: {

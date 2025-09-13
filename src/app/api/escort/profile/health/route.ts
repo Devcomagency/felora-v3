@@ -47,12 +47,7 @@ export async function GET(request: NextRequest) {
     // Récupérer le profil escort
     const escortProfile = await prisma.escortProfile.findUnique({
       where: { userId: session.user.id },
-      select: {
-        id: true,
-        stageName: true,
-        firstName: true,
-        city: true,
-        status: true,
+      status: true,
         isVerifiedBadge: true,
         hasProfilePhoto: true,
         profilePhoto: true,
@@ -64,12 +59,7 @@ export async function GET(request: NextRequest) {
     // Récupérer le profil club
     const clubProfile = await prisma.clubProfile.findUnique({
       where: { userId: session.user.id },
-      select: {
-        id: true,
-        name: true,
-        handle: true,
-        city: true,
-        isActive: true,
+      isActive: true,
         createdAt: true,
         updatedAt: true
       }
@@ -123,24 +113,14 @@ export async function GET(request: NextRequest) {
           createdAt: user.createdAt,
           updatedAt: user.updatedAt
         },
-        escortProfile: escortProfile ? {
-          id: escortProfile.id,
-          stageName: escortProfile.stageName,
-          firstName: escortProfile.firstName,
-          city: escortProfile.city,
-          status: escortProfile.status,
+        status: escortProfile.status,
           isVerifiedBadge: escortProfile.isVerifiedBadge,
           hasProfilePhoto: escortProfile.hasProfilePhoto,
           profilePhoto: escortProfile.profilePhoto,
           createdAt: escortProfile.createdAt,
           updatedAt: escortProfile.updatedAt
         } : null,
-        clubProfile: clubProfile ? {
-          id: clubProfile.id,
-          name: clubProfile.name,
-          handle: clubProfile.handle,
-          city: clubProfile.city,
-          isActive: clubProfile.isActive,
+        isActive: clubProfile.isActive,
           createdAt: clubProfile.createdAt,
           updatedAt: clubProfile.updatedAt
         } : null,
