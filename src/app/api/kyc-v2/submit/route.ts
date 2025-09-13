@@ -6,6 +6,10 @@ import { authOptions } from '@/lib/auth'
 // Configuration pour accepter les gros payloads JSON
 export const maxDuration = 30
 export const runtime = 'nodejs'
+export const preferredRegion = 'auto'
+
+// Force la limite de taille pour les JSON (URLs longues R2/S3)
+export const maxBytes = 50 * 1024 * 1024 // 50MB
 
 export async function POST(req: NextRequest) {
   try {
@@ -14,8 +18,20 @@ export async function POST(req: NextRequest) {
     const key = rateKey(req as any, 'kyc-submit')
     const rl = rateLimit({ key, limit: 10, windowMs: 60_000 })
     if (!rl.ok) return NextResponse.json({ error: 'rate_limited' }, { status: 429 })
+    
     const session = await getServerSession(authOptions as any)
-    const body = await req.json().catch(() => ({}))
+    
+    // Lecture robuste du JSON avec gestion des gros payloads
+    let body
+    try {
+      const text = await req.text()
+      if (text.length > maxBytes) {
+        return NextResponse.json({ error: 'payload_too_large' }, { status: 413 })
+      }
+      body = JSON.parse(text)
+    } catch (e) {
+      return NextResponse.json({ error: 'invalid_json' }, { status: 400 })
+    }
     const bodyUserId = String(body?.userId || '').trim()
     const sessionUid = (session as any)?.user?.id as string | undefined
     const uid = sessionUid || (bodyUserId || undefined)
