@@ -59,7 +59,7 @@ export default function ClientFeedPage({ initialItems, initialCursor }: ClientFe
         return {
           id: `infinite-${seed}-${i}`,
           type: 'IMAGE',
-          url: ,
+          url: `https://picsum.photos/400/600?random=${seed}`,
           thumb: `https://picsum.photos/400/600?random=${seed}`,
           visibility: 'PUBLIC',
           author: {
@@ -85,7 +85,7 @@ export default function ClientFeedPage({ initialItems, initialCursor }: ClientFe
         return {
           id: `generated-${seed}-${i}`,
           type: 'IMAGE',
-          url: ,
+          url: `https://picsum.photos/400/600?random=${seed}`,
           thumb: `https://picsum.photos/400/600?random=${seed}`,
           visibility: 'PUBLIC',
           author: {
