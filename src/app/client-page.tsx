@@ -55,13 +55,11 @@ export default function ClientFeedPage({ initialItems, initialCursor }: ClientFe
       const timestamp = Date.now()
       const infiniteItems: MediaItem[] = Array.from({ length: 3 }, (_, i) => {
         const seed = timestamp + i
-        const isVideo = seed % 2 !== 0
+        const isVideo = false
         return {
           id: `infinite-${seed}-${i}`,
-          type: isVideo ? 'VIDEO' : 'IMAGE',
-          url: isVideo
-            ? 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4'
-            : `https://picsum.photos/400/600?random=${seed}`,
+          type: 'IMAGE',
+          url: ,
           thumb: `https://picsum.photos/400/600?random=${seed}`,
           visibility: 'PUBLIC',
           author: {
@@ -83,13 +81,11 @@ export default function ClientFeedPage({ initialItems, initialCursor }: ClientFe
       const fallbackTime = Date.now()
       const newMockItems: MediaItem[] = Array.from({ length: 3 }, (_, i) => {
         const seed = fallbackTime + i
-        const isVideo = seed % 2 !== 0
+        const isVideo = false
         return {
           id: `generated-${seed}-${i}`,
-          type: isVideo ? 'VIDEO' : 'IMAGE',
-          url: isVideo
-            ? 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4'
-            : `https://picsum.photos/400/600?random=${seed}`,
+          type: 'IMAGE',
+          url: ,
           thumb: `https://picsum.photos/400/600?random=${seed}`,
           visibility: 'PUBLIC',
           author: {

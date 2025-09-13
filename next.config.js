@@ -66,6 +66,9 @@ const nextConfig = {
       'https://events.mapbox.com',
       'https://*.tiles.mapbox.com',
 
+      // OpenStreetMap tiles
+      'https://tile.openstreetmap.org',
+
       // Observability & Analytics
       'https://*.sentry.io',
       'https://vitals.vercel-analytics.com',

@@ -42,8 +42,8 @@ export default async function HomePage() {
     },
     {
       id: 'feed-2',
-      type: 'VIDEO',
-      url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+      type: 'IMAGE',
+      url: 'https://picsum.photos/400/600?random=2',
       thumb: 'https://picsum.photos/400/600?random=2',
       visibility: 'PUBLIC',
       author: {
