@@ -8,6 +8,10 @@ export default function Step3KYC({ userId, role='ESCORT', onSubmitted }:{ userId
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string|null>(null)
   const [showLater, setShowLater] = useState(false)
+  // Requis: recto, verso, selfie papier "FELORA", selfie caméra, vidéo 5s
+  const requiredKeys = ['docFrontUrl','docBackUrl','selfieSignUrl','selfieUrl','livenessVideoUrl'] as const
+  const missing = requiredKeys.filter(k => !docs[k])
+  const isComplete = missing.length === 0
 
   const uploadBlob = async (blob: Blob, name: string) => {
     const fd = new FormData()
@@ -27,6 +31,11 @@ export default function Step3KYC({ userId, role='ESCORT', onSubmitted }:{ userId
   const submit = async () => {
     setBusy(true); setError(null)
     try {
+      if (!isComplete) {
+        setError(`Pièces manquantes: ${missing.join(', ')}`)
+        setBusy(false)
+        return
+      }
       const r = await fetch('/api/kyc-v2/submit', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ userId, role, ...docs }) })
       const d = await r.json(); if (!r.ok || !d?.ok) throw new Error(d?.error || 'submit_failed')
       onSubmitted(true)
@@ -42,6 +51,7 @@ export default function Step3KYC({ userId, role='ESCORT', onSubmitted }:{ userId
           <li>Photo nette de votre pièce d’identité — recto</li>
           <li>Photo nette de votre pièce d’identité — verso</li>
           <li>Selfie où l’on vous voit tenir un papier avec le mot « FELORA »</li>
+          <li>Selfie caméra (portrait)</li>
           <li>Courte vidéo (5s) en mode portrait pour vérifier la présence réelle</li>
         </ul>
         <p className="text-white/60 text-xs mt-2">Formats acceptés: JPG/PNG pour les photos, WEBM/MP4 selon l’appareil pour la vidéo. Lumière naturelle et fond neutre recommandés.</p>
@@ -56,8 +66,8 @@ export default function Step3KYC({ userId, role='ESCORT', onSubmitted }:{ userId
 
       {/* Capture caméra portrait */}
       <div className="glass-card p-4 rounded-xl border border-white/10">
-        <p className="text-white/80 mb-3 text-sm">Capture caméra (portrait): courte vidéo (5 secondes)</p>
-        <CameraCapture onVideo={onVideo} />
+        <p className="text-white/80 mb-3 text-sm">Capture caméra (portrait): selfie + vidéo 5 secondes</p>
+        <CameraCapture onPhoto={onPhoto} onVideo={onVideo} />
       </div>
 
       {error && <div className="text-red-400 text-sm">{error}</div>}
@@ -65,7 +75,25 @@ export default function Step3KYC({ userId, role='ESCORT', onSubmitted }:{ userId
       {/* Actions */}
       <div className="flex items-center justify-between">
         <button onClick={()=>setShowLater(true)} className="text-white/70 text-sm hover:text-white underline decoration-white/30">Vérifier plus tard</button>
-        <button disabled={busy} onClick={submit} className="px-4 py-2 rounded-lg bg-gradient-to-r from-teal-500 to-emerald-600 text-white font-medium disabled:opacity-60">Envoyer</button>
+        <button disabled={busy || !isComplete} onClick={submit} className={`px-4 py-2 rounded-lg text-white font-medium ${(!isComplete||busy)?'opacity-60 cursor-not-allowed bg-white/10':'bg-gradient-to-r from-teal-500 to-emerald-600'}`}>{busy ? 'Envoi…' : 'Envoyer'}</button>
+      </div>
+
+      {/* Checklist */}
+      <div className="text-xs text-white/70 mt-2">
+        Requis:
+        {(
+          [
+            ['docFrontUrl','Pièce — recto'],
+            ['docBackUrl','Pièce — verso'],
+            ['selfieSignUrl','Selfie “FELORA”'],
+            ['selfieUrl','Selfie caméra'],
+            ['livenessVideoUrl','Vidéo 5s'],
+          ] as Array<[keyof typeof docs, string]>
+        ).map(([key,label]) => (
+          <span key={String(key)} className={`inline-flex items-center gap-1 mr-3 ${docs[key] ? 'text-emerald-400' : 'text-white/50'}`}>
+            <span>{docs[key] ? '✓' : '•'}</span> {label}
+          </span>
+        ))}
       </div>
 
       {/* Modal "Vérifier plus tard" */}

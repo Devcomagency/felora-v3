@@ -40,6 +40,13 @@ export async function POST(req: NextRequest) {
         return parts.join('/').split('?')[0]
       } catch { return undefined }
     }
+    // Validate required documents
+    const required = ['docFrontUrl','docBackUrl','selfieSignUrl','selfieUrl','livenessVideoUrl']
+    const missing = required.filter((k)=> !urls?.[k])
+    if (missing.length) {
+      return NextResponse.json({ error: 'missing_documents', missing }, { status: 400 })
+    }
+
     const notes = {
       kycKeys: {
         selfieKey: deriveKey(urls?.selfieUrl),

@@ -109,7 +109,8 @@ const nextConfig = {
           { key: 'X-Frame-Options', value: 'DENY' },
           { key: 'X-Content-Type-Options', value: 'nosniff' },
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-          { key: 'Permissions-Policy', value: 'geolocation=(self), microphone=(), camera=()' },
+          // Autoriser la caméra sur le document principal (bloquée auparavant)
+          { key: 'Permissions-Policy', value: 'geolocation=(self), microphone=(), camera=(self)' },
         ],
       },
     ]

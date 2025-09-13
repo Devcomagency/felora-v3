@@ -30,17 +30,22 @@ export default function CameraCapture({ onPhoto, onVideo }:{ onPhoto?:(blob:Blob
     return () => { stream?.getTracks().forEach(t=>t.stop()) }
   }, [])
 
-  // Photo désactivée pour KYC rapide (video uniquement)
   const capturePhoto = async () => {
-    if (!onPhoto) return
-    if (!videoRef.current) return
-    const v = videoRef.current
-    const canvas = document.createElement('canvas')
-    canvas.width = v.videoWidth
-    canvas.height = v.videoHeight
-    canvas.getContext('2d')!.drawImage(v, 0, 0)
-    const blob = await new Promise<Blob>(res => canvas.toBlob(b => res(b!), 'image/jpeg', 0.85))
-    onPhoto(blob)
+    try {
+      if (!onPhoto) return
+      if (!videoRef.current) return
+      const v = videoRef.current
+      const canvas = document.createElement('canvas')
+      canvas.width = v.videoWidth
+      canvas.height = v.videoHeight
+      const ctx = canvas.getContext('2d')
+      if (!ctx) return
+      ctx.drawImage(v, 0, 0)
+      const blob = await new Promise<Blob | null>(res => canvas.toBlob(b => res(b), 'image/jpeg', 0.85))
+      if (blob) onPhoto(blob)
+    } catch (e) {
+      console.error('capturePhoto failed', e)
+    }
   }
 
   const startRecord = async () => {
@@ -98,8 +103,7 @@ export default function CameraCapture({ onPhoto, onVideo }:{ onPhoto?:(blob:Blob
         )}
       </div>
       <div className="flex items-center gap-3">
-        {/* Photo désactivée pour réduire la complexité: on force la vidéo courte */}
-        {/* <button onClick={startCountdown} className="px-3 py-2 rounded-lg bg-white/10 text-white border border-white/20">Photo</button> */}
+        <button onClick={startCountdown} className="px-3 py-2 rounded-lg bg-white/10 text-white border border-white/20">Photo</button>
         {rec ? (
           <button onClick={stopRecord} className="px-3 py-2 rounded-lg bg-red-600 text-white">Stop</button>
         ) : (
