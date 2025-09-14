@@ -67,21 +67,45 @@ function EscortSignupContent(){
       <div className="max-w-2xl mx-auto px-4 py-6">
         <Stepper steps={steps} current={step} />
 
-      {step === 1 && (
+      {step === 1 && !routing && (
         <Step1PreSignupMobile mode="ESCORT" onSubmit={async (data)=>{
-          const r = await fetch('/api/signup-v2/escort', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data) })
-          const d = await r.json(); if (d?.ok) { setUserId(d.userId); try { localStorage.setItem('felora-signup-userId', d.userId) } catch {}; setStep(2); router.push('/register/indepandante?step=2') } else alert(d?.error || 'Erreur')
+          try {
+            setRouting(true)
+            const r = await fetch('/api/signup-v2/escort', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data) })
+            const d = await r.json()
+            if (d?.ok) { 
+              console.log('Account created successfully, userId:', d.userId)
+              setUserId(d.userId)
+              try { localStorage.setItem('felora-signup-userId', d.userId) } catch {}
+              setStep(2)
+              router.push('/profile-test-signup/escort?step=2')
+            } else {
+              console.error('Account creation failed:', d?.error)
+              throw new Error(d?.error || 'Erreur lors de la création du compte')
+            }
+          } catch (e:any) {
+            console.error('Signup error:', e)
+            alert(e?.message || 'Erreur lors de la création du compte')
+          } finally {
+            setRouting(false)
+          }
         }} />
+      )}
+      
+      {routing && (
+        <div className="glass-card rounded-2xl p-8 border border-white/10 bg-white/5 text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500 mx-auto mb-4"></div>
+          <p className="text-white/80">Création de votre compte...</p>
+        </div>
       )}
 
       {step === 2 && (
-        <Step2PlanMobile onSelect={(plan)=>{ setStep(3); router.push('/register/indepandante?step=3') }} />
+        <Step2PlanMobile onSelect={()=>{ setStep(3); router.push('/profile-test-signup/escort?step=3') }} />
       )}
 
       {step === 3 && (
         <div className="space-y-4">
-          {console.log('Rendering Step3KYC with userId:', userId)}
-          <Step3KYC userId={userId} onSubmitted={(ok)=>{ 
+          <Step3KYC userId={userId} role="ESCORT" onSubmitted={(ok)=>{ 
             try { if (ok) localStorage.removeItem('felora-signup-userId') } catch {}
             if (ok) {
               router.push('/dashboard-escort/statistiques?welcome=1')
