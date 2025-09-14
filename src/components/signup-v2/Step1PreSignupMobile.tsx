@@ -280,12 +280,12 @@ export default function Step1PreSignupMobile({ mode = 'ESCORT', onSubmit }:{ mod
                   className={`w-full bg-white/10 border rounded-xl px-4 py-4 text-white placeholder-white/50 text-base ${
                     fieldErrors.phone ? 'border-red-500/60' : 'border-white/20'
                   }`}
-                  placeholder="+41 XX XXX XX XX"
+                  placeholder="079 123 45 67 ou +41 79 123 45 67"
                   type="tel"
                   value={form.phone || ''}
                   onChange={e => {
-                    const normalized = normalizeSwissPhone(e.target.value)
-                    update('phone', normalized || e.target.value)
+                    // Conserver la saisie utilisateur telle quelle; normaliser seulement au submit
+                    update('phone', e.target.value)
                     setFieldErrors(prev => ({ ...prev, phone: '' }))
                   }}
                 />

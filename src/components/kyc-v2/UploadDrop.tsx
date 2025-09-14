@@ -130,10 +130,29 @@ export default function UploadDrop({
     })
   }, [])
 
+  const matchesAccept = (file: File, accept: string) => {
+    if (!accept) return true
+    const tokens = accept.split(',').map(t => t.trim()).filter(Boolean)
+    return tokens.some(tok => {
+      if (tok.endsWith('/*')) {
+        const prefix = tok.slice(0, -1) // 'image/'
+        return file.type.startsWith(prefix)
+      }
+      if (tok.includes('/')) {
+        return file.type === tok || file.type.includes(tok)
+      }
+      if (tok.startsWith('.')) {
+        return file.name.toLowerCase().endsWith(tok.toLowerCase())
+      }
+      // Fallback: substring match
+      return file.type.includes(tok)
+    })
+  }
+
   const handle = useCallback(async (file: File) => {
     setError(null)
     if (!file) return
-    if (accept && !accept.split(',').some(a => file.type.includes(a.trim()) || file.name.toLowerCase().endsWith(a.trim()))) {
+    if (accept && !matchesAccept(file, accept)) {
       setError('Type de fichier non supporté'); return
     }
     

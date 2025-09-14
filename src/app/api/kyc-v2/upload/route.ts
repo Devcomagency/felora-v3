@@ -7,7 +7,7 @@ import { initSentryServerOnce, captureServerException } from '@/lib/sentry-serve
 const MAX_BYTES_IMAGE = 5 * 1024 * 1024 // 5 MB pour images
 const MAX_BYTES_VIDEO = 4 * 1024 * 1024 // 4 MB pour vidéos (limite Vercel serverless)
 const ALLOWED_MIME = new Set([
-  'image/jpeg','image/jpg','image/png','image/webp',
+  'image/jpeg','image/jpg','image/png','image/webp','image/heic','image/heif',
   'video/webm','video/mp4','video/quicktime','video/mov'
 ])
 

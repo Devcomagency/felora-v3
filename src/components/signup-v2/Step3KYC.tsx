@@ -122,7 +122,7 @@ export default function Step3KYC({ userId, role='ESCORT', onSubmitted }:{ userId
       <div className="grid sm:grid-cols-2 gap-4">
         <UploadDrop 
           label="Pièce d'identité — recto" 
-          accept="image/jpeg,image/png" 
+          accept="image/*" 
           onUploaded={url=>setDocs(s=>({ ...s, docFrontUrl: url }))}
           exampleImage="/examples/id-front.jpg"
           requirements={[
@@ -139,7 +139,7 @@ export default function Step3KYC({ userId, role='ESCORT', onSubmitted }:{ userId
         
         <UploadDrop 
           label="Pièce d'identité — verso" 
-          accept="image/jpeg,image/png" 
+          accept="image/*" 
           onUploaded={url=>setDocs(s=>({ ...s, docBackUrl: url }))}
           exampleImage="/examples/id-back.jpg"
           requirements={[
@@ -156,7 +156,7 @@ export default function Step3KYC({ userId, role='ESCORT', onSubmitted }:{ userId
         
         <UploadDrop 
           label="Selfie avec 'FELORA'" 
-          accept="image/jpeg,image/png" 
+          accept="image/*" 
           onUploaded={url=>setDocs(s=>({ ...s, selfieSignUrl: url }))}
           exampleImage="/examples/selfie-felora.jpg"
           requirements={[
