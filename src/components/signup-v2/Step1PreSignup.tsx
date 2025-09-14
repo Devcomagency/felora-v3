@@ -244,7 +244,7 @@ export default function Step1PreSignup({ mode = 'ESCORT', onSubmit }:{ mode?:Mod
           </label>
         )}
         <button disabled={loading} onClick={submit} className="px-4 py-2 rounded-lg bg-gradient-to-r from-pink-500 to-purple-600 text-white font-medium disabled:opacity-60">
-          {loading ? 'Envoi…' : (mode === 'ESCORT' ? 'Créer mon compte' : 'Continuer')}
+          {loading ? 'Envoi…' : (mode === 'ESCORT' ? 'Choisir mon offre' : 'Continuer')}
         </button>
       </div>
     </div>
