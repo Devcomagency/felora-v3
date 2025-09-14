@@ -8,6 +8,7 @@ import Step1PreSignupMobile from '@/components/signup-v2/Step1PreSignupMobile'
 import Step2Plan from '@/components/signup-v2/Step2Plan'
 import Step2PlanMobile from '@/components/signup-v2/Step2PlanMobile'
 import Step3KYC from '@/components/signup-v2/Step3KYC'
+import Step3KYCMobile from '@/components/signup-v2/Step3KYCMobile'
 
 function EscortSignupContent(){
   const sp = useSearchParams()
@@ -69,24 +70,30 @@ function EscortSignupContent(){
 
       {step === 1 && !routing && (
         <Step1PreSignupMobile mode="ESCORT" onSubmit={async (data)=>{
+          console.log('🚀 Step1PreSignupMobile onSubmit called with data:', data)
           try {
+            console.log('📡 Setting routing to true...')
             setRouting(true)
+            console.log('📡 Calling /api/signup-v2/escort...')
             const r = await fetch('/api/signup-v2/escort', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data) })
+            console.log('📡 Response status:', r.status)
             const d = await r.json()
+            console.log('📡 Response data:', d)
             if (d?.ok) { 
-              console.log('Account created successfully, userId:', d.userId)
+              console.log('✅ Account created successfully, userId:', d.userId)
               setUserId(d.userId)
               try { localStorage.setItem('felora-signup-userId', d.userId) } catch {}
               setStep(2)
               router.push('/profile-test-signup/escort?step=2')
             } else {
-              console.error('Account creation failed:', d?.error)
+              console.error('❌ Account creation failed:', d?.error)
               throw new Error(d?.error || 'Erreur lors de la création du compte')
             }
           } catch (e:any) {
-            console.error('Signup error:', e)
+            console.error('💥 Signup error:', e)
             alert(e?.message || 'Erreur lors de la création du compte')
           } finally {
+            console.log('🏁 Setting routing to false...')
             setRouting(false)
           }
         }} />
@@ -104,17 +111,15 @@ function EscortSignupContent(){
       )}
 
       {step === 3 && (
-        <div className="space-y-4">
-          <Step3KYC userId={userId} role="ESCORT" onSubmitted={(ok)=>{ 
-            try { if (ok) localStorage.removeItem('felora-signup-userId') } catch {}
-            if (ok) {
-              router.push('/dashboard-escort/statistiques?welcome=1')
-            } else {
-              // Vérifier plus tard: amener au dashboard escort minimal
-              router.push('/dashboard-escort/profil?kyc=deferred')
-            }
-          }} />
-        </div>
+        <Step3KYCMobile userId={userId} role="ESCORT" onSubmitted={(ok)=>{ 
+          try { if (ok) localStorage.removeItem('felora-signup-userId') } catch {}
+          if (ok) {
+            router.push('/dashboard-escort/statistiques?welcome=1')
+          } else {
+            // Vérifier plus tard: amener au dashboard escort minimal
+            router.push('/dashboard-escort/profil?kyc=deferred')
+          }
+        }} />
       )}
       </div>
     </main>

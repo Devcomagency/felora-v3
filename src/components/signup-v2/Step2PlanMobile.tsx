@@ -271,7 +271,7 @@ export default function Step2PlanMobile({ onSelect }:{ onSelect:(plan:Plan)=>voi
               className="w-full py-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-bold text-lg hover:from-purple-600 hover:to-pink-600 transition-all flex items-center justify-center gap-2"
             >
               <Shield size={20} />
-              Continuer avec {selectedPlan.name}
+              Valider ma vérification
             </button>
           </div>
         </div>
