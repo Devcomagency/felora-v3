@@ -49,7 +49,20 @@ export default function Step1PreSignupMobile({ mode = 'ESCORT', onSubmit }:{ mod
     setFieldErrors({})
     try {
       console.log('📋 Validating form:', form)
-      const checks = schema.safeParse(form)
+      
+      // Normalize phone number before validation
+      const formData = { ...form }
+      if (mode === 'ESCORT' && form.phone) {
+        const normalizedPhone = normalizeSwissPhone(form.phone)
+        if (normalizedPhone) {
+          formData.phoneE164 = normalizedPhone
+          console.log('📞 Phone normalized:', form.phone, '→', normalizedPhone)
+        } else {
+          console.log('❌ Phone normalization failed for:', form.phone)
+        }
+      }
+      
+      const checks = schema.safeParse(formData)
       if (!checks.success) {
         console.log('❌ Validation failed:', checks.error)
         const errors: Record<string,string> = {}
