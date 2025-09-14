@@ -75,8 +75,18 @@ export default function Step1PreSignupMobile({ mode = 'ESCORT', onSubmit }:{ mod
         setLoading(false)
         return
       }
-      console.log('✅ Validation passed, calling onSubmit with:', checks.data)
-      await onSubmit(checks.data)
+      // Generate pseudo automatically for CLIENT mode
+      let finalData = checks.data
+      if (mode === 'CLIENT') {
+        const email = checks.data.email || ''
+        const emailPrefix = email.split('@')[0] || 'client'
+        const pseudo = emailPrefix.replace(/[^a-zA-Z0-9_.-]/g, '').toLowerCase().slice(0, 20) || 'client'
+        finalData = { ...checks.data, pseudo }
+        console.log('🔧 Generated pseudo for client:', pseudo)
+      }
+      
+      console.log('✅ Validation passed, calling onSubmit with:', finalData)
+      await onSubmit(finalData)
       console.log('✅ onSubmit completed successfully')
     } catch (e:any) { 
       console.error('💥 Submit error:', e)

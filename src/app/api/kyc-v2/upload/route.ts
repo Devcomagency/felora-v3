@@ -4,8 +4,8 @@ import path from 'path'
 import { mediaStorage } from '@/lib/storage'
 import { initSentryServerOnce, captureServerException } from '@/lib/sentry-server'
 
-const MAX_BYTES_IMAGE = 5 * 1024 * 1024 // 5 MB pour images
-const MAX_BYTES_VIDEO = 4 * 1024 * 1024 // 4 MB pour vidéos (limite Vercel serverless)
+const MAX_BYTES_IMAGE = 3 * 1024 * 1024 // 3 MB pour images (compatible Vercel)
+const MAX_BYTES_VIDEO = 3 * 1024 * 1024 // 3 MB pour vidéos (compatible Vercel)
 const ALLOWED_MIME = new Set([
   'image/jpeg','image/jpg','image/png','image/webp','image/heic','image/heif',
   'video/webm','video/mp4','video/quicktime','video/mov'
@@ -49,7 +49,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ 
         error: 'file_too_large', 
         maxBytes,
-        type: isVideo ? 'video' : 'image'
+        type: isVideo ? 'video' : 'image',
+        message: `Fichier trop volumineux. Maximum: ${Math.round(maxBytes / 1024 / 1024)}MB. Veuillez compresser votre fichier.`
       }, { status: 413 })
     }
 

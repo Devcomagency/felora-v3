@@ -53,6 +53,12 @@ export default function Step3KYC({ userId, role='ESCORT', onSubmitted }:{ userId
         if (d?.debug) {
           console.error('Debug info:', d.debug)
         }
+        
+        // Message d'erreur spécifique pour 413
+        if (r.status === 413) {
+          throw new Error('Fichiers trop volumineux. Veuillez compresser vos images/vidéos (max 3MB chacun).')
+        }
+        
         throw new Error(d?.error || `Erreur ${r.status}`)
       }
       

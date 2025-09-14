@@ -17,12 +17,16 @@ interface UploadDropProps {
 export default function UploadDrop({ 
   label, 
   accept, 
-  maxMb = 20, 
+  maxMb = 3, // Compatible Vercel (3MB max) 
   onUploaded, 
   onUploadedMeta,
   exampleImage,
   requirements = [],
-  tips = [],
+  tips = [
+    'Compressez vos fichiers avant upload (max 3MB)',
+    'Utilisez des outils comme TinyPNG ou HandBrake',
+    'Pour les vidéos: réduisez la résolution à 720p max'
+  ],
   isRequired = false
 }: UploadDropProps){
   const [error, setError] = useState<string|null>(null)
