@@ -50,12 +50,12 @@ export default function Step1PreSignupMobile({ mode = 'ESCORT', onSubmit }:{ mod
     try {
       console.log('📋 Validating form:', form)
       
-      // Normalize phone number before validation
-      const formData = { ...form }
-      if (mode === 'ESCORT' && form.phone) {
-        const normalizedPhone = normalizeSwissPhone(form.phone)
+      // Normalize phone number before validation (always provide a string for phoneE164)
+      const formData: any = { ...form }
+      if (mode !== 'CLIENT') {
+        const normalizedPhone = normalizeSwissPhone((form as any).phoneE164 || form.phone)
+        formData.phoneE164 = normalizedPhone || ''
         if (normalizedPhone) {
-          formData.phoneE164 = normalizedPhone
           console.log('📞 Phone normalized:', form.phone, '→', normalizedPhone)
         } else {
           console.log('❌ Phone normalization failed for:', form.phone)
