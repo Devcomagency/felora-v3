@@ -9,7 +9,7 @@ type Mode = 'ESCORT'|'CLIENT'|'CLUB'
 export default function Step1PreSignupMobile({ mode = 'ESCORT', onSubmit }:{ mode?:Mode; onSubmit:(data:any)=>Promise<void>|void }){
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string|null>(null)
-  const [form, setForm] = useState<any>({ isAdult:false, acceptTos:false, emailVerified:false })
+  const [form, setForm] = useState<any>({ isAdult:false, acceptTos:false, emailVerified: mode === 'CLIENT' })
   const [captchaOK, setCaptchaOK] = useState(false)
   const [emailSending, setEmailSending] = useState(false)
   const [emailSent, setEmailSent] = useState(false)
@@ -177,7 +177,9 @@ export default function Step1PreSignupMobile({ mode = 'ESCORT', onSubmit }:{ mod
           <div className="space-y-6">
             <div className="text-center">
               <h3 className="text-white text-xl font-semibold mb-2">Votre adresse email</h3>
-              <p className="text-white/70 text-sm">Nous vous enverrons un code de vérification</p>
+              <p className="text-white/70 text-sm">
+                {mode === 'CLIENT' ? 'Entrez votre adresse email' : 'Nous vous enverrons un code de vérification'}
+              </p>
             </div>
             
             <div className="space-y-4">
@@ -191,14 +193,21 @@ export default function Step1PreSignupMobile({ mode = 'ESCORT', onSubmit }:{ mod
                     placeholder="votre@email.com"
                     type="email"
                     value={form.email || ''}
-                    onChange={e => { update('email', e.target.value); setFieldErrors(prev => ({ ...prev, email: '' })) }}
+                    onChange={e => { 
+                      update('email', e.target.value); 
+                      setFieldErrors(prev => ({ ...prev, email: '' }));
+                      // Auto-verify email for clients
+                      if (mode === 'CLIENT' && e.target.value) {
+                        update('emailVerified', true);
+                      }
+                    }}
                   />
                   <Mail className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white/40" size={20} />
                 </div>
                 {fieldErrors.email && <p className="text-red-400 text-sm mt-1">{fieldErrors.email}</p>}
               </div>
 
-              {form.email && !form.emailVerified && (
+              {form.email && !form.emailVerified && mode !== 'CLIENT' && (
                 <div className="space-y-3">
                   <button
                     onClick={sendVerificationEmail}
@@ -255,7 +264,7 @@ export default function Step1PreSignupMobile({ mode = 'ESCORT', onSubmit }:{ mod
                 </div>
               )}
 
-              {form.emailVerified && (
+              {form.emailVerified && mode !== 'CLIENT' && (
                 <div className="flex items-center gap-2 p-3 bg-green-500/20 border border-green-500/30 rounded-xl">
                   <CheckCircle className="text-green-400" size={20} />
                   <span className="text-green-400 text-sm font-medium">Email vérifié avec succès</span>
