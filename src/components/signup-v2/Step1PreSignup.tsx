@@ -56,7 +56,7 @@ export default function Step1PreSignup({ mode = 'ESCORT', onSubmit }:{ mode?:Mod
     // Normalize phone (CH) to E.164 (pas pour CLIENT)
     if (mode !== 'CLIENT') {
       const e164 = normalizeSwissPhone(form.phoneE164 || form.phone)
-      if (e164) data.phoneE164 = e164
+      data.phoneE164 = e164 || ''
     }
     // birthDate et handle non requis à ce stade pour ESCORT
     const parsed = schema.safeParse(data)
