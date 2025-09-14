@@ -1,6 +1,7 @@
 "use client"
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useMemo, useState, Suspense } from 'react'
+import { signIn } from 'next-auth/react'
 import { Crown, Building2, CheckCircle, Gift, AlertCircle } from 'lucide-react'
 import Stepper from '@/components/signup-v2/Stepper'
 import SalonPreSignupQuick from '@/components/signup-v2/SalonPreSignupQuick'
@@ -9,8 +10,10 @@ function ClubSignupContent(){
   const sp = useSearchParams()
   const router = useRouter()
   const [userId, setUserId] = useState<string>('')
+  const [userCredentials, setUserCredentials] = useState<{email: string, password: string} | null>(null)
   const stepParam = Number(sp.get('step') || '1')
   const [step, setStep] = useState<number>(stepParam)
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
   const steps = useMemo(()=>[
     { id:1, label:'Inscription' },
     { id:2, label:'Offre' },
@@ -44,9 +47,12 @@ function ClubSignupContent(){
         <Stepper steps={steps} current={step} />
         
         {step === 1 && (
-          <SalonPreSignupQuick onSubmitted={(ok, uid)=>{ 
+          <SalonPreSignupQuick onSubmitted={(ok, uid, credentials)=>{ 
             if (ok) { 
-              setUserId(uid||''); 
+              setUserId(uid||'');
+              if (credentials) {
+                setUserCredentials(credentials);
+              }
               setStep(2); 
               router.push('/register/salon?step=2') 
             } 
@@ -54,9 +60,40 @@ function ClubSignupContent(){
         )}
         
         {step === 2 && (
-          <SalonPlansStepMobile />
+          <SalonPlansStepMobile 
+            userCredentials={userCredentials}
+            onShowSuccess={() => setShowSuccessModal(true)}
+          />
         )}
       </div>
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 z-[10000] flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/80" />
+          <div className="relative bg-gradient-to-br from-purple-900/90 to-pink-900/90 backdrop-blur-xl rounded-3xl p-8 max-w-md mx-4 text-center border border-white/20">
+            <div className="w-20 h-20 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6">
+              <CheckCircle className="text-white" size={40} />
+            </div>
+            <h3 className="text-white text-2xl font-bold mb-3">Félicitations !</h3>
+            <p className="text-white/80 text-base mb-8 leading-relaxed">
+              Votre compte salon a été créé avec succès.<br/>
+              Vous allez être redirigé vers votre tableau de bord.
+            </p>
+            <button
+              onClick={() => {
+                setShowSuccessModal(false)
+                setTimeout(() => {
+                  window.location.href = '/club/profile'
+                }, 100)
+              }}
+              className="w-full py-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-bold text-lg hover:from-purple-600 hover:to-pink-600 transition-all"
+            >
+              Aller au Dashboard Salon
+            </button>
+          </div>
+        </div>
+      )}
     </main>
   )
 }
@@ -73,8 +110,13 @@ export default function ClubSignupPage(){
   )
 }
 
-function SalonPlansStepMobile() {
-  const router = useRouter()
+function SalonPlansStepMobile({ 
+  userCredentials, 
+  onShowSuccess 
+}: { 
+  userCredentials: {email: string, password: string} | null,
+  onShowSuccess: () => void
+}) {
   const [promoInput, setPromoInput] = useState('')
   const [promo, setPromo] = useState<{ code:string; type:'percent'|'amount'; value:number; applicablePlans?: string[] }|null>(null)
   const [promoMsg, setPromoMsg] = useState('')
@@ -94,10 +136,35 @@ function SalonPlansStepMobile() {
   const onChoose = async (planCode: 'MONTH' | 'QUARTER') => {
     setLoading(true)
     try {
-      const msg = encodeURIComponent('Félicitations, votre compte salon est créé')
-      // Redirige vers le profil club (route existante)
-      router.push(`/club/profile?message=${msg}`)
-    } finally { setLoading(false) }
+      console.log('🚀 Salon plan selected:', planCode)
+      
+      // Auto-login after plan selection if credentials are available
+      if (userCredentials) {
+        console.log('🔑 Attempting auto-login for salon account...')
+        try {
+          const loginResult = await signIn('credentials', { 
+            email: userCredentials.email, 
+            password: userCredentials.password, 
+            redirect: false 
+          })
+          if (loginResult?.ok) {
+            console.log('✅ Auto-login successful for salon')
+          } else {
+            console.log('⚠️ Auto-login failed but account was created:', loginResult?.error)
+          }
+        } catch (e) {
+          console.log('⚠️ Auto-login error but account was created:', e)
+        }
+      }
+      
+      // Show success modal
+      onShowSuccess()
+    } catch (e: any) {
+      console.error('💥 Plan selection error:', e)
+      alert(e?.message || 'Erreur lors de la sélection du plan')
+    } finally { 
+      setLoading(false) 
+    }
   }
 
   const plans = [

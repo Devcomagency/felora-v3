@@ -429,7 +429,7 @@ export default function Step1PreSignupMobile({ mode = 'ESCORT', onSubmit }:{ mod
             ) : currentStep === steps.length - 1 ? (
               <>
                 <Shield size={16} />
-                Choisir mon offre
+                {mode === 'CLIENT' ? 'Activer mon compte' : 'Choisir mon offre'}
               </>
             ) : (
               'Suivant'

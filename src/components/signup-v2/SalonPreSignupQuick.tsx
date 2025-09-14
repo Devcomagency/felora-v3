@@ -1,7 +1,7 @@
 "use client"
 import { useEffect, useMemo, useRef, useState } from 'react'
 
-export default function SalonPreSignupQuick({ onSubmitted }:{ onSubmitted:(ok:boolean,userId?:string)=>void }){
+export default function SalonPreSignupQuick({ onSubmitted }:{ onSubmitted:(ok:boolean,userId?:string,credentials?:{email:string,password:string})=>void }){
   const [companyName, setCompanyName] = useState('')
   const [city, setCity] = useState('')
   const [allCities, setAllCities] = useState<string[]>([])
@@ -124,7 +124,7 @@ export default function SalonPreSignupQuick({ onSubmitted }:{ onSubmitted:(ok:bo
       const r = await fetch('/api/signup-v2/club', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) })
       const d = await r.json()
       if (!r.ok || !d?.ok) throw new Error(d?.error || 'Inscription échouée')
-      onSubmitted(true, d.userId)
+      onSubmitted(true, d.userId, { email, password })
     } catch (e:any) {
       setError(e?.message || 'Erreur serveur')
       onSubmitted(false)
