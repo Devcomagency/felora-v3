@@ -43,12 +43,15 @@ export default function Step1PreSignupMobile({ mode = 'ESCORT', onSubmit }:{ mod
   }
 
   const submit = async () => {
+    console.log('🎯 Step1PreSignupMobile submit() called')
     setLoading(true)
     setError(null)
     setFieldErrors({})
     try {
+      console.log('📋 Validating form:', form)
       const checks = schema.safeParse(form)
       if (!checks.success) {
+        console.log('❌ Validation failed:', checks.error)
         const errors: Record<string,string> = {}
         if (checks.error?.errors) {
           checks.error.errors.forEach(e => {
@@ -59,8 +62,14 @@ export default function Step1PreSignupMobile({ mode = 'ESCORT', onSubmit }:{ mod
         setLoading(false)
         return
       }
+      console.log('✅ Validation passed, calling onSubmit with:', checks.data)
       await onSubmit(checks.data)
-    } catch (e:any) { setError(e.message); setLoading(false) }
+      console.log('✅ onSubmit completed successfully')
+    } catch (e:any) { 
+      console.error('💥 Submit error:', e)
+      setError(e.message); 
+      setLoading(false) 
+    }
   }
 
   const sendVerificationEmail = async () => {
@@ -91,9 +100,12 @@ export default function Step1PreSignupMobile({ mode = 'ESCORT', onSubmit }:{ mod
   ]
 
   const nextStep = () => {
+    console.log('🔘 nextStep called, currentStep:', currentStep, 'steps.length:', steps.length)
     if (currentStep < steps.length - 1) {
+      console.log('➡️ Moving to next step:', currentStep + 1)
       setCurrentStep(currentStep + 1)
     } else {
+      console.log('🏁 Final step reached, calling submit()')
       submit()
     }
   }
