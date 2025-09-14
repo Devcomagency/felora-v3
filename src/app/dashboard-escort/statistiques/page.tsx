@@ -145,7 +145,7 @@ function NewStatistiquesPage() {
       return r.json() as Promise<{ months: Array<{ label: string, amount: number }> }>
     }
   })
-  const months = (revMonthlyQ.data?.months || []).map((x) => ({ m: x.label, v: x.amount }))
+  const months = Array.isArray(revMonthlyQ.data?.months) ? revMonthlyQ.data.months.map((x) => ({ m: x.label, v: x.amount })) : []
   const bestMonth = months.length ? months.reduce((a, b) => (b.v > a.v ? b : a)) : { m: '-', v: 0 }
 
   // CSV exports
@@ -291,10 +291,10 @@ function NewStatistiquesPage() {
         <div className="bg-gray-800/40 backdrop-blur border border-gray-700/50 rounded-2xl p-4">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold">Médias les plus populaires</h3>
-            <button onClick={()=>exportCSV((topMediaQ.data||[]).map(i=>({rank:i.rank,type:i.type,title:i.title,likes:i.likes,views:i.views,score:i.score})), 'top-medias.csv')} className="text-xs text-white/70 hover:text-white flex items-center gap-1"><Download size={14}/> Export CSV</button>
+            <button onClick={()=>exportCSV(Array.isArray(topMediaQ.data) ? topMediaQ.data.map(i=>({rank:i.rank,type:i.type,title:i.title,likes:i.likes,views:i.views,score:i.score})) : [], 'top-medias.csv')} className="text-xs text-white/70 hover:text-white flex items-center gap-1"><Download size={14}/> Export CSV</button>
           </div>
           <div className="space-y-2">
-            {(topMediaQ.data||[]).map(m => (
+            {Array.isArray(topMediaQ.data) ? topMediaQ.data.map(m => (
               <div key={m.id} className="flex items-center gap-3 p-3 rounded-xl border border-white/10 hover:bg-white/5">
                 <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white text-sm font-bold">{m.rank}</div>
                 <div className="w-12 h-12 rounded-lg overflow-hidden bg-white/10"><img src={m.thumb} alt={m.title} className="w-full h-full object-cover"/></div>
@@ -311,7 +311,7 @@ function NewStatistiquesPage() {
                   <button onClick={()=>notifySuccess('Mise en avant', 'Boost appliqué (mock)')} className="px-2 py-1 text-xs rounded-lg bg-pink-600/80 hover:bg-pink-600 text-white">Boost</button>
                 </div>
               </div>
-            ))}
+            )) : null}
             {topMediaQ.isLoading && <div className="h-24 bg-white/5 rounded-xl animate-pulse"/>}
           </div>
         </div>
@@ -322,7 +322,7 @@ function NewStatistiquesPage() {
             <a href="/dashboard-escort/activite" className="text-xs text-white/70 hover:text-white">Voir toute l'activité</a>
           </div>
           <div className="space-y-3">
-            {(activityQ.data?.items||[]).map((a, i) => (
+            {Array.isArray(activityQ.data?.items) ? activityQ.data.items.map((a, i) => (
               <div key={i} className="flex items-start gap-3 p-2 rounded-xl hover:bg-white/5">
                 <div className="mt-0.5">
                   {a.type==='view' && <Eye size={16} className="text-blue-400"/>}
@@ -335,7 +335,7 @@ function NewStatistiquesPage() {
                   <div className="text-xs text-white/60">{timeAgo(a.at)}</div>
                 </div>
               </div>
-            ))}
+            )) : null}
             {activityQ.isLoading && <div className="h-24 bg-white/5 rounded-xl animate-pulse"/>}
           </div>
         </div>
@@ -349,12 +349,12 @@ function NewStatistiquesPage() {
             <div className="text-xs text-white/60">Derniers 14 jours</div>
           </div>
           <div className="h-56 flex items-end gap-1">
-            {(viewsQ.data?.series||[]).map((p, i) => (
+            {Array.isArray(viewsQ.data?.series) ? viewsQ.data.series.map((p, i) => (
               <div key={i} className="flex-1 flex flex-col items-center">
                 <div className="w-full bg-gradient-to-t from-purple-500 to-pink-500 rounded-t" style={{ height: `${p.v}%` }} />
                 <div className="text-[10px] text-white/50 mt-1">{i+1}</div>
               </div>
-            ))}
+            )) : null}
             {viewsQ.isLoading && <div className="w-full h-40 bg-white/5 rounded-xl animate-pulse"/>}
           </div>
         </div>
