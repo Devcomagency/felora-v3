@@ -66,8 +66,8 @@ export default function Step1PreSignupMobile({ mode = 'ESCORT', onSubmit }:{ mod
       if (!checks.success) {
         console.log('❌ Validation failed:', checks.error)
         const errors: Record<string,string> = {}
-        if (checks.error?.errors) {
-          checks.error.errors.forEach(e => {
+        if (checks.error?.issues) {
+          checks.error.issues.forEach((e: any) => {
             if (e.path?.[0]) errors[e.path[0] as string] = e.message
           })
         }
