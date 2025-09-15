@@ -63,7 +63,12 @@ export default function Step3KYCMobile({ userId, role='ESCORT', onSubmitted }:{ 
       }
       
       setShowSuccess(true)
-      setTimeout(() => onSubmitted(true), 1500)
+      // Redirection automatique vers le dashboard après 3 secondes
+      setTimeout(() => {
+        onSubmitted(true)
+        // Redirection directe vers le dashboard escort
+        window.location.href = '/dashboard-escort/profil?success=kyc'
+      }, 3000)
     } catch (e: any) {
       console.error('KYC submit failed:', e)
       setError(e?.message || 'Erreur de soumission')
@@ -116,23 +121,56 @@ export default function Step3KYCMobile({ userId, role='ESCORT', onSubmitted }:{ 
         {/* Header mobile-first */}
         <div className="text-center space-y-4">
           <div className="flex items-center justify-center gap-3">
-            <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-500 rounded-2xl flex items-center justify-center">
-              <ShieldCheck className="text-white" size={32} />
+            <div className="w-20 h-20 bg-gradient-to-r from-green-500 to-emerald-500 rounded-2xl flex items-center justify-center animate-pulse">
+              <ShieldCheck className="text-white" size={40} />
             </div>
           </div>
           <div>
-            <h2 className="text-white text-2xl sm:text-3xl font-bold mb-2">Vérification réussie !</h2>
+            <h2 className="text-white text-2xl sm:text-3xl font-bold mb-2">🎉 Félicitations !</h2>
             <p className="text-white/70 text-base sm:text-lg max-w-md mx-auto leading-relaxed">
-              Votre compte a été créé avec succès. Bienvenue sur Felora !
+              Votre vérification d'identité a été soumise avec succès !
             </p>
           </div>
         </div>
 
-        <div className="bg-green-500/20 border border-green-500/30 rounded-2xl p-6 text-center">
-          <CheckCircle className="text-green-400 mx-auto mb-4" size={48} />
-          <h3 className="text-green-400 text-xl font-bold mb-2">Compte activé</h3>
-          <p className="text-green-300 text-sm">
-            Vous allez être redirigé vers votre tableau de bord dans quelques instants...
+        <div className="bg-gradient-to-r from-green-500/10 via-emerald-500/10 to-teal-500/10 border border-green-500/30 rounded-2xl p-6 text-center space-y-4">
+          <div className="flex items-center justify-center mb-4">
+            <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center">
+              <span className="text-3xl">✨</span>
+            </div>
+          </div>
+
+          <h3 className="text-green-400 text-xl font-bold mb-2">Prêt à commencer !</h3>
+
+          <div className="space-y-3 text-sm">
+            <p className="text-green-300">
+              <strong>📋 Prochaines étapes :</strong>
+            </p>
+            <div className="bg-green-500/10 rounded-xl p-4 text-left">
+              <ul className="space-y-2 text-green-200">
+                <li className="flex items-center gap-2">
+                  <span className="w-2 h-2 bg-green-400 rounded-full"></span>
+                  Finalisez votre profil avec photos et descriptions
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="w-2 h-2 bg-green-400 rounded-full"></span>
+                  Configurez vos tarifs et disponibilités
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="w-2 h-2 bg-green-400 rounded-full"></span>
+                  Votre vérification sera traitée sous 48h
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-center gap-2 text-emerald-300 mt-4">
+            <div className="w-3 h-3 bg-emerald-400 rounded-full animate-bounce"></div>
+            <div className="w-3 h-3 bg-emerald-400 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+            <div className="w-3 h-3 bg-emerald-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+          </div>
+          <p className="text-emerald-300 text-sm font-medium">
+            Redirection vers votre dashboard...
           </p>
         </div>
       </div>

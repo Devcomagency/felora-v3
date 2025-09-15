@@ -384,14 +384,12 @@ export default function Step3KYC({ userId, role='ESCORT', onSubmitted }:{ userId
                   </ul>
                 </div>
               </div>
-              <button 
+              <button
                 onClick={() => {
                   setShowSuccess(false)
                   onSubmitted(true)
-                  // Redirection vers dashboard après un court délai
-                  setTimeout(() => {
-                    window.location.href = '/dashboard-escort/profil'
-                  }, 100)
+                  // Redirection vers dashboard avec paramètre success
+                  window.location.href = '/dashboard-escort/profil?success=kyc'
                 }}
                 className="w-full px-6 py-3 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold hover:from-emerald-600 hover:to-teal-700 transition-all"
               >
