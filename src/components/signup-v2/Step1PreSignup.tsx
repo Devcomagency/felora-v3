@@ -58,6 +58,13 @@ export default function Step1PreSignup({ mode = 'ESCORT', onSubmit }:{ mode?:Mod
       const e164 = normalizeSwissPhone(form.phoneE164 || form.phone)
       data.phoneE164 = e164 || ''
     }
+    // Pseudo required for CLIENT schema: generate before validation
+    if (mode === 'CLIENT') {
+      const email = String(data.email || '')
+      const prefix = email.split('@')[0] || 'client'
+      const pseudo = prefix.replace(/[^a-zA-Z0-9_.-]/g, '').toLowerCase().slice(0, 20) || 'client'
+      if (!data.pseudo) data.pseudo = pseudo
+    }
     // birthDate et handle non requis à ce stade pour ESCORT
     const parsed = schema.safeParse(data)
     if (!parsed.success) {

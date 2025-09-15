@@ -50,8 +50,9 @@ export default function Step1PreSignupMobile({ mode = 'ESCORT', onSubmit }:{ mod
     try {
       console.log('📋 Validating form:', form)
       
-      // Normalize phone number before validation (always provide a string for phoneE164)
+      // Build payload for validation (ensure required fields exist as strings)
       const formData: any = { ...form }
+      // Phone normalization for ESCORT/CLUB (CLIENT phone optional)
       if (mode !== 'CLIENT') {
         const normalizedPhone = normalizeSwissPhone((form as any).phoneE164 || form.phone)
         formData.phoneE164 = normalizedPhone || ''
@@ -60,6 +61,13 @@ export default function Step1PreSignupMobile({ mode = 'ESCORT', onSubmit }:{ mod
         } else {
           console.log('❌ Phone normalization failed for:', form.phone)
         }
+      }
+      // Pseudo required by client schema: generate before validation
+      if (mode === 'CLIENT') {
+        const email = String(form.email || '')
+        const prefix = email.split('@')[0] || 'client'
+        const pseudo = prefix.replace(/[^a-zA-Z0-9_.-]/g, '').toLowerCase().slice(0, 20) || 'client'
+        formData.pseudo = String(form.pseudo || '') || pseudo
       }
       
       const checks = schema.safeParse(formData)

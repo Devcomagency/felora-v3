@@ -113,35 +113,40 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'forbidden' }, { status: 403 })
     }
 
-    const { role: rawRole, ...urls } = body || {}
+    const { role: rawRole, ...fileKeys } = body || {}
     const role = (rawRole as string) || 'ESCORT'
 
-    // Derive storage keys from URLs (R2 signed URL or local API path)
-    const deriveKey = (u?: string) => {
-      if (!u) return undefined
-      try {
-        if (u.startsWith('/api/kyc-v2/file/')) return decodeURIComponent(u.split('/').pop() || '')
-        const url = new URL(u)
-        // Path like /<bucket>/<folder>/<filename>
-        const parts = url.pathname.replace(/^\/+/, '').split('/')
-        if (process.env.CLOUDFLARE_R2_BUCKET && parts[0] === process.env.CLOUDFLARE_R2_BUCKET) parts.shift()
-        return parts.join('/').split('?')[0]
-      } catch { return undefined }
+    // Reconstruire les URLs à partir des clés
+    const buildUrl = (key?: string) => {
+      if (!key) return undefined
+      // Si c'est déjà une URL complète, la retourner
+      if (key.startsWith('http')) return key
+      // Sinon, construire l'URL locale
+      return `/api/kyc-v2/file/${encodeURIComponent(key)}`
     }
+
     // Validate required documents
-    const required = ['docFrontUrl','docBackUrl','selfieSignUrl','livenessVideoUrl']
-    const missing = required.filter((k)=> !urls?.[k])
+    const required = ['docFrontKey','docBackKey','selfieSignKey','livenessKey']
+    const missing = required.filter((k)=> !fileKeys?.[k])
     if (missing.length) {
-      console.log('Missing documents:', missing, 'Received URLs:', Object.keys(urls || {}))
+      console.log('Missing document keys:', missing, 'Received keys:', Object.keys(fileKeys || {}))
       return NextResponse.json({ error: 'missing_documents', missing }, { status: 400 })
+    }
+
+    // Reconstruire les URLs pour la base de données
+    const urls = {
+      docFrontUrl: buildUrl(fileKeys.docFrontKey),
+      docBackUrl: buildUrl(fileKeys.docBackKey),
+      selfieSignUrl: buildUrl(fileKeys.selfieSignKey),
+      livenessVideoUrl: buildUrl(fileKeys.livenessKey)
     }
 
     const notes = {
       kycKeys: {
-        selfieSignKey: deriveKey(urls?.selfieSignUrl),
-        docFrontKey: deriveKey(urls?.docFrontUrl),
-        docBackKey: deriveKey(urls?.docBackUrl),
-        livenessKey: deriveKey((urls as any)?.livenessVideoUrl),
+        selfieSignKey: fileKeys.selfieSignKey,
+        docFrontKey: fileKeys.docFrontKey,
+        docBackKey: fileKeys.docBackKey,
+        livenessKey: fileKeys.livenessKey,
       }
     }
 

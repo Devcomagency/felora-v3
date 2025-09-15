@@ -33,7 +33,20 @@ export default function Step3KYC({ userId, role='ESCORT', onSubmitted }:{ userId
       }
       
       console.log('Submitting KYC with data:', { userId, role, docs })
-      const r = await fetch('/api/kyc-v2/submit', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ userId, role, ...docs }) })
+      
+      // Envoyer seulement les clés des fichiers, pas les URLs complètes
+      const fileKeys = {
+        docFrontKey: docs.docFrontUrl?.split('/').pop() || '',
+        docBackKey: docs.docBackUrl?.split('/').pop() || '',
+        selfieSignKey: docs.selfieSignUrl?.split('/').pop() || '',
+        livenessKey: docs.livenessVideoUrl?.split('/').pop() || ''
+      }
+      
+      const r = await fetch('/api/kyc-v2/submit', { 
+        method:'POST', 
+        headers:{ 'Content-Type':'application/json' }, 
+        body: JSON.stringify({ userId, role, ...fileKeys }) 
+      })
       
       // Lire la réponse une seule fois
       const responseText = await r.text()
