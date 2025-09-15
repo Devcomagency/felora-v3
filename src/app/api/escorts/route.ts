@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
       where.AND = where.AND ? [...where.AND, textFilter] : [textFilter]
     }
 
-    // Filtre Catégories (nouveau)
+    // Filtre Catégories (nouveau) - Correction pour format JSON
     if (categoriesCSV) {
       const categories = categoriesCSV.split(',').map(s => s.trim()).filter(Boolean)
       if (categories.length > 0) {
@@ -80,11 +80,17 @@ export async function GET(request: NextRequest) {
             // Mapping des catégories vers les champs DB appropriés
             switch (cat.toLowerCase()) {
               case 'escorte':
+              case 'escort':
                 return { services: { contains: 'escort', mode: 'insensitive' as const } }
               case 'salon':
                 return { services: { contains: 'salon', mode: 'insensitive' as const } }
               case 'massage':
-                return { services: { contains: 'massage', mode: 'insensitive' as const } }
+                return {
+                  OR: [
+                    { services: { contains: 'massage', mode: 'insensitive' as const } },
+                    { services: { contains: 'masseuse', mode: 'insensitive' as const } }
+                  ]
+                }
               case 'vip':
                 return { isVerifiedBadge: true }
               case 'bdsm':
