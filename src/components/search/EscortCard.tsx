@@ -18,9 +18,35 @@ interface EscortCardProps {
     languages?: string[]
     services?: string[]
     rate1H?: number
+    rate2H?: number
+    rateOvernight?: number
     latitude?: number
     longitude?: number
     updatedAt: string
+    // Nouveaux champs V2
+    height?: number
+    bodyType?: string
+    hairColor?: string
+    eyeColor?: string
+    ethnicity?: string
+    bustSize?: string
+    tattoos?: string
+    piercings?: string
+    availableNow?: boolean
+    outcall?: boolean
+    incall?: boolean
+    weekendAvailable?: boolean
+    hasPrivatePhotos?: boolean
+    hasPrivateVideos?: boolean
+    hasWebcamLive?: boolean
+    messagingPreference?: string
+    minimumDuration?: string
+    acceptsCards?: boolean
+    rating?: number
+    reviewCount?: number
+    views?: number
+    likes?: number
+    status?: string
   }
   onLike?: (id: string) => void
   isLiked?: boolean
@@ -121,9 +147,14 @@ export default function EscortCard({ escort, onLike, isLiked = false }: EscortCa
               <span className="text-xs font-medium text-white">Vérifié</span>
             </div>
           )}
-          {escort.isActive && (
+          {escort.availableNow && (
             <div className="px-2 py-1 rounded-full bg-green-500/90 backdrop-blur-sm">
-              <span className="text-xs font-medium text-white">En ligne</span>
+              <span className="text-xs font-medium text-white">Dispo maintenant</span>
+            </div>
+          )}
+          {escort.hasWebcamLive && (
+            <div className="px-2 py-1 rounded-full bg-purple-500/90 backdrop-blur-sm">
+              <span className="text-xs font-medium text-white">Live</span>
             </div>
           )}
         </div>
@@ -147,6 +178,20 @@ export default function EscortCard({ escort, onLike, isLiked = false }: EscortCa
             </span>
           </div>
         )}
+
+        {/* Service Options */}
+        <div className="absolute bottom-3 left-3 flex gap-1">
+          {escort.outcall && (
+            <div className="px-2 py-1 rounded-full bg-blue-500/90 backdrop-blur-sm">
+              <span className="text-xs font-medium text-white">Se déplace</span>
+            </div>
+          )}
+          {escort.incall && (
+            <div className="px-2 py-1 rounded-full bg-green-500/90 backdrop-blur-sm">
+              <span className="text-xs font-medium text-white">Reçoit</span>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Content */}
@@ -156,12 +201,40 @@ export default function EscortCard({ escort, onLike, isLiked = false }: EscortCa
           <h3 className="text-lg font-bold text-white truncate">
             {escort.stageName}
           </h3>
-          {escort.age && (
-            <span className="text-sm text-white/60 ml-2">
-              {escort.age} ans
-            </span>
-          )}
+          <div className="flex items-center gap-2">
+            {escort.age && (
+              <span className="text-sm text-white/60">
+                {escort.age} ans
+              </span>
+            )}
+            {escort.height && (
+              <span className="text-sm text-white/60">
+                {escort.height}cm
+              </span>
+            )}
+          </div>
         </div>
+
+        {/* Physical Characteristics */}
+        {(escort.bodyType || escort.hairColor || escort.eyeColor) && (
+          <div className="flex flex-wrap gap-1 mb-2">
+            {escort.bodyType && (
+              <span className="px-2 py-1 text-xs rounded-full bg-white/10 text-white/80">
+                {escort.bodyType}
+              </span>
+            )}
+            {escort.hairColor && (
+              <span className="px-2 py-1 text-xs rounded-full bg-white/10 text-white/80">
+                {escort.hairColor}
+              </span>
+            )}
+            {escort.eyeColor && (
+              <span className="px-2 py-1 text-xs rounded-full bg-white/10 text-white/80">
+                {escort.eyeColor}
+              </span>
+            )}
+          </div>
+        )}
 
         {/* Location */}
         {(escort.city || escort.canton) && (
@@ -211,10 +284,50 @@ export default function EscortCard({ escort, onLike, isLiked = false }: EscortCa
           </div>
         )}
 
-        {/* Updated Time */}
-        <div className="text-xs text-white/40">
-          {getTimeAgo(escort.updatedAt)}
+        {/* Quality & Stats */}
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            {escort.rating && escort.rating > 0 && (
+              <div className="flex items-center gap-1">
+                <Star size={12} className="text-yellow-400 fill-yellow-400" />
+                <span className="text-xs text-white/80">{escort.rating.toFixed(1)}</span>
+                {escort.reviewCount && escort.reviewCount > 0 && (
+                  <span className="text-xs text-white/60">({escort.reviewCount})</span>
+                )}
+              </div>
+            )}
+            {escort.likes && escort.likes > 0 && (
+              <div className="flex items-center gap-1">
+                <Heart size={12} className="text-red-400" />
+                <span className="text-xs text-white/80">{escort.likes}</span>
+              </div>
+            )}
+          </div>
+          <div className="text-xs text-white/40">
+            {getTimeAgo(escort.updatedAt)}
+          </div>
         </div>
+
+        {/* Premium Features */}
+        {(escort.hasPrivatePhotos || escort.hasPrivateVideos || escort.acceptsCards) && (
+          <div className="flex flex-wrap gap-1 mb-2">
+            {escort.hasPrivatePhotos && (
+              <span className="px-2 py-1 text-xs rounded-full bg-purple-500/20 text-purple-400">
+                Photos privées
+              </span>
+            )}
+            {escort.hasPrivateVideos && (
+              <span className="px-2 py-1 text-xs rounded-full bg-purple-500/20 text-purple-400">
+                Vidéos privées
+              </span>
+            )}
+            {escort.acceptsCards && (
+              <span className="px-2 py-1 text-xs rounded-full bg-green-500/20 text-green-400">
+                Accepte cartes
+              </span>
+            )}
+          </div>
+        )}
       </div>
     </div>
   )

@@ -17,6 +17,42 @@ export async function GET(request: NextRequest) {
     const languagesCSV = (searchParams.get('languages') || '').trim()
     const status = (searchParams.get('status') || '').trim().toUpperCase()
     const sort: SortKey = ((searchParams.get('sort') || 'recent') as SortKey)
+    
+    // Nouveaux filtres V2
+    const categoriesCSV = (searchParams.get('categories') || '').trim()
+    const ageMin = parseInt(searchParams.get('ageMin') || '18')
+    const ageMax = parseInt(searchParams.get('ageMax') || '65')
+    const heightMin = parseInt(searchParams.get('heightMin') || '150')
+    const heightMax = parseInt(searchParams.get('heightMax') || '180')
+    const bodyType = (searchParams.get('bodyType') || '').trim()
+    const hairColor = (searchParams.get('hairColor') || '').trim()
+    const eyeColor = (searchParams.get('eyeColor') || '').trim()
+    const ethnicity = (searchParams.get('ethnicity') || '').trim()
+    const breastSize = (searchParams.get('breastSize') || '').trim()
+    const hasTattoos = (searchParams.get('hasTattoos') || '').trim()
+    const serviceTypesCSV = (searchParams.get('serviceTypes') || '').trim()
+    const specialtiesCSV = (searchParams.get('specialties') || '').trim()
+    const experienceTypesCSV = (searchParams.get('experienceTypes') || '').trim()
+    const roleTypesCSV = (searchParams.get('roleTypes') || '').trim()
+    const budgetMin = parseInt(searchParams.get('budgetMin') || '0')
+    const budgetMax = parseInt(searchParams.get('budgetMax') || '2000')
+    const minDuration = (searchParams.get('minDuration') || '').trim()
+    const acceptsCards = searchParams.get('acceptsCards') === 'true'
+    const availabilityCSV = (searchParams.get('availability') || '').trim()
+    const timeSlotsCSV = (searchParams.get('timeSlots') || '').trim()
+    const weekendAvailable = searchParams.get('weekendAvailable') === 'true'
+    const verified = searchParams.get('verified') === 'true'
+    const minRating = parseFloat(searchParams.get('minRating') || '0')
+    const minReviews = parseInt(searchParams.get('minReviews') || '0')
+    const premiumContent = searchParams.get('premiumContent') === 'true'
+    const liveCam = searchParams.get('liveCam') === 'true'
+    const premiumMessaging = searchParams.get('premiumMessaging') === 'true'
+    const privatePhotos = searchParams.get('privatePhotos') === 'true'
+    const exclusiveVideos = searchParams.get('exclusiveVideos') === 'true'
+    const availableNow = searchParams.get('availableNow') === 'true'
+    const outcall = searchParams.get('outcall') === 'true'
+    const incall = searchParams.get('incall') === 'true'
+    const radius = parseInt(searchParams.get('radius') || '10')
 
     const where: any = {}
     // Status filter
@@ -54,6 +90,66 @@ export async function GET(request: NextRequest) {
       if (terms.length) where.languages = { contains: terms[0], mode: 'insensitive' as const }
     }
 
+    // Nouveaux filtres V2
+    // Âge (calculé depuis dateOfBirth)
+    if (ageMin > 18 || ageMax < 65) {
+      const currentYear = new Date().getFullYear()
+      const minBirthYear = currentYear - ageMax
+      const maxBirthYear = currentYear - ageMin
+      where.dateOfBirth = {
+        gte: new Date(`${minBirthYear}-01-01`),
+        lte: new Date(`${maxBirthYear}-12-31`)
+      }
+    }
+
+    // Taille
+    if (heightMin > 150 || heightMax < 180) {
+      where.height = {
+        gte: heightMin,
+        lte: heightMax
+      }
+    }
+
+    // Caractéristiques physiques
+    if (bodyType) where.bodyType = { contains: bodyType, mode: 'insensitive' as const }
+    if (hairColor) where.hairColor = { contains: hairColor, mode: 'insensitive' as const }
+    if (eyeColor) where.eyeColor = { contains: eyeColor, mode: 'insensitive' as const }
+    if (ethnicity) where.ethnicity = { contains: ethnicity, mode: 'insensitive' as const }
+    if (breastSize) where.bustSize = { contains: breastSize, mode: 'insensitive' as const }
+    if (hasTattoos) where.tattoos = { contains: hasTattoos, mode: 'insensitive' as const }
+
+    // Tarifs
+    if (budgetMin > 0 || budgetMax < 2000) {
+      where.rate1H = {
+        gte: budgetMin,
+        lte: budgetMax
+      }
+    }
+
+    // Disponibilité
+    if (availableNow) where.availableNow = true
+    if (outcall) where.outcall = true
+    if (incall) where.incall = true
+    if (weekendAvailable) where.weekendAvailable = true
+
+    // Qualité
+    if (verified) where.isVerifiedBadge = true
+    if (minRating > 0) where.rating = { gte: minRating }
+    if (minReviews > 0) where.reviewCount = { gte: minReviews }
+
+    // Premium
+    if (premiumContent) where.hasPrivatePhotos = true
+    if (liveCam) where.hasWebcamLive = true
+    if (premiumMessaging) where.messagingPreference = { not: 'APP_ONLY' }
+    if (privatePhotos) where.hasPrivatePhotos = true
+    if (exclusiveVideos) where.hasPrivateVideos = true
+
+    // Durée minimale
+    if (minDuration) where.minimumDuration = { contains: minDuration, mode: 'insensitive' as const }
+
+    // Accepte les cartes (champ non disponible dans le schéma actuel)
+    // if (acceptsCards) where.acceptsCards = true
+
     const orderBy = sort === 'recent' 
       ? { updatedAt: 'desc' as const }
       : { updatedAt: 'desc' as const } // relevance non implémenté pour v1
@@ -72,10 +168,35 @@ export async function GET(request: NextRequest) {
         languages: true,
         services: true,
         rate1H: true,
+        rate2H: true,
+        rateOvernight: true,
         latitude: true,
         longitude: true,
         updatedAt: true,
         dateOfBirth: true,
+        height: true,
+        bodyType: true,
+        hairColor: true,
+        eyeColor: true,
+        ethnicity: true,
+        bustSize: true,
+        tattoos: true,
+        piercings: true,
+        availableNow: true,
+        outcall: true,
+        incall: true,
+        weekendAvailable: true,
+        hasPrivatePhotos: true,
+        hasPrivateVideos: true,
+        hasWebcamLive: true,
+        messagingPreference: true,
+        minimumDuration: true,
+        // acceptsCards: true, // Champ non disponible dans le schéma actuel
+        rating: true,
+        reviewCount: true,
+        views: true,
+        likes: true,
+        status: true,
       },
       orderBy,
       take: limit,
@@ -96,15 +217,41 @@ export async function GET(request: NextRequest) {
         city: e.city || undefined,
         canton: e.canton || undefined,
         isVerifiedBadge: !!e.isVerifiedBadge,
-        isActive: undefined,
+        isActive: e.status === 'ACTIVE',
         profilePhoto: e.profilePhoto || undefined,
         heroMedia: hero,
         languages: langs,
         services: servs,
         rate1H: e.rate1H || undefined,
+        rate2H: e.rate2H || undefined,
+        rateOvernight: e.rateOvernight || undefined,
         latitude: e.latitude || undefined,
         longitude: e.longitude || undefined,
         updatedAt: e.updatedAt as any,
+        // Nouveaux champs V2
+        height: e.height || undefined,
+        bodyType: e.bodyType || undefined,
+        hairColor: e.hairColor || undefined,
+        eyeColor: e.eyeColor || undefined,
+        ethnicity: e.ethnicity || undefined,
+        bustSize: e.bustSize || undefined,
+        tattoos: e.tattoos || undefined,
+        piercings: e.piercings || undefined,
+        availableNow: e.availableNow || false,
+        outcall: e.outcall || false,
+        incall: e.incall || false,
+        weekendAvailable: e.weekendAvailable || false,
+        hasPrivatePhotos: e.hasPrivatePhotos || false,
+        hasPrivateVideos: e.hasPrivateVideos || false,
+        hasWebcamLive: e.hasWebcamLive || false,
+        messagingPreference: e.messagingPreference || 'APP_ONLY',
+        minimumDuration: e.minimumDuration || undefined,
+        acceptsCards: false, // Champ non disponible dans le schéma actuel
+        rating: e.rating || 0,
+        reviewCount: e.reviewCount || 0,
+        views: e.views || 0,
+        likes: e.likes || 0,
+        status: e.status || 'PENDING',
       }
     })
 

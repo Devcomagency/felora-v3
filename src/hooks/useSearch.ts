@@ -11,6 +11,38 @@ interface SearchFilters {
   languages: string[]
   status: string
   sort: string
+  // Nouveaux filtres V2
+  categories?: string[]
+  ageRange?: [number, number]
+  heightRange?: [number, number]
+  bodyType?: string
+  hairColor?: string
+  eyeColor?: string
+  ethnicity?: string
+  breastSize?: string
+  hasTattoos?: string
+  serviceTypes?: string[]
+  specialties?: string[]
+  experienceTypes?: string[]
+  roleTypes?: string[]
+  budgetRange?: [number, number]
+  minDuration?: string
+  acceptsCards?: boolean
+  availability?: string[]
+  timeSlots?: string[]
+  weekendAvailable?: boolean
+  verified?: boolean
+  minRating?: number
+  minReviews?: number
+  premiumContent?: boolean
+  liveCam?: boolean
+  premiumMessaging?: boolean
+  privatePhotos?: boolean
+  exclusiveVideos?: boolean
+  availableNow?: boolean
+  outcall?: boolean
+  incall?: boolean
+  radius?: number
 }
 
 interface Escort {
@@ -26,9 +58,35 @@ interface Escort {
   languages?: string[]
   services?: string[]
   rate1H?: number
+  rate2H?: number
+  rateOvernight?: number
   latitude?: number
   longitude?: number
   updatedAt: string
+  // Nouveaux champs V2
+  height?: number
+  bodyType?: string
+  hairColor?: string
+  eyeColor?: string
+  ethnicity?: string
+  bustSize?: string
+  tattoos?: string
+  piercings?: string
+  availableNow?: boolean
+  outcall?: boolean
+  incall?: boolean
+  weekendAvailable?: boolean
+  hasPrivatePhotos?: boolean
+  hasPrivateVideos?: boolean
+  hasWebcamLive?: boolean
+  messagingPreference?: string
+  minimumDuration?: string
+  acceptsCards?: boolean
+  rating?: number
+  reviewCount?: number
+  views?: number
+  likes?: number
+  status?: string
 }
 
 interface SearchResponse {
@@ -107,6 +165,7 @@ export function useSearch(): UseSearchReturn {
   const buildQueryString = useCallback((filters: SearchFilters, cursor?: string) => {
     const params = new URLSearchParams()
     
+    // Filtres de base
     if (filters.q) params.set('q', filters.q)
     if (filters.city) params.set('city', filters.city)
     if (filters.canton) params.set('canton', filters.canton)
@@ -114,8 +173,50 @@ export function useSearch(): UseSearchReturn {
     if (filters.languages.length > 0) params.set('languages', filters.languages.join(','))
     if (filters.status) params.set('status', filters.status)
     if (filters.sort !== 'recent') params.set('sort', filters.sort)
-    if (cursor) params.set('cursor', cursor)
     
+    // Nouveaux filtres V2
+    if (filters.categories && filters.categories.length > 0) params.set('categories', filters.categories.join(','))
+    if (filters.ageRange) {
+      params.set('ageMin', filters.ageRange[0].toString())
+      params.set('ageMax', filters.ageRange[1].toString())
+    }
+    if (filters.heightRange) {
+      params.set('heightMin', filters.heightRange[0].toString())
+      params.set('heightMax', filters.heightRange[1].toString())
+    }
+    if (filters.bodyType) params.set('bodyType', filters.bodyType)
+    if (filters.hairColor) params.set('hairColor', filters.hairColor)
+    if (filters.eyeColor) params.set('eyeColor', filters.eyeColor)
+    if (filters.ethnicity) params.set('ethnicity', filters.ethnicity)
+    if (filters.breastSize) params.set('breastSize', filters.breastSize)
+    if (filters.hasTattoos) params.set('hasTattoos', filters.hasTattoos)
+    if (filters.serviceTypes && filters.serviceTypes.length > 0) params.set('serviceTypes', filters.serviceTypes.join(','))
+    if (filters.specialties && filters.specialties.length > 0) params.set('specialties', filters.specialties.join(','))
+    if (filters.experienceTypes && filters.experienceTypes.length > 0) params.set('experienceTypes', filters.experienceTypes.join(','))
+    if (filters.roleTypes && filters.roleTypes.length > 0) params.set('roleTypes', filters.roleTypes.join(','))
+    if (filters.budgetRange) {
+      params.set('budgetMin', filters.budgetRange[0].toString())
+      params.set('budgetMax', filters.budgetRange[1].toString())
+    }
+    if (filters.minDuration) params.set('minDuration', filters.minDuration)
+    if (filters.acceptsCards) params.set('acceptsCards', 'true')
+    if (filters.availability && filters.availability.length > 0) params.set('availability', filters.availability.join(','))
+    if (filters.timeSlots && filters.timeSlots.length > 0) params.set('timeSlots', filters.timeSlots.join(','))
+    if (filters.weekendAvailable) params.set('weekendAvailable', 'true')
+    if (filters.verified) params.set('verified', 'true')
+    if (filters.minRating) params.set('minRating', filters.minRating.toString())
+    if (filters.minReviews) params.set('minReviews', filters.minReviews.toString())
+    if (filters.premiumContent) params.set('premiumContent', 'true')
+    if (filters.liveCam) params.set('liveCam', 'true')
+    if (filters.premiumMessaging) params.set('premiumMessaging', 'true')
+    if (filters.privatePhotos) params.set('privatePhotos', 'true')
+    if (filters.exclusiveVideos) params.set('exclusiveVideos', 'true')
+    if (filters.availableNow) params.set('availableNow', 'true')
+    if (filters.outcall) params.set('outcall', 'true')
+    if (filters.incall) params.set('incall', 'true')
+    if (filters.radius) params.set('radius', filters.radius.toString())
+    
+    if (cursor) params.set('cursor', cursor)
     params.set('limit', '20')
     
     return params.toString()
