@@ -1,15 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sendEmailResend, emailTemplates } from '@/lib/resend'
-import { rateLimit, getClientIp } from '@/lib/rateLimit'
 import { prisma } from '@/lib/prisma'
+import { createHash } from 'crypto'
 
 export async function POST(request: NextRequest) {
   try {
     console.log('[AUTH] Send verification attempt started')
     
     // Rate limit per IP
-    const ip = getClientIp(request)
-    const rl = rateLimit(`auth-verify:${ip}`, 60_000, 3)
+    const { rateLimit, rateKey } = await import('@/lib/rate-limit')
+    const key = rateKey(request as any, 'auth-verify')
+    const rl = rateLimit({ key, limit: 3, windowMs: 60_000 })
     if (!rl.ok) {
       return NextResponse.json({ error: 'too_many_requests' }, { status: 429 })
     }
@@ -23,21 +24,22 @@ export async function POST(request: NextRequest) {
 
     // Générer un code à 6 chiffres
     const code = Math.floor(100000 + Math.random() * 900000).toString()
-    
+    const codeHash = createHash('sha256').update(code).digest('hex')
+
     // Stocker le code en base de données avec expiration (5 minutes)
     const expiresAt = new Date(Date.now() + (5 * 60 * 1000)) // 5 minutes
-    
+
     await prisma.emailVerification.upsert({
       where: { email },
-      update: { 
-        code, 
+      update: {
+        codeHash,
         expiresAt,
         createdAt: new Date()
       },
-      create: { 
-        email, 
-        code, 
-        expiresAt 
+      create: {
+        email,
+        codeHash,
+        expiresAt
       }
     })
 

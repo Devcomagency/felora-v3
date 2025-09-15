@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { createHash } from 'crypto'
 
 export async function POST(request: NextRequest) {
   try {
@@ -20,7 +21,7 @@ export async function POST(request: NextRequest) {
     // Log de débogage
     console.log(`Vérification pour ${email}:`)
     console.log(`Code reçu: ${code}`)
-    console.log(`Données stockées:`, storedData)
+    console.log(`Données stockées:`, { ...storedData, codeHash: 'HIDDEN' })
 
     if (!storedData) {
       return NextResponse.json(
@@ -39,8 +40,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Vérifier le code
-    if (storedData.code !== code) {
+    // Vérifier le code en comparant les hashs
+    const codeHash = createHash('sha256').update(code).digest('hex')
+    if (storedData.codeHash !== codeHash) {
       return NextResponse.json(
         { error: 'Code incorrect' },
         { status: 400 }
