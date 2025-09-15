@@ -274,7 +274,7 @@ export function useSearch(): UseSearchReturn {
     }
 
     debounceTimeoutRef.current = setTimeout(() => {
-      setFiltersState(newFilters)
+      console.log('[useSearch] Debounced search triggered:', newFilters)
       updateURL(newFilters)
       fetchEscorts(newFilters, undefined, false)
     }, 300)
@@ -282,6 +282,7 @@ export function useSearch(): UseSearchReturn {
 
   // Set filters with debounce
   const setFilters = useCallback((newFilters: SearchFilters) => {
+    console.log('[useSearch] Setting filters:', newFilters)
     setFiltersState(newFilters)
     debouncedSearch(newFilters)
   }, [debouncedSearch])
