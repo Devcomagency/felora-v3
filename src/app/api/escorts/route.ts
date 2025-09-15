@@ -19,6 +19,7 @@ export async function GET(request: NextRequest) {
     const sort: SortKey = ((searchParams.get('sort') || 'recent') as SortKey)
 
     // Nouveaux filtres V2
+    const categoriesCSV = (searchParams.get('categories') || '').trim()
     const ageMin = parseInt(searchParams.get('ageMin') || '18')
     const ageMax = parseInt(searchParams.get('ageMax') || '65')
     const heightMin = parseInt(searchParams.get('heightMin') || '150')
@@ -45,12 +46,14 @@ export async function GET(request: NextRequest) {
 
     const where: any = {}
 
-    // Status filter - plus permissif pour voir tous les profils
-    if (status === 'ACTIVE' || status === 'PAUSED' || status === 'VERIFIED') {
+    // Status filter - très permissif pour voir tous les profils
+    if (status === 'ACTIVE' || status === 'PAUSED' || status === 'VERIFIED' || status === 'PENDING') {
       where.status = status
     } else {
-      // Par défaut: tous les profils sauf BANNED
-      where.status = { not: 'BANNED' }
+      // Par défaut: tous les profils (même PENDING), sauf BANNED
+      where.status = {
+        in: ['ACTIVE', 'VERIFIED', 'PENDING', 'PAUSED']
+      }
     }
 
     // Filtres de localisation avec exact match
@@ -66,6 +69,41 @@ export async function GET(request: NextRequest) {
         ],
       }
       where.AND = where.AND ? [...where.AND, textFilter] : [textFilter]
+    }
+
+    // Filtre Catégories (nouveau)
+    if (categoriesCSV) {
+      const categories = categoriesCSV.split(',').map(s => s.trim()).filter(Boolean)
+      if (categories.length > 0) {
+        const categoryFilter = {
+          OR: categories.map(cat => {
+            // Mapping des catégories vers les champs DB appropriés
+            switch (cat.toLowerCase()) {
+              case 'escorte':
+                return { services: { contains: 'escort', mode: 'insensitive' as const } }
+              case 'salon':
+                return { services: { contains: 'salon', mode: 'insensitive' as const } }
+              case 'massage':
+                return { services: { contains: 'massage', mode: 'insensitive' as const } }
+              case 'vip':
+                return { isVerifiedBadge: true }
+              case 'bdsm':
+                return { services: { contains: 'bdsm', mode: 'insensitive' as const } }
+              case 'médias privés':
+              case 'medias prives':
+                return {
+                  OR: [
+                    { hasPrivatePhotos: true },
+                    { hasPrivateVideos: true }
+                  ]
+                }
+              default:
+                return { services: { contains: cat, mode: 'insensitive' as const } }
+            }
+          })
+        }
+        where.AND = where.AND ? [...where.AND, categoryFilter] : [categoryFilter]
+      }
     }
 
     // Services et langues
