@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, Suspense } from 'react'
-import { Menu, Search, Filter, MapPin, RefreshCw } from 'lucide-react'
+import { Search, Filter, MapPin, RefreshCw } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { useSearch } from '@/hooks/useSearch'
@@ -109,15 +109,6 @@ function SearchContent() {
         fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif'
       }}
     >
-      {/* Menu Button */}
-      <button
-        onClick={() => { try { window.dispatchEvent(new CustomEvent('felora:menu:toggle')) } catch {} }}
-        className="fixed top-4 left-4 z-[1001] w-10 h-10 flex items-center justify-center rounded-xl bg-black/60 backdrop-blur-sm border border-white/10 text-white hover:bg-black/70 hover:border-white/20"
-        aria-label="Ouvrir le menu"
-        title="Menu"
-      >
-        <Menu size={18} />
-      </button>
 
       {/* Header */}
       <div 
