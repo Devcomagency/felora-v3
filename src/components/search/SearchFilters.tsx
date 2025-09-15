@@ -181,12 +181,44 @@ export default function SearchFilters({ filters, onFiltersChange, onClose, isOpe
   const applyFilters = () => {
     const newFilters = {
       ...filters,
+      // Filtres de base
       city: selectedCity,
       canton: selectedCanton,
       services: services,
       languages: languages,
       status: verified ? 'VERIFIED' : '',
-      sort: 'recent'
+      sort: 'recent',
+      categories: selectedCategories,
+      
+      // Filtres V2 - Tous les filtres disponibles
+      availableNow,
+      outcall,
+      incall,
+      weekendAvailable,
+      ageRange,
+      heightRange,
+      bodyType,
+      hairColor,
+      eyeColor,
+      ethnicity,
+      breastSize,
+      hasTattoos,
+      serviceTypes,
+      specialties,
+      experienceTypes,
+      roleTypes,
+      budgetRange,
+      minDuration,
+      acceptsCards,
+      availability,
+      timeSlots,
+      minRating,
+      minReviews,
+      premiumContent,
+      liveCam,
+      premiumMessaging,
+      privatePhotos,
+      exclusiveVideos
     }
     onFiltersChange(newFilters)
     onClose()
