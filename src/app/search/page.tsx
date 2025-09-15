@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from 'react'
+import React, { useState, Suspense } from 'react'
 import { Menu, Search, Filter, MapPin, RefreshCw } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
@@ -44,11 +44,12 @@ function EscortCardSkeleton() {
   )
 }
 
-export default function SearchPage() {
+// Component that uses useSearchParams (needs to be wrapped with Suspense)
+function SearchContent() {
   const router = useRouter()
   const { data: session, status } = useSession()
   const isAuthenticated = status === "authenticated"
-  
+
   // Use the search hook
   const {
     escorts,
@@ -61,7 +62,7 @@ export default function SearchPage() {
     loadMore,
     refresh
   } = useSearch()
-  
+
   const [showFilters, setShowFilters] = useState(false)
   const [likedEscorts, setLikedEscorts] = useState<Set<string>>(new Set())
 
@@ -313,5 +314,32 @@ export default function SearchPage() {
         isOpen={showFilters}
       />
     </div>
+  )
+}
+
+// Loading fallback component
+function SearchLoading() {
+  return (
+    <div
+      className="min-h-screen flex items-center justify-center"
+      style={{
+        background: '#000000',
+        color: '#ffffff'
+      }}
+    >
+      <div className="flex flex-col items-center gap-4">
+        <div className="w-12 h-12 border-4 border-white/20 border-t-purple-500 rounded-full animate-spin"></div>
+        <p className="text-white/70">Chargement de la recherche...</p>
+      </div>
+    </div>
+  )
+}
+
+// Main component with Suspense boundary
+export default function SearchPage() {
+  return (
+    <Suspense fallback={<SearchLoading />}>
+      <SearchContent />
+    </Suspense>
   )
 }
