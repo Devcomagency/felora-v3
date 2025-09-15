@@ -69,7 +69,16 @@ export async function GET(request: NextRequest) {
     if (canton) where.canton = { equals: canton, mode: 'insensitive' as const }
     
     // Debug logging
-    console.log('[API] Filter params:', { city, canton, q, status })
+    console.log('[API] All filter params:', {
+      q, city, canton, status, servicesCSV, languagesCSV,
+      categoriesCSV, ageMin, ageMax, heightMin, heightMax,
+      bodyType, hairColor, eyeColor, ethnicity, breastSize, hasTattoos,
+      serviceTypesCSV, specialtiesCSV, experienceTypesCSV, roleTypesCSV,
+      budgetMin, budgetMax, minDuration, acceptsCards, availabilityCSV,
+      timeSlotsCSV, weekendAvailable, verified, minRating, minReviews,
+      premiumContent, liveCam, premiumMessaging, privatePhotos,
+      exclusiveVideos, availableNow, outcall, incall
+    })
     console.log('[API] Where clause:', JSON.stringify(where, null, 2))
     
     // q: stageName + description
@@ -115,12 +124,30 @@ export async function GET(request: NextRequest) {
     }
 
     // Caractéristiques physiques
-    if (bodyType) where.bodyType = { contains: bodyType, mode: 'insensitive' as const }
-    if (hairColor) where.hairColor = { contains: hairColor, mode: 'insensitive' as const }
-    if (eyeColor) where.eyeColor = { contains: eyeColor, mode: 'insensitive' as const }
-    if (ethnicity) where.ethnicity = { contains: ethnicity, mode: 'insensitive' as const }
-    if (breastSize) where.bustSize = { contains: breastSize, mode: 'insensitive' as const }
-    if (hasTattoos) where.tattoos = { contains: hasTattoos, mode: 'insensitive' as const }
+    if (bodyType) {
+      console.log('[API] Adding bodyType filter:', bodyType)
+      where.bodyType = { contains: bodyType, mode: 'insensitive' as const }
+    }
+    if (hairColor) {
+      console.log('[API] Adding hairColor filter:', hairColor)
+      where.hairColor = { contains: hairColor, mode: 'insensitive' as const }
+    }
+    if (eyeColor) {
+      console.log('[API] Adding eyeColor filter:', eyeColor)
+      where.eyeColor = { contains: eyeColor, mode: 'insensitive' as const }
+    }
+    if (ethnicity) {
+      console.log('[API] Adding ethnicity filter:', ethnicity)
+      where.ethnicity = { contains: ethnicity, mode: 'insensitive' as const }
+    }
+    if (breastSize) {
+      console.log('[API] Adding breastSize filter:', breastSize)
+      where.bustSize = { contains: breastSize, mode: 'insensitive' as const }
+    }
+    if (hasTattoos) {
+      console.log('[API] Adding hasTattoos filter:', hasTattoos)
+      where.tattoos = { contains: hasTattoos, mode: 'insensitive' as const }
+    }
 
     // Tarifs
     if (budgetMin > 0 || budgetMax < 2000) {
@@ -131,10 +158,22 @@ export async function GET(request: NextRequest) {
     }
 
     // Disponibilité
-    if (availableNow) where.availableNow = true
-    if (outcall) where.outcall = true
-    if (incall) where.incall = true
-    if (weekendAvailable) where.weekendAvailable = true
+    if (availableNow) {
+      console.log('[API] Adding availableNow filter')
+      where.availableNow = true
+    }
+    if (outcall) {
+      console.log('[API] Adding outcall filter')
+      where.outcall = true
+    }
+    if (incall) {
+      console.log('[API] Adding incall filter')
+      where.incall = true
+    }
+    if (weekendAvailable) {
+      console.log('[API] Adding weekendAvailable filter')
+      where.weekendAvailable = true
+    }
 
     // Qualité
     if (verified) where.isVerifiedBadge = true

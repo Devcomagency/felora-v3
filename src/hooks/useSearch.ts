@@ -237,6 +237,9 @@ export function useSearch(): UseSearchReturn {
       setError(null)
 
       const queryString = buildQueryString(filters, cursor)
+      console.log('[useSearch] Fetching escorts with query:', queryString)
+      console.log('[useSearch] Full URL:', `/api/escorts?${queryString}`)
+      
       const response = await fetch(`/api/escorts?${queryString}`, {
         signal: controller.signal
       })
@@ -246,6 +249,7 @@ export function useSearch(): UseSearchReturn {
       }
 
       const data: SearchResponse = await response.json()
+      console.log('[useSearch] API response:', data)
 
       if (append) {
         setEscorts(prev => [...prev, ...data.items])
@@ -259,7 +263,12 @@ export function useSearch(): UseSearchReturn {
 
     } catch (err: any) {
       if (err.name !== 'AbortError') {
-        console.error('Erreur lors du chargement des escortes:', err)
+        console.error('[useSearch] Erreur lors du chargement des escortes:', err)
+        console.error('[useSearch] Error details:', {
+          name: err.name,
+          message: err.message,
+          stack: err.stack
+        })
         setError(err.message || 'Erreur lors du chargement')
       }
     } finally {
