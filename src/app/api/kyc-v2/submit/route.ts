@@ -83,7 +83,7 @@ export async function POST(req: NextRequest) {
     // Security: ensure the target user exists and is ESCORT or in signup flow
     let user = await prisma.user.findUnique({ where: { id: uid }, select: { id: true, role: true } })
     
-    const { role: rawRole, ...fileKeys } = body || {}
+    const { role: rawRole, ...data } = body || {}
     const role = (rawRole as string) || 'ESCORT'
 
     // Si l'utilisateur n'existe pas, créer un utilisateur temporaire
@@ -109,12 +109,31 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'user_creation_failed' }, { status: 500 })
       }
     }
-    
+
     if (!user) return NextResponse.json({ error: 'user_not_found' }, { status: 404 })
     if (user.role !== 'ESCORT' as any) {
       // Allow only escort role to submit KYC
       return NextResponse.json({ error: 'forbidden' }, { status: 403 })
     }
+
+    // Support des deux formats: URLs (mobile) et Keys (desktop)
+    const extractKey = (urlOrKey?: string) => {
+      if (!urlOrKey) return undefined
+      // Si c'est déjà une clé (pas d'URL), la retourner
+      if (!urlOrKey.includes('/')) return urlOrKey
+      // Sinon, extraire la clé de l'URL
+      return urlOrKey.split('/').pop() || undefined
+    }
+
+    // Normaliser les données reçues (support des deux formats)
+    const fileKeys = {
+      docFrontKey: data.docFrontKey || extractKey(data.docFrontUrl),
+      docBackKey: data.docBackKey || extractKey(data.docBackUrl),
+      selfieSignKey: data.selfieSignKey || extractKey(data.selfieSignUrl),
+      livenessKey: data.livenessKey || extractKey(data.livenessVideoUrl)
+    }
+
+    console.log('Normalized fileKeys:', fileKeys, 'from data:', Object.keys(data))
 
     // Reconstruire les URLs à partir des clés
     const buildUrl = (key?: string) => {
@@ -126,11 +145,11 @@ export async function POST(req: NextRequest) {
     }
 
     // Validate required documents
-    const required = ['docFrontKey','docBackKey','selfieSignKey','livenessKey']
-    const missing = required.filter((k)=> !fileKeys?.[k])
+    const required = ['docFrontKey','docBackKey','selfieSignKey','livenessKey'] as const
+    const missing = required.filter((k)=> !fileKeys[k])
     if (missing.length) {
-      console.log('Missing document keys:', missing, 'Received keys:', Object.keys(fileKeys || {}))
-      return NextResponse.json({ error: 'missing_documents', missing }, { status: 400 })
+      console.log('Missing document keys:', missing, 'Received:', Object.keys(data), 'Normalized:', fileKeys)
+      return NextResponse.json({ error: 'missing_documents', missing, debug: { received: Object.keys(data), normalized: fileKeys } }, { status: 400 })
     }
 
     // Reconstruire les URLs pour la base de données

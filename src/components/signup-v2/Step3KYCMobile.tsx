@@ -47,9 +47,19 @@ export default function Step3KYCMobile({ userId, role='ESCORT', onSubmitted }:{ 
       }
       
       console.log('KYC submit response:', r.status, d)
-      
-      if (!r.ok) {
-        throw new Error(d?.error || `Erreur serveur ${r.status}`)
+
+      if (!r.ok || !d?.ok) {
+        console.error('KYC submit failed:', { status: r.status, response: d })
+        if (d?.debug) {
+          console.error('Debug info:', d.debug)
+        }
+
+        // Message d'erreur spécifique pour 413
+        if (r.status === 413) {
+          throw new Error('Fichiers trop volumineux. Veuillez compresser vos images/vidéos (max 3MB chacun).')
+        }
+
+        throw new Error(d?.error || `Erreur ${r.status}`)
       }
       
       setShowSuccess(true)
@@ -148,10 +158,10 @@ export default function Step3KYCMobile({ userId, role='ESCORT', onSubmitted }:{ 
 
       {/* Documents upload */}
       <div className="space-y-6">
-        {documentTypes.map((doc, index) => {
+        {documentTypes.map((doc) => {
           const Icon = doc.icon
           const isUploaded = !!docs[doc.key]
-          
+
           return (
             <div key={doc.key} className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
               <div className="flex items-start gap-4 mb-4">
@@ -163,7 +173,7 @@ export default function Step3KYCMobile({ userId, role='ESCORT', onSubmitted }:{ 
                 <div className="flex-1">
                   <h3 className="text-white text-lg font-semibold mb-1">{doc.label}</h3>
                   <p className="text-white/60 text-sm mb-3">{doc.description}</p>
-                  
+
                   {isUploaded && (
                     <div className="flex items-center gap-2 text-green-400 text-sm">
                       <CheckCircle size={16} />
@@ -174,6 +184,7 @@ export default function Step3KYCMobile({ userId, role='ESCORT', onSubmitted }:{ 
               </div>
 
               <UploadDrop
+                label={doc.label}
                 onUploaded={(url) => setDocs(prev => ({ ...prev, [doc.key]: url }))}
                 accept={doc.key.includes('Video') ? 'video/*' : 'image/*'}
                 exampleImage={doc.example}
