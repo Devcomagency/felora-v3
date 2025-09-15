@@ -88,7 +88,8 @@ export async function GET(request: NextRequest) {
                 return {
                   OR: [
                     { services: { contains: 'massage', mode: 'insensitive' as const } },
-                    { services: { contains: 'masseuse', mode: 'insensitive' as const } }
+                    { services: { contains: 'masseuse', mode: 'insensitive' as const } },
+                    { services: { contains: 'therapeutique', mode: 'insensitive' as const } }
                   ]
                 }
               case 'vip':
