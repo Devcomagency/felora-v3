@@ -83,6 +83,9 @@ export async function POST(req: NextRequest) {
     // Security: ensure the target user exists and is ESCORT or in signup flow
     let user = await prisma.user.findUnique({ where: { id: uid }, select: { id: true, role: true } })
     
+    const { role: rawRole, ...fileKeys } = body || {}
+    const role = (rawRole as string) || 'ESCORT'
+
     // Si l'utilisateur n'existe pas, créer un utilisateur temporaire
     if (!user) {
       console.log('Creating temporary user for KYC:', { uid, role, hasSession: !!sessionUser })
@@ -112,9 +115,6 @@ export async function POST(req: NextRequest) {
       // Allow only escort role to submit KYC
       return NextResponse.json({ error: 'forbidden' }, { status: 403 })
     }
-
-    const { role: rawRole, ...fileKeys } = body || {}
-    const role = (rawRole as string) || 'ESCORT'
 
     // Reconstruire les URLs à partir des clés
     const buildUrl = (key?: string) => {

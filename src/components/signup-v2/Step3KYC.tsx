@@ -41,6 +41,8 @@ export default function Step3KYC({ userId, role='ESCORT', onSubmitted }:{ userId
         selfieSignKey: docs.selfieSignUrl?.split('/').pop() || '',
         livenessKey: docs.livenessVideoUrl?.split('/').pop() || ''
       }
+
+      console.log('Sending fileKeys:', fileKeys)
       
       const r = await fetch('/api/kyc-v2/submit', { 
         method:'POST', 
