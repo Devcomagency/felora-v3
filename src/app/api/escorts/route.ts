@@ -5,6 +5,17 @@ type SortKey = 'recent' | 'relevance'
 
 export async function GET(request: NextRequest) {
   try {
+    console.log('[API] Escorts endpoint called')
+    
+    // Version ultra-simple pour tester
+    return NextResponse.json({ 
+      items: [], 
+      nextCursor: undefined, 
+      total: 0,
+      message: 'API working - Prisma test needed'
+    })
+    
+    /* COMMENTED OUT FOR DEBUGGING
     const { searchParams } = new URL(request.url)
     const limit = Math.max(1, Math.min(30, parseInt(searchParams.get('limit') || '20')))
     const cursorRaw = searchParams.get('cursor') // on utilise un offset numérique pour la v1
@@ -17,6 +28,9 @@ export async function GET(request: NextRequest) {
     const languagesCSV = (searchParams.get('languages') || '').trim()
     const status = (searchParams.get('status') || '').trim().toUpperCase()
     const sort: SortKey = ((searchParams.get('sort') || 'recent') as SortKey)
+    
+    console.log('[API] Basic params:', { limit, offset, q, city, canton })
+    */
     
     // Nouveaux filtres V2
     const categoriesCSV = (searchParams.get('categories') || '').trim()
@@ -54,6 +68,12 @@ export async function GET(request: NextRequest) {
     const incall = searchParams.get('incall') === 'true'
     const radius = parseInt(searchParams.get('radius') || '10')
 
+    console.log('[API] Testing Prisma connection...')
+    
+    // Test simple de connexion Prisma
+    const testConnection = await prisma.escortProfile.count()
+    console.log('[API] Prisma connection OK, total profiles:', testConnection)
+    
     const where: any = {}
     // Status filter
     if (status === 'ACTIVE' || status === 'PAUSED') {
