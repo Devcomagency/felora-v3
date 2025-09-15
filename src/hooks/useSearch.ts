@@ -114,7 +114,8 @@ const DEFAULT_FILTERS: SearchFilters = {
   services: [],
   languages: [],
   status: '',
-  sort: 'recent'
+  sort: 'recent',
+  categories: []
 }
 
 export function useSearch(): UseSearchReturn {
@@ -140,7 +141,9 @@ export function useSearch(): UseSearchReturn {
       services: searchParams.get('services')?.split(',').filter(Boolean) || [],
       languages: searchParams.get('languages')?.split(',').filter(Boolean) || [],
       status: searchParams.get('status') || '',
-      sort: searchParams.get('sort') || 'recent'
+      sort: searchParams.get('sort') || 'recent',
+      // Ajouter categories depuis URL
+      categories: searchParams.get('categories')?.split(',').filter(Boolean) || []
     }
     setFiltersState(urlFilters)
   }, [searchParams])
@@ -148,7 +151,7 @@ export function useSearch(): UseSearchReturn {
   // Update URL when filters change
   const updateURL = useCallback((newFilters: SearchFilters) => {
     const params = new URLSearchParams()
-    
+
     if (newFilters.q) params.set('q', newFilters.q)
     if (newFilters.city) params.set('city', newFilters.city)
     if (newFilters.canton) params.set('canton', newFilters.canton)
@@ -156,6 +159,8 @@ export function useSearch(): UseSearchReturn {
     if (newFilters.languages.length > 0) params.set('languages', newFilters.languages.join(','))
     if (newFilters.status) params.set('status', newFilters.status)
     if (newFilters.sort !== 'recent') params.set('sort', newFilters.sort)
+    // Ajouter categories dans URL
+    if (newFilters.categories && newFilters.categories.length > 0) params.set('categories', newFilters.categories.join(','))
 
     const newURL = params.toString() ? `?${params.toString()}` : ''
     router.replace(`/search${newURL}`, { scroll: false })
