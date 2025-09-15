@@ -107,7 +107,11 @@ function EscortSignupContent(){
       )}
 
       {step === 2 && (
-        <Step2PlanMobile onSelect={()=>{ setStep(3); router.push('/profile-test-signup/escort?step=3') }} />
+        <Step2PlanMobile onSelect={(plan)=>{
+          console.log('Plan selected:', plan)
+          setStep(3);
+          router.push('/profile-test-signup/escort?step=3')
+        }} />
       )}
 
       {step === 3 && (
