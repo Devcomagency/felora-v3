@@ -28,8 +28,7 @@ export async function GET(
         services: true,
         rate1H: true,
         rate2H: true,
-        overnightRate: true,
-        currency: true,
+        rateOvernight: true,
         latitude: true,
         longitude: true,
         updatedAt: true,
@@ -90,8 +89,8 @@ export async function GET(
     const rates = {
       rate1H: escort.rate1H || undefined,
       rate2H: escort.rate2H || undefined,
-      overnight: escort.overnightRate || undefined,
-      currency: escort.currency || 'CHF'
+      overnight: escort.rateOvernight || undefined,
+      currency: 'CHF'
     }
 
     // Construire les stats (placeholder pour l'instant)

@@ -5,62 +5,246 @@ type SortKey = 'recent' | 'relevance'
 
 export async function GET(request: NextRequest) {
   try {
-    console.log('[API] Escorts endpoint called')
+    const { searchParams } = new URL(request.url)
+    const limit = Math.max(1, Math.min(30, parseInt(searchParams.get('limit') || '20')))
+    const cursorRaw = searchParams.get('cursor')
+    const offset = Math.max(0, parseInt(cursorRaw || '0'))
 
-    // Test connexion Prisma d'abord
-    console.log('[API] Testing Prisma connection...')
-    const totalProfiles = await prisma.escortProfile.count()
-    console.log('[API] Prisma connection OK, total profiles:', totalProfiles)
+    const q = (searchParams.get('q') || searchParams.get('search') || '').trim()
+    const city = (searchParams.get('city') || '').trim()
+    const canton = (searchParams.get('canton') || '').trim()
+    const servicesCSV = (searchParams.get('services') || '').trim()
+    const languagesCSV = (searchParams.get('languages') || '').trim()
+    const status = (searchParams.get('status') || '').trim().toUpperCase()
+    const sort: SortKey = ((searchParams.get('sort') || 'recent') as SortKey)
 
-    // Test simple : retourner les 5 premiers profils
-    console.log('[API] Fetching first 5 profiles...')
-    const profiles = await prisma.escortProfile.findMany({
-      take: 5,
+    // Nouveaux filtres V2
+    const ageMin = parseInt(searchParams.get('ageMin') || '18')
+    const ageMax = parseInt(searchParams.get('ageMax') || '65')
+    const heightMin = parseInt(searchParams.get('heightMin') || '150')
+    const heightMax = parseInt(searchParams.get('heightMax') || '180')
+    const bodyType = (searchParams.get('bodyType') || '').trim()
+    const hairColor = (searchParams.get('hairColor') || '').trim()
+    const eyeColor = (searchParams.get('eyeColor') || '').trim()
+    const ethnicity = (searchParams.get('ethnicity') || '').trim()
+    const breastSize = (searchParams.get('breastSize') || '').trim()
+    const budgetMin = parseInt(searchParams.get('budgetMin') || '0')
+    const budgetMax = parseInt(searchParams.get('budgetMax') || '2000')
+    const availableNow = searchParams.get('availableNow') === 'true'
+    const outcall = searchParams.get('outcall') === 'true'
+    const incall = searchParams.get('incall') === 'true'
+    const weekendAvailable = searchParams.get('weekendAvailable') === 'true'
+    const verified = searchParams.get('verified') === 'true'
+    const minRating = parseFloat(searchParams.get('minRating') || '0')
+    const minReviews = parseInt(searchParams.get('minReviews') || '0')
+    const premiumContent = searchParams.get('premiumContent') === 'true'
+    const liveCam = searchParams.get('liveCam') === 'true'
+    const premiumMessaging = searchParams.get('premiumMessaging') === 'true'
+    const privatePhotos = searchParams.get('privatePhotos') === 'true'
+    const exclusiveVideos = searchParams.get('exclusiveVideos') === 'true'
+
+    const where: any = {}
+
+    // Status filter - plus permissif pour voir tous les profils
+    if (status === 'ACTIVE' || status === 'PAUSED' || status === 'VERIFIED') {
+      where.status = status
+    } else {
+      // Par défaut: tous les profils sauf BANNED
+      where.status = { not: 'BANNED' }
+    }
+
+    // Filtres de localisation avec exact match
+    if (city) where.city = { equals: city, mode: 'insensitive' as const }
+    if (canton) where.canton = { equals: canton, mode: 'insensitive' as const }
+
+    // Recherche textuelle
+    if (q) {
+      const textFilter = {
+        OR: [
+          { stageName: { contains: q, mode: 'insensitive' as const } },
+          { description: { contains: q, mode: 'insensitive' as const } },
+        ],
+      }
+      where.AND = where.AND ? [...where.AND, textFilter] : [textFilter]
+    }
+
+    // Services et langues
+    if (servicesCSV) {
+      const terms = servicesCSV.split(',').map(s => s.trim()).filter(Boolean)
+      if (terms.length) where.services = { contains: terms[0], mode: 'insensitive' as const }
+    }
+    if (languagesCSV) {
+      const terms = languagesCSV.split(',').map(s => s.trim()).filter(Boolean)
+      if (terms.length) where.languages = { contains: terms[0], mode: 'insensitive' as const }
+    }
+
+    // Filtres physiques V2
+    if (ageMin > 18 || ageMax < 65) {
+      const currentYear = new Date().getFullYear()
+      const minBirthYear = currentYear - ageMax
+      const maxBirthYear = currentYear - ageMin
+      where.dateOfBirth = {
+        gte: new Date(`${minBirthYear}-01-01`),
+        lte: new Date(`${maxBirthYear}-12-31`)
+      }
+    }
+
+    if (heightMin > 150 || heightMax < 180) {
+      where.height = { gte: heightMin, lte: heightMax }
+    }
+
+    if (bodyType) where.bodyType = { contains: bodyType, mode: 'insensitive' as const }
+    if (hairColor) where.hairColor = { contains: hairColor, mode: 'insensitive' as const }
+    if (eyeColor) where.eyeColor = { contains: eyeColor, mode: 'insensitive' as const }
+    if (ethnicity) where.ethnicity = { contains: ethnicity, mode: 'insensitive' as const }
+    if (breastSize) where.bustSize = { contains: breastSize, mode: 'insensitive' as const }
+
+    // Tarifs
+    if (budgetMin > 0 || budgetMax < 2000) {
+      where.rate1H = { gte: budgetMin, lte: budgetMax }
+    }
+
+    // Disponibilité
+    if (availableNow) where.availableNow = true
+    if (outcall) where.outcall = true
+    if (incall) where.incall = true
+    if (weekendAvailable) where.weekendAvailable = true
+
+    // Qualité et premium
+    if (verified) where.isVerifiedBadge = true
+    if (minRating > 0) where.rating = { gte: minRating }
+    if (minReviews > 0) where.reviewCount = { gte: minReviews }
+    if (premiumContent) where.hasPrivatePhotos = true
+    if (liveCam) where.hasWebcamLive = true
+    if (premiumMessaging) where.messagingPreference = { not: 'APP_ONLY' }
+    if (privatePhotos) where.hasPrivatePhotos = true
+    if (exclusiveVideos) where.hasPrivateVideos = true
+
+    const orderBy = sort === 'recent'
+      ? { updatedAt: 'desc' as const }
+      : { updatedAt: 'desc' as const }
+
+    const rows = await prisma.escortProfile.findMany({
+      where,
       select: {
         id: true,
         stageName: true,
+        description: true,
         city: true,
-        status: true,
+        canton: true,
+        isVerifiedBadge: true,
         hasProfilePhoto: true,
-        profilePhoto: true
+        profilePhoto: true,
+        languages: true,
+        services: true,
+        rate1H: true,
+        rate2H: true,
+        rateOvernight: true,
+        latitude: true,
+        longitude: true,
+        updatedAt: true,
+        dateOfBirth: true,
+        height: true,
+        bodyType: true,
+        hairColor: true,
+        eyeColor: true,
+        ethnicity: true,
+        bustSize: true,
+        tattoos: true,
+        piercings: true,
+        availableNow: true,
+        outcall: true,
+        incall: true,
+        weekendAvailable: true,
+        hasPrivatePhotos: true,
+        hasPrivateVideos: true,
+        hasWebcamLive: true,
+        messagingPreference: true,
+        minimumDuration: true,
+        rating: true,
+        reviewCount: true,
+        views: true,
+        likes: true,
+        status: true,
       },
-      orderBy: { updatedAt: 'desc' }
+      orderBy,
+      take: limit,
+      skip: offset,
     })
 
-    console.log('[API] Profiles found:', profiles.map(p => ({
-      id: p.id,
-      stageName: p.stageName,
-      city: p.city,
-      status: p.status
-    })))
+    const items = rows.map((e) => {
+      const langs = (() => {
+        try {
+          const L = JSON.parse(String(e.languages||'[]'))
+          return Array.isArray(L) ? L : []
+        } catch { return [] }
+      })()
 
-    // Format simple pour retour
-    const items = profiles.map(p => ({
-      id: p.id,
-      stageName: p.stageName || '',
-      city: p.city || undefined,
-      isVerifiedBadge: false,
-      isActive: p.status === 'ACTIVE',
-      profilePhoto: p.profilePhoto || undefined,
-      heroMedia: p.profilePhoto ? { type: 'IMAGE' as const, url: p.profilePhoto } : undefined,
-      languages: [],
-      services: [],
-      updatedAt: new Date().toISOString()
-    }))
+      const servs = (() => {
+        try {
+          const S = JSON.parse(String(e.services||'[]'))
+          return Array.isArray(S) ? S : []
+        } catch { return [] }
+      })()
 
-    return NextResponse.json({
-      items,
-      nextCursor: undefined,
-      total: totalProfiles
+      const hero: any = e.profilePhoto ? { type: 'IMAGE', url: e.profilePhoto } : undefined
+      const year = new Date().getFullYear()
+      const age = (() => {
+        try {
+          return e.dateOfBirth ? (year - new Date(e.dateOfBirth).getFullYear()) : undefined
+        } catch { return undefined }
+      })()
+
+      return {
+        id: e.id,
+        stageName: e.stageName || '',
+        age,
+        city: e.city || undefined,
+        canton: e.canton || undefined,
+        isVerifiedBadge: !!e.isVerifiedBadge,
+        isActive: e.status === 'ACTIVE',
+        profilePhoto: e.profilePhoto || undefined,
+        heroMedia: hero,
+        languages: langs,
+        services: servs,
+        rate1H: e.rate1H || undefined,
+        rate2H: e.rate2H || undefined,
+        rateOvernight: e.rateOvernight || undefined,
+        latitude: e.latitude || undefined,
+        longitude: e.longitude || undefined,
+        updatedAt: e.updatedAt as any,
+        // Nouveaux champs V2
+        height: e.height || undefined,
+        bodyType: e.bodyType || undefined,
+        hairColor: e.hairColor || undefined,
+        eyeColor: e.eyeColor || undefined,
+        ethnicity: e.ethnicity || undefined,
+        bustSize: e.bustSize || undefined,
+        tattoos: e.tattoos || undefined,
+        piercings: e.piercings || undefined,
+        availableNow: e.availableNow || false,
+        outcall: e.outcall || false,
+        incall: e.incall || false,
+        weekendAvailable: e.weekendAvailable || false,
+        hasPrivatePhotos: e.hasPrivatePhotos || false,
+        hasPrivateVideos: e.hasPrivateVideos || false,
+        hasWebcamLive: e.hasWebcamLive || false,
+        messagingPreference: e.messagingPreference || 'APP_ONLY',
+        minimumDuration: e.minimumDuration || undefined,
+        acceptsCards: false,
+        rating: e.rating || 0,
+        reviewCount: e.reviewCount || 0,
+        views: e.views || 0,
+        likes: e.likes || 0,
+        status: e.status || 'PENDING',
+      }
     })
 
+    const nextCursor = items.length === limit ? String(offset + limit) : undefined
+
+    return NextResponse.json({ items, nextCursor, total: undefined })
   } catch (error) {
-    console.error('[API] ERREUR CRITIQUE:', error)
-    console.error('[API] Error details:', {
-      name: (error as any)?.name,
-      message: (error as any)?.message,
-      stack: (error as any)?.stack
-    })
-    return NextResponse.json({ error: 'server_error', details: (error as any)?.message }, { status: 500 })
+    console.error('api/escorts error:', error)
+    return NextResponse.json({ error: 'server_error' }, { status: 500 })
   }
 }
