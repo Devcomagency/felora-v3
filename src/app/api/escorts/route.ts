@@ -65,8 +65,12 @@ export async function GET(request: NextRequest) {
         { AND: [{ status: 'PENDING' }, { hasProfilePhoto: true }] },
       ]
     }
-    if (city) where.city = { contains: city, mode: 'insensitive' as const }
-    if (canton) where.canton = { contains: canton, mode: 'insensitive' as const }
+    if (city) where.city = { equals: city, mode: 'insensitive' as const }
+    if (canton) where.canton = { equals: canton, mode: 'insensitive' as const }
+    
+    // Debug logging
+    console.log('[API] Filter params:', { city, canton, q, status })
+    console.log('[API] Where clause:', JSON.stringify(where, null, 2))
     
     // q: stageName + description
     if (q) {
@@ -256,6 +260,12 @@ export async function GET(request: NextRequest) {
     })
 
     const nextCursor = items.length === limit ? String(offset + limit) : undefined
+
+    // Debug logging
+    console.log('[API] Results:', {
+      totalItems: items.length,
+      items: items.map(item => ({ id: item.id, stageName: item.stageName, city: item.city, canton: item.canton }))
+    })
 
     return NextResponse.json({ items, nextCursor, total: undefined })
   } catch (error) {
