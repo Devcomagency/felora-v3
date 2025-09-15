@@ -1,17 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-
-// Import du même store que dans send-verification
-// En production, utiliser une base de données partagée
-declare global {
-  var verificationCodes: Map<string, { code: string, expires: number }> | undefined
-}
-
-const getVerificationCodes = () => {
-  if (!global.verificationCodes) {
-    global.verificationCodes = new Map()
-  }
-  return global.verificationCodes
-}
+import { prisma } from '@/lib/prisma'
 
 export async function POST(request: NextRequest) {
   try {
@@ -24,14 +12,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const verificationCodes = getVerificationCodes()
-    const storedData = verificationCodes.get(email)
+    // Récupérer le code depuis la base de données
+    const storedData = await prisma.emailVerification.findUnique({
+      where: { email }
+    })
 
     // Log de débogage
     console.log(`Vérification pour ${email}:`)
     console.log(`Code reçu: ${code}`)
     console.log(`Données stockées:`, storedData)
-    console.log(`Tous les codes stockés:`, Array.from(verificationCodes.keys()))
 
     if (!storedData) {
       return NextResponse.json(
@@ -41,8 +30,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Vérifier expiration
-    if (Date.now() > storedData.expires) {
-      verificationCodes.delete(email)
+    if (new Date() > storedData.expiresAt) {
+      // Supprimer le code expiré
+      await prisma.emailVerification.delete({ where: { email } })
       return NextResponse.json(
         { error: 'Code expiré' },
         { status: 400 }
@@ -57,8 +47,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Code valide - supprimer de la mémoire
-    verificationCodes.delete(email)
+    // Code valide - supprimer de la base de données
+    await prisma.emailVerification.delete({ where: { email } })
 
     return NextResponse.json({ 
       success: true,

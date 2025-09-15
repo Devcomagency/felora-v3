@@ -1,18 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sendEmailResend, emailTemplates } from '@/lib/resend'
 import { rateLimit, getClientIp } from '@/lib/rateLimit'
-
-// Store temporaire pour les codes de vérification (en production, utiliser Redis ou DB)
-declare global {
-  var verificationCodes: Map<string, { code: string, expires: number }> | undefined
-}
-
-const getVerificationCodes = () => {
-  if (!global.verificationCodes) {
-    global.verificationCodes = new Map()
-  }
-  return global.verificationCodes
-}
+import { prisma } from '@/lib/prisma'
 
 export async function POST(request: NextRequest) {
   try {
@@ -35,11 +24,21 @@ export async function POST(request: NextRequest) {
     // Générer un code à 6 chiffres
     const code = Math.floor(100000 + Math.random() * 900000).toString()
     
-    // Stocker le code avec expiration (5 minutes)
-    const verificationCodes = getVerificationCodes()
-    verificationCodes.set(email, {
-      code,
-      expires: Date.now() + (5 * 60 * 1000) // 5 minutes
+    // Stocker le code en base de données avec expiration (5 minutes)
+    const expiresAt = new Date(Date.now() + (5 * 60 * 1000)) // 5 minutes
+    
+    await prisma.emailVerification.upsert({
+      where: { email },
+      update: { 
+        code, 
+        expiresAt,
+        createdAt: new Date()
+      },
+      create: { 
+        email, 
+        code, 
+        expiresAt 
+      }
     })
 
     // Envoyer le vrai email via Resend
