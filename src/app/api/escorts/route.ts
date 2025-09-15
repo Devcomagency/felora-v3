@@ -15,11 +15,10 @@ export async function GET(request: NextRequest) {
     const canton = (searchParams.get('canton') || '').trim()
     const servicesCSV = (searchParams.get('services') || '').trim()
     const languagesCSV = (searchParams.get('languages') || '').trim()
-    const status = (searchParams.get('status') || '').trim().toUpperCase()
     const sort: SortKey = ((searchParams.get('sort') || 'recent') as SortKey)
 
-    // Nouveaux filtres V2
-    const categoriesCSV = (searchParams.get('categories') || '').trim()
+    // Nouveaux filtres V2 - Support legacy 'category' et 'categories'
+    const categoriesCSV = (searchParams.get('categories') || searchParams.get('category') || '').trim()
     const ageMin = parseInt(searchParams.get('ageMin') || '18')
     const ageMax = parseInt(searchParams.get('ageMax') || '65')
     const heightMin = parseInt(searchParams.get('heightMin') || '150')
@@ -46,14 +45,19 @@ export async function GET(request: NextRequest) {
 
     const where: any = {}
 
-    // Status filter - très permissif pour voir tous les profils
-    if (status === 'ACTIVE' || status === 'PAUSED' || status === 'VERIFIED' || status === 'PENDING') {
-      where.status = status
-    } else {
-      // Par défaut: tous les profils (même PENDING), sauf BANNED
-      where.status = {
-        in: ['ACTIVE', 'VERIFIED', 'PENDING', 'PAUSED']
+    // Status filter - Par défaut seulement ACTIVE (compatible frontend legacy)
+    const statusesParam = searchParams.get('statuses') || searchParams.get('status')
+    if (statusesParam) {
+      // Si statuses explicite fourni, utiliser celui-ci
+      const statusList = statusesParam.split(',').map(s => s.trim().toUpperCase()).filter(Boolean)
+      if (statusList.length === 1) {
+        where.status = statusList[0]
+      } else if (statusList.length > 1) {
+        where.status = { in: statusList }
       }
+    } else {
+      // Par défaut: SEULEMENT les profils ACTIVE (comportement attendu frontend)
+      where.status = 'ACTIVE'
     }
 
     // Filtres de localisation avec exact match
@@ -287,7 +291,7 @@ export async function GET(request: NextRequest) {
 
     const nextCursor = items.length === limit ? String(offset + limit) : undefined
 
-    return NextResponse.json({ items, nextCursor, total: undefined })
+    return NextResponse.json({ success: true, items, nextCursor, total: undefined })
   } catch (error) {
     console.error('api/escorts error:', error)
     return NextResponse.json({ error: 'server_error' }, { status: 500 })
