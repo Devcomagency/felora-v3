@@ -144,30 +144,30 @@ export default function EscortCard({ escort, onLike, isLiked = false }: EscortCa
           )}
         </div>
 
-        {/* Like Button */}
+        {/* Favori Button */}
         <button
           onClick={handleLike}
-          className="absolute top-3 right-3 p-2 rounded-full bg-black/40 backdrop-blur-sm hover:bg-black/60 transition-colors"
+          className={`absolute top-3 right-3 px-3 py-1 rounded-full backdrop-blur-sm transition-colors ${
+            isLiked 
+              ? 'bg-red-500/20 border border-red-500/50' 
+              : 'bg-black/40 hover:bg-black/60'
+          }`}
         >
-          <Heart 
-            size={18} 
-            className={`transition-colors ${isLiked ? 'text-red-500 fill-red-500' : 'text-white'}`} 
-          />
+          <span className={`text-xs font-medium ${isLiked ? 'text-red-400' : 'text-white/80'}`}>
+            Favori
+          </span>
         </button>
 
-        {/* Name and Category Overlay */}
-        <div className="absolute bottom-3 left-3 right-3">
-          <div className="px-3 py-2 rounded-lg bg-black/60 backdrop-blur-sm">
-            <h3 className="text-lg font-bold text-white truncate mb-1">
-              {escort.stageName}
-            </h3>
-            {escort.bodyType && (
-              <span className="text-xs text-white/80">
-                {escort.bodyType}
-              </span>
-            )}
-          </div>
-        </div>
+      </div>
+
+      {/* Simple Content */}
+      <div className="p-3">
+        <h3 className="text-lg font-bold text-white truncate mb-1">
+          {escort.stageName}
+        </h3>
+        <span className="text-sm text-white/60">
+          Escorte
+        </span>
       </div>
 
     </div>

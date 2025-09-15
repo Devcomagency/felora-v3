@@ -76,7 +76,6 @@ export default function SearchFilters({ filters, onFiltersChange, onClose, isOpe
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [selectedCanton, setSelectedCanton] = useState(filters.canton || '')
   const [selectedCity, setSelectedCity] = useState(filters.city || '')
-  const [radius, setRadius] = useState(10)
   const [availableNow, setAvailableNow] = useState(false)
   const [outcall, setOutcall] = useState(false)
   const [incall, setIncall] = useState(false)
@@ -125,9 +124,6 @@ export default function SearchFilters({ filters, onFiltersChange, onClose, isOpe
   const [privatePhotos, setPrivatePhotos] = useState(false)
   const [exclusiveVideos, setExclusiveVideos] = useState(false)
   
-  // États géolocalisation
-  const [userLocation, setUserLocation] = useState<{lat: number, lon: number} | null>(null)
-  const [locationEnabled, setLocationEnabled] = useState(false)
 
   // Replier certains blocs par défaut sur mobile
   const [openExperienceFilters, setOpenExperienceFilters] = useState(false)
@@ -201,7 +197,6 @@ export default function SearchFilters({ filters, onFiltersChange, onClose, isOpe
     setSelectedCategories([])
     setSelectedCity('')
     setSelectedCanton('')
-    setRadius(10)
     setAvailableNow(false)
     setOutcall(false)
     setIncall(false)
@@ -215,35 +210,11 @@ export default function SearchFilters({ filters, onFiltersChange, onClose, isOpe
     setAcceptsCards(false)
     setVerified(false)
     setLanguages([])
-    setLocationEnabled(false)
-    setUserLocation(null)
     setServiceTypes([])
     setExperienceTypes([])
     setSelectedCategories([])
   }
 
-  // Fonction pour obtenir la géolocalisation
-  const requestLocation = () => {
-    if (!navigator.geolocation) {
-      return
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords
-        setUserLocation({ lat: latitude, lon: longitude })
-        setLocationEnabled(true)
-      },
-      (error) => {
-        console.log('Erreur géolocalisation:', error.message)
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 300000
-      }
-    )
-  }
 
   if (!isOpen) return null
 
@@ -309,29 +280,20 @@ export default function SearchFilters({ filters, onFiltersChange, onClose, isOpe
               Localisation
             </h4>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {/* Bouton Autour de moi */}
-              <button
-                onClick={requestLocation}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                  locationEnabled 
-                    ? 'bg-green-500/20 text-green-400 border border-green-500/50' 
-                    : 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 hover:bg-cyan-500/20'
-                }`}
-              >
-                {locationEnabled ? '📍 Activé' : '📍 Près de moi'}
-              </button>
-
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <select
                 value={selectedCanton}
                 onChange={(e) => {
-                  setSelectedCanton(e.target.value)
-                  if (e.target.value) setSelectedCity('')
+                  const canton = e.target.value
+                  setSelectedCanton(canton)
+                  // Si on change de canton, on reset la ville
+                  if (canton !== selectedCanton) {
+                    setSelectedCity('')
+                  }
                 }}
-                className="px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm"
+                className="px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white text-sm focus:border-cyan-500/50 focus:outline-none"
               >
-                <option value="">Canton</option>
-                <option value="ALL">Tous</option>
+                <option value="">Choisir un canton</option>
                 {Object.keys(swissCities).map(canton => (
                   <option key={canton} value={canton}>{canton}</option>
                 ))}
@@ -340,32 +302,30 @@ export default function SearchFilters({ filters, onFiltersChange, onClose, isOpe
               <select
                 value={selectedCity}
                 onChange={(e) => {
-                  setSelectedCity(e.target.value)
-                  if (e.target.value) setSelectedCanton('')
+                  const city = e.target.value
+                  setSelectedCity(city)
+                  
+                  // Si on choisit une ville, on trouve automatiquement son canton
+                  if (city) {
+                    for (const [canton, cities] of Object.entries(swissCities)) {
+                      if (cities.includes(city)) {
+                        setSelectedCanton(canton)
+                        break
+                      }
+                    }
+                  } else {
+                    // Si on efface la ville, on garde le canton
+                    // Ne pas reset le canton
+                  }
                 }}
-                className="px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm"
+                className="px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white text-sm focus:border-cyan-500/50 focus:outline-none"
+                disabled={!selectedCanton}
               >
-                <option value="">Ville</option>
-                {Object.entries(swissCities).map(([canton, cities]) => (
-                  <optgroup key={canton} label={canton}>
-                    {cities.map(city => (
-                      <option key={city} value={city}>{city}</option>
-                    ))}
-                  </optgroup>
+                <option value="">Choisir une ville</option>
+                {selectedCanton && swissCities[selectedCanton as keyof typeof swissCities]?.map(city => (
+                  <option key={city} value={city}>{city}</option>
                 ))}
               </select>
-
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-white/70">{radius}km</span>
-                <input
-                  type="range"
-                  min="1"
-                  max="50"
-                  value={radius}
-                  onChange={(e) => setRadius(Number(e.target.value))}
-                  className="flex-1 h-1 bg-white/20 rounded-lg appearance-none cursor-pointer"
-                />
-              </div>
             </div>
             
             {/* Options de service */}
@@ -615,29 +575,34 @@ export default function SearchFilters({ filters, onFiltersChange, onClose, isOpe
 
         {/* Actions */}
         <div className="sticky bottom-0 p-6 border-t border-white/10 bg-black/50 backdrop-blur-sm">
-          <div className="flex justify-between items-center gap-4">
-            <select
-              value={filters.sort || 'recent'}
-              onChange={(e) => onFiltersChange({ ...filters, sort: e.target.value })}
-              className="px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white"
-            >
-              <option value="recent">Plus récent</option>
-              <option value="price_low">Prix croissant</option>
-              <option value="price_high">Prix décroissant</option>
-              <option value="rating">Mieux notées</option>
-              <option value="name">Nom A-Z</option>
-            </select>
+          <div className="space-y-4">
+            {/* Tri */}
+            <div>
+              <label className="block text-sm font-medium text-white/80 mb-2">Trier par</label>
+              <select
+                value={filters.sort || 'recent'}
+                onChange={(e) => onFiltersChange({ ...filters, sort: e.target.value })}
+                className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white focus:border-cyan-500/50 focus:outline-none"
+              >
+                <option value="recent">Plus récent</option>
+                <option value="price_low">Prix croissant</option>
+                <option value="price_high">Prix décroissant</option>
+                <option value="rating">Mieux notées</option>
+                <option value="name">Nom A-Z</option>
+              </select>
+            </div>
             
-            <div className="flex gap-3">
+            {/* Boutons */}
+            <div className="flex flex-col sm:flex-row gap-3">
               <button
                 onClick={resetFilters}
-                className="px-4 py-2 rounded-lg border border-white/20 bg-white/10 text-white hover:bg-white/15 transition-colors"
+                className="flex-1 px-4 py-3 rounded-lg border border-white/20 bg-white/10 text-white hover:bg-white/15 transition-colors font-medium"
               >
                 Réinitialiser
               </button>
               <button
                 onClick={applyFilters}
-                className="px-6 py-2 rounded-lg bg-gradient-to-r from-pink-500 to-purple-500 text-white font-semibold hover:from-pink-600 hover:to-purple-600 transition-all"
+                className="flex-1 px-6 py-3 rounded-lg bg-gradient-to-r from-pink-500 to-purple-500 text-white font-semibold hover:from-pink-600 hover:to-purple-600 transition-all"
               >
                 Rechercher
               </button>
