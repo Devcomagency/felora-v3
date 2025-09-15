@@ -250,6 +250,8 @@ export function useSearch(): UseSearchReturn {
 
       const data: SearchResponse = await response.json()
       console.log('[useSearch] API response:', data)
+      console.log('[useSearch] Items count:', data.items?.length || 0)
+      console.log('[useSearch] Items details:', data.items?.map(item => ({ id: item.id, stageName: item.stageName, city: item.city })))
 
       if (append) {
         setEscorts(prev => [...prev, ...data.items])
