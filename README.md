@@ -351,3 +351,4 @@ SIGNAL_SERVER_URL="https://textsecure-service.whispersystems.org"
 # Force redeploy Mon Sep 15 20:49:01 CEST 2025
 # Deploy 20250915_210649
 # Deploy trigger Mon Sep 15 21:13:38 CEST 2025
+# Force deploy legacy fix Mon Sep 15 21:22:36 CEST 2025
