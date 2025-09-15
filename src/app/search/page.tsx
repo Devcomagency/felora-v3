@@ -7,6 +7,7 @@ import { useSession } from 'next-auth/react'
 import { useSearch } from '@/hooks/useSearch'
 import SearchFilters from '@/components/search/SearchFilters'
 import EscortCard from '@/components/search/EscortCard'
+import StaticNavBar from '@/components/layout/StaticNavBar'
 
 // Interface pour les escortes (basée sur le contrat API)
 interface Escort {
@@ -109,6 +110,8 @@ function SearchContent() {
         fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif'
       }}
     >
+      {/* Navigation avec menu burger de droite */}
+      <StaticNavBar />
 
       {/* Header */}
       <div 
