@@ -43,6 +43,12 @@ export async function GET(request: NextRequest) {
     const privatePhotos = searchParams.get('privatePhotos') === 'true'
     const exclusiveVideos = searchParams.get('exclusiveVideos') === 'true'
 
+    // Nouveaux filtres unifiés avec dashboard
+    const serviceTypesCSV = (searchParams.get('serviceTypes') || '').trim()
+    const specialtiesCSV = (searchParams.get('specialties') || '').trim()
+    const experienceTypesCSV = (searchParams.get('experienceTypes') || '').trim()
+    const roleTypesCSV = (searchParams.get('roleTypes') || '').trim()
+
     const where: any = {}
 
     // Status filter - Par défaut seulement ACTIVE (compatible frontend legacy)
@@ -117,14 +123,94 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Services et langues
+    // Services - Supporter TOUS les services sélectionnés, pas seulement le premier
     if (servicesCSV) {
       const terms = servicesCSV.split(',').map(s => s.trim()).filter(Boolean)
-      if (terms.length) where.services = { contains: terms[0], mode: 'insensitive' as const }
+      if (terms.length === 1) {
+        // Un seul service : recherche simple
+        where.services = { contains: terms[0], mode: 'insensitive' as const }
+      } else if (terms.length > 1) {
+        // Plusieurs services : profil doit avoir AU MOINS UN des services
+        const serviceFilter = {
+          OR: terms.map(term => ({
+            services: { contains: term, mode: 'insensitive' as const }
+          }))
+        }
+        where.AND = where.AND ? [...where.AND, serviceFilter] : [serviceFilter]
+      }
     }
+
+    // Langues - Supporter TOUTES les langues sélectionnées
     if (languagesCSV) {
       const terms = languagesCSV.split(',').map(s => s.trim()).filter(Boolean)
-      if (terms.length) where.languages = { contains: terms[0], mode: 'insensitive' as const }
+      if (terms.length === 1) {
+        // Une seule langue : recherche simple
+        where.languages = { contains: terms[0], mode: 'insensitive' as const }
+      } else if (terms.length > 1) {
+        // Plusieurs langues : profil doit avoir AU MOINS UNE des langues
+        const languageFilter = {
+          OR: terms.map(term => ({
+            languages: { contains: term, mode: 'insensitive' as const }
+          }))
+        }
+        where.AND = where.AND ? [...where.AND, languageFilter] : [languageFilter]
+      }
+    }
+
+    // Nouveaux filtres unifiés - traitement des services spécialisés du dashboard
+    const allServiceFilters: any[] = []
+
+    // Service Types (clientèle, paiements, devises, etc.)
+    if (serviceTypesCSV) {
+      const terms = serviceTypesCSV.split(',').map(s => s.trim()).filter(Boolean)
+      if (terms.length > 0) {
+        allServiceFilters.push({
+          OR: terms.map(term => ({
+            services: { contains: term, mode: 'insensitive' as const }
+          }))
+        })
+      }
+    }
+
+    // Spécialités
+    if (specialtiesCSV) {
+      const terms = specialtiesCSV.split(',').map(s => s.trim()).filter(Boolean)
+      if (terms.length > 0) {
+        allServiceFilters.push({
+          OR: terms.map(term => ({
+            services: { contains: term, mode: 'insensitive' as const }
+          }))
+        })
+      }
+    }
+
+    // Experience Types (ex-anciens: GFE, PSE, Dominant, etc.)
+    if (experienceTypesCSV) {
+      const terms = experienceTypesCSV.split(',').map(s => s.trim()).filter(Boolean)
+      if (terms.length > 0) {
+        allServiceFilters.push({
+          OR: terms.map(term => ({
+            services: { contains: term, mode: 'insensitive' as const }
+          }))
+        })
+      }
+    }
+
+    // Role Types
+    if (roleTypesCSV) {
+      const terms = roleTypesCSV.split(',').map(s => s.trim()).filter(Boolean)
+      if (terms.length > 0) {
+        allServiceFilters.push({
+          OR: terms.map(term => ({
+            services: { contains: term, mode: 'insensitive' as const }
+          }))
+        })
+      }
+    }
+
+    // Appliquer tous les filtres de services
+    if (allServiceFilters.length > 0) {
+      where.AND = where.AND ? [...where.AND, ...allServiceFilters] : allServiceFilters
     }
 
     // Filtres physiques V2
