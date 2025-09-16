@@ -137,11 +137,36 @@ export default function SearchFilters({ filters, onFiltersChange, onClose, isOpe
     }
   }, [])
 
-  // Données pour les dropdowns (basées sur les vrais champs de la DB)
-  const bodyTypes = ["Mince", "Normale", "Pulpeuse", "Athlétique", "Courbes", "Grande"]
-  const hairColors = ["Blonde", "Brune", "Châtain", "Rousse", "Noir", "Gris", "Autre"]
-  const eyeColors = ["Bleus", "Verts", "Marrons", "Noisette", "Gris", "Autre"]
-  const ethnicities = ["Européenne", "Africaine", "Asiatique", "Latine", "Arabe", "Métisse", "Autre"]
+  // HARMONISATION AVEC DASHBOARD ESCORT - Utiliser exactement les mêmes termes
+  const bodyTypes = ["mince", "sportive", "pulpeuse", "ronde"]
+  const hairColors = ["brun", "blond", "chatain", "gris", "roux", "autre"]
+  const eyeColors = ["noir", "marron", "vert", "bleu", "gris"]
+  const ethnicities = ["suissesse", "francaise", "espagnole", "italienne", "allemand", "europeenne", "latine", "asiatique", "africaine", "russe", "orientale", "bresilienne", "moyen-orient", "balkanique", "nordique", "metissee"]
+
+  // Mappings pour l'affichage user-friendly
+  const bodyTypeLabels: {[key: string]: string} = {
+    "mince": "Mince",
+    "sportive": "Sportive",
+    "pulpeuse": "Pulpeuse",
+    "ronde": "Ronde"
+  }
+
+  const hairColorLabels: {[key: string]: string} = {
+    "brun": "Brun",
+    "blond": "Blond",
+    "chatain": "Châtain",
+    "gris": "Gris",
+    "roux": "Roux",
+    "autre": "Autre"
+  }
+
+  const eyeColorLabels: {[key: string]: string} = {
+    "noir": "Noir",
+    "marron": "Marron",
+    "vert": "Vert",
+    "bleu": "Bleu",
+    "gris": "Gris"
+  }
   const breastSizes = ["A", "B", "C", "D", "E", "F", "G+"]
   
   // Liste complète des services/pratiques (basée sur les vrais champs)
@@ -496,7 +521,7 @@ export default function SearchFilters({ filters, onFiltersChange, onClose, isOpe
                     >
                       <option value="">Toutes corpulences</option>
                       {bodyTypes.map(type => (
-                        <option key={type} value={type}>{type}</option>
+                        <option key={type} value={type}>{bodyTypeLabels[type]}</option>
                       ))}
                     </select>
                     
@@ -507,7 +532,7 @@ export default function SearchFilters({ filters, onFiltersChange, onClose, isOpe
                     >
                       <option value="">Cheveux</option>
                       {hairColors.map(color => (
-                        <option key={color} value={color}>{color}</option>
+                        <option key={color} value={color}>{hairColorLabels[color]}</option>
                       ))}
                     </select>
                   </div>
