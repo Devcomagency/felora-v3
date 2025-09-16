@@ -93,11 +93,56 @@ function SearchContent() {
   // Get active filters count for display
   const getActiveFiltersCount = () => {
     let count = 0
+
+    // Filtres de localisation
     if (filters.city) count++
     if (filters.canton) count++
-    if (filters.services.length > 0) count++
-    if (filters.languages.length > 0) count++
-    if (filters.status) count++
+
+    // Filtres de service et catégories
+    if (filters.services && filters.services.length > 0) count++
+    if (filters.languages && filters.languages.length > 0) count++
+    if (filters.categories && filters.categories.length > 0) count++
+
+    // Nouveaux filtres ajoutés
+    if (filters.serviceTypes && filters.serviceTypes.length > 0) count++
+    if (filters.experienceTypes && filters.experienceTypes.length > 0) count++
+    if (filters.specialties && filters.specialties.length > 0) count++
+    if (filters.roleTypes && filters.roleTypes.length > 0) count++
+
+    // Filtres booléens
+    if (filters.availableNow) count++
+    if (filters.outcall) count++
+    if (filters.incall) count++
+    if (filters.weekendAvailable) count++
+    if (filters.verified) count++
+    if (filters.acceptsCards) count++
+    if (filters.premiumContent) count++
+    if (filters.liveCam) count++
+    if (filters.premiumMessaging) count++
+    if (filters.privatePhotos) count++
+    if (filters.exclusiveVideos) count++
+
+    // Filtres de critères physiques
+    if (filters.bodyType) count++
+    if (filters.hairColor) count++
+    if (filters.eyeColor) count++
+    if (filters.ethnicity) count++
+    if (filters.breastSize) count++
+    if (filters.hasTattoos) count++
+
+    // Filtres de gamme
+    if (filters.ageRange && (filters.ageRange[0] !== 18 || filters.ageRange[1] !== 65)) count++
+    if (filters.heightRange && (filters.heightRange[0] !== 150 || filters.heightRange[1] !== 180)) count++
+    if (filters.budgetRange && (filters.budgetRange[0] !== 0 || filters.budgetRange[1] !== 2000)) count++
+
+    // Autres filtres
+    if (filters.minDuration) count++
+    if (filters.availability && filters.availability.length > 0) count++
+    if (filters.timeSlots && filters.timeSlots.length > 0) count++
+    if (filters.minRating && filters.minRating > 0) count++
+    if (filters.minReviews && filters.minReviews > 0) count++
+    if (filters.status && filters.status !== '') count++
+
     return count
   }
 
