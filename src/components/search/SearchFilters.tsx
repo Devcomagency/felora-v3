@@ -71,6 +71,73 @@ const swissCities = {
   ]
 }
 
+// ===== UNIFICATION COMPLÈTE AVEC DASHBOARD =====
+// TERMES EXACTS UTILISÉS DANS LE DASHBOARD
+
+const CATEGORIES = ['Escorte', 'Salon', 'Massage', 'VIP', 'BDSM', 'Médias privés']
+
+// SERVICES CLASSIQUES - EXACTEMENT COMME DASHBOARD
+const SERVICES_CLASSIQUES = [
+  'Rapport', 'French kiss', 'GFE', 'PSE', 'Lingerie', 'Duo/Trio', 'Jeux de rôles', 'Costumes'
+]
+
+// SERVICES ORAL - EXACTEMENT COMME DASHBOARD
+const SERVICES_ORAL = [
+  'Oral', 'Fellation protégée', 'Fellation nature', 'Gorge profonde',
+  'Éjac en bouche', 'Éjac sur le corps', 'Éjac sur le visage'
+]
+
+// SERVICES ANAL - EXACTEMENT COMME DASHBOARD
+const SERVICES_ANAL = [
+  'Anal', 'Sodomie (donne)', 'Sodomie (reçoit)', 'Doigté anal'
+]
+
+// BDSM & FÉTICHES - EXACTEMENT COMME DASHBOARD
+const SERVICES_BDSM = [
+  'Domination soft', 'Fessées', 'Donjon SM', 'Fétichisme pieds'
+]
+
+// MASSAGES - EXACTEMENT COMME DASHBOARD
+const SERVICES_MASSAGE = [
+  'Tantrique', 'Érotique', 'Corps à corps', 'Nuru', 'Prostate',
+  'Lingam', 'Yoni', '4 mains', 'Suédois', 'Huiles'
+]
+
+// ÉQUIPEMENTS - EXACTEMENT COMME DASHBOARD
+const EQUIPEMENTS = [
+  'Douche à deux', 'Jacuzzi', 'Sauna', 'Climatisation', 'Fumoir',
+  'Parking', 'Accès handicapé', 'Ambiance musicale', 'Bar', 'Pole dance'
+]
+
+// CLIENTÈLE ACCEPTÉE - EXACTEMENT COMME DASHBOARD
+const CLIENTELE = ['Couples', 'Femmes', 'Personnes handicapées', 'Personnes âgées']
+
+// LIEU & OPTIONS - EXACTEMENT COMME DASHBOARD
+const LIEU_OPTIONS = ['Incall', 'Outcall']
+
+// APPARENCE PHYSIQUE - EXACTEMENT COMME DASHBOARD
+const SILHOUETTES = ['Mince', 'Sportive', 'Pulpeuse', 'Ronde']
+const TOUR_POITRINE = ['A', 'B', 'C', 'D', 'E', 'F+']
+const CHEVEUX_COULEUR = ['Brun', 'Blond', 'Châtain', 'Gris', 'Roux', 'Autre']
+const POITRINE_TYPE = ['Naturelle', 'Siliconée']
+const CHEVEUX_LONGUEUR = ['Court', 'Mi-long', 'Long']
+const YEUX_COULEUR = ['Noir', 'Marron', 'Vert', 'Bleu', 'Gris']
+const ORIGINES = [
+  'Suissesse', 'Française', 'Espagnole', 'Italienne', 'Allemand', 'Européenne (autres)',
+  'Latine', 'Asiatique', 'Africaine', 'Russe', 'Orientale', 'Brésilienne',
+  'Moyen-Orient', 'Balkanique', 'Nordique', 'Métissée'
+]
+const POILS_PUBIS = ['Naturel', 'Rasé', 'Partiellement rasé']
+
+// LANGUES PARLÉES - EXACTEMENT COMME DASHBOARD
+const LANGUES_DASHBOARD = ['Français', 'Anglais', 'Allemand', 'Italien', 'Espagnol', 'Russe', 'Arabe', 'Chinois']
+
+// MÉTHODES DE PAIEMENT - EXACTEMENT COMME DASHBOARD
+const PAIEMENTS = ['Cash', 'TWINT', 'Crypto', 'Visa', 'Mastercard', 'Amex', 'Maestro', 'PostFinance']
+
+// DEVISES ACCEPTÉES - EXACTEMENT COMME DASHBOARD
+const DEVISES = ['CHF', 'EUR', 'USD']
+
 export default function SearchFilters({ filters, onFiltersChange, onClose, isOpen }: SearchFiltersProps) {
   // États des filtres basés sur les vrais champs de la base de données
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
@@ -138,9 +205,10 @@ export default function SearchFilters({ filters, onFiltersChange, onClose, isOpe
   }, [])
 
   // HARMONISATION AVEC DASHBOARD ESCORT - Utiliser exactement les mêmes termes
-  const bodyTypes = ["mince", "sportive", "pulpeuse", "ronde"]
-  const hairColors = ["brun", "blond", "chatain", "gris", "roux", "autre"]
-  const eyeColors = ["noir", "marron", "vert", "bleu", "gris"]
+  // Utilisation directe des constantes du dashboard
+  const bodyTypes = SILHOUETTES.map(s => s.toLowerCase())
+  const hairColors = CHEVEUX_COULEUR.map(c => c.toLowerCase())
+  const eyeColors = YEUX_COULEUR.map(c => c.toLowerCase())
   const ethnicities = ["suissesse", "francaise", "espagnole", "italienne", "allemand", "europeenne", "latine", "asiatique", "africaine", "russe", "orientale", "bresilienne", "moyen-orient", "balkanique", "nordique", "metissee"]
 
   // Mappings pour l'affichage user-friendly
@@ -564,28 +632,134 @@ export default function SearchFilters({ filters, onFiltersChange, onClose, isOpe
               )}
             </div>
 
-            {/* Services & Spécialités */}
+            {/* Services & Spécialités - EXACTEMENT COMME DASHBOARD */}
             <div>
               <h4 className="text-lg font-semibold mb-4 text-white">Services & Spécialités</h4>
-              <div className="max-h-48 overflow-y-auto p-3 border border-white/10 rounded-lg bg-white/2">
-                <div className="flex flex-wrap gap-2">
-                  {servicesList.map(service => (
-                    <button
-                      key={service}
-                      onClick={() => toggleArrayItem(services, service, setServices)}
-                      className={`px-2 py-1 rounded-lg text-xs transition-all ${
-                        services.includes(service)
-                          ? 'bg-pink-500/20 text-pink-400 border border-pink-500/50'
-                          : 'bg-white/5 text-white/80 border border-white/20 hover:bg-white/10'
-                      }`}
-                    >
-                      {service}
-                    </button>
-                  ))}
+              <div className="max-h-60 overflow-y-auto space-y-4">
+
+                {/* Classiques */}
+                <div>
+                  <h5 className="text-sm font-medium text-cyan-400 mb-2">Classiques</h5>
+                  <div className="flex flex-wrap gap-2">
+                    {SERVICES_CLASSIQUES.map(service => (
+                      <button
+                        key={service}
+                        onClick={() => toggleArrayItem(services, service, setServices)}
+                        className={`px-2 py-1 rounded-lg text-xs transition-all ${
+                          services.includes(service)
+                            ? 'bg-pink-500/20 text-pink-400 border border-pink-500/50'
+                            : 'bg-white/5 text-white/80 border border-white/20 hover:bg-white/10'
+                        }`}
+                      >
+                        {service}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Oral */}
+                <div>
+                  <h5 className="text-sm font-medium text-cyan-400 mb-2">Oral</h5>
+                  <div className="flex flex-wrap gap-2">
+                    {SERVICES_ORAL.map(service => (
+                      <button
+                        key={service}
+                        onClick={() => toggleArrayItem(services, service, setServices)}
+                        className={`px-2 py-1 rounded-lg text-xs transition-all ${
+                          services.includes(service)
+                            ? 'bg-pink-500/20 text-pink-400 border border-pink-500/50'
+                            : 'bg-white/5 text-white/80 border border-white/20 hover:bg-white/10'
+                        }`}
+                      >
+                        {service}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Anal */}
+                <div>
+                  <h5 className="text-sm font-medium text-cyan-400 mb-2">Anal</h5>
+                  <div className="flex flex-wrap gap-2">
+                    {SERVICES_ANAL.map(service => (
+                      <button
+                        key={service}
+                        onClick={() => toggleArrayItem(services, service, setServices)}
+                        className={`px-2 py-1 rounded-lg text-xs transition-all ${
+                          services.includes(service)
+                            ? 'bg-pink-500/20 text-pink-400 border border-pink-500/50'
+                            : 'bg-white/5 text-white/80 border border-white/20 hover:bg-white/10'
+                        }`}
+                      >
+                        {service}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* BDSM & Fétiches */}
+                <div>
+                  <h5 className="text-sm font-medium text-cyan-400 mb-2">BDSM & Fétiches</h5>
+                  <div className="flex flex-wrap gap-2">
+                    {SERVICES_BDSM.map(service => (
+                      <button
+                        key={service}
+                        onClick={() => toggleArrayItem(services, service, setServices)}
+                        className={`px-2 py-1 rounded-lg text-xs transition-all ${
+                          services.includes(service)
+                            ? 'bg-pink-500/20 text-pink-400 border border-pink-500/50'
+                            : 'bg-white/5 text-white/80 border border-white/20 hover:bg-white/10'
+                        }`}
+                      >
+                        {service}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Massages */}
+                <div>
+                  <h5 className="text-sm font-medium text-cyan-400 mb-2">Massages</h5>
+                  <div className="flex flex-wrap gap-2">
+                    {SERVICES_MASSAGE.map(service => (
+                      <button
+                        key={service}
+                        onClick={() => toggleArrayItem(services, service, setServices)}
+                        className={`px-2 py-1 rounded-lg text-xs transition-all ${
+                          services.includes(service)
+                            ? 'bg-pink-500/20 text-pink-400 border border-pink-500/50'
+                            : 'bg-white/5 text-white/80 border border-white/20 hover:bg-white/10'
+                        }`}
+                      >
+                        {service}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Équipements */}
+                <div>
+                  <h5 className="text-sm font-medium text-cyan-400 mb-2">Équipements</h5>
+                  <div className="flex flex-wrap gap-2">
+                    {EQUIPEMENTS.map(service => (
+                      <button
+                        key={service}
+                        onClick={() => toggleArrayItem(services, service, setServices)}
+                        className={`px-2 py-1 rounded-lg text-xs transition-all ${
+                          services.includes(service)
+                            ? 'bg-pink-500/20 text-pink-400 border border-pink-500/50'
+                            : 'bg-white/5 text-white/80 border border-white/20 hover:bg-white/10'
+                        }`}
+                      >
+                        {service}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
+
               {services.length > 0 && (
-                <p className="text-xs text-white/60 mt-2">
+                <p className="text-xs text-white/60 mt-3">
                   {services.length} service{services.length > 1 ? 's' : ''} sélectionné{services.length > 1 ? 's' : ''}
                 </p>
               )}
@@ -608,11 +782,11 @@ export default function SearchFilters({ filters, onFiltersChange, onClose, isOpe
               </div>
             </div>
 
-            {/* Communication */}
+            {/* Communication - EXACTEMENT COMME DASHBOARD */}
             <div>
               <h4 className="text-lg font-semibold mb-4 text-white">Communication</h4>
               <div className="flex flex-wrap gap-2">
-                {languagesList.map(language => (
+                {LANGUES_DASHBOARD.map(language => (
                   <button
                     key={language}
                     onClick={() => toggleArrayItem(languages, language, setLanguages)}
@@ -623,6 +797,26 @@ export default function SearchFilters({ filters, onFiltersChange, onClose, isOpe
                     }`}
                   >
                     {language}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Clientèle Acceptée - NOUVEAU FILTRE DASHBOARD */}
+            <div>
+              <h4 className="text-lg font-semibold mb-4 text-white">Clientèle & Services</h4>
+              <div className="flex flex-wrap gap-2">
+                {CLIENTELE.map(type => (
+                  <button
+                    key={type}
+                    onClick={() => toggleArrayItem(serviceTypes, type, setServiceTypes)}
+                    className={`px-3 py-2 rounded-full text-sm transition-all ${
+                      serviceTypes.includes(type)
+                        ? 'bg-green-500/20 text-green-400 border border-green-500/50'
+                        : 'bg-white/5 text-white/80 border border-white/20 hover:bg-white/10'
+                    }`}
+                  >
+                    {type}
                   </button>
                 ))}
               </div>
