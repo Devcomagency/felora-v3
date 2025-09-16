@@ -476,59 +476,47 @@ export default function SearchFilters({ filters, onFiltersChange, onClose, isOpe
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Types de Service */}
+            {/* NOTE: Types de Service et Expériences & Styles supprimés */}
+            {/* Remplacés par les services organisés du dashboard ci-dessous */}
+
+            {/* Méthodes de paiement - NOUVEAU FILTRE DASHBOARD */}
             <div>
-              <h4 className="text-lg font-semibold mb-4 text-white">Types de Service</h4>
+              <h4 className="text-lg font-semibold mb-4 text-white">Méthodes de paiement</h4>
               <div className="flex flex-wrap gap-2">
-                {[
-                  'Escorte indépendante', 'Escorte d\'agence', 'Escorte VIP', 
-                  'Compagnon/Accompagnement', 'Rendez-vous dîner', 'Compagnon voyage',
-                  'Service discret', 'Massage sensuel', 'Webcam / Appel vidéo'
-                ].map(serviceType => (
+                {PAIEMENTS.map(paiement => (
                   <button
-                    key={serviceType}
-                    onClick={() => toggleArrayItem(serviceTypes, serviceType, setServiceTypes)}
+                    key={paiement}
+                    onClick={() => toggleArrayItem(serviceTypes, paiement, setServiceTypes)}
                     className={`px-3 py-2 rounded-full text-sm transition-all ${
-                      serviceTypes.includes(serviceType)
-                        ? 'bg-pink-500/20 text-pink-400 border border-pink-500/50'
+                      serviceTypes.includes(paiement)
+                        ? 'bg-green-500/20 text-green-400 border border-green-500/50'
                         : 'bg-white/5 text-white/80 border border-white/20 hover:bg-white/10'
                     }`}
                   >
-                    {serviceType}
+                    {paiement}
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Expériences & Styles */}
+            {/* Devises acceptées - NOUVEAU FILTRE DASHBOARD */}
             <div>
-              <button
-                onClick={() => setOpenExperienceFilters(!openExperienceFilters)}
-                className="text-lg font-semibold mb-4 text-white flex items-center gap-2"
-              >
-                Expériences & Styles {openExperienceFilters ? '▲' : '▼'}
-              </button>
-              {openExperienceFilters && (
-                <div className="flex flex-wrap gap-2">
-                  {[
-                    'GFE (Girlfriend Experience)', 'PSE (Porn Star Experience)', 
-                    'Dominant(e)', 'Soumis(e)', 'Switch', 'BDSM friendly',
-                    'Jeu de rôle', 'Sensuel/Doux', 'Business/Social'
-                  ].map(experience => (
-                    <button
-                      key={experience}
-                      onClick={() => toggleArrayItem(experienceTypes, experience, setExperienceTypes)}
-                      className={`px-3 py-2 rounded-full text-sm transition-all ${
-                        experienceTypes.includes(experience)
-                          ? 'bg-purple-500/20 text-purple-400 border border-purple-500/50'
-                          : 'bg-white/5 text-white/80 border border-white/20 hover:bg-white/10'
-                      }`}
-                    >
-                      {experience}
-                    </button>
-                  ))}
-                </div>
-              )}
+              <h4 className="text-lg font-semibold mb-4 text-white">Devises acceptées</h4>
+              <div className="flex flex-wrap gap-2">
+                {DEVISES.map(devise => (
+                  <button
+                    key={devise}
+                    onClick={() => toggleArrayItem(experienceTypes, devise, setExperienceTypes)}
+                    className={`px-3 py-2 rounded-full text-sm transition-all ${
+                      experienceTypes.includes(devise)
+                        ? 'bg-blue-500/20 text-blue-400 border border-blue-500/50'
+                        : 'bg-white/5 text-white/80 border border-white/20 hover:bg-white/10'
+                    }`}
+                  >
+                    {devise}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* Profil & Physique */}
