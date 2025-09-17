@@ -1,58 +1,91 @@
 import { NextRequest, NextResponse } from 'next/server'
-
-// Mock data pour tester
-const mockProfile = {
-  id: 'test',
-  name: 'Sofia Deluxe',
-  avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=300&h=300&fit=crop&crop=face',
-  bio: 'Escort premium à Genève. Disponible pour rendez-vous sur mesure.',
-  age: 25,
-  location: 'Genève',
-  views: 1250,
-  followers: 890,
-  totalLikes: 2340,
-  media: [
-    {
-      id: '1',
-      url: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=300&h=300&fit=crop&crop=face',
-      type: 'image' as const,
-      position: 1 // Photo de profil - SEULEMENT dans avatar
-    },
-    {
-      id: '2',
-      url: 'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=400&h=400&fit=crop',
-      type: 'image' as const,
-      position: 2 // Post 1 - SEULEMENT dans grille
-    },
-    {
-      id: '3',
-      url: 'https://images.unsplash.com/photo-1526510747491-58f928ec870f?w=400&h=400&fit=crop',
-      type: 'image' as const,
-      position: 3 // Post 2 - SEULEMENT dans grille
-    },
-    {
-      id: '4',
-      url: 'https://images.unsplash.com/photo-1485875437342-9b39470b3d95?w=400&h=400&fit=crop',
-      type: 'image' as const,
-      position: 4 // Post 3 - SEULEMENT dans grille
-    }
-  ]
-}
+import { prisma } from '@/lib/prisma'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Simule un délai d'API
-    await new Promise(resolve => setTimeout(resolve, 500))
+    const { id } = await params
 
-    return NextResponse.json(mockProfile)
+    console.log('🔍 API: Recherche profil avec ID:', id)
+
+    // Récupérer le profil escort depuis la base
+    const escortProfile = await prisma.escortProfile.findUnique({
+      where: { id: id },
+      include: {
+        user: {
+          select: {
+            name: true,
+            email: true,
+            createdAt: true
+          }
+        }
+      }
+    })
+
+    if (!escortProfile) {
+      console.log('❌ API: Profil non trouvé pour ID:', id)
+      return NextResponse.json(
+        { success: false, error: 'Profile not found' },
+        { status: 404 }
+      )
+    }
+
+    console.log('✅ API: Profil trouvé:', escortProfile.stageName || escortProfile.firstName)
+
+    // Transformer les données pour le format TikTok
+    const profileData = {
+      id: escortProfile.id,
+      name: escortProfile.stageName || escortProfile.firstName || 'Escort',
+      avatar: escortProfile.profilePhoto,
+      bio: escortProfile.description,
+      age: escortProfile.dateOfBirth ?
+        new Date().getFullYear() - new Date(escortProfile.dateOfBirth).getFullYear() : undefined,
+      location: escortProfile.city,
+      views: escortProfile.views || 0,
+      followers: 289, // Mock pour l'instant
+      totalLikes: 0, // Mock pour l'instant
+      media: (() => {
+        // Parse gallery photos
+        const galleryPhotos = escortProfile.galleryPhotos ?
+          (() => { try { return JSON.parse(escortProfile.galleryPhotos) } catch { return [] } })() : []
+
+        const media = []
+
+        // Photo de profil (position 1)
+        if (escortProfile.profilePhoto) {
+          media.push({
+            id: 'profile',
+            url: escortProfile.profilePhoto,
+            type: 'image' as const,
+            position: 1
+          })
+        }
+
+        // Médias de la galerie (positions 2+)
+        galleryPhotos.forEach((photo: any, index: number) => {
+          if (photo.url) {
+            media.push({
+              id: `gallery_${index}`,
+              url: photo.url,
+              type: (photo.type || 'image') as 'image' | 'video',
+              position: index + 2
+            })
+          }
+        })
+
+        return media
+      })()
+    }
+
+    return NextResponse.json(profileData)
+
   } catch (error) {
-    console.error('API Error:', error)
+    console.error('❌ API Error:', error)
     return NextResponse.json(
-      { error: 'Profil non trouvé' },
-      { status: 404 }
+      { success: false, error: 'Internal server error' },
+      { status: 500 }
     )
   }
 }
