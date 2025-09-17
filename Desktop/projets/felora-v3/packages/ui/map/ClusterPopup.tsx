@@ -22,10 +22,27 @@ export default function ClusterPopup({ escorts, onClose }: ClusterPopupProps) {
       setLoadingDetails(prev => ({ ...prev, [escort.id]: true }))
       
       try {
-        const response = await fetch(`/api/geo/details?id=${escort.id}`)
-        if (!response.ok) throw new Error('details failed')
-        const details = await response.json()
-        
+        const response = await fetch(`/api/public/profile/${escort.id}`)
+        if (!response.ok) throw new Error('profile fetch failed')
+        const profileData = await response.json()
+
+        // Transform the API response to match the expected format
+        const details = {
+          id: profileData.id,
+          displayName: profileData.name,
+          handle: profileData.handle,
+          avatar: profileData.profilePhoto?.url,
+          city: profileData.city,
+          age: profileData.age,
+          verified: profileData.verified || false,
+          media: profileData.media?.map((m: any) => ({ type: m.type, url: m.url })) || [],
+          services: profileData.services || [],
+          languages: profileData.languages || [],
+          practices: profileData.practices || [],
+          rating: profileData.rating,
+          reviews: profileData.reviews
+        }
+
         setEscortsDetails(prev => ({ ...prev, [escort.id]: details }))
       } catch (error) {
         // Fallback avec données de base
