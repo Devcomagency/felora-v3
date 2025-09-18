@@ -207,12 +207,10 @@ export default function MapTest() {
   const mapRef = useRef<any>(null)
   const throttleTimer = useRef<number | null>(null)
 
-  // Create stable SWR key based on bounds
+  // Create stable SWR key based on bounds - use real escorts API
   const swrKey = useMemo(() => {
-    if (!bounds) return null
-    const [west, south, east, north] = bounds
-    return `/api/geo/search?bbox=${west},${south},${east},${north}&type=both`
-  }, [bounds])
+    return '/api/escorts' // Use real escorts API instead of geo search
+  }, [])
 
   // Fetch data with SWR
   const { data, error, isLoading } = useSWR(
@@ -226,10 +224,22 @@ export default function MapTest() {
     }
   )
 
-  // Use demo data for now, fallback to API data when available
+  // Transform real API data to match expected format
   const allEscorts = useMemo(() => {
-    const apiEscorts = data?.escorts || []
-    return apiEscorts.length > 0 ? apiEscorts : DEMO_ESCORTS
+    if (!data || !Array.isArray(data)) return []
+
+    return data.map((escort: any) => ({
+      id: escort.id,
+      name: escort.name || 'Escort',
+      lat: escort.lat || escort.latitude || 46.8182, // Default to Switzerland center
+      lng: escort.lng || escort.longitude || 8.2275,
+      avatar: escort.avatar || escort.profilePhoto?.url || '',
+      city: escort.city || 'Suisse',
+      services: escort.services || [],
+      languages: escort.languages || [],
+      verified: escort.verified || false,
+      isActive: escort.isActive || escort.online || true
+    }))
   }, [data])
 
   // Filter escorts
@@ -798,7 +808,7 @@ export default function MapTest() {
 
                 <button
                   onClick={() => {
-                    window.location.href = `/profile-test/escort/${selectedEscort.id}`
+                    window.location.href = `/profile/${selectedEscort.id}`
                   }}
                   className="w-full py-2 rounded-lg font-medium"
                   style={{
