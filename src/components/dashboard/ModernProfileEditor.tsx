@@ -33,6 +33,7 @@ function detectCantonFromCity(city: string): string | null {
   return null
 }
 import { videoCompressor } from '@/lib/video-compression'
+import { normalizeScheduleData } from '@/lib/availability-calculator'
 
 interface ProfileData {
   // Informations de base
@@ -324,36 +325,34 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
 
         // Parse agenda (timeSlots JSON)
         try {
-          if (p.timeSlots) {
-            const sched = typeof p.timeSlots === 'string' ? JSON.parse(p.timeSlots) : p.timeSlots
-            // Weekly
-            if (sched?.weekly && Array.isArray(sched.weekly)) {
-              const mapDays = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche']
-              const nextWeekly: any = {}
-              for (let i = 0; i < mapDays.length; i++) {
-                const w = sched.weekly.find((it: any) => Number(it.weekday) === i)
-                nextWeekly[mapDays[i] as any] = {
-                  enabled: !!w?.enabled,
-                  start: String(w?.start || '10:00'),
-                  end: String(w?.end || '22:00')
-                }
+          const sched = normalizeScheduleData(p.timeSlots)
+          if (sched?.weekly && Array.isArray(sched.weekly)) {
+            const mapDays = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche']
+            const nextWeekly: Record<string, DaySlot> = {} as Record<string, DaySlot>
+            for (let i = 0; i < mapDays.length; i++) {
+              const w = sched.weekly.find((it: any) => Number(it.weekday) === i)
+              const dayKey = mapDays[i]
+              nextWeekly[dayKey] = {
+                enabled: !!w?.enabled,
+                start: String(w?.start || '10:00'),
+                end: String(w?.end || '22:00')
               }
-              setWeekly(nextWeekly)
             }
-            // Pause
-            if (sched?.pause) {
-              setPauseEnabled(true)
-              setPauseStart(String(sched.pause.start || ''))
-              setPauseEnd(String(sched.pause.end || ''))
-            } else {
-              setPauseEnabled(false)
-              setPauseStart('')
-              setPauseEnd('')
-            }
-            // Absences
-            if (Array.isArray(sched?.absences)) {
-              setAbsences(sched.absences.map((a: any, idx: number) => ({ id: String(a.id || idx), start: String(a.start || ''), end: String(a.end || '') })))
-            }
+            setWeekly(nextWeekly)
+          }
+
+          if (sched?.pause) {
+            setPauseEnabled(true)
+            setPauseStart(String(sched.pause.start || ''))
+            setPauseEnd(String(sched.pause.end || ''))
+          } else {
+            setPauseEnabled(false)
+            setPauseStart('')
+            setPauseEnd('')
+          }
+
+          if (Array.isArray(sched?.absences)) {
+            setAbsences(sched.absences.map((a: any, idx: number) => ({ id: String(a.id || idx), start: String(a.start || ''), end: String(a.end || '') })))
           }
         } catch {}
       } catch {}

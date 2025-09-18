@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { calculateAvailability } from '@/lib/availability-calculator'
+import { calculateAvailability, normalizeScheduleData } from '@/lib/availability-calculator'
 
 export async function GET(
   request: NextRequest,
@@ -162,6 +162,8 @@ export async function GET(
     // DEBUG: Log des médias parsés
     console.log(`[DEBUG] Profile ${profileId} - Found ${media.length} media from galleryPhotos:`, media)
 
+    const normalizedSchedule = normalizeScheduleData(escort.timeSlots)
+
     // Construire les tarifs (tous les tarifs disponibles)
     const rates = {
       rate1H: escort.rate1H || undefined,
@@ -248,7 +250,7 @@ export async function GET(
         console.log(`[PROFILE ${profileId}] weekendAvailable (base):`, escort.weekendAvailable)
 
         const availability = calculateAvailability(
-          escort.timeSlots,
+          normalizedSchedule ?? escort.timeSlots,
           escort.availableNow || false
         )
 
@@ -257,19 +259,7 @@ export async function GET(
         return availability
       })(),
       // Données agenda brutes pour la modal horaires
-      scheduleData: (() => {
-        try {
-          const timeSlots = escort.timeSlots
-          console.log(`🔍 [API PROFILE ${profileId}] Raw timeSlots from DB:`, timeSlots)
-          if (!timeSlots) return null
-          const parsed = typeof timeSlots === 'string' ? JSON.parse(timeSlots) : timeSlots
-          console.log(`🔍 [API PROFILE ${profileId}] Parsed scheduleData:`, parsed)
-          return parsed
-        } catch (e) {
-          console.log(`❌ [API PROFILE ${profileId}] Error parsing timeSlots:`, e)
-          return null
-        }
-      })(),
+      scheduleData: normalizedSchedule,
       age,
       updatedAt: escort.updatedAt
     }

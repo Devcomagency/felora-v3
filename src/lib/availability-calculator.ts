@@ -7,9 +7,9 @@ export interface TimeSlot {
 
 export interface WeeklySchedule {
   weekday: number // 0=Lundi, 1=Mardi, etc.
-  enabled: boolean // Dashboard utilise 'enabled' pas 'available'
-  start: string // "09:00" - directement dans l'objet
-  end: string   // "18:00" - directement dans l'objet
+  enabled: boolean // Champ normalisé (prend en charge enabled/available/isOpen)
+  start?: string // "09:00" - directement dans l'objet
+  end?: string   // "18:00" - directement dans l'objet
 }
 
 export interface PauseSchedule {
@@ -27,6 +27,64 @@ export interface ScheduleData {
   weekly?: WeeklySchedule[]
   pause?: PauseSchedule | null
   absences?: AbsenceSchedule[]
+}
+
+type RawScheduleInput = string | ScheduleData | null | undefined
+
+/**
+ * Uniformise les données d'agenda quel que soit le format historique
+ */
+export function normalizeScheduleData(input: RawScheduleInput): ScheduleData | null {
+  if (!input) return null
+
+  let raw: any
+  try {
+    raw = typeof input === 'string' ? JSON.parse(input) : input
+  } catch (error) {
+    console.warn('[AVAILABILITY] Failed to parse schedule data', error)
+    return null
+  }
+
+  const weekly: WeeklySchedule[] = Array.isArray(raw?.weekly)
+    ? raw.weekly.map((entry: any, index: number) => {
+        const weekdayRaw = entry?.weekday
+        const weekday = Number.isInteger(weekdayRaw)
+          ? weekdayRaw
+          : Number.parseInt(weekdayRaw, 10)
+
+        const timeSource = entry?.timeSlot || entry?.hours || entry
+        const start = timeSource?.start ?? timeSource?.from ?? entry?.start ?? null
+        const end = timeSource?.end ?? timeSource?.to ?? entry?.end ?? null
+
+        const enabledValue = entry?.enabled ?? entry?.available ?? entry?.isAvailable ?? entry?.isOpen ?? entry?.open
+
+        return {
+          weekday: Number.isInteger(weekday) ? weekday : index,
+          enabled: Boolean(enabledValue),
+          start: start != null ? String(start) : undefined,
+          end: end != null ? String(end) : undefined
+        }
+      })
+    : []
+
+  const pause = raw?.pause?.start && raw?.pause?.end
+    ? {
+        start: String(raw.pause.start),
+        end: String(raw.pause.end)
+      }
+    : null
+
+  const absences: AbsenceSchedule[] = Array.isArray(raw?.absences)
+    ? raw.absences
+        .filter((absence: any) => absence?.start && absence?.end)
+        .map((absence: any, idx: number) => ({
+          id: String(absence.id ?? idx),
+          start: String(absence.start),
+          end: String(absence.end)
+        }))
+    : []
+
+  return { weekly, pause, absences }
 }
 
 export interface AvailabilityStatus {
@@ -56,8 +114,10 @@ export function calculateAvailability(
   console.log(`[AVAILABILITY] Input availableNow:`, availableNow)
   console.log(`[AVAILABILITY] Current time: ${now.toISOString()}, Day: ${currentDay}, Time: ${currentTime}`)
 
+  const scheduleData = normalizeScheduleData(timeSlots)
+
   // Fallback si pas d'agenda défini - plus permissif pour les tests
-  if (!timeSlots) {
+  if (!scheduleData) {
     console.log(`[AVAILABILITY] No timeSlots, using fallback - availableNow:`, availableNow)
     return {
       isAvailable: !!availableNow,
@@ -66,19 +126,7 @@ export function calculateAvailability(
     }
   }
 
-  // Parser les données d'agenda
-  let scheduleData: ScheduleData
-  try {
-    scheduleData = typeof timeSlots === 'string' ? JSON.parse(timeSlots) : timeSlots
-    console.log(`[AVAILABILITY] Parsed scheduleData:`, scheduleData)
-  } catch (e) {
-    console.log(`[AVAILABILITY] Failed to parse timeSlots:`, e)
-    return {
-      isAvailable: !!availableNow,
-      status: availableNow ? 'available' : 'unavailable',
-      message: availableNow ? 'Disponible maintenant' : 'Agenda invalide'
-    }
-  }
+  console.log(`[AVAILABILITY] Parsed scheduleData:`, scheduleData)
 
   // 1. Vérifier si en pause générale
   if (scheduleData.pause) {
@@ -126,7 +174,7 @@ export function calculateAvailability(
   console.log(`🚨🚨🚨 [PLANNING] currentDay (calculé):`, currentDay)
   console.log(`🚨🚨🚨 [PLANNING] Date complète:`, new Date().toLocaleDateString('fr-CH'), new Date().toLocaleString('fr-CH'))
 
-  if (!scheduleData.weekly || !Array.isArray(scheduleData.weekly)) {
+  if (!scheduleData.weekly || !Array.isArray(scheduleData.weekly) || scheduleData.weekly.length === 0) {
     console.log(`🚨🚨🚨 [PLANNING] PAS DE PLANNING HEBDOMADAIRE - utilise availableNow:`, availableNow)
     return {
       isAvailable: !!availableNow,
@@ -135,14 +183,15 @@ export function calculateAvailability(
     }
   }
 
-  const todaySchedule = scheduleData.weekly.find(day => day.weekday === currentDay)
+  const weekly = scheduleData.weekly
+  const todaySchedule = weekly.find(day => day.weekday === currentDay)
   console.log(`🚨🚨🚨 [PLANNING] todaySchedule trouvé:`, todaySchedule)
 
   if (!todaySchedule || !todaySchedule.enabled) {
     console.log(`🚨🚨🚨 [PLANNING] PAS DE PLANNING AUJOURD'HUI ou enabled=false`)
     console.log(`🚨🚨🚨 [PLANNING] todaySchedule:`, todaySchedule)
     // Pas disponible aujourd'hui, chercher le prochain jour disponible
-    const nextAvailable = findNextAvailableDay(scheduleData.weekly, currentDay)
+    const nextAvailable = findNextAvailableDay(weekly, currentDay)
 
     return {
       isAvailable: false,
@@ -153,27 +202,60 @@ export function calculateAvailability(
   }
 
   // 4. Vérifier les heures de disponibilité (format dashboard direct)
-  console.log(`🚨🚨🚨 [HORAIRES] todaySchedule.start:`, todaySchedule.start, `todaySchedule.end:`, todaySchedule.end)
-  if (todaySchedule.start && todaySchedule.end) {
-    const startTime = parseTime(todaySchedule.start)
-    const endTime = parseTime(todaySchedule.end)
+  const startStr = todaySchedule.start
+  const endStr = todaySchedule.end
+  console.log(`🚨🚨🚨 [HORAIRES] todaySchedule.start:`, startStr, `todaySchedule.end:`, endStr)
+  if (startStr && endStr) {
+    let startTime = parseTime(startStr)
+    let endTime = parseTime(endStr)
     console.log(`🚨🚨🚨 [HORAIRES] startTime:`, startTime, `endTime:`, endTime, `currentTime:`, currentTime)
+
+    // Support des horaires qui dépassent minuit (ex: 20:00 - 02:00)
+    if (endTime <= startTime) {
+      const inSameDayRange = currentTime >= startTime
+      const inAfterMidnightRange = currentTime < endTime
+
+      if (inSameDayRange || inAfterMidnightRange) {
+        return {
+          isAvailable: true,
+          status: 'available',
+          message: `Disponible jusqu'à ${endStr}`
+        }
+      }
+
+      if (currentTime < startTime) {
+        return {
+          isAvailable: false,
+          status: 'unavailable',
+          message: `Disponible dès ${startStr}`
+        }
+      }
+
+      const nextAvailable = findNextAvailableDay(weekly, currentDay)
+
+      return {
+        isAvailable: false,
+        status: 'unavailable',
+        message: 'Fermé pour aujourd\'hui',
+        nextAvailable
+      }
+    }
 
     if (currentTime >= startTime && currentTime <= endTime) {
       return {
         isAvailable: true,
         status: 'available',
-        message: `Disponible jusqu'à ${todaySchedule.end}`
+        message: `Disponible jusqu'à ${endStr}`
       }
     } else if (currentTime < startTime) {
       return {
         isAvailable: false,
         status: 'unavailable',
-        message: `Disponible dès ${todaySchedule.start}`
+        message: `Disponible dès ${startStr}`
       }
     } else {
       // Après les heures, chercher la prochaine disponibilité
-      const nextAvailable = findNextAvailableDay(scheduleData.weekly, currentDay)
+      const nextAvailable = findNextAvailableDay(weekly, currentDay)
 
       return {
         isAvailable: false,

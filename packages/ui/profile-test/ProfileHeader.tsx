@@ -1,7 +1,8 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { Star, Crown, MapPin } from 'lucide-react'
+import { normalizeScheduleData } from '@/lib/availability-calculator'
 
 interface ProfileHeaderProps {
   name: string
@@ -68,6 +69,10 @@ export default function ProfileHeader({
 }: ProfileHeaderProps) {
   // Animation des viewers retirée
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false)
+
+  const normalizedSchedule = useMemo(() => normalizeScheduleData(scheduleData), [scheduleData])
+  const weeklyEntries = normalizedSchedule?.weekly ?? []
+  const dayNames = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche']
 
   return (
     <div className="px-4 pt-4 pb-6">
@@ -278,56 +283,63 @@ export default function ProfileHeader({
 
             {/* Content */}
             <div className="p-4 overflow-y-auto max-h-[60vh]">
-              {!scheduleData ? (
+              {!normalizedSchedule ? (
                 <div className="text-center text-white/60 py-8">
                   📋 Aucun planning configuré
                 </div>
               ) : (
                 <div className="space-y-4">
                   {/* Planning hebdomadaire */}
-                  {scheduleData.weekly && scheduleData.weekly.length > 0 && (
+                  {weeklyEntries.length > 0 && (
                     <div>
                       <h3 className="text-sm font-medium text-white mb-3">📅 Planning hebdomadaire</h3>
                       <div className="space-y-2">
-                        {scheduleData.weekly.map((day: any, index: number) => (
-                          <div key={index} className="flex items-center justify-between p-2 rounded-lg bg-white/5 border border-white/10">
-                            <span className="text-sm text-white font-medium">
-                              {['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'][day.weekday] || `Jour ${day.weekday}`}
-                            </span>
-                            <div className="text-xs">
-                              {day.available ? (
-                                <span className="text-green-400">
-                                  {day.timeSlot ? `${day.timeSlot.start} - ${day.timeSlot.end}` : 'Toute la journée'}
-                                </span>
-                              ) : (
-                                <span className="text-red-400">Indisponible</span>
-                              )}
+                        {weeklyEntries.map((day, index) => {
+                          const weekdayIndex = Number.isInteger(day.weekday) ? day.weekday : index
+                          const label = dayNames[weekdayIndex] || `Jour ${weekdayIndex}`
+                          const isAvailable = !!day.enabled
+                          const start = day.start
+                          const end = day.end
+                          const hasSlot = Boolean(start && end)
+
+                          return (
+                            <div key={`${weekdayIndex}-${index}`} className="flex items-center justify-between p-2 rounded-lg bg-white/5 border border-white/10">
+                              <span className="text-sm text-white font-medium">{label}</span>
+                              <div className="text-xs">
+                                {isAvailable ? (
+                                  <span className="text-green-400">
+                                    {hasSlot ? `${start} - ${end}` : 'Toute la journée'}
+                                  </span>
+                                ) : (
+                                  <span className="text-red-400">Indisponible</span>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          )
+                        })}
                       </div>
                     </div>
                   )}
 
                   {/* Pause générale */}
-                  {scheduleData.pause && (
+                  {normalizedSchedule.pause && (
                     <div>
                       <h3 className="text-sm font-medium text-white mb-3">⏸️ Pause générale</h3>
                       <div className="p-3 rounded-lg bg-orange-500/10 border border-orange-500/20">
                         <div className="text-sm text-orange-300">
-                          Du {new Date(scheduleData.pause.start).toLocaleDateString('fr-CH')}
-                          au {new Date(scheduleData.pause.end).toLocaleDateString('fr-CH')}
+                          Du {new Date(normalizedSchedule.pause.start).toLocaleDateString('fr-CH')}
+                          au {new Date(normalizedSchedule.pause.end).toLocaleDateString('fr-CH')}
                         </div>
                       </div>
                     </div>
                   )}
 
                   {/* Absences spécifiques */}
-                  {scheduleData.absences && scheduleData.absences.length > 0 && (
+                  {normalizedSchedule.absences && normalizedSchedule.absences.length > 0 && (
                     <div>
                       <h3 className="text-sm font-medium text-white mb-3">🚫 Absences spécifiques</h3>
                       <div className="space-y-2">
-                        {scheduleData.absences.map((absence: any) => (
+                        {normalizedSchedule.absences.map((absence) => (
                           <div key={absence.id} className="p-2 rounded-lg bg-red-500/10 border border-red-500/20">
                             <div className="text-sm text-red-300">
                               Du {new Date(absence.start).toLocaleDateString('fr-CH')}
@@ -340,9 +352,9 @@ export default function ProfileHeader({
                   )}
 
                   {/* Message si pas de données */}
-                  {(!scheduleData.weekly || scheduleData.weekly.length === 0) &&
-                   !scheduleData.pause &&
-                   (!scheduleData.absences || scheduleData.absences.length === 0) && (
+                  {weeklyEntries.length === 0 &&
+                   !normalizedSchedule.pause &&
+                   (!normalizedSchedule.absences || normalizedSchedule.absences.length === 0) && (
                     <div className="text-center text-white/60 py-4">
                       📋 Aucun planning détaillé configuré
                     </div>
