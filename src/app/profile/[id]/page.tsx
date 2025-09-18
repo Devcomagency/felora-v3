@@ -13,7 +13,6 @@ import { GiftToast } from '@/components/gifts/GiftToast'
 import MediaFeedWithGallery from '../../../../packages/ui/profile-test/MediaFeedWithGallery'
 import { AboutSection, RatesSection, AvailabilitySection, PhysicalDetailsSection } from '../../../../packages/ui/profile-test/Sections'
 import { CommentsSection } from '../../../components/comments/CommentsSection'
-import { AvailabilityDetailed } from '@/components/profile/AvailabilityStatus'
 import { AvailabilityStatus as AvailabilityStatusType, ScheduleData } from '@/lib/availability-calculator'
 
 interface EscortProfile {
@@ -942,13 +941,6 @@ export default function EscortProfilePage() {
                 </div>
               )}
 
-              {/* Disponibilité en temps réel */}
-              {profile.realTimeAvailability && (
-                <AvailabilityDetailed
-                  status={profile.realTimeAvailability}
-                  scheduleData={profile.scheduleData}
-                />
-              )}
 
               {/* Options de service */}
               {extendedProfileData.availability && (extendedProfileData.availability.incall || extendedProfileData.availability.outcall || extendedProfileData.availability.weekendAvailable || extendedProfileData.availability.minimumDuration) && (
