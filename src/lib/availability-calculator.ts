@@ -45,6 +45,17 @@ export function normalizeScheduleData(input: RawScheduleInput): ScheduleData | n
     return null
   }
 
+  const toBoolean = (value: any) => {
+    if (typeof value === 'boolean') return value
+    if (typeof value === 'number') return value !== 0
+    if (typeof value === 'string') {
+      const lowered = value.toLowerCase().trim()
+      if (['true', '1', 'yes', 'oui'].includes(lowered)) return true
+      if (['false', '0', 'no', 'non', ''].includes(lowered)) return false
+    }
+    return Boolean(value)
+  }
+
   const weekly: WeeklySchedule[] = Array.isArray(raw?.weekly)
     ? raw.weekly.map((entry: any, index: number) => {
         const weekdayRaw = entry?.weekday
@@ -60,7 +71,7 @@ export function normalizeScheduleData(input: RawScheduleInput): ScheduleData | n
 
         return {
           weekday: Number.isInteger(weekday) ? weekday : index,
-          enabled: Boolean(enabledValue),
+          enabled: toBoolean(enabledValue),
           start: start != null ? String(start) : undefined,
           end: end != null ? String(end) : undefined
         }
