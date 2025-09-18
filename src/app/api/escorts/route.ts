@@ -104,10 +104,10 @@ export async function GET(request: NextRequest) {
           canton: true,
           isVerifiedBadge: true,
           profilePhoto: true,
+          languages: true,
+          services: true,
           rate1H: true,
           rate2H: true,
-          rateHalfDay: true,
-          rateFullDay: true,
           rateOvernight: true,
           updatedAt: true,
           dateOfBirth: true,
@@ -166,12 +166,26 @@ export async function GET(request: NextRequest) {
           isActive: e.status === 'ACTIVE',
           profilePhoto: e.profilePhoto || undefined,
           heroMedia,
-          languages: [], // Pas encore ajouté pour éviter erreur parsing
-          services: [], // Pas encore ajouté pour éviter erreur parsing
+          languages: (() => {
+            try {
+              const L = JSON.parse(String(e.languages || '[]'))
+              return Array.isArray(L) ? L : []
+            } catch (err) {
+              console.warn(`[API ESCORTS] Failed to parse languages for ${e.id}:`, err)
+              return []
+            }
+          })(),
+          services: (() => {
+            try {
+              const S = JSON.parse(String(e.services || '[]'))
+              return Array.isArray(S) ? S : []
+            } catch (err) {
+              console.warn(`[API ESCORTS] Failed to parse services for ${e.id}:`, err)
+              return []
+            }
+          })(),
           rate1H: e.rate1H || undefined,
           rate2H: e.rate2H || undefined,
-          rateHalfDay: e.rateHalfDay || undefined,
-          rateFullDay: e.rateFullDay || undefined,
           rateOvernight: e.rateOvernight || undefined,
           updatedAt: e.updatedAt,
           // Valeurs par défaut pour compatibilité frontend
