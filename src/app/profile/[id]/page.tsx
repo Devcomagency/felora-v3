@@ -763,12 +763,37 @@ export default function EscortProfilePage() {
                     </div>
                     <h3 className="text-sm font-semibold text-white">Services proposés</h3>
                   </div>
-                  <div className="grid grid-cols-1 gap-2">
-                    {extendedProfileData.services.map((service, index) => (
-                      <div key={index} className="p-2 rounded-xl bg-gradient-to-br from-purple-500/5 to-pink-600/10 backdrop-blur-sm border border-purple-500/20">
-                        <div className="text-xs font-medium text-white">{service}</div>
-                      </div>
-                    ))}
+                  <div className="flex flex-wrap gap-2">
+                    {extendedProfileData.services.map((service, index) => {
+                      // Déterminer la couleur de la pilule selon le type de service
+                      const getServiceStyle = (service: string): string => {
+                        // Catégories principales
+                        if (['escort', 'masseuse-erotique', 'dominatrice-bdsm', 'transsexuel'].includes(service)) {
+                          return 'bg-felora-aurora/20 border-felora-aurora/30 text-felora-aurora'
+                        }
+                        // Services premium (BDSM, anal, etc.)
+                        if (['Domination soft', 'Fessées', 'Donjon SM', 'Sodomie (donne)', 'Sodomie (reçoit)', 'PSE'].includes(service)) {
+                          return 'bg-felora-neural/20 border-felora-neural/30 text-felora-neural'
+                        }
+                        // Massages
+                        if (['Tantrique', 'Érotique', 'Corps à corps', 'Nuru', 'Prostate', 'Lingam', 'Yoni'].includes(service)) {
+                          return 'bg-felora-quantum/20 border-felora-quantum/30 text-felora-quantum'
+                        }
+                        // Services standards
+                        return 'bg-felora-plasma/20 border-felora-plasma/30 text-felora-plasma'
+                      }
+
+                      const serviceStyle = getServiceStyle(service)
+
+                      return (
+                        <div
+                          key={index}
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border transition-all hover:scale-105 ${serviceStyle}`}
+                        >
+                          <span className="text-xs font-medium">{service}</span>
+                        </div>
+                      )
+                    })}
                   </div>
                 </div>
               )}
@@ -870,6 +895,94 @@ export default function EscortProfilePage() {
                   </div>
                 </div>
               )}
+
+              {/* Lieu & Options */}
+              {extendedProfileData.availability && (extendedProfileData.availability.incall || extendedProfileData.availability.outcall || extendedProfileData.availability.workingArea) && (
+                <div className="relative">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-5 h-5 rounded-full bg-gradient-to-r from-teal-500 to-cyan-600 flex items-center justify-center">
+                      <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd"/>
+                      </svg>
+                    </div>
+                    <h3 className="text-sm font-semibold text-white">Lieu & Options</h3>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {extendedProfileData.availability.incall && (
+                      <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border bg-teal-500/20 border-teal-500/30 text-teal-300 transition-all hover:scale-105">
+                        <span className="text-xs">🏠</span>
+                        <span className="text-xs font-medium">Reçoit</span>
+                      </div>
+                    )}
+                    {extendedProfileData.availability.outcall && (
+                      <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border bg-teal-500/20 border-teal-500/30 text-teal-300 transition-all hover:scale-105">
+                        <span className="text-xs">🚗</span>
+                        <span className="text-xs font-medium">Se déplace</span>
+                      </div>
+                    )}
+                    {extendedProfileData.availability.workingArea && (
+                      <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border bg-teal-500/20 border-teal-500/30 text-teal-300 transition-all hover:scale-105">
+                        <span className="text-xs">📍</span>
+                        <span className="text-xs font-medium">{extendedProfileData.availability.workingArea}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Moyens de paiement acceptés - Section placeholder */}
+              <div className="relative">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-5 h-5 rounded-full bg-gradient-to-r from-emerald-500 to-green-600 flex items-center justify-center">
+                    <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z"/>
+                      <path fillRule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clipRule="evenodd"/>
+                    </svg>
+                  </div>
+                  <h3 className="text-sm font-semibold text-white">Moyens de paiement</h3>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border bg-emerald-500/20 border-emerald-500/30 text-emerald-300 transition-all hover:scale-105">
+                    <span className="text-xs">💳</span>
+                    <span className="text-xs font-medium">Cartes</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border bg-emerald-500/20 border-emerald-500/30 text-emerald-300 transition-all hover:scale-105">
+                    <span className="text-xs">💵</span>
+                    <span className="text-xs font-medium">Espèces</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border bg-emerald-500/20 border-emerald-500/30 text-emerald-300 transition-all hover:scale-105">
+                    <span className="text-xs">📱</span>
+                    <span className="text-xs font-medium">Twint</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Devises acceptées */}
+              <div className="relative">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-5 h-5 rounded-full bg-gradient-to-r from-yellow-500 to-orange-600 flex items-center justify-center">
+                    <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"/>
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clipRule="evenodd"/>
+                    </svg>
+                  </div>
+                  <h3 className="text-sm font-semibold text-white">Devises acceptées</h3>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border bg-yellow-500/20 border-yellow-500/30 text-yellow-300 transition-all hover:scale-105">
+                    <span className="text-xs">🇨🇭</span>
+                    <span className="text-xs font-medium">CHF</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border bg-yellow-500/20 border-yellow-500/30 text-yellow-300 transition-all hover:scale-105">
+                    <span className="text-xs">🇪🇺</span>
+                    <span className="text-xs font-medium">EUR</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border bg-yellow-500/20 border-yellow-500/30 text-yellow-300 transition-all hover:scale-105">
+                    <span className="text-xs">🇺🇸</span>
+                    <span className="text-xs font-medium">USD</span>
+                  </div>
+                </div>
+              </div>
 
               {/* Pratiques spécialisées */}
               {extendedProfileData.practices && extendedProfileData.practices.length > 0 && (
