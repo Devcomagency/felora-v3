@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { calculateAvailability } from '@/lib/availability-calculator'
 
 export async function GET(
   request: NextRequest,
@@ -237,6 +238,11 @@ export async function GET(
         })(),
         workingArea: escort.workingArea || undefined
       },
+      // Calcul de disponibilité en temps réel basé sur l'agenda
+      realTimeAvailability: calculateAvailability(
+        escort.timeSlots,
+        escort.availableNow || false
+      ),
       age,
       updatedAt: escort.updatedAt
     }

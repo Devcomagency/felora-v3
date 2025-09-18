@@ -13,6 +13,8 @@ import { GiftToast } from '@/components/gifts/GiftToast'
 import MediaFeedWithGallery from '../../../../packages/ui/profile-test/MediaFeedWithGallery'
 import { AboutSection, RatesSection, AvailabilitySection, PhysicalDetailsSection } from '../../../../packages/ui/profile-test/Sections'
 import { CommentsSection } from '../../../components/comments/CommentsSection'
+import { AvailabilityDetailed } from '@/components/profile/AvailabilityStatus'
+import { AvailabilityStatus as AvailabilityStatusType } from '@/lib/availability-calculator'
 
 interface EscortProfile {
   id: string
@@ -73,6 +75,13 @@ interface EscortProfile {
   profile?: string
   specialties?: string[]
   additionalLanguages?: string[]
+  realTimeAvailability?: AvailabilityStatusType
+  clientele?: {
+    acceptsCouples?: boolean
+    acceptsWomen?: boolean
+    acceptsSeniors?: boolean
+    acceptsHandicapped?: boolean
+  }
 }
 
 // Loading skeleton
@@ -855,8 +864,13 @@ export default function EscortProfilePage() {
                 </div>
               )}
 
-              {/* Disponibilité */}
-              {extendedProfileData.availability && (
+              {/* Disponibilité en temps réel */}
+              {profile.realTimeAvailability && (
+                <AvailabilityDetailed status={profile.realTimeAvailability} />
+              )}
+
+              {/* Options de service */}
+              {extendedProfileData.availability && (extendedProfileData.availability.incall || extendedProfileData.availability.outcall || extendedProfileData.availability.weekendAvailable || extendedProfileData.availability.minimumDuration) && (
                 <div className="relative">
                   <div className="flex items-center gap-2 mb-3">
                     <div className="w-5 h-5 rounded-full bg-gradient-to-r from-orange-500 to-red-600 flex items-center justify-center">
@@ -864,32 +878,31 @@ export default function EscortProfilePage() {
                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd"/>
                       </svg>
                     </div>
-                    <h3 className="text-sm font-semibold text-white">Disponibilité</h3>
+                    <h3 className="text-sm font-semibold text-white">Options de service</h3>
                   </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    {extendedProfileData.availability.availableNow && (
-                      <div className="p-2 rounded-xl bg-gradient-to-br from-green-500/20 to-emerald-600/20 backdrop-blur-sm border border-green-500/30">
-                        <div className="text-xs text-green-300 font-medium">✓ Disponible maintenant</div>
-                      </div>
-                    )}
+                  <div className="flex flex-wrap gap-2">
                     {extendedProfileData.availability.incall && (
-                      <div className="p-2 rounded-xl bg-gradient-to-br from-orange-500/5 to-red-600/10 backdrop-blur-sm border border-orange-500/20">
-                        <div className="text-xs text-orange-300/80 font-medium">Reçoit</div>
+                      <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border bg-orange-500/20 border-orange-500/30 text-orange-300 transition-all hover:scale-105">
+                        <span className="text-xs">🏠</span>
+                        <span className="text-xs font-medium">Reçoit</span>
                       </div>
                     )}
                     {extendedProfileData.availability.outcall && (
-                      <div className="p-2 rounded-xl bg-gradient-to-br from-orange-500/5 to-red-600/10 backdrop-blur-sm border border-orange-500/20">
-                        <div className="text-xs text-orange-300/80 font-medium">Se déplace</div>
+                      <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border bg-orange-500/20 border-orange-500/30 text-orange-300 transition-all hover:scale-105">
+                        <span className="text-xs">🚗</span>
+                        <span className="text-xs font-medium">Se déplace</span>
                       </div>
                     )}
                     {extendedProfileData.availability.weekendAvailable && (
-                      <div className="p-2 rounded-xl bg-gradient-to-br from-orange-500/5 to-red-600/10 backdrop-blur-sm border border-orange-500/20">
-                        <div className="text-xs text-orange-300/80 font-medium">Week-ends</div>
+                      <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border bg-orange-500/20 border-orange-500/30 text-orange-300 transition-all hover:scale-105">
+                        <span className="text-xs">📅</span>
+                        <span className="text-xs font-medium">Week-ends</span>
                       </div>
                     )}
                     {extendedProfileData.availability.minimumDuration && (
-                      <div className="col-span-2 p-2 rounded-xl bg-gradient-to-br from-orange-500/5 to-red-600/10 backdrop-blur-sm border border-orange-500/20">
-                        <div className="text-xs text-orange-300/80 font-medium">Durée minimum: {extendedProfileData.availability.minimumDuration}</div>
+                      <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border bg-orange-500/20 border-orange-500/30 text-orange-300 transition-all hover:scale-105">
+                        <span className="text-xs">⏰</span>
+                        <span className="text-xs font-medium">{extendedProfileData.availability.minimumDuration} min</span>
                       </div>
                     )}
                   </div>
