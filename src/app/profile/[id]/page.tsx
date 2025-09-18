@@ -14,7 +14,7 @@ import MediaFeedWithGallery from '../../../../packages/ui/profile-test/MediaFeed
 import { AboutSection, RatesSection, AvailabilitySection, PhysicalDetailsSection } from '../../../../packages/ui/profile-test/Sections'
 import { CommentsSection } from '../../../components/comments/CommentsSection'
 import { AvailabilityDetailed } from '@/components/profile/AvailabilityStatus'
-import { AvailabilityStatus as AvailabilityStatusType } from '@/lib/availability-calculator'
+import { AvailabilityStatus as AvailabilityStatusType, ScheduleData } from '@/lib/availability-calculator'
 
 interface EscortProfile {
   id: string
@@ -76,6 +76,7 @@ interface EscortProfile {
   specialties?: string[]
   additionalLanguages?: string[]
   realTimeAvailability?: AvailabilityStatusType
+  scheduleData?: ScheduleData | null
   clientele?: {
     acceptsCouples?: boolean
     acceptsWomen?: boolean
@@ -866,7 +867,10 @@ export default function EscortProfilePage() {
 
               {/* Disponibilité en temps réel */}
               {profile.realTimeAvailability && (
-                <AvailabilityDetailed status={profile.realTimeAvailability} />
+                <AvailabilityDetailed
+                  status={profile.realTimeAvailability}
+                  scheduleData={profile.scheduleData}
+                />
               )}
 
               {/* Options de service */}

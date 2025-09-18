@@ -243,6 +243,16 @@ export async function GET(
         escort.timeSlots,
         escort.availableNow || false
       ),
+      // Données agenda brutes pour la modal horaires
+      scheduleData: (() => {
+        try {
+          const timeSlots = escort.timeSlots
+          if (!timeSlots) return null
+          return typeof timeSlots === 'string' ? JSON.parse(timeSlots) : timeSlots
+        } catch {
+          return null
+        }
+      })(),
       age,
       updatedAt: escort.updatedAt
     }
