@@ -30,9 +30,9 @@ export class VideoCompressor {
     options: Partial<CompressionOptions> = {}
   ): Promise<CompressionResult> {
     const defaultOptions: CompressionOptions = {
-      maxSizeMB: 3.8, // Sous la limite Vercel de 4MB
-      maxWidthOrHeight: 1440, // Augmenté pour meilleure qualité (de 1080 → 1440)
-      quality: 0.92, // Augmenté pour meilleure qualité (de 0.8 → 0.92)
+      maxSizeMB: 15, // AUGMENTÉ: Support fichiers plus lourds pour qualité premium
+      maxWidthOrHeight: 2160, // 4K SUPPORT: 3840x2160 ou 2160p
+      quality: 0.98, // QUALITÉ MAXIMALE: Quasi sans perte
       maintainAspectRatio: true,
       ...options
     }
@@ -58,10 +58,26 @@ export class VideoCompressor {
           
           // Configuration MediaRecorder avec optimisations
           const stream = canvas.captureStream(30) // 30 FPS
-          const mediaRecorder = new MediaRecorder(stream, {
-            mimeType: 'video/webm;codecs=vp9', // VP9 pour meilleure compression
-            videoBitsPerSecond: this.calculateBitrate(width, height, defaultOptions.quality)
-          })
+          // Utiliser le meilleur codec disponible pour qualité maximale
+          let recorderOptions: MediaRecorderOptions
+
+          if (MediaRecorder.isTypeSupported('video/webm;codecs=vp9')) {
+            recorderOptions = {
+              mimeType: 'video/webm;codecs=vp9',
+              videoBitsPerSecond: this.calculatePremiumBitrate(width, height, defaultOptions.quality)
+            }
+          } else if (MediaRecorder.isTypeSupported('video/webm;codecs=h264')) {
+            recorderOptions = {
+              mimeType: 'video/webm;codecs=h264',
+              videoBitsPerSecond: this.calculatePremiumBitrate(width, height, defaultOptions.quality)
+            }
+          } else {
+            recorderOptions = {
+              videoBitsPerSecond: this.calculatePremiumBitrate(width, height, defaultOptions.quality)
+            }
+          }
+
+          const mediaRecorder = new MediaRecorder(stream, recorderOptions)
           
           const chunks: BlobPart[] = []
           let startTime = Date.now()
@@ -79,10 +95,11 @@ export class VideoCompressor {
             // Si toujours trop gros, réduire davantage la qualité
             if (compressedSize > defaultOptions.maxSizeMB * 1024 * 1024) {
               console.log('🔄 Fichier encore trop volumineux, compression supplémentaire...')
+              // Compression de secours TRÈS conservatrice pour préserver la qualité
               const newOptions = {
                 ...defaultOptions,
-                quality: defaultOptions.quality * 0.85, // Moins agressif (0.7 → 0.85)
-                maxWidthOrHeight: Math.floor(defaultOptions.maxWidthOrHeight * 0.95) // Moins agressif (0.9 → 0.95)
+                quality: Math.max(defaultOptions.quality * 0.95, 0.85), // Réduction minimale
+                maxWidthOrHeight: Math.max(Math.floor(defaultOptions.maxWidthOrHeight * 0.98), 1080) // Jamais en dessous de 1080p
               }
               
               try {
@@ -174,6 +191,31 @@ export class VideoCompressor {
     const pixelCount = width * height
     const baseRate = pixelCount * 0.1 // Base: 0.1 bits par pixel
     return Math.floor(baseRate * quality)
+  }
+
+  private calculatePremiumBitrate(width: number, height: number, quality: number): number {
+    // Calcul bitrate PREMIUM pour qualité maximale
+    const pixelCount = width * height
+
+    // Bitrate adaptatif selon la résolution (plus haute résolution = plus de bitrate par pixel)
+    let bitsPerPixel: number
+
+    if (pixelCount >= 3840 * 2160) { // 4K+
+      bitsPerPixel = 0.8 // Bitrate très élevé pour 4K
+    } else if (pixelCount >= 2560 * 1440) { // 1440p+
+      bitsPerPixel = 0.6 // Bitrate élevé pour 1440p
+    } else if (pixelCount >= 1920 * 1080) { // 1080p+
+      bitsPerPixel = 0.4 // Bitrate moyen-élevé pour 1080p
+    } else { // 720p et moins
+      bitsPerPixel = 0.2 // Bitrate standard
+    }
+
+    const premiumRate = pixelCount * bitsPerPixel * quality
+
+    // Bitrate minimum pour éviter la pixelisation
+    const minBitrate = 2000000 // 2 Mbps minimum
+
+    return Math.max(Math.floor(premiumRate), minBitrate)
   }
 
   // Prévisualisation de la compression
