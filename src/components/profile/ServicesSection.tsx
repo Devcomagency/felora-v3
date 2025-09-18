@@ -14,20 +14,64 @@ interface ServicesSectionProps {
 }
 
 const SERVICE_ICONS: Record<string, string> = {
-  'Escort Premium': '💎',
-  'Massage Relaxant': '💆‍♀️',
-  'Soirées VIP': '🥂',
-  'Service Discret': '🔒',
-  'Accompagnement': '👥',
-  'Dîner': '🍽️',
-  'Voyage': '✈️',
-  'Weekend': '🏖️',
-  'Massage Sensuel': '🌹',
-  'BDSM': '🔗',
-  'Fetish': '👠',
-  'Couple': '💑',
-  'Groupe': '👥',
-  'Médias Privés': '📸'
+  // Catégories principales
+  'escort': '💎',
+  'masseuse-erotique': '💆‍♀️',
+  'dominatrice-bdsm': '👑',
+  'transsexuel': '🌈',
+
+  // Services classiques
+  'Rapport': '💕',
+  'French kiss': '💋',
+  'GFE': '🌹',
+  'PSE': '🔥',
+  'Lingerie': '👙',
+  'Duo/Trio': '👥',
+  'Jeux de rôles': '🎭',
+  'Costumes': '👗',
+
+  // Services oraux
+  'Fellation protégée': '🛡️',
+  'Fellation nature': '💋',
+  'Gorge profonde': '🔥',
+  'Éjac en bouche': '💋',
+  'Éjac sur le corps': '💦',
+  'Éjac sur le visage': '💦',
+
+  // Services anaux
+  'Sodomie (donne)': '🍑',
+  'Sodomie (reçoit)': '🍑',
+  'Doigté anal': '👆',
+
+  // BDSM & Fétiches
+  'Domination soft': '👑',
+  'Fessées': '✋',
+  'Donjon SM': '🔗',
+  'Fétichisme pieds': '👠',
+
+  // Massages
+  'Tantrique': '🧘‍♀️',
+  'Érotique': '🌹',
+  'Corps à corps': '🤗',
+  'Nuru': '💆‍♀️',
+  'Prostate': '💆‍♂️',
+  'Lingam': '🕉️',
+  'Yoni': '🌸',
+  '4 mains': '👐',
+  'Suédois': '💆‍♀️',
+  'Huiles': '🛢️',
+
+  // Options lieu
+  'Douche à deux': '🚿',
+  'Jacuzzi': '🛁',
+  'Sauna': '🔥',
+  'Climatisation': '❄️',
+  'Fumoir': '🚬',
+  'Parking': '🚗',
+  'Accès handicapé': '♿',
+  'Ambiance musicale': '🎵',
+  'Bar': '🍸',
+  'Pole dance': '💃'
 }
 
 const LANGUAGE_FLAGS: Record<string, string> = {
@@ -49,6 +93,36 @@ export default function ServicesSection({ services, languages, rates }: Services
     return `${price} ${currency}`
   }
 
+  // Nettoyer les services (enlever préfixes srv: et opt: si présents)
+  const cleanService = (service: string): string => {
+    if (service.startsWith('srv:')) return service.substring(4)
+    if (service.startsWith('opt:')) return service.substring(4)
+    return service
+  }
+
+  // Déterminer la couleur de la pilule selon le type de service
+  const getServiceStyle = (service: string): string => {
+    const cleanedService = cleanService(service)
+
+    // Catégories principales
+    if (['escort', 'masseuse-erotique', 'dominatrice-bdsm', 'transsexuel'].includes(cleanedService)) {
+      return 'bg-felora-aurora/20 border-felora-aurora/30 text-felora-aurora'
+    }
+
+    // Services premium (BDSM, anal, etc.)
+    if (['Domination soft', 'Fessées', 'Donjon SM', 'Sodomie (donne)', 'Sodomie (reçoit)', 'PSE'].includes(cleanedService)) {
+      return 'bg-felora-neural/20 border-felora-neural/30 text-felora-neural'
+    }
+
+    // Massages
+    if (['Tantrique', 'Érotique', 'Corps à corps', 'Nuru', 'Prostate', 'Lingam', 'Yoni'].includes(cleanedService)) {
+      return 'bg-felora-quantum/20 border-felora-quantum/30 text-felora-quantum'
+    }
+
+    // Services standards
+    return 'bg-felora-plasma/20 border-felora-plasma/30 text-felora-plasma'
+  }
+
   return (
     <div className="space-y-6">
       {/* Services */}
@@ -56,20 +130,25 @@ export default function ServicesSection({ services, languages, rates }: Services
         <div className="bg-black/40 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
           <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
             <CheckCircle size={20} className="text-felora-aurora" />
-            Services
+            Services proposés
           </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {services.map((service, index) => (
-              <div
-                key={index}
-                className="flex items-center gap-3 p-3 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-colors"
-              >
-                <span className="text-2xl">
-                  {SERVICE_ICONS[service] || '✨'}
-                </span>
-                <span className="text-white/90 font-medium">{service}</span>
-              </div>
-            ))}
+          <div className="flex flex-wrap gap-2">
+            {services.map((service, index) => {
+              const cleanedService = cleanService(service)
+              const serviceStyle = getServiceStyle(service)
+
+              return (
+                <div
+                  key={index}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-full border transition-all hover:scale-105 ${serviceStyle}`}
+                >
+                  <span className="text-sm">
+                    {SERVICE_ICONS[cleanedService] || '✨'}
+                  </span>
+                  <span className="font-medium text-sm">{cleanedService}</span>
+                </div>
+              )
+            })}
           </div>
         </div>
       )}
