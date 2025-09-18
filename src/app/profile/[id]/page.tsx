@@ -483,6 +483,10 @@ export default function EscortProfilePage() {
   const extendedProfileData = useMemo(() => {
     if (!profile) return null
 
+    // Debug: Vérifier si realTimeAvailability existe
+    console.log('[DEBUG REAL-TIME] profile.realTimeAvailability:', profile.realTimeAvailability)
+    console.log('[DEBUG REAL-TIME] profile.scheduleData:', profile.scheduleData)
+
     const rates = []
     if (profile.rates?.rate1H) rates.push({ duration: '1h', price: profile.rates.rate1H, description: 'Rencontre intime' })
     if (profile.rates?.rate2H) rates.push({ duration: '2h', price: profile.rates.rate2H, description: 'Moment prolongé' })

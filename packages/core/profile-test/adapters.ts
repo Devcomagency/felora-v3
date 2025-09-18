@@ -3,6 +3,8 @@
  * Converts raw DB rows to stable DTOs with defaults
  */
 
+import { calculateAvailability } from '../../../src/lib/availability-calculator'
+
 export interface MediaItem {
   type: 'image' | 'video'
   url: string
@@ -43,6 +45,9 @@ export interface EscortProfileDTO {
     available?: boolean
     schedule?: string
   }
+  // Nouveaux champs temps réel
+  realTimeAvailability?: any
+  scheduleData?: any
   physical?: {
     height?: number
     bodyType?: string
@@ -202,7 +207,22 @@ export function toEscortProfileDTO(row: any): EscortProfileDTO {
       eyeColor: row.eyeColor
     },
     practices: parseMaybeJSONList(row.practices),
-    workingArea: row.workingArea || row.city
+    workingArea: row.workingArea || row.city,
+    // Calcul de disponibilité temps réel
+    realTimeAvailability: calculateAvailability(
+      row.timeSlots,
+      row.availableNow || false
+    ),
+    // Données agenda brutes pour la modal
+    scheduleData: (() => {
+      try {
+        const timeSlots = row.timeSlots
+        if (!timeSlots) return null
+        return typeof timeSlots === 'string' ? JSON.parse(timeSlots) : timeSlots
+      } catch {
+        return null
+      }
+    })()
   }
 }
 
