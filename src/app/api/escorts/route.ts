@@ -78,9 +78,38 @@ export async function GET(request: NextRequest) {
     const experienceTypesCSV = (searchParams.get('experienceTypes') || '').trim()
     const roleTypesCSV = (searchParams.get('roleTypes') || '').trim()
 
-    // Version ultra-minimale: filtrage uniquement sur status
-    console.log('[API ESCORTS] Using ultra-minimal WHERE clause')
-    // Ignorer TOUS les paramètres de filtrage pour isoler le problème
+    // Reconstruction des filtres maintenant que l'API est stable
+    const where: any = {}
+
+    // Status filter - Par défaut seulement ACTIVE
+    const statusesParam = searchParams.get('statuses') || searchParams.get('status')
+    if (statusesParam) {
+      const statusList = statusesParam.split(',').map(s => s.trim().toUpperCase()).filter(Boolean)
+      if (statusList.length === 1) {
+        where.status = statusList[0]
+      } else if (statusList.length > 1) {
+        where.status = { in: statusList }
+      }
+    } else {
+      where.status = 'ACTIVE'
+    }
+
+    // Filtres de localisation
+    if (city) where.city = { equals: city, mode: 'insensitive' as const }
+    if (canton) where.canton = { equals: canton, mode: 'insensitive' as const }
+
+    // Recherche textuelle
+    if (q) {
+      const textFilter = {
+        OR: [
+          { stageName: { contains: q, mode: 'insensitive' as const } },
+          { description: { contains: q, mode: 'insensitive' as const } },
+        ],
+      }
+      where.AND = where.AND ? [...where.AND, textFilter] : [textFilter]
+    }
+
+    console.log('[API ESCORTS] WHERE clause built:', JSON.stringify(where, null, 2))
 
     const orderBy = sort === 'recent'
       ? { updatedAt: 'desc' as const }
@@ -92,10 +121,10 @@ export async function GET(request: NextRequest) {
     try {
       console.log('[API ESCORTS] Attempting ultra-minimal query...')
 
-      // Étape 2: Ajouter les champs images et données de base
-      console.log('[API ESCORTS] Step 2: Adding essential fields')
+      // API complète avec tous les champs et filtres
+      console.log('[API ESCORTS] Full API with all fields and filters')
       rows = await prisma.escortProfile.findMany({
-        where: { status: 'ACTIVE' },
+        where,
         select: {
           id: true,
           stageName: true,
@@ -108,14 +137,40 @@ export async function GET(request: NextRequest) {
           services: true,
           rate1H: true,
           rate2H: true,
+          rateHalfDay: true,
+          rateFullDay: true,
           rateOvernight: true,
+          currency: true,
+          latitude: true,
+          longitude: true,
+          height: true,
+          bodyType: true,
+          hairColor: true,
+          eyeColor: true,
+          ethnicity: true,
+          bustSize: true,
+          tattoos: true,
+          piercings: true,
+          availableNow: true,
+          outcall: true,
+          incall: true,
+          weekendAvailable: true,
+          hasPrivatePhotos: true,
+          hasPrivateVideos: true,
+          hasWebcamLive: true,
+          messagingPreference: true,
+          minimumDuration: true,
+          rating: true,
+          reviewCount: true,
+          views: true,
+          likes: true,
           updatedAt: true,
           dateOfBirth: true,
           status: true,
         },
         orderBy: { updatedAt: 'desc' },
-        take: 3, // Limiter à 3 pour tester
-        skip: 0
+        take: limit, // Retour à la limite normale
+        skip: offset
       })
       console.log('[API ESCORTS] Step 1 successful, found:', rows.length, 'profiles')
 
@@ -186,11 +241,35 @@ export async function GET(request: NextRequest) {
           })(),
           rate1H: e.rate1H || undefined,
           rate2H: e.rate2H || undefined,
+          rateHalfDay: e.rateHalfDay || undefined,
+          rateFullDay: e.rateFullDay || undefined,
           rateOvernight: e.rateOvernight || undefined,
+          currency: e.currency || 'CHF',
+          latitude: e.latitude || undefined,
+          longitude: e.longitude || undefined,
           updatedAt: e.updatedAt,
-          // Valeurs par défaut pour compatibilité frontend
-          latitude: undefined,
-          longitude: undefined,
+          // Nouveaux champs V2
+          height: e.height || undefined,
+          bodyType: e.bodyType || undefined,
+          hairColor: e.hairColor || undefined,
+          eyeColor: e.eyeColor || undefined,
+          ethnicity: e.ethnicity || undefined,
+          bustSize: e.bustSize || undefined,
+          tattoos: e.tattoos || undefined,
+          piercings: e.piercings || undefined,
+          availableNow: e.availableNow || false,
+          outcall: e.outcall || false,
+          incall: e.incall || false,
+          weekendAvailable: e.weekendAvailable || false,
+          hasPrivatePhotos: e.hasPrivatePhotos || false,
+          hasPrivateVideos: e.hasPrivateVideos || false,
+          hasWebcamLive: e.hasWebcamLive || false,
+          messagingPreference: e.messagingPreference || 'APP_ONLY',
+          minimumDuration: e.minimumDuration || undefined,
+          rating: e.rating || 0,
+          reviewCount: e.reviewCount || 0,
+          views: e.views || 0,
+          likes: e.likes || 0,
           status: e.status || 'PENDING',
         }
       } catch (err) {
