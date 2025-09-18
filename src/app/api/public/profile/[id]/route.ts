@@ -75,13 +75,42 @@ export async function GET(
       }
     })()
 
+    // Récupérer tous les médias du profil depuis la table Media
+    const mediaItems = await prisma.media.findMany({
+      where: {
+        ownerId: profileId,
+        ownerType: 'ESCORT',
+        visibility: 'PUBLIC' // Seulement les médias publics
+      },
+      orderBy: {
+        pos: 'asc' // Trier par position (médias obligatoires 1-6)
+      },
+      select: {
+        id: true,
+        type: true,
+        url: true,
+        thumbUrl: true,
+        pos: true
+      }
+    })
+
     // Construire la galerie media
-    const media = []
-    if (escort.profilePhoto) {
+    const media = mediaItems.map(item => ({
+      id: item.id,
+      type: item.type === 'IMAGE' ? 'image' as const : 'video' as const,
+      url: item.url,
+      thumb: item.thumbUrl || undefined,
+      pos: item.pos || 0
+    }))
+
+    // Si pas de médias dans la table Media, fallback sur profilePhoto
+    if (media.length === 0 && escort.profilePhoto) {
       media.push({
         id: 'profile-photo',
-        type: 'IMAGE' as const,
-        url: escort.profilePhoto
+        type: 'image' as const,
+        url: escort.profilePhoto,
+        thumb: undefined,
+        pos: 1
       })
     }
 
