@@ -5,7 +5,7 @@ import { Play, Pause, Volume2, VolumeX, ChevronLeft, ChevronRight, Image as Imag
 
 interface MediaItem {
   id: string
-  type: 'IMAGE' | 'VIDEO'
+  type: 'image' | 'video'
   url: string
   thumb?: string
 }
@@ -26,7 +26,7 @@ export default function MediaGallery({ media, className = '' }: MediaGalleryProp
 
   // Auto-play video on hover/focus
   useEffect(() => {
-    if (currentMedia?.type === 'VIDEO') {
+    if (currentMedia?.type === 'video') {
       const video = videoRefs.current[currentIndex]
       if (video) {
         if (isPlaying) {
@@ -86,7 +86,7 @@ export default function MediaGallery({ media, className = '' }: MediaGalleryProp
       <div className="aspect-[4/5] rounded-2xl overflow-hidden bg-black/40 backdrop-blur-sm border border-white/10">
         {currentMedia ? (
           <div className="relative w-full h-full">
-            {currentMedia.type === 'VIDEO' ? (
+            {currentMedia.type === 'video' ? (
               <video
                 ref={(el) => (videoRefs.current[currentIndex] = el)}
                 src={currentMedia.url}
@@ -122,7 +122,7 @@ export default function MediaGallery({ media, className = '' }: MediaGalleryProp
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
 
             {/* Play/Pause Button for Videos */}
-            {currentMedia.type === 'VIDEO' && (
+            {currentMedia.type === 'video' && (
               <div className="absolute inset-0 flex items-center justify-center">
                 <button
                   onClick={() => setIsPlaying(!isPlaying)}
@@ -165,7 +165,7 @@ export default function MediaGallery({ media, className = '' }: MediaGalleryProp
             )}
 
             {/* Mute Button for Videos */}
-            {currentMedia.type === 'VIDEO' && (
+            {currentMedia.type === 'video' && (
               <button
                 onClick={() => setIsMuted(!isMuted)}
                 className="absolute bottom-4 right-4 w-10 h-10 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center hover:bg-black/80 transition-colors"
@@ -194,7 +194,7 @@ export default function MediaGallery({ media, className = '' }: MediaGalleryProp
                   : 'border-white/20 hover:border-white/40'
               }`}
             >
-              {item.type === 'VIDEO' ? (
+              {item.type === 'video' ? (
                 <video
                   src={item.url}
                   poster={item.thumb}
