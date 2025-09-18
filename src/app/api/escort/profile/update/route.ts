@@ -8,11 +8,17 @@ import { z } from 'zod'
 // Body: subset of fields { description?, city?, canton?, coordinates?: { lat, lng }, address?, phone?, languages?, services?, rates? }
 export async function POST(req: NextRequest) {
   try {
+    console.log('🔍 [API PROFILE UPDATE] Starting request...')
     const session = await getServerSession(authOptions)
+    console.log('🔍 [API PROFILE UPDATE] Session:', session ? 'found' : 'null', session?.user?.id)
     const userId = (session as any)?.user?.id as string | undefined
-    if (!userId) return NextResponse.json({ success: false, error: 'unauthorized' }, { status: 401 })
+    if (!userId) {
+      console.log('❌ [API PROFILE UPDATE] No userId, session:', JSON.stringify(session))
+      return NextResponse.json({ success: false, error: 'unauthorized' }, { status: 401 })
+    }
 
     const body = await req.json().catch(() => ({}))
+    console.log('🔍 [API PROFILE UPDATE] Request body keys:', Object.keys(body))
     const Schema = z.object({
       // Basics
       stageName: z.string().max(100).optional(),
@@ -237,9 +243,11 @@ export async function POST(req: NextRequest) {
 
     // Debug logging
     console.log('🔧 Profile update data:', JSON.stringify(dataToSave, null, 2))
-    
+
     // Persist unified update
+    console.log('🔍 [API PROFILE UPDATE] About to update profile for userId:', userId)
     await prisma.escortProfile.update({ where: { userId }, data: dataToSave })
+    console.log('✅ [API PROFILE UPDATE] Profile updated successfully')
 
     return NextResponse.json({ success: true, message: 'Modifications enregistrées' })
   } catch (e:any) {

@@ -535,7 +535,8 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
     return JSON.stringify({ weekly: packed, pause: pauseEnabled ? { start: pauseStart, end: pauseEnd } : null, absences })
   }
 
-  const doSave = async (payload: any, silent = false): Promise<boolean> => {
+  const doSave = async (payload: any, silent = false, retryCount = 0): Promise<boolean> => {
+    const maxRetries = 3
     try {
       const res = await fetch('/api/escort/profile/update', {
         method: 'POST',
@@ -544,7 +545,16 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
         body: JSON.stringify(payload)
       })
       const data = await res.json().catch(() => ({}))
-      if (!res.ok || !data?.success) throw new Error(data?.error || 'Échec de la sauvegarde')
+
+      // Si erreur 500 ou 401, on retry automatiquement
+      if ((res.status === 500 || res.status === 401) && retryCount < maxRetries) {
+        console.log(`🔄 [DASHBOARD] Retry ${retryCount + 1}/${maxRetries} pour erreur ${res.status}`)
+        if (!silent) setSaveMsg({ type: 'warning', text: `Retry ${retryCount + 1}/${maxRetries}...` })
+        await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1))) // Délai progressif
+        return doSave(payload, silent, retryCount + 1)
+      }
+
+      if (!res.ok || !data?.success) throw new Error(data?.details || data?.error || 'Échec de la sauvegarde')
       if (!silent) setSaveMsg({ type: 'success', text: data.message || 'Modifications enregistrées' })
       if (!silent) setTimeout(() => setSaveMsg(null), 3000)
       if (silent) {
@@ -553,7 +563,12 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
       }
       return true
     } catch (err: any) {
-      if (!silent) setSaveMsg({ type: 'error', text: err?.message || 'Erreur lors de la sauvegarde' })
+      const errorMsg = err?.message || 'Erreur lors de la sauvegarde'
+      if (retryCount >= maxRetries) {
+        if (!silent) setSaveMsg({ type: 'error', text: `${errorMsg} (échec après ${maxRetries} tentatives)` })
+      } else if (!silent) {
+        setSaveMsg({ type: 'error', text: errorMsg })
+      }
       return false
     }
   }
