@@ -35,6 +35,15 @@ export async function GET(
         updatedAt: true,
         dateOfBirth: true,
         status: true,
+        // Données physiques pour la modal "Voir plus"
+        height: true,
+        bodyType: true,
+        hairColor: true,
+        eyeColor: true,
+        ethnicity: true,
+        bustSize: true,
+        tattoos: true,
+        piercings: true,
         // Stats (à implémenter plus tard)
         // likes: true,
         // views: true,
@@ -131,6 +140,18 @@ export async function GET(
       services,
       languages,
       rates,
+      // Nouvelles données physiques pour la modal
+      physical: {
+        height: escort.height || undefined,
+        bodyType: escort.bodyType || undefined,
+        hairColor: escort.hairColor || undefined,
+        eyeColor: escort.eyeColor || undefined,
+        ethnicity: escort.ethnicity || undefined,
+        bustSize: escort.bustSize || undefined,
+        tattoos: escort.tattoos || undefined,
+        piercings: escort.piercings || undefined
+      },
+      age,
       updatedAt: escort.updatedAt
     }
 

@@ -59,6 +59,10 @@ interface EscortProfile {
     bodyType?: string
     hairColor?: string
     eyeColor?: string
+    ethnicity?: string
+    bustSize?: string
+    tattoos?: boolean | string
+    piercings?: boolean | string
   }
   practices?: string[]
   workingArea?: string
@@ -187,7 +191,7 @@ export default function EscortProfilePage() {
           stageName: data.stageName,
           avatar: data.media?.[0]?.url,
           city: data.city,
-          age: data.dateOfBirth ? new Date().getFullYear() - new Date(data.dateOfBirth).getFullYear() : undefined,
+          age: data.age || undefined,
           languages: data.languages || [],
           services: data.services || [],
           media: data.media || [],
@@ -205,7 +209,9 @@ export default function EscortProfilePage() {
             available: true,
             incall: true,
             outcall: true
-          }
+          },
+          // Nouvelles données physiques de l'API
+          physical: data.physical || undefined
         }
         setProfile(transformedProfile)
       } catch (err) {
