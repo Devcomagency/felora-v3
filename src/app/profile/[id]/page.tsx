@@ -508,9 +508,13 @@ export default function EscortProfilePage() {
         bodyType: profile.physical?.bodyType || 'Non spécifié',
         hairColor: profile.physical?.hairColor || 'Non spécifié',
         eyeColor: profile.physical?.eyeColor || 'Non spécifié',
+        ethnicity: profile.physical?.ethnicity || 'Non spécifié',
+        bustSize: profile.physical?.bustSize || 'Non spécifié',
         breastType: profile.physical?.breastType || 'Non spécifié',
+        tattoos: profile.physical?.tattoos || 'Non spécifié',
+        piercings: profile.physical?.piercings || 'Non spécifié',
         pubicHair: profile.physical?.pubicHair || 'Non spécifié',
-        smoker: profile.physical?.smoker
+        smoker: profile.physical?.smoker !== undefined ? (profile.physical.smoker ? 'Oui' : 'Non') : 'Non spécifié'
       },
       clientele: profile.clientele || {},
       availability: profile.availability || {},
@@ -710,8 +714,15 @@ export default function EscortProfilePage() {
                     { label: 'Taille', value: extendedProfileData.physicalDetails.height },
                     { label: 'Silhouette', value: extendedProfileData.physicalDetails.bodyType },
                     { label: 'Cheveux', value: extendedProfileData.physicalDetails.hairColor },
-                    { label: 'Yeux', value: extendedProfileData.physicalDetails.eyeColor }
-                  ].map((item, index) => (
+                    { label: 'Yeux', value: extendedProfileData.physicalDetails.eyeColor },
+                    { label: 'Origine', value: extendedProfileData.physicalDetails.ethnicity },
+                    { label: 'Poitrine', value: extendedProfileData.physicalDetails.bustSize },
+                    { label: 'Type seins', value: extendedProfileData.physicalDetails.breastType },
+                    { label: 'Tatouages', value: extendedProfileData.physicalDetails.tattoos },
+                    { label: 'Piercings', value: extendedProfileData.physicalDetails.piercings },
+                    { label: 'Épilation', value: extendedProfileData.physicalDetails.pubicHair },
+                    { label: 'Fumeuse', value: extendedProfileData.physicalDetails.smoker }
+                  ].filter(item => item.value && item.value !== 'Non spécifié').map((item, index) => (
                     <div key={index} className="p-2 rounded-xl bg-gradient-to-br from-white/5 to-white/10 backdrop-blur-sm border border-white/10">
                       <div className="text-xs text-pink-300/80 font-medium uppercase tracking-wider">{item.label}</div>
                       <div className="text-xs font-medium text-white mt-0.5">{item.value}</div>

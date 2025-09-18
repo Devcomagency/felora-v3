@@ -233,18 +233,28 @@ export async function GET(request: NextRequest) {
               const S = JSON.parse(String(e.services || '[]'))
               if (!Array.isArray(S)) return []
 
-              // Nettoyer les services : enlever le préfixe "srv:" et garder la catégorie principale
-              return S.map(service => {
+              // Nettoyer les services : enlever les préfixes "srv:" et "opt:"
+              const cleanedServices = S.map(service => {
                 if (typeof service === 'string') {
-                  // Si c'est un service détaillé avec préfixe "srv:", enlever le préfixe
+                  // Enlever les préfixes srv: et opt:
                   if (service.startsWith('srv:')) {
                     return service.substring(4) // Enlever "srv:"
+                  }
+                  if (service.startsWith('opt:')) {
+                    return service.substring(4) // Enlever "opt:"
                   }
                   // Si c'est une catégorie principale, la garder telle quelle
                   return service
                 }
                 return service
               }).filter(Boolean)
+
+              console.log(`[API ESCORTS] Services for ${e.id}:`, {
+                original: S,
+                cleaned: cleanedServices
+              })
+
+              return cleanedServices
             } catch (err) {
               console.warn(`[API ESCORTS] Failed to parse services for ${e.id}:`, err)
               return []

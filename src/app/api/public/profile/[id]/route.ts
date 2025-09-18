@@ -91,7 +91,30 @@ export async function GET(
     const services = (() => {
       try {
         const S = JSON.parse(String(escort.services || '[]'))
-        return Array.isArray(S) ? S : []
+        if (!Array.isArray(S)) return []
+
+        // Nettoyer les services : enlever les préfixes "srv:" et "opt:"
+        const cleanedServices = S.map(service => {
+          if (typeof service === 'string') {
+            // Enlever les préfixes srv: et opt:
+            if (service.startsWith('srv:')) {
+              return service.substring(4) // Enlever "srv:"
+            }
+            if (service.startsWith('opt:')) {
+              return service.substring(4) // Enlever "opt:"
+            }
+            // Si c'est une catégorie principale, la garder telle quelle
+            return service
+          }
+          return service
+        }).filter(Boolean)
+
+        console.log(`[API PROFILE] Services for ${profileId}:`, {
+          original: S,
+          cleaned: cleanedServices
+        })
+
+        return cleanedServices
       } catch {
         return []
       }
