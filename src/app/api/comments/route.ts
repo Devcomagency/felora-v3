@@ -14,7 +14,6 @@ export async function GET(request: NextRequest) {
     // Pour l'instant, retourner un tableau vide car le système de commentaires n'est pas encore implémenté
     // TODO: Implémenter le système de commentaires complet avec base de données
     return NextResponse.json({
-      success: true,
       comments: [],
       total: 0
     })
