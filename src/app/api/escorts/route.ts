@@ -106,6 +106,8 @@ export async function GET(request: NextRequest) {
           profilePhoto: true,
           rate1H: true,
           rate2H: true,
+          rateHalfDay: true,
+          rateFullDay: true,
           rateOvernight: true,
           updatedAt: true,
           dateOfBirth: true,
@@ -168,6 +170,8 @@ export async function GET(request: NextRequest) {
           services: [], // Pas encore ajouté pour éviter erreur parsing
           rate1H: e.rate1H || undefined,
           rate2H: e.rate2H || undefined,
+          rateHalfDay: e.rateHalfDay || undefined,
+          rateFullDay: e.rateFullDay || undefined,
           rateOvernight: e.rateOvernight || undefined,
           updatedAt: e.updatedAt,
           // Valeurs par défaut pour compatibilité frontend
