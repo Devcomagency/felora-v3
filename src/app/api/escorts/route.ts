@@ -92,16 +92,23 @@ export async function GET(request: NextRequest) {
     try {
       console.log('[API ESCORTS] Attempting ultra-minimal query...')
 
-      // Étape 1: Query avec champs de base absolument sûrs
-      console.log('[API ESCORTS] Step 1: Basic fields only')
+      // Étape 2: Ajouter les champs images et données de base
+      console.log('[API ESCORTS] Step 2: Adding essential fields')
       rows = await prisma.escortProfile.findMany({
-        where: { status: 'ACTIVE' }, // Filtrage minimal
+        where: { status: 'ACTIVE' },
         select: {
           id: true,
           stageName: true,
+          description: true,
           city: true,
           canton: true,
+          isVerifiedBadge: true,
+          profilePhoto: true,
+          rate1H: true,
+          rate2H: true,
+          rateOvernight: true,
           updatedAt: true,
+          dateOfBirth: true,
           status: true,
         },
         orderBy: { updatedAt: 'desc' },
@@ -133,24 +140,37 @@ export async function GET(request: NextRequest) {
       try {
         console.log(`[API ESCORTS] Processing row ${index}:`, { id: e.id, stageName: e.stageName })
 
-        // Réponse ultra-simplifiée avec seulement les champs récupérés
+        // Calcul de l'âge
+        const year = new Date().getFullYear()
+        const age = (() => {
+          try {
+            return e.dateOfBirth ? (year - new Date(e.dateOfBirth).getFullYear()) : undefined
+          } catch (err) {
+            console.warn(`[API ESCORTS] Failed to calculate age for ${e.id}:`, err)
+            return undefined
+          }
+        })()
+
+        // Hero media à partir de profilePhoto
+        const heroMedia = e.profilePhoto ? { type: 'IMAGE', url: e.profilePhoto } : undefined
+
         return {
           id: e.id,
           stageName: e.stageName || '',
+          age,
           city: e.city || undefined,
           canton: e.canton || undefined,
-          isVerifiedBadge: false, // Pas récupéré dans cette version
+          isVerifiedBadge: !!e.isVerifiedBadge,
           isActive: e.status === 'ACTIVE',
-          languages: [], // Pas récupéré dans cette version
-          services: [], // Pas récupéré dans cette version
+          profilePhoto: e.profilePhoto || undefined,
+          heroMedia,
+          languages: [], // Pas encore ajouté pour éviter erreur parsing
+          services: [], // Pas encore ajouté pour éviter erreur parsing
+          rate1H: e.rate1H || undefined,
+          rate2H: e.rate2H || undefined,
+          rateOvernight: e.rateOvernight || undefined,
           updatedAt: e.updatedAt,
           // Valeurs par défaut pour compatibilité frontend
-          age: undefined,
-          profilePhoto: undefined,
-          heroMedia: undefined,
-          rate1H: undefined,
-          rate2H: undefined,
-          rateOvernight: undefined,
           latitude: undefined,
           longitude: undefined,
           status: e.status || 'PENDING',
