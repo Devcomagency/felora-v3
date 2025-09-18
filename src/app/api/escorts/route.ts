@@ -266,7 +266,9 @@ export async function GET(request: NextRequest) {
 
     console.log('[API ESCORTS] About to query database with limit:', limit, 'offset:', offset)
 
-    const rows = await prisma.escortProfile.findMany({
+    let rows
+    try {
+      rows = await prisma.escortProfile.findMany({
       where,
       select: {
         id: true,
@@ -313,6 +315,10 @@ export async function GET(request: NextRequest) {
       take: limit,
       skip: offset,
     })
+    } catch (dbError) {
+      console.error('[API ESCORTS] Database query failed:', dbError)
+      throw new Error(`Database query failed: ${dbError.message}`)
+    }
 
     console.log('[API ESCORTS] Database query completed, rows found:', rows.length)
 
