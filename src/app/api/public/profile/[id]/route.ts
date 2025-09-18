@@ -24,6 +24,7 @@ export async function GET(
         isVerifiedBadge: true,
         hasProfilePhoto: true,
         profilePhoto: true,
+        galleryPhotos: true, // AJOUT: récupérer les médias depuis galleryPhotos
         languages: true,
         services: true,
         rate1H: true,
@@ -75,64 +76,33 @@ export async function GET(
       }
     })()
 
-    // Récupérer tous les médias du profil depuis la table Media
-    const mediaItems = await prisma.media.findMany({
-      where: {
-        ownerId: profileId,
-        ownerType: 'ESCORT',
-        visibility: 'PUBLIC' // Seulement les médias publics
-      },
-      orderBy: {
-        pos: 'asc' // Trier par position (médias obligatoires 1-6)
-      },
-      select: {
-        id: true,
-        type: true,
-        url: true,
-        thumbUrl: true,
-        pos: true
-      }
-    })
-
-    // DEBUG: Log pour voir ce qui est récupéré
-    console.log(`[DEBUG] Profile ${profileId} - Found ${mediaItems.length} media items:`, mediaItems)
-
-    // DEBUG: Essayer aussi sans filtre visibility pour voir s'il y a des médias
-    const allMediaDebug = await prisma.media.findMany({
-      where: {
-        ownerId: profileId,
-        ownerType: 'ESCORT'
-      }
-    })
-    console.log(`[DEBUG] Profile ${profileId} - ALL media (any visibility):`, allMediaDebug.length)
-
-    // DEBUG: Essayer avec d'autres ownerType possibles
-    const allMediaAnyType = await prisma.media.findMany({
-      where: {
-        ownerId: profileId
-      }
-    })
-    console.log(`[DEBUG] Profile ${profileId} - ALL media (any ownerType):`, allMediaAnyType)
-
-    // Construire la galerie media
-    const media = mediaItems.map(item => ({
-      id: item.id,
-      type: item.type === 'IMAGE' ? 'image' as const : 'video' as const,
-      url: item.url,
-      thumb: item.thumbUrl || undefined,
-      pos: item.pos || 0
-    }))
-
-    // Si pas de médias dans la table Media, fallback sur profilePhoto
-    if (media.length === 0 && escort.profilePhoto) {
-      media.push({
-        id: 'profile-photo',
-        type: 'image' as const,
-        url: escort.profilePhoto,
-        thumb: undefined,
-        pos: 1
-      })
+    // Parser les médias depuis galleryPhotos (système slots 0-5)
+    let gallerySlots: any[] = []
+    try {
+      gallerySlots = Array.isArray(escort.galleryPhotos)
+        ? escort.galleryPhotos
+        : JSON.parse(String(escort.galleryPhotos || '[]'))
+    } catch {
+      gallerySlots = []
     }
+
+    // DEBUG: Log pour voir ce qui est dans galleryPhotos
+    console.log(`[DEBUG] Profile ${profileId} - galleryPhotos:`, gallerySlots)
+
+    // Construire la galerie media depuis les slots
+    const media = gallerySlots
+      .filter(slot => slot?.url) // Seulement les slots avec URL
+      .map((slot, index) => ({
+        id: slot.id || `slot-${index}`,
+        type: slot.type === 'video' ? 'video' as const : 'image' as const,
+        url: slot.url,
+        thumb: slot.thumb || undefined,
+        pos: slot.slot || index
+      }))
+      .sort((a, b) => a.pos - b.pos) // Trier par position
+
+    // DEBUG: Log des médias parsés
+    console.log(`[DEBUG] Profile ${profileId} - Found ${media.length} media from galleryPhotos:`, media)
 
     // Construire les tarifs
     const rates = {
