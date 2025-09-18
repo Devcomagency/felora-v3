@@ -92,6 +92,7 @@ export default function MediaGallery({ media, className = '' }: MediaGalleryProp
                 src={currentMedia.url}
                 poster={currentMedia.thumb}
                 className="w-full h-full object-cover"
+                controls
                 muted={isMuted}
                 loop
                 playsInline
