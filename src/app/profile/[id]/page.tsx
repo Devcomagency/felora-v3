@@ -574,7 +574,13 @@ export default function EscortProfilePage() {
               />
 
               <MediaFeedWithGallery
-                media={feedMedia}
+                media={(() => {
+                  console.log('[PROFILE DEBUG] Media passed to feed:', feedMedia)
+                  feedMedia.forEach((media, i) => {
+                    console.log(`[PROFILE DEBUG] Media ${i}:`, { type: media.type, url: media.url })
+                  })
+                  return feedMedia
+                })()}
                 profileId={profile.id}
                 profileName={profile.name}
                 privateEnabled
