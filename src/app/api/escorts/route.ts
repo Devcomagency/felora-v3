@@ -5,6 +5,7 @@ type SortKey = 'recent' | 'relevance'
 
 export async function GET(request: NextRequest) {
   try {
+    console.log('[API ESCORTS] Request started:', request.url)
     const { searchParams } = new URL(request.url)
     const limit = Math.max(1, Math.min(30, parseInt(searchParams.get('limit') || '20')))
     const cursorRaw = searchParams.get('cursor')
@@ -16,6 +17,8 @@ export async function GET(request: NextRequest) {
     const servicesCSV = (searchParams.get('services') || '').trim()
     const languagesCSV = (searchParams.get('languages') || '').trim()
     const sort: SortKey = ((searchParams.get('sort') || 'recent') as SortKey)
+
+    console.log('[API ESCORTS] Basic params parsed:', { limit, offset, q, city, canton, servicesCSV, languagesCSV, sort })
 
     // Nouveaux filtres V2 - Support legacy 'category' et 'categories'
     const categoriesCSV = (searchParams.get('categories') || searchParams.get('category') || '').trim()
@@ -255,9 +258,13 @@ export async function GET(request: NextRequest) {
     if (privatePhotos) where.hasPrivatePhotos = true
     if (exclusiveVideos) where.hasPrivateVideos = true
 
+    console.log('[API ESCORTS] Where clause built:', JSON.stringify(where, null, 2))
+
     const orderBy = sort === 'recent'
       ? { updatedAt: 'desc' as const }
       : { updatedAt: 'desc' as const }
+
+    console.log('[API ESCORTS] About to query database with limit:', limit, 'offset:', offset)
 
     const rows = await prisma.escortProfile.findMany({
       where,
@@ -307,28 +314,42 @@ export async function GET(request: NextRequest) {
       skip: offset,
     })
 
-    const items = rows.map((e) => {
-      const langs = (() => {
-        try {
-          const L = JSON.parse(String(e.languages||'[]'))
-          return Array.isArray(L) ? L : []
-        } catch { return [] }
-      })()
+    console.log('[API ESCORTS] Database query completed, rows found:', rows.length)
 
-      const servs = (() => {
-        try {
-          const S = JSON.parse(String(e.services||'[]'))
-          return Array.isArray(S) ? S : []
-        } catch { return [] }
-      })()
+    const items = rows.map((e, index) => {
+      try {
+        console.log(`[API ESCORTS] Processing row ${index}:`, { id: e.id, stageName: e.stageName })
 
-      const hero: any = e.profilePhoto ? { type: 'IMAGE', url: e.profilePhoto } : undefined
-      const year = new Date().getFullYear()
-      const age = (() => {
-        try {
-          return e.dateOfBirth ? (year - new Date(e.dateOfBirth).getFullYear()) : undefined
-        } catch { return undefined }
-      })()
+        const langs = (() => {
+          try {
+            const L = JSON.parse(String(e.languages||'[]'))
+            return Array.isArray(L) ? L : []
+          } catch (err) {
+            console.warn(`[API ESCORTS] Failed to parse languages for ${e.id}:`, err)
+            return []
+          }
+        })()
+
+        const servs = (() => {
+          try {
+            const S = JSON.parse(String(e.services||'[]'))
+            return Array.isArray(S) ? S : []
+          } catch (err) {
+            console.warn(`[API ESCORTS] Failed to parse services for ${e.id}:`, err)
+            return []
+          }
+        })()
+
+        const hero: any = e.profilePhoto ? { type: 'IMAGE', url: e.profilePhoto } : undefined
+        const year = new Date().getFullYear()
+        const age = (() => {
+          try {
+            return e.dateOfBirth ? (year - new Date(e.dateOfBirth).getFullYear()) : undefined
+          } catch (err) {
+            console.warn(`[API ESCORTS] Failed to calculate age for ${e.id}:`, err)
+            return undefined
+          }
+        })()
 
       return {
         id: e.id,
@@ -373,13 +394,37 @@ export async function GET(request: NextRequest) {
         likes: e.likes || 0,
         status: e.status || 'PENDING',
       }
+      } catch (err) {
+        console.error(`[API ESCORTS] Error processing row ${index} (${e.id}):`, err)
+        // Return a minimal safe object if row processing fails
+        return {
+          id: e.id || `error-${index}`,
+          stageName: e.stageName || 'Erreur',
+          age: undefined,
+          city: undefined,
+          canton: undefined,
+          isVerifiedBadge: false,
+          isActive: false,
+          languages: [],
+          services: [],
+          updatedAt: new Date().toISOString()
+        }
+      }
     })
 
     const nextCursor = items.length === limit ? String(offset + limit) : undefined
 
+    console.log('[API ESCORTS] Response prepared:', { itemsCount: items.length, nextCursor })
+
     return NextResponse.json({ success: true, items, nextCursor, total: undefined })
   } catch (error) {
-    console.error('api/escorts error:', error)
+    console.error('[API ESCORTS] ERROR occurred:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name,
+      cause: error.cause
+    })
+    console.error('[API ESCORTS] Full error object:', error)
     return NextResponse.json({ error: 'server_error' }, { status: 500 })
   }
 }
