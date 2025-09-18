@@ -226,19 +226,19 @@ export default function MapTest() {
 
   // Transform real API data to match expected format
   const allEscorts = useMemo(() => {
-    if (!data || !Array.isArray(data)) return []
+    if (!data || !data.items || !Array.isArray(data.items)) return []
 
-    return data.map((escort: any) => ({
+    return data.items.map((escort: any) => ({
       id: escort.id,
-      name: escort.name || 'Escort',
-      lat: escort.lat || escort.latitude || 46.8182, // Default to Switzerland center
-      lng: escort.lng || escort.longitude || 8.2275,
-      avatar: escort.avatar || escort.profilePhoto?.url || '',
+      name: escort.stageName || 'Escort',
+      lat: escort.latitude || 46.8182, // Default to Switzerland center
+      lng: escort.longitude || 8.2275,
+      avatar: escort.profilePhoto || '',
       city: escort.city || 'Suisse',
       services: escort.services || [],
       languages: escort.languages || [],
-      verified: escort.verified || false,
-      isActive: escort.isActive || escort.online || true
+      verified: escort.isVerifiedBadge || false,
+      isActive: escort.isActive || true
     }))
   }, [data])
 
