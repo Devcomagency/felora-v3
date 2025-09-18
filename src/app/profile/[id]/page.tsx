@@ -194,6 +194,11 @@ export default function EscortProfilePage() {
 
         const data = await response.json()
 
+        // Debug: Vérifier les données reçues de l'API
+        console.log('[DEBUG API] Données reçues de l\'API:', data)
+        console.log('[DEBUG API] realTimeAvailability dans data:', data.realTimeAvailability)
+        console.log('[DEBUG API] scheduleData dans data:', data.scheduleData)
+
         // Transform API data to match EscortProfile interface
         const transformedProfile: EscortProfile = {
           id: data.id,
@@ -221,7 +226,10 @@ export default function EscortProfilePage() {
             outcall: true
           },
           // Nouvelles données physiques de l'API
-          physical: data.physical || undefined
+          physical: data.physical || undefined,
+          // Disponibilité temps réel de l'API
+          realTimeAvailability: data.realTimeAvailability,
+          scheduleData: data.scheduleData
         }
         setProfile(transformedProfile)
       } catch (err) {
