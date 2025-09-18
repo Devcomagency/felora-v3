@@ -31,8 +31,8 @@ export class VideoCompressor {
   ): Promise<CompressionResult> {
     const defaultOptions: CompressionOptions = {
       maxSizeMB: 3.8, // Sous la limite Vercel de 4MB
-      maxWidthOrHeight: 1080,
-      quality: 0.8,
+      maxWidthOrHeight: 1440, // Augmenté pour meilleure qualité (de 1080 → 1440)
+      quality: 0.92, // Augmenté pour meilleure qualité (de 0.8 → 0.92)
       maintainAspectRatio: true,
       ...options
     }
@@ -81,8 +81,8 @@ export class VideoCompressor {
               console.log('🔄 Fichier encore trop volumineux, compression supplémentaire...')
               const newOptions = {
                 ...defaultOptions,
-                quality: defaultOptions.quality * 0.7,
-                maxWidthOrHeight: Math.floor(defaultOptions.maxWidthOrHeight * 0.9)
+                quality: defaultOptions.quality * 0.85, // Moins agressif (0.7 → 0.85)
+                maxWidthOrHeight: Math.floor(defaultOptions.maxWidthOrHeight * 0.95) // Moins agressif (0.9 → 0.95)
               }
               
               try {

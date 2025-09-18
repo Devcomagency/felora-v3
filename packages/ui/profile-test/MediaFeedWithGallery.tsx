@@ -117,13 +117,8 @@ function MediaPlayer({ id, type, url, thumb, poster, index, isActive, profileId,
   }, [])
 
   if (type === 'video') {
-    console.log('[DEBUG VIDÉO] Type détecté:', type, 'URL:', url)
     return (
       <div className="relative w-full h-full bg-black rounded-none overflow-hidden group">
-        {/* DEBUG INFO */}
-        <div className="absolute top-0 left-0 bg-red-600 text-white text-xs p-1 z-50">
-          VIDEO: {type}
-        </div>
         <video
           ref={videoRef}
           className={`w-full h-full object-cover ${isPrivate && !isActive ? 'blur-xl brightness-30' : ''}`}
@@ -633,15 +628,7 @@ export default function MediaFeedWithGallery({
                     loop
                     playsInline
                     className="w-full h-full object-cover"
-                    onError={(e) => {
-                      console.error('[DEBUG FULLSCREEN] Erreur vidéo:', e)
-                      console.error('[DEBUG FULLSCREEN] URL:', fullscreenMedia)
-                    }}
                   />
-                  {/* DEBUG FULLSCREEN */}
-                  <div className="absolute top-0 right-0 bg-green-600 text-white text-xs p-1 z-50">
-                    FULLSCREEN VIDEO
-                  </div>
                 </div>
               ) : (
                 <Image
