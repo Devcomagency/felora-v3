@@ -408,15 +408,17 @@ export default function EscortProfilePage() {
     setIsFavorite(favorites.includes(profile.id))
   }, [profile?.id])
 
-  // Calculer le total des réactions de tous les médias
+  // Calculer le total des réactions des médias du feed uniquement (pas la photo de profil)
   const calculateTotalReactions = useCallback(async () => {
-    if (!profile?.media || profile.media.length === 0) {
+    if (!profile?.media || profile.media.length <= 1) {
       setTotalReactions(0)
       return
     }
 
     try {
-      const mediaIds = profile.media.map(m => stableMediaId({ rawId: null, profileId: profile.id, url: m.url }))
+      // Exclure le premier média (photo de profil) des réactions
+      const feedMedia = profile.media.slice(1)
+      const mediaIds = feedMedia.map(m => stableMediaId({ rawId: null, profileId: profile.id, url: m.url }))
       const res = await fetch('/api/reactions/bulk', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -527,52 +529,62 @@ export default function EscortProfilePage() {
 
       {/* Contenu principal avec padding-top pour header fixe + safe-area (~72px) */}
       <div className="pt-0" style={{ paddingTop: 'calc(72px + env(safe-area-inset-top, 0px))' }}>
-        <ProfileHeader
-          name={profile.name}
-          city={profile.city}
-          avatar={profile.avatar}
-          verified={profile.verified}
-          premium={profile.premium}
-          online={profile.online}
-          age={profile.age}
-          languages={[]}
-          services={profile.services}
-          stats={{
-            likes: totalReactions || 0,
-            followers: profile.stats?.followers || 0,
-            views: profile.stats?.views || 0
-          }}
-          availability={profile.availability}
-          description={profile.description}
-          mediaCount={Array.isArray(profile.media) ? profile.media.length : 0}
-        />
+        {/* Séparation des médias : media[0] = photo de profil, media[1-5] = posts feed */}
+        {(() => {
+          const profilePhoto = profile.media && profile.media.length > 0 ? profile.media[0] : null
+          const feedMedia = profile.media ? profile.media.slice(1) : []
 
-        <ActionsBar
-          profileId={profile.id}
-          isFollowing={isFollowing}
-          isLiked={isLiked}
-          isSaved={isSaved}
-          onFollow={handleFollow}
-          onMessage={handleMessage}
-          onGift={() => setShowGiftPicker(true)}
-          onLike={handleLike}
-          onSave={handleSave}
-          onShare={handleShare}
-          onReport={handleReport}
-          onShowDetails={handleShowDetails}
-          isFavorite={isFavorite}
-          onFavoriteToggle={() => handleFavoriteToggle()}
-        />
+          return (
+            <>
+              <ProfileHeader
+                name={profile.name}
+                city={profile.city}
+                avatar={profilePhoto?.url || profile.avatar}
+                verified={profile.verified}
+                premium={profile.premium}
+                online={profile.online}
+                age={profile.age}
+                languages={[]}
+                services={profile.services}
+                stats={{
+                  likes: totalReactions || 0,
+                  followers: profile.stats?.followers || 0,
+                  views: profile.stats?.views || 0
+                }}
+                availability={profile.availability}
+                description={profile.description}
+                mediaCount={Array.isArray(feedMedia) ? feedMedia.length : 0}
+              />
 
-        <MediaFeedWithGallery
-          media={profile.media}
-          profileId={profile.id}
-          profileName={profile.name}
-          privateEnabled
-          onLike={handleMediaLike}
-          onSave={handleMediaSave}
-          onReactionChange={calculateTotalReactions}
-        />
+              <ActionsBar
+                profileId={profile.id}
+                isFollowing={isFollowing}
+                isLiked={isLiked}
+                isSaved={isSaved}
+                onFollow={handleFollow}
+                onMessage={handleMessage}
+                onGift={() => setShowGiftPicker(true)}
+                onLike={handleLike}
+                onSave={handleSave}
+                onShare={handleShare}
+                onReport={handleReport}
+                onShowDetails={handleShowDetails}
+                isFavorite={isFavorite}
+                onFavoriteToggle={() => handleFavoriteToggle()}
+              />
+
+              <MediaFeedWithGallery
+                media={feedMedia}
+                profileId={profile.id}
+                profileName={profile.name}
+                privateEnabled
+                onLike={handleMediaLike}
+                onSave={handleMediaSave}
+                onReactionChange={calculateTotalReactions}
+              />
+            </>
+          )
+        })()}
       </div>
 
       {/* Modal Voir plus - Design sexy 2025 */}
