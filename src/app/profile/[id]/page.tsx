@@ -480,16 +480,31 @@ export default function EscortProfilePage() {
     if (profile.rates?.fullDay) rates.push({ duration: '8h', price: profile.rates.fullDay, description: 'Journée complète' })
     if (profile.rates?.overnight) rates.push({ duration: '24h', price: profile.rates.overnight, description: 'Week-end VIP' })
 
+    // DEBUG: Logs pour vérifier les données
+    console.log('[DEBUG MODAL] Profile data:', {
+      languages: profile.languages,
+      services: profile.services,
+      rates: profile.rates,
+      availability: profile.availability,
+      physical: profile.physical
+    })
+
     return {
-      languages: profile.languages || ['Français'],
+      languages: profile.languages || [],
+      services: profile.services || [],
       practices: profile.practices || profile.services || [],
-      rates: rates.length > 0 ? rates : [{ duration: '1h', price: 300, description: 'Rencontre intime' }],
+      rates: {
+        rate1H: profile.rates?.rate1H,
+        rate2H: profile.rates?.rate2H,
+        overnight: profile.rates?.overnight
+      },
       physicalDetails: {
         height: profile.physical?.height ? `${profile.physical.height}cm` : 'Non spécifié',
         bodyType: profile.physical?.bodyType || 'Non spécifié',
         hairColor: profile.physical?.hairColor || 'Non spécifié',
         eyeColor: profile.physical?.eyeColor || 'Non spécifié'
       },
+      availability: profile.availability || {},
       contact: {
         phone: '+41791234567',
         whatsapp: '+41791234567',
