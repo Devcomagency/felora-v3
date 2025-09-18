@@ -26,6 +26,16 @@ interface ProfileHeaderProps {
     nextAvailable?: string // Format: "2025-01-16T09:00:00Z"
     schedule?: string // "Disponible jusqu'à 18h" ou "De retour demain 9h"
   }
+  realTimeAvailability?: {
+    isAvailable: boolean
+    status: string
+    message: string
+    nextAvailable?: {
+      date: string
+      time: string
+    }
+  }
+  scheduleData?: any
   showAvatar?: boolean
   description?: string
   // Optionnel: affichage du bouton agenda sous la disponibilité
@@ -48,6 +58,8 @@ export default function ProfileHeader({
   stats,
   mediaCount = 0,
   availability,
+  realTimeAvailability,
+  scheduleData,
   showAvatar = true,
   description,
   showAgendaPill,
@@ -186,10 +198,30 @@ export default function ProfileHeader({
           </div>
         )}
 
-        {/* Statut de disponibilité + bouton Agenda */}
-        {(availability || showAgendaPill) && (
+        {/* Statut de disponibilité temps réel + bouton Agenda */}
+        {(realTimeAvailability || availability || showAgendaPill) && (
           <div>
-            {availability && (
+            {realTimeAvailability ? (
+              <div className="flex items-center gap-2">
+                <div className={`w-2 h-2 rounded-full ${
+                  realTimeAvailability.isAvailable ? 'bg-green-500 animate-pulse' : 'bg-red-500'
+                }`} />
+                <span className={`text-sm font-medium ${
+                  realTimeAvailability.isAvailable ? 'text-green-400' : 'text-red-400'
+                }`}>
+                  {realTimeAvailability.message}
+                </span>
+                {/* Bouton agenda */}
+                <button
+                  onClick={() => {
+                    console.log('📅 Ouvrir modal horaires:', scheduleData)
+                  }}
+                  className="ml-2 px-2 py-1 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/30 transition-all duration-200 text-xs text-white/80 hover:text-white"
+                >
+                  📅
+                </button>
+              </div>
+            ) : availability ? (
               <div className="flex items-center gap-2">
                 {availability.available ? (
                   <div className="flex items-center gap-2">
@@ -207,7 +239,7 @@ export default function ProfileHeader({
                   </div>
                 )}
               </div>
-            )}
+            ) : null}
 
             {showAgendaPill && (
               <div className="mt-2">

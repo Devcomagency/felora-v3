@@ -615,6 +615,8 @@ export default function EscortProfilePage() {
                   views: profile.stats?.views || 0
                 }}
                 availability={profile.availability}
+                realTimeAvailability={profile.realTimeAvailability}
+                scheduleData={profile.scheduleData}
                 description={profile.description}
                 mediaCount={Array.isArray(feedMedia) ? feedMedia.length : 0}
               />
@@ -823,63 +825,6 @@ export default function EscortProfilePage() {
                         </div>
                       )
                     })}
-                  </div>
-                </div>
-              )}
-
-              {/* Disponibilité temps réel */}
-              {profile.realTimeAvailability && (
-                <div className="relative">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className={`w-5 h-5 rounded-full flex items-center justify-center ${
-                      profile.realTimeAvailability.isAvailable
-                        ? 'bg-gradient-to-r from-green-500 to-emerald-600'
-                        : 'bg-gradient-to-r from-red-500 to-rose-600'
-                    }`}>
-                      <span className="text-xs">
-                        {profile.realTimeAvailability.isAvailable ? '✅' : '❌'}
-                      </span>
-                    </div>
-                    <h3 className="text-sm font-semibold text-white">Disponibilité</h3>
-                    {/* Bouton pill pour ouvrir la modal horaires */}
-                    <button
-                      onClick={() => {
-                        // TODO: Ouvrir modal horaires avec scheduleData
-                        console.log('Ouvrir modal horaires:', profile.scheduleData)
-                      }}
-                      className="ml-auto px-2 py-1 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/30 transition-all duration-200 text-xs text-white/80 hover:text-white"
-                    >
-                      📅 Horaires
-                    </button>
-                  </div>
-
-                  <div className="space-y-2">
-                    {/* Statut principal */}
-                    <div className={`p-2 rounded-xl border ${
-                      profile.realTimeAvailability.isAvailable
-                        ? 'bg-gradient-to-br from-green-500/5 to-emerald-600/10 border-green-500/20'
-                        : 'bg-gradient-to-br from-red-500/5 to-rose-600/10 border-red-500/20'
-                    }`}>
-                      <div className="flex items-center gap-2">
-                        <span className={`text-xs font-medium ${
-                          profile.realTimeAvailability.isAvailable
-                            ? 'text-green-300'
-                            : 'text-red-300'
-                        }`}>
-                          {profile.realTimeAvailability.message}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Prochaine disponibilité si indisponible */}
-                    {!profile.realTimeAvailability.isAvailable && profile.realTimeAvailability.nextAvailable && (
-                      <div className="p-2 rounded-xl bg-gradient-to-br from-blue-500/5 to-indigo-600/10 backdrop-blur-sm border border-blue-500/20">
-                        <div className="text-xs text-blue-300/80 font-medium uppercase tracking-wider mb-1">Prochaine disponibilité</div>
-                        <div className="text-xs text-white">
-                          {profile.realTimeAvailability.nextAvailable.date} à {profile.realTimeAvailability.nextAvailable.time}
-                        </div>
-                      </div>
-                    )}
                   </div>
                 </div>
               )}
