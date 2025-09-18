@@ -4,10 +4,10 @@ import { calculateAvailability } from '@/lib/availability-calculator'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const profileId = params.id
+    const { id: profileId } = await params
 
     if (!profileId) {
       return NextResponse.json({ error: 'profile_id_required' }, { status: 400 })
