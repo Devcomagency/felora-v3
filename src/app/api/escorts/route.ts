@@ -121,8 +121,21 @@ export async function GET(request: NextRequest) {
     try {
       console.log('[API ESCORTS] Attempting ultra-minimal query...')
 
-      // API complète avec tous les champs et filtres
-      console.log('[API ESCORTS] Full API with all fields and filters')
+      // Test avec requête ultra-simplifiée d'abord
+      console.log('[API ESCORTS] Testing ultra-simple query first...')
+      rows = await prisma.escortProfile.findMany({
+        where: { status: 'ACTIVE' },
+        select: {
+          id: true,
+          stageName: true,
+          status: true
+        },
+        take: 3
+      })
+      console.log('[API ESCORTS] Ultra-simple test successful, found:', rows.length, 'profiles')
+
+      // Si le test passe, faire la vraie requête
+      console.log('[API ESCORTS] Now attempting full query...')
       rows = await prisma.escortProfile.findMany({
         where,
         select: {
@@ -173,20 +186,54 @@ export async function GET(request: NextRequest) {
       console.log('[API ESCORTS] Step 1 successful, found:', rows.length, 'profiles')
 
     } catch (dbError) {
-      console.error('[API ESCORTS] Ultra-minimal query failed:', dbError)
+      console.error('[API ESCORTS] Database query failed:', dbError)
       console.error('[API ESCORTS] Error details:', {
-        message: dbError.message,
-        stack: dbError.stack,
-        code: dbError.code,
-        name: dbError.name,
-        meta: dbError.meta || 'No meta'
+        message: dbError?.message || 'Unknown error',
+        stack: dbError?.stack || 'No stack',
+        code: dbError?.code || 'NO_CODE',
+        name: dbError?.name || 'Unknown',
+        meta: dbError?.meta || 'No meta',
+        clientVersion: dbError?.clientVersion || 'No version'
       })
-      return NextResponse.json({
-        error: 'Database query failed at basic level',
-        details: dbError.message,
-        stage: 'ultra_minimal_query',
-        dbCode: dbError.code || 'NO_CODE'
-      }, { status: 500 })
+
+      // Essayer une requête encore plus simple
+      try {
+        console.log('[API ESCORTS] Attempting emergency fallback query...')
+        const emergencyRows = await prisma.escortProfile.findMany({
+          select: { id: true, stageName: true },
+          take: 1
+        })
+        console.log('[API ESCORTS] Emergency query worked, found:', emergencyRows.length, 'profiles')
+
+        // Retourner une réponse d'urgence
+        return NextResponse.json({
+          success: true,
+          items: emergencyRows.map(e => ({
+            id: e.id,
+            stageName: e.stageName || 'Profile',
+            city: undefined,
+            canton: undefined,
+            isVerifiedBadge: false,
+            isActive: true,
+            languages: [],
+            services: [],
+            updatedAt: new Date().toISOString(),
+            status: 'ACTIVE'
+          })),
+          nextCursor: undefined,
+          total: undefined,
+          emergency: true,
+          originalError: dbError?.message || 'Database connection issue'
+        })
+      } catch (emergencyError) {
+        console.error('[API ESCORTS] Even emergency query failed:', emergencyError)
+        return NextResponse.json({
+          error: 'Complete database failure',
+          details: dbError?.message || 'Database connection issue',
+          emergencyError: emergencyError?.message || 'Emergency query also failed',
+          stage: 'complete_failure'
+        }, { status: 500 })
+      }
     }
 
     console.log('[API ESCORTS] Database query completed, rows found:', rows.length)
