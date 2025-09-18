@@ -7,8 +7,9 @@ export interface TimeSlot {
 
 export interface WeeklySchedule {
   weekday: number // 0=Lundi, 1=Mardi, etc.
-  available: boolean
-  timeSlot?: TimeSlot
+  enabled: boolean // Dashboard utilise 'enabled' pas 'available'
+  start: string // "09:00" - directement dans l'objet
+  end: string   // "18:00" - directement dans l'objet
 }
 
 export interface PauseSchedule {
@@ -137,8 +138,8 @@ export function calculateAvailability(
   const todaySchedule = scheduleData.weekly.find(day => day.weekday === currentDay)
   console.log(`🚨🚨🚨 [PLANNING] todaySchedule trouvé:`, todaySchedule)
 
-  if (!todaySchedule || !todaySchedule.available) {
-    console.log(`🚨🚨🚨 [PLANNING] PAS DE PLANNING AUJOURD'HUI ou available=false`)
+  if (!todaySchedule || !todaySchedule.enabled) {
+    console.log(`🚨🚨🚨 [PLANNING] PAS DE PLANNING AUJOURD'HUI ou enabled=false`)
     console.log(`🚨🚨🚨 [PLANNING] todaySchedule:`, todaySchedule)
     // Pas disponible aujourd'hui, chercher le prochain jour disponible
     const nextAvailable = findNextAvailableDay(scheduleData.weekly, currentDay)
@@ -151,24 +152,24 @@ export function calculateAvailability(
     }
   }
 
-  // 4. Vérifier les heures de disponibilité
-  console.log(`🚨🚨🚨 [HORAIRES] todaySchedule.timeSlot:`, todaySchedule.timeSlot)
-  if (todaySchedule.timeSlot) {
-    const startTime = parseTime(todaySchedule.timeSlot.start)
-    const endTime = parseTime(todaySchedule.timeSlot.end)
+  // 4. Vérifier les heures de disponibilité (format dashboard direct)
+  console.log(`🚨🚨🚨 [HORAIRES] todaySchedule.start:`, todaySchedule.start, `todaySchedule.end:`, todaySchedule.end)
+  if (todaySchedule.start && todaySchedule.end) {
+    const startTime = parseTime(todaySchedule.start)
+    const endTime = parseTime(todaySchedule.end)
     console.log(`🚨🚨🚨 [HORAIRES] startTime:`, startTime, `endTime:`, endTime, `currentTime:`, currentTime)
 
     if (currentTime >= startTime && currentTime <= endTime) {
       return {
         isAvailable: true,
         status: 'available',
-        message: `Disponible jusqu'à ${todaySchedule.timeSlot.end}`
+        message: `Disponible jusqu'à ${todaySchedule.end}`
       }
     } else if (currentTime < startTime) {
       return {
         isAvailable: false,
         status: 'unavailable',
-        message: `Disponible dès ${todaySchedule.timeSlot.start}`
+        message: `Disponible dès ${todaySchedule.start}`
       }
     } else {
       // Après les heures, chercher la prochaine disponibilité
@@ -213,11 +214,11 @@ function findNextAvailableDay(
     const checkDay = (currentDay + i) % 7
     const daySchedule = weekly.find(day => day.weekday === checkDay)
 
-    if (daySchedule?.available) {
+    if (daySchedule?.enabled) {
       const nextDate = new Date()
       nextDate.setDate(nextDate.getDate() + i)
 
-      const time = daySchedule.timeSlot?.start || '09:00'
+      const time = daySchedule.start || '09:00'
 
       return {
         date: nextDate.toLocaleDateString('fr-CH'),
