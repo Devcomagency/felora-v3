@@ -74,7 +74,7 @@ export function AvailabilityDetailed({ status, className = '', scheduleData }: {
 
   return (
     <>
-      <div className={`${className}`}>
+      <div className={`p-4 rounded-2xl bg-gradient-to-br from-gray-900/50 to-black/30 backdrop-blur-sm border border-white/10 ${className}`}>
         <div className="flex items-center gap-2 mb-3">
           <div className={`w-5 h-5 rounded-full flex items-center justify-center ${
             status.isAvailable
