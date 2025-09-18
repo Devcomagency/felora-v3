@@ -68,6 +68,10 @@ export function AvailabilityDetailed({ status, className = '', scheduleData }: {
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false)
   const display = formatAvailabilityDisplay(status)
 
+  // Debug logs
+  console.log('[AvailabilityDetailed] Status:', status)
+  console.log('[AvailabilityDetailed] ScheduleData:', scheduleData)
+
   return (
     <>
       <div className={`${className}`}>

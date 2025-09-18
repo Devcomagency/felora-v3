@@ -239,10 +239,18 @@ export async function GET(
         workingArea: escort.workingArea || undefined
       },
       // Calcul de disponibilité en temps réel basé sur l'agenda
-      realTimeAvailability: calculateAvailability(
-        escort.timeSlots,
-        escort.availableNow || false
-      ),
+      realTimeAvailability: (() => {
+        console.log(`[PROFILE ${profileId}] TimeSlots raw:`, escort.timeSlots)
+        console.log(`[PROFILE ${profileId}] AvailableNow:`, escort.availableNow)
+
+        const availability = calculateAvailability(
+          escort.timeSlots,
+          escort.availableNow || false
+        )
+
+        console.log(`[PROFILE ${profileId}] Calculated availability:`, availability)
+        return availability
+      })(),
       // Données agenda brutes pour la modal horaires
       scheduleData: (() => {
         try {

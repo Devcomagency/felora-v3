@@ -51,8 +51,13 @@ export function calculateAvailability(
   const currentTime = now.getHours() * 60 + now.getMinutes() // Minutes depuis minuit
   const currentDateStr = now.toISOString().split('T')[0] // "2025-01-15"
 
+  console.log(`[AVAILABILITY] Input timeSlots:`, timeSlots)
+  console.log(`[AVAILABILITY] Input availableNow:`, availableNow)
+  console.log(`[AVAILABILITY] Current time: ${now.toISOString()}, Day: ${currentDay}, Time: ${currentTime}`)
+
   // Fallback si pas d'agenda défini
   if (!timeSlots) {
+    console.log(`[AVAILABILITY] No timeSlots, using fallback`)
     return {
       isAvailable: !!availableNow,
       status: availableNow ? 'available' : 'unavailable',
@@ -64,7 +69,9 @@ export function calculateAvailability(
   let scheduleData: ScheduleData
   try {
     scheduleData = typeof timeSlots === 'string' ? JSON.parse(timeSlots) : timeSlots
-  } catch {
+    console.log(`[AVAILABILITY] Parsed scheduleData:`, scheduleData)
+  } catch (e) {
+    console.log(`[AVAILABILITY] Failed to parse timeSlots:`, e)
     return {
       isAvailable: !!availableNow,
       status: availableNow ? 'available' : 'unavailable',
