@@ -486,7 +486,9 @@ export default function EscortProfilePage() {
       services: profile.services,
       rates: profile.rates,
       availability: profile.availability,
-      physical: profile.physical
+      physical: profile.physical,
+      practices: profile.practices,
+      clientele: profile.clientele
     })
 
     return {
