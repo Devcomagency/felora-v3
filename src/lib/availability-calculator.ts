@@ -55,13 +55,13 @@ export function calculateAvailability(
   console.log(`[AVAILABILITY] Input availableNow:`, availableNow)
   console.log(`[AVAILABILITY] Current time: ${now.toISOString()}, Day: ${currentDay}, Time: ${currentTime}`)
 
-  // Fallback si pas d'agenda défini
+  // Fallback si pas d'agenda défini - plus permissif pour les tests
   if (!timeSlots) {
-    console.log(`[AVAILABILITY] No timeSlots, using fallback`)
+    console.log(`[AVAILABILITY] No timeSlots, using fallback - availableNow:`, availableNow)
     return {
       isAvailable: !!availableNow,
       status: availableNow ? 'available' : 'unavailable',
-      message: availableNow ? 'Disponible maintenant' : 'Horaires non définis'
+      message: availableNow ? 'Disponible maintenant' : 'Horaires non définis - merci de configurer votre agenda'
     }
   }
 
@@ -121,7 +121,12 @@ export function calculateAvailability(
   }
 
   // 3. Vérifier le planning hebdomadaire
+  console.log(`🚨🚨🚨 [PLANNING] scheduleData.weekly:`, scheduleData.weekly)
+  console.log(`🚨🚨🚨 [PLANNING] currentDay (calculé):`, currentDay)
+  console.log(`🚨🚨🚨 [PLANNING] Date complète:`, new Date().toLocaleDateString('fr-CH'), new Date().toLocaleString('fr-CH'))
+
   if (!scheduleData.weekly || !Array.isArray(scheduleData.weekly)) {
+    console.log(`🚨🚨🚨 [PLANNING] PAS DE PLANNING HEBDOMADAIRE - utilise availableNow:`, availableNow)
     return {
       isAvailable: !!availableNow,
       status: availableNow ? 'available' : 'unavailable',
@@ -130,8 +135,11 @@ export function calculateAvailability(
   }
 
   const todaySchedule = scheduleData.weekly.find(day => day.weekday === currentDay)
+  console.log(`🚨🚨🚨 [PLANNING] todaySchedule trouvé:`, todaySchedule)
 
   if (!todaySchedule || !todaySchedule.available) {
+    console.log(`🚨🚨🚨 [PLANNING] PAS DE PLANNING AUJOURD'HUI ou available=false`)
+    console.log(`🚨🚨🚨 [PLANNING] todaySchedule:`, todaySchedule)
     // Pas disponible aujourd'hui, chercher le prochain jour disponible
     const nextAvailable = findNextAvailableDay(scheduleData.weekly, currentDay)
 
@@ -144,9 +152,11 @@ export function calculateAvailability(
   }
 
   // 4. Vérifier les heures de disponibilité
+  console.log(`🚨🚨🚨 [HORAIRES] todaySchedule.timeSlot:`, todaySchedule.timeSlot)
   if (todaySchedule.timeSlot) {
     const startTime = parseTime(todaySchedule.timeSlot.start)
     const endTime = parseTime(todaySchedule.timeSlot.end)
+    console.log(`🚨🚨🚨 [HORAIRES] startTime:`, startTime, `endTime:`, endTime, `currentTime:`, currentTime)
 
     if (currentTime >= startTime && currentTime <= endTime) {
       return {

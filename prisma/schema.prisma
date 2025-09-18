@@ -169,12 +169,15 @@ model EscortProfile {
   bustSize            String?
   tattoos             String?
   piercings           String?
+  rate15Min           Float?
+  rate30Min           Float?
   rate1H              Float?
   rate2H              Float?
   rateHalfDay         Float?
   rateFullDay         Float?
   rateOvernight       Float?
   currency            String       @default("CHF")
+  paymentMethods      String?
   minimumDuration     String?
   practices           String?
   orientation         String?
