@@ -86,6 +86,13 @@ export default function MediaGallery({ media, className = '' }: MediaGalleryProp
       <div className="aspect-[4/5] rounded-2xl overflow-hidden bg-black/40 backdrop-blur-sm border border-white/10">
         {currentMedia ? (
           <div className="relative w-full h-full">
+            {/* DEBUG INFO GLOBAL */}
+            <div className="absolute top-0 right-0 bg-red-600 text-white text-xs p-2 z-50">
+              <div>MEDIA: {currentMedia ? 'EXISTS' : 'NULL'}</div>
+              <div>TYPE: "{currentMedia.type}"</div>
+              <div>URL: {currentMedia.url ? 'EXISTS' : 'NULL'}</div>
+              <div>INDEX: {currentIndex}</div>
+            </div>
             {currentMedia.type === 'video' ? (
               <div className="relative w-full h-full">
                 <video
