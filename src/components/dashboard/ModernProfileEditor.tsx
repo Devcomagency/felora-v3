@@ -422,7 +422,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
         const mapDays = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche']
         const packed = mapDays.map((d, idx) => ({ weekday: idx, ...weekly[d as keyof typeof weekly] }))
         const body = {
-          timeSlots: { weekly: packed, pause: pauseEnabled ? { start: pauseStart, end: pauseEnd } : null, absences }
+          timeSlots: JSON.stringify({ weekly: packed, pause: pauseEnabled ? { start: pauseStart, end: pauseEnd } : null, absences })
         }
         await fetch('/api/escort/profile/update', {
           method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(body)
@@ -531,8 +531,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
   const scheduleToJson = () => {
     const mapDays = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche']
     const packed = mapDays.map((d, idx) => ({ weekday: idx, ...weekly[d as keyof typeof weekly] }))
-    // Retourner l'objet directement, l'API fera le JSON.stringify (comme pour galleryPhotos)
-    return { weekly: packed, pause: pauseEnabled ? { start: pauseStart, end: pauseEnd } : null, absences }
+    return JSON.stringify({ weekly: packed, pause: pauseEnabled ? { start: pauseStart, end: pauseEnd } : null, absences })
   }
 
   const doSave = async (payload: any, silent = false, retryCount = 0): Promise<boolean> => {
