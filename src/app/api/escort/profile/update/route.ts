@@ -7,6 +7,10 @@ import { z } from 'zod'
 // POST /api/escort/profile/update
 // Body: subset of fields { description?, city?, canton?, coordinates?: { lat, lng }, address?, phone?, languages?, services?, rates? }
 export async function POST(req: NextRequest) {
+  let body: any = {}
+  let input: any = {}
+  let dataToSave: Record<string, any> = {}
+
   try {
     console.log('🔍 [API PROFILE UPDATE] Starting request...')
     const session = await getServerSession(authOptions)
@@ -17,7 +21,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'unauthorized' }, { status: 401 })
     }
 
-    const body = await req.json().catch(() => ({}))
+    body = await req.json().catch(() => ({}))
     console.log('🔍 [API PROFILE UPDATE] Request body keys:', Object.keys(body))
     const Schema = z.object({
       // Basics
@@ -69,7 +73,7 @@ export async function POST(req: NextRequest) {
     if (!parsed.success) {
       return NextResponse.json({ success: false, error: 'invalid_payload', details: parsed.error.flatten() }, { status: 400 })
     }
-    const input = parsed.data
+    input = parsed.data
 
     // Ensure profile exists
     let existing = await prisma.escortProfile.findUnique({ where: { userId }, select: { id: true } })
@@ -147,7 +151,7 @@ export async function POST(req: NextRequest) {
     const addressParts = parseAddress(input.address)
     
     // Data mapping according to patch pack - dual city/ville support
-    const dataToSave: any = {}
+    dataToSave = {}
 
     // City/Ville mapping without forcing nulls
     const maybeVille = (typeof input.city === 'string' && input.city.trim())
@@ -223,7 +227,11 @@ export async function POST(req: NextRequest) {
     if (typeof input.bustSize === 'string') dataToSave.bustSize = input.bustSize
     if (typeof input.tattoos === 'string') dataToSave.tattoos = input.tattoos
     if (typeof input.piercings === 'string') dataToSave.piercings = input.piercings
-    if (input.timeSlots !== undefined) dataToSave.timeSlots = typeof input.timeSlots === 'string' ? input.timeSlots : JSON.stringify(input.timeSlots)
+    if (input.timeSlots !== undefined) {
+      // Dashboard envoie déjà du JSON stringifié, pas besoin de re-stringify
+      dataToSave.timeSlots = typeof input.timeSlots === 'string' ? input.timeSlots : JSON.stringify(input.timeSlots)
+      console.log('🔧 [AGENDA FIX] Saving timeSlots:', dataToSave.timeSlots)
+    }
     if (input.phoneVisibility) dataToSave.phoneVisibility = input.phoneVisibility
     if (input.breastType) dataToSave.breastType = input.breastType
     if (input.pubicHair) dataToSave.pubicHair = input.pubicHair
