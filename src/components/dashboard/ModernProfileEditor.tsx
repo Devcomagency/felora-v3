@@ -572,7 +572,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
       if (profileData.incall !== undefined) payload.incall = !!profileData.incall
       if (profileData.outcall !== undefined) payload.outcall = !!profileData.outcall
       if (profileData.coordinates) { payload.latitude = profileData.coordinates.lat; payload.longitude = profileData.coordinates.lng }
-      if (profileData.languages) payload.languages = JSON.stringify(profileData.languages)
+      if (profileData.languages && profileData.languages.length > 0) payload.languages = JSON.stringify(profileData.languages)
       // Combiner catégorie et services détaillés dans le champ services
       const serviceDetails = (profileData.specialties || []).filter(s => s.startsWith('srv:'))
       const allServices = [
@@ -586,7 +586,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
         allServices
       })
       if (allServices.length > 0) payload.services = JSON.stringify(allServices)
-      if (profileData.specialties) payload.practices = JSON.stringify(profileData.specialties)
+      if (profileData.specialties && profileData.specialties.length > 0) payload.practices = JSON.stringify(profileData.specialties)
       if (profileData.prices?.oneHour !== undefined) payload.rate1H = profileData.prices.oneHour
       if (profileData.prices?.twoHours !== undefined) payload.rate2H = profileData.prices.twoHours
       if (profileData.prices?.overnight !== undefined) payload.rateOvernight = profileData.prices.overnight
@@ -631,7 +631,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
       if (profileData.incall !== undefined) payload.incall = !!profileData.incall
       if (profileData.outcall !== undefined) payload.outcall = !!profileData.outcall
       if (profileData.coordinates) { payload.latitude = profileData.coordinates.lat; payload.longitude = profileData.coordinates.lng }
-      if (profileData.languages) payload.languages = JSON.stringify(profileData.languages)
+      if (profileData.languages && profileData.languages.length > 0) payload.languages = JSON.stringify(profileData.languages)
       // Combiner catégorie et services détaillés dans le champ services
       const serviceDetails = (profileData.specialties || []).filter(s => s.startsWith('srv:'))
       const allServices = [
@@ -645,7 +645,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
         allServices
       })
       if (allServices.length > 0) payload.services = JSON.stringify(allServices)
-      if (profileData.specialties) payload.practices = JSON.stringify(profileData.specialties)
+      if (profileData.specialties && profileData.specialties.length > 0) payload.practices = JSON.stringify(profileData.specialties)
       payload.timeSlots = scheduleToJson()
       if (profileData.height !== undefined) payload.height = profileData.height
       if (profileData.bodyType !== undefined) payload.bodyType = profileData.bodyType

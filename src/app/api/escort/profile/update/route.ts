@@ -109,7 +109,7 @@ export async function POST(req: NextRequest) {
       }
     }
     if (typeof input.description === 'string') data.description = input.description
-    if (typeof input.city === 'string' && input.city.trim()) data.ville = input.city.trim()
+    if (typeof input.city === 'string' && input.city.trim()) data.city = input.city.trim()
     if (typeof input.canton === 'string' && input.canton.trim()) data.canton = input.canton.trim()
     if (input.coordinates && typeof input.coordinates.lat === 'number' && typeof input.coordinates.lng === 'number') {
       data.latitude = input.coordinates.lat
@@ -162,14 +162,15 @@ export async function POST(req: NextRequest) {
     if (addressParts.ville) dataToSave.ville = addressParts.ville
     if (typeof (input as any).numero === 'string' && (input as any).numero.trim()) dataToSave.numero = (input as any).numero.trim()
 
-    // Lists → CSV only if provided
+    // Lists → CSV only if provided and not empty
     if (typeof input.languages !== 'undefined') {
       const csv = toCsv(input.languages)
       if (csv) dataToSave.languages = csv
     }
     if (typeof input.services !== 'undefined') {
       const csv = toCsv(input.services)
-      if (csv) dataToSave.services = csv
+      // Ne pas sauvegarder une chaîne vide pour les services
+      if (csv && csv.length > 0) dataToSave.services = csv
     }
     if (typeof input.practices !== 'undefined') {
       const csv = toCsv(input.practices)
@@ -244,6 +245,14 @@ export async function POST(req: NextRequest) {
   } catch (e:any) {
     console.error('❌ /api/escort/profile/update error:', e.message)
     console.error('❌ Full error:', e)
-    return NextResponse.json({ success: false, error: 'server_error' }, { status: 500 })
+    console.error('❌ Request body was:', body)
+    console.error('❌ Parsed input was:', input)
+    console.error('❌ Data to save was:', dataToSave)
+    return NextResponse.json({
+      success: false,
+      error: 'server_error',
+      details: e.message,
+      debugInfo: process.env.NODE_ENV === 'development' ? { body, input, dataToSave } : undefined
+    }, { status: 500 })
   }
 }
