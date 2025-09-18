@@ -574,10 +574,17 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
       if (profileData.coordinates) { payload.latitude = profileData.coordinates.lat; payload.longitude = profileData.coordinates.lng }
       if (profileData.languages) payload.languages = JSON.stringify(profileData.languages)
       // Combiner catégorie et services détaillés dans le champ services
+      const serviceDetails = (profileData.specialties || []).filter(s => s.startsWith('srv:'))
       const allServices = [
         ...(profileData.serviceType || []), // Catégorie principale (escort, masseuse, etc.)
-        ...(profileData.specialties || []).filter(s => s.startsWith('srv:')) // Services détaillés uniquement
+        ...serviceDetails // Services détaillés uniquement
       ]
+      console.log('[DASHBOARD] Saving services:', {
+        serviceType: profileData.serviceType,
+        specialties: profileData.specialties,
+        serviceDetails,
+        allServices
+      })
       if (allServices.length > 0) payload.services = JSON.stringify(allServices)
       if (profileData.specialties) payload.practices = JSON.stringify(profileData.specialties)
       if (profileData.prices?.oneHour !== undefined) payload.rate1H = profileData.prices.oneHour
@@ -626,10 +633,17 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
       if (profileData.coordinates) { payload.latitude = profileData.coordinates.lat; payload.longitude = profileData.coordinates.lng }
       if (profileData.languages) payload.languages = JSON.stringify(profileData.languages)
       // Combiner catégorie et services détaillés dans le champ services
+      const serviceDetails = (profileData.specialties || []).filter(s => s.startsWith('srv:'))
       const allServices = [
         ...(profileData.serviceType || []), // Catégorie principale (escort, masseuse, etc.)
-        ...(profileData.specialties || []).filter(s => s.startsWith('srv:')) // Services détaillés uniquement
+        ...serviceDetails // Services détaillés uniquement
       ]
+      console.log('[DASHBOARD] Saving services:', {
+        serviceType: profileData.serviceType,
+        specialties: profileData.specialties,
+        serviceDetails,
+        allServices
+      })
       if (allServices.length > 0) payload.services = JSON.stringify(allServices)
       if (profileData.specialties) payload.practices = JSON.stringify(profileData.specialties)
       payload.timeSlots = scheduleToJson()
