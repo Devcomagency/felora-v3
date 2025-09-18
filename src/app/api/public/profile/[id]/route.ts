@@ -94,6 +94,26 @@ export async function GET(
       }
     })
 
+    // DEBUG: Log pour voir ce qui est récupéré
+    console.log(`[DEBUG] Profile ${profileId} - Found ${mediaItems.length} media items:`, mediaItems)
+
+    // DEBUG: Essayer aussi sans filtre visibility pour voir s'il y a des médias
+    const allMediaDebug = await prisma.media.findMany({
+      where: {
+        ownerId: profileId,
+        ownerType: 'ESCORT'
+      }
+    })
+    console.log(`[DEBUG] Profile ${profileId} - ALL media (any visibility):`, allMediaDebug.length)
+
+    // DEBUG: Essayer avec d'autres ownerType possibles
+    const allMediaAnyType = await prisma.media.findMany({
+      where: {
+        ownerId: profileId
+      }
+    })
+    console.log(`[DEBUG] Profile ${profileId} - ALL media (any ownerType):`, allMediaAnyType)
+
     // Construire la galerie media
     const media = mediaItems.map(item => ({
       id: item.id,
