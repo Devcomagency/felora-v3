@@ -3,9 +3,13 @@ import { prisma } from '@/lib/prisma'
 
 export async function POST(request: NextRequest) {
   try {
-    const { profileId, profileType } = await request.json()
+    const body = await request.json()
+    console.log('[ANALYTICS DEBUG] Received:', body)
+
+    const { profileId, profileType } = body
 
     if (!profileId || !profileType) {
+      console.log('[ANALYTICS DEBUG] Missing params:', { profileId, profileType })
       return NextResponse.json({ error: 'Paramètres manquants' }, { status: 400 })
     }
 
