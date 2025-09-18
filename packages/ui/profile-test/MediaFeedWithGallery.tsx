@@ -624,15 +624,25 @@ export default function MediaFeedWithGallery({
             </div>
 
             <div className="w-full h-full max-w-md max-h-screen bg-black relative border-radius-20">
-              {fullscreenMedia?.includes('.mp4') ? (
-                <video
-                  src={fullscreenMedia}
-                  controls
-                  autoPlay
-                  loop
-                  playsInline
-                  className="w-full h-full object-cover"
-                />
+              {fullscreenMedia?.includes('.mp4') || fullscreenMedia?.includes('data:video/') ? (
+                <div className="relative w-full h-full">
+                  <video
+                    src={fullscreenMedia}
+                    controls
+                    autoPlay
+                    loop
+                    playsInline
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      console.error('[DEBUG FULLSCREEN] Erreur vidéo:', e)
+                      console.error('[DEBUG FULLSCREEN] URL:', fullscreenMedia)
+                    }}
+                  />
+                  {/* DEBUG FULLSCREEN */}
+                  <div className="absolute top-0 right-0 bg-green-600 text-white text-xs p-1 z-50">
+                    FULLSCREEN VIDEO
+                  </div>
+                </div>
               ) : (
                 <Image
                   src={fullscreenMedia || ''}
