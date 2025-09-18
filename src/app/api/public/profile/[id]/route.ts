@@ -44,6 +44,13 @@ export async function GET(
         bustSize: true,
         tattoos: true,
         piercings: true,
+        // Données service et disponibilité (champs existants uniquement)
+        workingArea: true,
+        availableNow: true,
+        outcall: true,
+        incall: true,
+        weekendAvailable: true,
+        minimumDuration: true,
         // Stats (à implémenter plus tard)
         // likes: true,
         // views: true,
@@ -140,7 +147,7 @@ export async function GET(
       services,
       languages,
       rates,
-      // Nouvelles données physiques pour la modal
+      // Données physiques pour la modal
       physical: {
         height: escort.height || undefined,
         bodyType: escort.bodyType || undefined,
@@ -150,6 +157,15 @@ export async function GET(
         bustSize: escort.bustSize || undefined,
         tattoos: escort.tattoos || undefined,
         piercings: escort.piercings || undefined
+      },
+      // Données service et disponibilité
+      availability: {
+        availableNow: escort.availableNow || false,
+        outcall: escort.outcall || false,
+        incall: escort.incall || false,
+        weekendAvailable: escort.weekendAvailable || false,
+        minimumDuration: escort.minimumDuration || undefined,
+        workingArea: escort.workingArea || undefined
       },
       age,
       updatedAt: escort.updatedAt

@@ -696,6 +696,130 @@ export default function EscortProfilePage() {
                 </div>
               </div>
 
+              {/* Langues parlées */}
+              {extendedProfileData.languages && extendedProfileData.languages.length > 0 && (
+                <div className="relative">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-5 h-5 rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 flex items-center justify-center">
+                      <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M7 2a1 1 0 011 1v1h3a1 1 0 110 2H9.578a18.87 18.87 0 01-1.724 4.78c.29.354.596.696.914 1.026a1 1 0 11-1.44 1.389c-.188-.196-.373-.396-.554-.6a19.098 19.098 0 01-3.107 3.567 1 1 0 01-1.334-1.49 17.087 17.087 0 003.13-3.733 18.992 18.992 0 01-1.487-2.494 1 1 0 111.79-.89c.234.47.489.928.764 1.372.417-.934.752-1.913.997-2.927H3a1 1 0 110-2h3V3a1 1 0 011-1zm6 6a1 1 0 01.894.553l2.991 5.982a.869.869 0 01.02.037l.99 1.98a1 1 0 11-1.79.895L15.383 16h-4.764l-.724 1.447a1 1 0 11-1.788-.894l.99-1.98.019-.038 2.99-5.982A1 1 0 0113 8zm-1.382 6h2.764L13 12.236 11.618 14z" clipRule="evenodd"/>
+                      </svg>
+                    </div>
+                    <h3 className="text-sm font-semibold text-white">Langues parlées</h3>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {extendedProfileData.languages.map((language, index) => (
+                      <span key={index} className="px-3 py-1 text-xs font-medium bg-gradient-to-r from-cyan-500/20 to-blue-600/20 text-cyan-300 rounded-full border border-cyan-500/30">
+                        {language}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Services */}
+              {extendedProfileData.services && extendedProfileData.services.length > 0 && (
+                <div className="relative">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-5 h-5 rounded-full bg-gradient-to-r from-purple-500 to-pink-600 flex items-center justify-center">
+                      <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd"/>
+                      </svg>
+                    </div>
+                    <h3 className="text-sm font-semibold text-white">Services proposés</h3>
+                  </div>
+                  <div className="grid grid-cols-1 gap-2">
+                    {extendedProfileData.services.map((service, index) => (
+                      <div key={index} className="p-2 rounded-xl bg-gradient-to-br from-purple-500/5 to-pink-600/10 backdrop-blur-sm border border-purple-500/20">
+                        <div className="text-xs font-medium text-white">{service}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Tarifs */}
+              {extendedProfileData.rates && (extendedProfileData.rates.rate1H || extendedProfileData.rates.rate2H || extendedProfileData.rates.overnight) && (
+                <div className="relative">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-5 h-5 rounded-full bg-gradient-to-r from-green-500 to-emerald-600 flex items-center justify-center">
+                      <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"/>
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clipRule="evenodd"/>
+                      </svg>
+                    </div>
+                    <h3 className="text-sm font-semibold text-white">Tarifs</h3>
+                  </div>
+                  <div className="grid grid-cols-1 gap-2">
+                    {extendedProfileData.rates.rate1H && (
+                      <div className="p-2 rounded-xl bg-gradient-to-br from-green-500/5 to-emerald-600/10 backdrop-blur-sm border border-green-500/20">
+                        <div className="flex justify-between items-center">
+                          <span className="text-xs text-green-300/80 font-medium">1 heure</span>
+                          <span className="text-xs font-bold text-white">{extendedProfileData.rates.rate1H} CHF</span>
+                        </div>
+                      </div>
+                    )}
+                    {extendedProfileData.rates.rate2H && (
+                      <div className="p-2 rounded-xl bg-gradient-to-br from-green-500/5 to-emerald-600/10 backdrop-blur-sm border border-green-500/20">
+                        <div className="flex justify-between items-center">
+                          <span className="text-xs text-green-300/80 font-medium">2 heures</span>
+                          <span className="text-xs font-bold text-white">{extendedProfileData.rates.rate2H} CHF</span>
+                        </div>
+                      </div>
+                    )}
+                    {extendedProfileData.rates.overnight && (
+                      <div className="p-2 rounded-xl bg-gradient-to-br from-green-500/5 to-emerald-600/10 backdrop-blur-sm border border-green-500/20">
+                        <div className="flex justify-between items-center">
+                          <span className="text-xs text-green-300/80 font-medium">Nuit complète</span>
+                          <span className="text-xs font-bold text-white">{extendedProfileData.rates.overnight} CHF</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Disponibilité */}
+              {extendedProfileData.availability && (
+                <div className="relative">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-5 h-5 rounded-full bg-gradient-to-r from-orange-500 to-red-600 flex items-center justify-center">
+                      <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd"/>
+                      </svg>
+                    </div>
+                    <h3 className="text-sm font-semibold text-white">Disponibilité</h3>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    {extendedProfileData.availability.availableNow && (
+                      <div className="p-2 rounded-xl bg-gradient-to-br from-green-500/20 to-emerald-600/20 backdrop-blur-sm border border-green-500/30">
+                        <div className="text-xs text-green-300 font-medium">✓ Disponible maintenant</div>
+                      </div>
+                    )}
+                    {extendedProfileData.availability.incall && (
+                      <div className="p-2 rounded-xl bg-gradient-to-br from-orange-500/5 to-red-600/10 backdrop-blur-sm border border-orange-500/20">
+                        <div className="text-xs text-orange-300/80 font-medium">Reçoit</div>
+                      </div>
+                    )}
+                    {extendedProfileData.availability.outcall && (
+                      <div className="p-2 rounded-xl bg-gradient-to-br from-orange-500/5 to-red-600/10 backdrop-blur-sm border border-orange-500/20">
+                        <div className="text-xs text-orange-300/80 font-medium">Se déplace</div>
+                      </div>
+                    )}
+                    {extendedProfileData.availability.weekendAvailable && (
+                      <div className="p-2 rounded-xl bg-gradient-to-br from-orange-500/5 to-red-600/10 backdrop-blur-sm border border-orange-500/20">
+                        <div className="text-xs text-orange-300/80 font-medium">Week-ends</div>
+                      </div>
+                    )}
+                    {extendedProfileData.availability.minimumDuration && (
+                      <div className="col-span-2 p-2 rounded-xl bg-gradient-to-br from-orange-500/5 to-red-600/10 backdrop-blur-sm border border-orange-500/20">
+                        <div className="text-xs text-orange-300/80 font-medium">Durée minimum: {extendedProfileData.availability.minimumDuration}</div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
               {/* Section Avis moderne */}
               <div className="-mx-4 -mb-4">
                 <CommentsSection
