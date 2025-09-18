@@ -484,10 +484,10 @@ export default function EscortProfilePage() {
     if (!profile) return null
 
     const rates = []
-    if (profile.rates?.hour) rates.push({ duration: '1h', price: profile.rates.hour, description: 'Rencontre intime' })
-    if (profile.rates?.twoHours) rates.push({ duration: '2h', price: profile.rates.twoHours, description: 'Moment prolongé' })
-    if (profile.rates?.halfDay) rates.push({ duration: '4h', price: profile.rates.halfDay, description: 'Demi-journée' })
-    if (profile.rates?.fullDay) rates.push({ duration: '8h', price: profile.rates.fullDay, description: 'Journée complète' })
+    if (profile.rates?.rate1H) rates.push({ duration: '1h', price: profile.rates.rate1H, description: 'Rencontre intime' })
+    if (profile.rates?.rate2H) rates.push({ duration: '2h', price: profile.rates.rate2H, description: 'Moment prolongé' })
+    if (profile.rates?.rateHalfDay) rates.push({ duration: '4h', price: profile.rates.rateHalfDay, description: 'Demi-journée' })
+    if (profile.rates?.rateFullDay) rates.push({ duration: '8h', price: profile.rates.rateFullDay, description: 'Journée complète' })
     if (profile.rates?.overnight) rates.push({ duration: '24h', price: profile.rates.overnight, description: 'Week-end VIP' })
 
     // DEBUG: Logs pour vérifier les données
@@ -528,6 +528,14 @@ export default function EscortProfilePage() {
       },
       clientele: profile.clientele || {},
       availability: profile.availability || {},
+      // Options de lieu temporaires (jusqu'à ajout en DB)
+      locationOptions: {
+        incall: profile.availability?.incall ? ['Douche à deux', 'Climatisation', 'Parking', 'Ambiance musicale'] : [],
+        outcall: profile.availability?.outcall ? ['Déplacements discrets', 'Hôtels 4-5 étoiles', 'Domiciles privés'] : []
+      },
+      // Méthodes de paiement temporaires
+      paymentMethods: ['Cash', 'TWINT', 'Crypto'],
+      currencies: ['CHF', 'EUR'],
       contact: {
         phone: '+41791234567',
         whatsapp: '+41791234567',
@@ -914,7 +922,7 @@ export default function EscortProfilePage() {
               )}
 
               {/* Lieu & Options */}
-              {extendedProfileData.availability && (extendedProfileData.availability.incall || extendedProfileData.availability.outcall || extendedProfileData.availability.workingArea) && (
+              {(extendedProfileData.locationOptions.incall.length > 0 || extendedProfileData.locationOptions.outcall.length > 0) && (
                 <div className="relative">
                   <div className="flex items-center gap-2 mb-3">
                     <div className="w-5 h-5 rounded-full bg-gradient-to-r from-teal-500 to-cyan-600 flex items-center justify-center">
@@ -924,23 +932,37 @@ export default function EscortProfilePage() {
                     </div>
                     <h3 className="text-sm font-semibold text-white">Lieu & Options</h3>
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    {extendedProfileData.availability.incall && (
-                      <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border bg-teal-500/20 border-teal-500/30 text-teal-300 transition-all hover:scale-105">
-                        <span className="text-xs">🏠</span>
-                        <span className="text-xs font-medium">Reçoit</span>
+                  <div className="space-y-3">
+                    {/* Options Incall */}
+                    {extendedProfileData.locationOptions.incall.length > 0 && (
+                      <div>
+                        <div className="text-xs font-medium text-teal-300 mb-2 flex items-center gap-1.5">
+                          <span>🏠</span>
+                          <span>Incall</span>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {extendedProfileData.locationOptions.incall.map((option, index) => (
+                            <div key={index} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border bg-teal-500/20 border-teal-500/30 text-teal-300 transition-all hover:scale-105">
+                              <span className="text-xs font-medium">{option}</span>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     )}
-                    {extendedProfileData.availability.outcall && (
-                      <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border bg-teal-500/20 border-teal-500/30 text-teal-300 transition-all hover:scale-105">
-                        <span className="text-xs">🚗</span>
-                        <span className="text-xs font-medium">Se déplace</span>
-                      </div>
-                    )}
-                    {extendedProfileData.availability.workingArea && (
-                      <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border bg-teal-500/20 border-teal-500/30 text-teal-300 transition-all hover:scale-105">
-                        <span className="text-xs">📍</span>
-                        <span className="text-xs font-medium">{extendedProfileData.availability.workingArea}</span>
+                    {/* Options Outcall */}
+                    {extendedProfileData.locationOptions.outcall.length > 0 && (
+                      <div>
+                        <div className="text-xs font-medium text-teal-300 mb-2 flex items-center gap-1.5">
+                          <span>🚗</span>
+                          <span>Outcall</span>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {extendedProfileData.locationOptions.outcall.map((option, index) => (
+                            <div key={index} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border bg-teal-500/20 border-teal-500/30 text-teal-300 transition-all hover:scale-105">
+                              <span className="text-xs font-medium">{option}</span>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     )}
                   </div>
@@ -1054,6 +1076,48 @@ export default function EscortProfilePage() {
                         <div className="text-xs text-indigo-300/80 font-medium">✓ Handicapés</div>
                       </div>
                     )}
+                  </div>
+                </div>
+              )}
+
+              {/* Méthodes de paiement acceptées */}
+              {extendedProfileData.paymentMethods && extendedProfileData.paymentMethods.length > 0 && (
+                <div className="relative">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-5 h-5 rounded-full bg-gradient-to-r from-yellow-500 to-orange-600 flex items-center justify-center">
+                      <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4zM18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z"/>
+                      </svg>
+                    </div>
+                    <h3 className="text-sm font-semibold text-white">Méthodes de paiement acceptées</h3>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    {extendedProfileData.paymentMethods.map((method, index) => (
+                      <div key={index} className="p-2 rounded-xl bg-gradient-to-br from-yellow-500/5 to-orange-600/10 backdrop-blur-sm border border-yellow-500/20">
+                        <div className="text-xs text-yellow-300/80 font-medium text-center">{method}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Devises acceptées */}
+              {extendedProfileData.currencies && extendedProfileData.currencies.length > 0 && (
+                <div className="relative">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-5 h-5 rounded-full bg-gradient-to-r from-emerald-500 to-green-600 flex items-center justify-center">
+                      <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd"/>
+                      </svg>
+                    </div>
+                    <h3 className="text-sm font-semibold text-white">Devises acceptées</h3>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {extendedProfileData.currencies.map((currency, index) => (
+                      <div key={index} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border bg-emerald-500/20 border-emerald-500/30 text-emerald-300 transition-all hover:scale-105">
+                        <span className="text-xs font-medium">{currency}</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}
