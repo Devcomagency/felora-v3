@@ -492,18 +492,25 @@ export default function EscortProfilePage() {
     return {
       languages: profile.languages || [],
       services: profile.services || [],
-      practices: profile.practices || profile.services || [],
+      practices: profile.practices || [],
       rates: {
         rate1H: profile.rates?.rate1H,
         rate2H: profile.rates?.rate2H,
-        overnight: profile.rates?.overnight
+        rateHalfDay: profile.rates?.rateHalfDay,
+        rateFullDay: profile.rates?.rateFullDay,
+        overnight: profile.rates?.overnight,
+        currency: profile.rates?.currency || 'CHF'
       },
       physicalDetails: {
         height: profile.physical?.height ? `${profile.physical.height}cm` : 'Non spécifié',
         bodyType: profile.physical?.bodyType || 'Non spécifié',
         hairColor: profile.physical?.hairColor || 'Non spécifié',
-        eyeColor: profile.physical?.eyeColor || 'Non spécifié'
+        eyeColor: profile.physical?.eyeColor || 'Non spécifié',
+        breastType: profile.physical?.breastType || 'Non spécifié',
+        pubicHair: profile.physical?.pubicHair || 'Non spécifié',
+        smoker: profile.physical?.smoker
       },
+      clientele: profile.clientele || {},
       availability: profile.availability || {},
       contact: {
         phone: '+41791234567',
@@ -754,7 +761,7 @@ export default function EscortProfilePage() {
               )}
 
               {/* Tarifs */}
-              {extendedProfileData.rates && (extendedProfileData.rates.rate1H || extendedProfileData.rates.rate2H || extendedProfileData.rates.overnight) && (
+              {extendedProfileData.rates && (extendedProfileData.rates.rate1H || extendedProfileData.rates.rate2H || extendedProfileData.rates.rateHalfDay || extendedProfileData.rates.rateFullDay || extendedProfileData.rates.overnight) && (
                 <div className="relative">
                   <div className="flex items-center gap-2 mb-3">
                     <div className="w-5 h-5 rounded-full bg-gradient-to-r from-green-500 to-emerald-600 flex items-center justify-center">
@@ -770,7 +777,7 @@ export default function EscortProfilePage() {
                       <div className="p-2 rounded-xl bg-gradient-to-br from-green-500/5 to-emerald-600/10 backdrop-blur-sm border border-green-500/20">
                         <div className="flex justify-between items-center">
                           <span className="text-xs text-green-300/80 font-medium">1 heure</span>
-                          <span className="text-xs font-bold text-white">{extendedProfileData.rates.rate1H} CHF</span>
+                          <span className="text-xs font-bold text-white">{extendedProfileData.rates.rate1H} {extendedProfileData.rates.currency}</span>
                         </div>
                       </div>
                     )}
@@ -778,7 +785,23 @@ export default function EscortProfilePage() {
                       <div className="p-2 rounded-xl bg-gradient-to-br from-green-500/5 to-emerald-600/10 backdrop-blur-sm border border-green-500/20">
                         <div className="flex justify-between items-center">
                           <span className="text-xs text-green-300/80 font-medium">2 heures</span>
-                          <span className="text-xs font-bold text-white">{extendedProfileData.rates.rate2H} CHF</span>
+                          <span className="text-xs font-bold text-white">{extendedProfileData.rates.rate2H} {extendedProfileData.rates.currency}</span>
+                        </div>
+                      </div>
+                    )}
+                    {extendedProfileData.rates.rateHalfDay && (
+                      <div className="p-2 rounded-xl bg-gradient-to-br from-green-500/5 to-emerald-600/10 backdrop-blur-sm border border-green-500/20">
+                        <div className="flex justify-between items-center">
+                          <span className="text-xs text-green-300/80 font-medium">Demi-journée</span>
+                          <span className="text-xs font-bold text-white">{extendedProfileData.rates.rateHalfDay} {extendedProfileData.rates.currency}</span>
+                        </div>
+                      </div>
+                    )}
+                    {extendedProfileData.rates.rateFullDay && (
+                      <div className="p-2 rounded-xl bg-gradient-to-br from-green-500/5 to-emerald-600/10 backdrop-blur-sm border border-green-500/20">
+                        <div className="flex justify-between items-center">
+                          <span className="text-xs text-green-300/80 font-medium">Journée complète</span>
+                          <span className="text-xs font-bold text-white">{extendedProfileData.rates.rateFullDay} {extendedProfileData.rates.currency}</span>
                         </div>
                       </div>
                     )}
@@ -786,7 +809,7 @@ export default function EscortProfilePage() {
                       <div className="p-2 rounded-xl bg-gradient-to-br from-green-500/5 to-emerald-600/10 backdrop-blur-sm border border-green-500/20">
                         <div className="flex justify-between items-center">
                           <span className="text-xs text-green-300/80 font-medium">Nuit complète</span>
-                          <span className="text-xs font-bold text-white">{extendedProfileData.rates.overnight} CHF</span>
+                          <span className="text-xs font-bold text-white">{extendedProfileData.rates.overnight} {extendedProfileData.rates.currency}</span>
                         </div>
                       </div>
                     )}
@@ -829,6 +852,63 @@ export default function EscortProfilePage() {
                     {extendedProfileData.availability.minimumDuration && (
                       <div className="col-span-2 p-2 rounded-xl bg-gradient-to-br from-orange-500/5 to-red-600/10 backdrop-blur-sm border border-orange-500/20">
                         <div className="text-xs text-orange-300/80 font-medium">Durée minimum: {extendedProfileData.availability.minimumDuration}</div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Pratiques spécialisées */}
+              {extendedProfileData.practices && extendedProfileData.practices.length > 0 && (
+                <div className="relative">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-5 h-5 rounded-full bg-gradient-to-r from-pink-500 to-rose-600 flex items-center justify-center">
+                      <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd"/>
+                      </svg>
+                    </div>
+                    <h3 className="text-sm font-semibold text-white">Pratiques spécialisées</h3>
+                  </div>
+                  <div className="grid grid-cols-1 gap-2">
+                    {extendedProfileData.practices.map((practice, index) => (
+                      <div key={index} className="p-2 rounded-xl bg-gradient-to-br from-pink-500/5 to-rose-600/10 backdrop-blur-sm border border-pink-500/20">
+                        <div className="text-xs font-medium text-white">{practice}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Clientèle acceptée */}
+              {extendedProfileData.clientele && (extendedProfileData.clientele.acceptsCouples || extendedProfileData.clientele.acceptsWomen || extendedProfileData.clientele.acceptsSeniors || extendedProfileData.clientele.acceptsHandicapped) && (
+                <div className="relative">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-5 h-5 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 flex items-center justify-center">
+                      <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"/>
+                      </svg>
+                    </div>
+                    <h3 className="text-sm font-semibold text-white">Clientèle acceptée</h3>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    {extendedProfileData.clientele.acceptsCouples && (
+                      <div className="p-2 rounded-xl bg-gradient-to-br from-indigo-500/5 to-purple-600/10 backdrop-blur-sm border border-indigo-500/20">
+                        <div className="text-xs text-indigo-300/80 font-medium">✓ Couples</div>
+                      </div>
+                    )}
+                    {extendedProfileData.clientele.acceptsWomen && (
+                      <div className="p-2 rounded-xl bg-gradient-to-br from-indigo-500/5 to-purple-600/10 backdrop-blur-sm border border-indigo-500/20">
+                        <div className="text-xs text-indigo-300/80 font-medium">✓ Femmes</div>
+                      </div>
+                    )}
+                    {extendedProfileData.clientele.acceptsSeniors && (
+                      <div className="p-2 rounded-xl bg-gradient-to-br from-indigo-500/5 to-purple-600/10 backdrop-blur-sm border border-indigo-500/20">
+                        <div className="text-xs text-indigo-300/80 font-medium">✓ Seniors</div>
+                      </div>
+                    )}
+                    {extendedProfileData.clientele.acceptsHandicapped && (
+                      <div className="p-2 rounded-xl bg-gradient-to-br from-indigo-500/5 to-purple-600/10 backdrop-blur-sm border border-indigo-500/20">
+                        <div className="text-xs text-indigo-300/80 font-medium">✓ Handicapés</div>
                       </div>
                     )}
                   </div>

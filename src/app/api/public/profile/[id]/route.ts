@@ -29,7 +29,10 @@ export async function GET(
         services: true,
         rate1H: true,
         rate2H: true,
+        rateHalfDay: true,
+        rateFullDay: true,
         rateOvernight: true,
+        currency: true,
         latitude: true,
         longitude: true,
         updatedAt: true,
@@ -42,8 +45,15 @@ export async function GET(
         eyeColor: true,
         ethnicity: true,
         bustSize: true,
+        breastType: true,
         tattoos: true,
         piercings: true,
+        pubicHair: true,
+        smoker: true,
+        // Services et pratiques détaillés
+        practices: true,
+        orientation: true,
+        acceptedClients: true,
         // Données service et disponibilité (champs existants uniquement)
         workingArea: true,
         availableNow: true,
@@ -51,6 +61,12 @@ export async function GET(
         incall: true,
         weekendAvailable: true,
         minimumDuration: true,
+        timeSlots: true,
+        // Acceptations clients
+        acceptsCouples: true,
+        acceptsHandicapped: true,
+        acceptsSeniors: true,
+        acceptsWomen: true,
         // Stats (à implémenter plus tard)
         // likes: true,
         // views: true,
@@ -120,12 +136,14 @@ export async function GET(
     // DEBUG: Log des médias parsés
     console.log(`[DEBUG] Profile ${profileId} - Found ${media.length} media from galleryPhotos:`, media)
 
-    // Construire les tarifs
+    // Construire les tarifs (tous les tarifs disponibles)
     const rates = {
       rate1H: escort.rate1H || undefined,
       rate2H: escort.rate2H || undefined,
+      rateHalfDay: escort.rateHalfDay || undefined,
+      rateFullDay: escort.rateFullDay || undefined,
       overnight: escort.rateOvernight || undefined,
-      currency: 'CHF'
+      currency: escort.currency || 'CHF'
     }
 
     // Construire les stats (placeholder pour l'instant)
@@ -147,7 +165,7 @@ export async function GET(
       services,
       languages,
       rates,
-      // Données physiques pour la modal
+      // Données physiques pour la modal (complètes)
       physical: {
         height: escort.height || undefined,
         bodyType: escort.bodyType || undefined,
@@ -155,16 +173,45 @@ export async function GET(
         eyeColor: escort.eyeColor || undefined,
         ethnicity: escort.ethnicity || undefined,
         bustSize: escort.bustSize || undefined,
+        breastType: escort.breastType || undefined,
         tattoos: escort.tattoos || undefined,
-        piercings: escort.piercings || undefined
+        piercings: escort.piercings || undefined,
+        pubicHair: escort.pubicHair || undefined,
+        smoker: escort.smoker || undefined
       },
-      // Données service et disponibilité
+      // Pratiques et services détaillés
+      practices: (() => {
+        try {
+          const P = JSON.parse(String(escort.practices || '[]'))
+          return Array.isArray(P) ? P : []
+        } catch {
+          return []
+        }
+      })(),
+      orientation: escort.orientation || undefined,
+      // Clientèle acceptée
+      clientele: {
+        acceptedClients: escort.acceptedClients || undefined,
+        acceptsCouples: escort.acceptsCouples || false,
+        acceptsHandicapped: escort.acceptsHandicapped || false,
+        acceptsSeniors: escort.acceptsSeniors || false,
+        acceptsWomen: escort.acceptsWomen || false
+      },
+      // Données service et disponibilité (enrichies)
       availability: {
         availableNow: escort.availableNow || false,
         outcall: escort.outcall || false,
         incall: escort.incall || false,
         weekendAvailable: escort.weekendAvailable || false,
         minimumDuration: escort.minimumDuration || undefined,
+        timeSlots: (() => {
+          try {
+            const T = JSON.parse(String(escort.timeSlots || '[]'))
+            return Array.isArray(T) ? T : []
+          } catch {
+            return []
+          }
+        })(),
         workingArea: escort.workingArea || undefined
       },
       age,
