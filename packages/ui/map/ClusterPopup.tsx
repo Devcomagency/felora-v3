@@ -8,10 +8,9 @@ import type { EscortPinDTO } from '../../../core/services/geo/types'
 interface ClusterPopupProps {
   escorts: EscortPinDTO[]
   onClose: () => void
-  onSelectEscort: (escort: EscortPinDTO) => void
 }
 
-export default function ClusterPopup({ escorts, onClose, onSelectEscort }: ClusterPopupProps) {
+export default function ClusterPopup({ escorts, onClose }: ClusterPopupProps) {
   const [escortsDetails, setEscortsDetails] = useState<Record<string, any>>({})
   const [loadingDetails, setLoadingDetails] = useState<Record<string, boolean>>({})
 
@@ -23,10 +22,27 @@ export default function ClusterPopup({ escorts, onClose, onSelectEscort }: Clust
       setLoadingDetails(prev => ({ ...prev, [escort.id]: true }))
       
       try {
-        const response = await fetch(`/api/geo/details?id=${escort.id}`)
-        if (!response.ok) throw new Error('details failed')
-        const details = await response.json()
-        
+        const response = await fetch(`/api/public/profile/${escort.id}`)
+        if (!response.ok) throw new Error('profile fetch failed')
+        const profileData = await response.json()
+
+        // Transform the API response to match the expected format
+        const details = {
+          id: profileData.id,
+          displayName: profileData.name,
+          handle: profileData.handle,
+          avatar: profileData.profilePhoto?.url,
+          city: profileData.city,
+          age: profileData.age,
+          verified: profileData.verified || false,
+          media: profileData.media?.map((m: any) => ({ type: m.type, url: m.url })) || [],
+          services: profileData.services || [],
+          languages: profileData.languages || [],
+          practices: profileData.practices || [],
+          rating: profileData.rating,
+          reviews: profileData.reviews
+        }
+
         setEscortsDetails(prev => ({ ...prev, [escort.id]: details }))
       } catch (error) {
         // Fallback avec données de base
@@ -167,8 +183,9 @@ export default function ClusterPopup({ escorts, onClose, onSelectEscort }: Clust
                 const loading = loadingDetails[escort.id]
 
                 return (
-                  <div
+                  <Link
                     key={escort.id}
+                    href={`/profile/${escort.id}`}
                     style={{
                       display: 'flex',
                       gap: '12px',
@@ -177,9 +194,11 @@ export default function ClusterPopup({ escorts, onClose, onSelectEscort }: Clust
                       borderRadius: '12px',
                       border: '1px solid rgba(255, 255, 255, 0.1)',
                       cursor: 'pointer',
-                      transition: 'all 0.2s'
+                      transition: 'all 0.2s',
+                      textDecoration: 'none',
+                      color: 'inherit'
                     }}
-                    onClick={() => onSelectEscort(escort)}
+                    onClick={onClose}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
                       e.currentTarget.style.borderColor = 'rgba(236, 72, 153, 0.4)'
@@ -338,7 +357,7 @@ export default function ClusterPopup({ escorts, onClose, onSelectEscort }: Clust
                         </div>
                       )}
                     </div>
-                  </div>
+                  </Link>
                 )
               })}
             </div>
