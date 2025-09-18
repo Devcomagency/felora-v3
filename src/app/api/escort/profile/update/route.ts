@@ -228,9 +228,9 @@ export async function POST(req: NextRequest) {
     if (typeof input.tattoos === 'string') dataToSave.tattoos = input.tattoos
     if (typeof input.piercings === 'string') dataToSave.piercings = input.piercings
     if (input.timeSlots !== undefined) {
-      // Dashboard envoie déjà du JSON stringifié, on le garde tel quel
-      dataToSave.timeSlots = input.timeSlots
-      console.log('🔧 [AGENDA FIX] Raw timeSlots from dashboard:', typeof input.timeSlots, input.timeSlots)
+      // Assurer que c'est une string pour Prisma
+      dataToSave.timeSlots = typeof input.timeSlots === 'string' ? input.timeSlots : JSON.stringify(input.timeSlots)
+      console.log('🔧 [AGENDA FIX] Type:', typeof input.timeSlots, 'Value:', input.timeSlots)
       console.log('🔧 [AGENDA FIX] Saving to DB:', dataToSave.timeSlots)
     }
     if (input.phoneVisibility) dataToSave.phoneVisibility = input.phoneVisibility
