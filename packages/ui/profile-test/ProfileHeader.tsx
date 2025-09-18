@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import { Star, Crown, MapPin } from 'lucide-react'
 
 interface ProfileHeaderProps {
@@ -67,6 +67,7 @@ export default function ProfileHeader({
   agendaIsOpenNow
 }: ProfileHeaderProps) {
   // Animation des viewers retirée
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false)
 
   return (
     <div className="px-4 pt-4 pb-6">
@@ -213,12 +214,10 @@ export default function ProfileHeader({
                 </span>
                 {/* Bouton agenda */}
                 <button
-                  onClick={() => {
-                    console.log('📅 Ouvrir modal horaires:', scheduleData)
-                  }}
+                  onClick={() => setIsScheduleModalOpen(true)}
                   className="ml-2 px-2 py-1 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/30 transition-all duration-200 text-xs text-white/80 hover:text-white"
                 >
-                  📅
+                  Agenda
                 </button>
               </div>
             ) : availability ? (
@@ -259,6 +258,101 @@ export default function ProfileHeader({
           </div>
         )}
       </div>
+
+      {/* Modal agenda */}
+      {isScheduleModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-gradient-to-br from-gray-900 to-black border border-white/10 rounded-2xl max-w-md w-full max-h-[80vh] overflow-hidden">
+            {/* Header */}
+            <div className="flex items-center justify-between p-4 border-b border-white/10">
+              <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+                📅 Horaires de disponibilité
+              </h2>
+              <button
+                onClick={() => setIsScheduleModalOpen(false)}
+                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white/60 hover:text-white transition-all duration-200"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-4 overflow-y-auto max-h-[60vh]">
+              {!scheduleData ? (
+                <div className="text-center text-white/60 py-8">
+                  📋 Aucun planning configuré
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {/* Planning hebdomadaire */}
+                  {scheduleData.weekly && scheduleData.weekly.length > 0 && (
+                    <div>
+                      <h3 className="text-sm font-medium text-white mb-3">📅 Planning hebdomadaire</h3>
+                      <div className="space-y-2">
+                        {scheduleData.weekly.map((day: any, index: number) => (
+                          <div key={index} className="flex items-center justify-between p-2 rounded-lg bg-white/5 border border-white/10">
+                            <span className="text-sm text-white font-medium">
+                              {['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'][day.weekday] || `Jour ${day.weekday}`}
+                            </span>
+                            <div className="text-xs">
+                              {day.available ? (
+                                <span className="text-green-400">
+                                  {day.timeSlot ? `${day.timeSlot.start} - ${day.timeSlot.end}` : 'Toute la journée'}
+                                </span>
+                              ) : (
+                                <span className="text-red-400">Indisponible</span>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Pause générale */}
+                  {scheduleData.pause && (
+                    <div>
+                      <h3 className="text-sm font-medium text-white mb-3">⏸️ Pause générale</h3>
+                      <div className="p-3 rounded-lg bg-orange-500/10 border border-orange-500/20">
+                        <div className="text-sm text-orange-300">
+                          Du {new Date(scheduleData.pause.start).toLocaleDateString('fr-CH')}
+                          au {new Date(scheduleData.pause.end).toLocaleDateString('fr-CH')}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Absences spécifiques */}
+                  {scheduleData.absences && scheduleData.absences.length > 0 && (
+                    <div>
+                      <h3 className="text-sm font-medium text-white mb-3">🚫 Absences spécifiques</h3>
+                      <div className="space-y-2">
+                        {scheduleData.absences.map((absence: any) => (
+                          <div key={absence.id} className="p-2 rounded-lg bg-red-500/10 border border-red-500/20">
+                            <div className="text-sm text-red-300">
+                              Du {new Date(absence.start).toLocaleDateString('fr-CH')}
+                              au {new Date(absence.end).toLocaleDateString('fr-CH')}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Message si pas de données */}
+                  {(!scheduleData.weekly || scheduleData.weekly.length === 0) &&
+                   !scheduleData.pause &&
+                   (!scheduleData.absences || scheduleData.absences.length === 0) && (
+                    <div className="text-center text-white/60 py-4">
+                      📋 Aucun planning détaillé configuré
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
