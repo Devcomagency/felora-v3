@@ -9,6 +9,8 @@ export async function GET(
   try {
     const { id: profileId } = await params
 
+    console.log('🚨🚨🚨 [API PUBLIC PROFILE] CALLED WITH ID:', profileId)
+
     if (!profileId) {
       return NextResponse.json({ error: 'profile_id_required' }, { status: 400 })
     }
@@ -264,6 +266,9 @@ export async function GET(
       age,
       updatedAt: escort.updatedAt
     }
+
+    console.log('🚨🚨🚨 [API PUBLIC PROFILE] RETURNING realTimeAvailability:', profile.realTimeAvailability)
+    console.log('🚨🚨🚨 [API PUBLIC PROFILE] RETURNING scheduleData:', profile.scheduleData)
 
     return NextResponse.json(profile)
 
