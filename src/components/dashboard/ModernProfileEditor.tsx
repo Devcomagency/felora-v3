@@ -573,6 +573,11 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
     }
   }
 
+  // Auto-save quand l'agenda change
+  useEffect(() => {
+    triggerAutoSave()
+  }, [weekly, pauseEnabled, pauseStart, pauseEnd, absences])
+
   const triggerAutoSave = () => {
     if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current)
     autoSaveTimer.current = setTimeout(async () => {
@@ -622,6 +627,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
       if (typeof profileData.acceptsHandicapped === 'boolean') payload.acceptsHandicapped = profileData.acceptsHandicapped
       if (typeof profileData.acceptsSeniors === 'boolean') payload.acceptsSeniors = profileData.acceptsSeniors
       payload.timeSlots = scheduleToJson()
+      console.log('[DASHBOARD] Auto-saving agenda data:', payload.timeSlots)
       await doSave(payload, true)
     }, 700)
   }

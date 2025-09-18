@@ -260,9 +260,13 @@ export async function GET(
       scheduleData: (() => {
         try {
           const timeSlots = escort.timeSlots
+          console.log(`🔍 [API PROFILE ${profileId}] Raw timeSlots from DB:`, timeSlots)
           if (!timeSlots) return null
-          return typeof timeSlots === 'string' ? JSON.parse(timeSlots) : timeSlots
-        } catch {
+          const parsed = typeof timeSlots === 'string' ? JSON.parse(timeSlots) : timeSlots
+          console.log(`🔍 [API PROFILE ${profileId}] Parsed scheduleData:`, parsed)
+          return parsed
+        } catch (e) {
+          console.log(`❌ [API PROFILE ${profileId}] Error parsing timeSlots:`, e)
           return null
         }
       })(),
