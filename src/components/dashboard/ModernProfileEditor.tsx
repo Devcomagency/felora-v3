@@ -573,7 +573,12 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
       if (profileData.outcall !== undefined) payload.outcall = !!profileData.outcall
       if (profileData.coordinates) { payload.latitude = profileData.coordinates.lat; payload.longitude = profileData.coordinates.lng }
       if (profileData.languages) payload.languages = JSON.stringify(profileData.languages)
-      if (profileData.serviceType) payload.services = JSON.stringify(profileData.serviceType)
+      // Combiner catégorie et services détaillés dans le champ services
+      const allServices = [
+        ...(profileData.serviceType || []), // Catégorie principale (escort, masseuse, etc.)
+        ...(profileData.specialties || []).filter(s => s.startsWith('srv:')) // Services détaillés uniquement
+      ]
+      if (allServices.length > 0) payload.services = JSON.stringify(allServices)
       if (profileData.specialties) payload.practices = JSON.stringify(profileData.specialties)
       if (profileData.prices?.oneHour !== undefined) payload.rate1H = profileData.prices.oneHour
       if (profileData.prices?.twoHours !== undefined) payload.rate2H = profileData.prices.twoHours
@@ -620,7 +625,12 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
       if (profileData.outcall !== undefined) payload.outcall = !!profileData.outcall
       if (profileData.coordinates) { payload.latitude = profileData.coordinates.lat; payload.longitude = profileData.coordinates.lng }
       if (profileData.languages) payload.languages = JSON.stringify(profileData.languages)
-      if (profileData.serviceType) payload.services = JSON.stringify(profileData.serviceType)
+      // Combiner catégorie et services détaillés dans le champ services
+      const allServices = [
+        ...(profileData.serviceType || []), // Catégorie principale (escort, masseuse, etc.)
+        ...(profileData.specialties || []).filter(s => s.startsWith('srv:')) // Services détaillés uniquement
+      ]
+      if (allServices.length > 0) payload.services = JSON.stringify(allServices)
       if (profileData.specialties) payload.practices = JSON.stringify(profileData.specialties)
       payload.timeSlots = scheduleToJson()
       if (profileData.height !== undefined) payload.height = profileData.height

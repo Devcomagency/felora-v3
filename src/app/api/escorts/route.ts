@@ -233,7 +233,20 @@ export async function GET(request: NextRequest) {
           services: (() => {
             try {
               const S = JSON.parse(String(e.services || '[]'))
-              return Array.isArray(S) ? S : []
+              if (!Array.isArray(S)) return []
+
+              // Nettoyer les services : enlever le préfixe "srv:" et garder la catégorie principale
+              return S.map(service => {
+                if (typeof service === 'string') {
+                  // Si c'est un service détaillé avec préfixe "srv:", enlever le préfixe
+                  if (service.startsWith('srv:')) {
+                    return service.substring(4) // Enlever "srv:"
+                  }
+                  // Si c'est une catégorie principale, la garder telle quelle
+                  return service
+                }
+                return service
+              }).filter(Boolean)
             } catch (err) {
               console.warn(`[API ESCORTS] Failed to parse services for ${e.id}:`, err)
               return []
