@@ -87,19 +87,30 @@ export default function MediaGallery({ media, className = '' }: MediaGalleryProp
         {currentMedia ? (
           <div className="relative w-full h-full">
             {currentMedia.type === 'video' ? (
-              <video
-                ref={(el) => (videoRefs.current[currentIndex] = el)}
-                src={currentMedia.url}
-                poster={currentMedia.thumb}
-                className="w-full h-full object-cover"
-                controls
-                muted={isMuted}
-                loop
-                playsInline
-                onPlay={handleVideoPlay}
-                onPause={handleVideoPause}
-                onError={() => handleImageError(currentMedia.id)}
-              />
+              <div className="relative w-full h-full">
+                <video
+                  ref={(el) => (videoRefs.current[currentIndex] = el)}
+                  src={currentMedia.url}
+                  poster={currentMedia.thumb}
+                  className="w-full h-full object-cover"
+                  controls
+                  onError={(e) => {
+                    console.error('VIDEO ERROR:', e)
+                    console.error('VIDEO URL:', currentMedia.url)
+                    console.error('VIDEO TYPE:', currentMedia.type)
+                    handleImageError(currentMedia.id)
+                  }}
+                  onLoadStart={() => console.log('VIDEO: Load started for', currentMedia.url)}
+                  onLoadedData={() => console.log('VIDEO: Data loaded for', currentMedia.url)}
+                  onCanPlay={() => console.log('VIDEO: Can play', currentMedia.url)}
+                />
+                {/* DEBUG INFO */}
+                <div className="absolute top-0 left-0 bg-black/70 text-white text-xs p-2 z-50">
+                  <div>TYPE: {currentMedia.type}</div>
+                  <div>URL: {currentMedia.url?.substring(0, 50)}...</div>
+                  <div>THUMB: {currentMedia.thumb ? 'Yes' : 'No'}</div>
+                </div>
+              </div>
             ) : (
               <img
                 src={currentMedia.url}
