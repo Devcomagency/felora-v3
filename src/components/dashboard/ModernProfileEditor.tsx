@@ -923,18 +923,9 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                     fd.append('slot', String(zeroBasedSlot))
                     fd.append('isPrivate', 'false')
                     const res = await fetch('/api/escort/media/upload', { method: 'POST', body: fd, credentials: 'include' })
-                    let data = await res.json().catch(() => ({}))
+                    const data = await res.json().catch(() => ({}))
                     if (!res.ok || !data?.success) {
-                      // Fallback to legacy endpoint if new one fails
-                      const fd2 = new FormData()
-                      fd2.append('file', fileToUpload)
-                      fd2.append('type', (fileToUpload.type.startsWith('image/') ? 'IMAGE' : 'VIDEO'))
-                      fd2.append('visibility', 'PUBLIC')
-                      fd2.append('position', String(slot.n))
-                      const res2 = await fetch('/api/media/upload', { method: 'POST', body: fd2, credentials: 'include' })
-                      const d2 = await res2.json().catch(() => ({}))
-                      if (!res2.ok || !d2?.mediaId) throw new Error(d2?.error || data?.error || 'Upload échoué')
-                      data = { success: true, url: (d2?.url || preview), slot: zeroBasedSlot, legacyMediaId: d2.mediaId, slots: undefined }
+                      throw new Error(data?.error || 'Upload échoué')
                     }
                     setMandatoryMedia(prev => {
                       const next = [...prev]
@@ -946,7 +937,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                       const serverUrl = data?.url || preview
                       const returnedSlot = typeof data?.slot === 'number' ? data.slot : zeroBasedSlot
                       const returnedId = (Array.isArray(data?.slots) && data.slots[returnedSlot]?.id) ? String(data.slots[returnedSlot].id) : undefined
-                      const id = data?.legacyMediaId ? String(data.legacyMediaId) : (returnedId || `slot-${returnedSlot}`)
+                      const id = returnedId || `slot-${returnedSlot}`
                       next[idx] = { file, preview: serverUrl, id, uploading: false }
                       return next
                     })
