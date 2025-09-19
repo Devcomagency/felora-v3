@@ -106,7 +106,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
   )
   // Prix toujours visibles; plus de repli
   const [saving, setSaving] = useState(false)
-  const [saveMsg, setSaveMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+  const [saveMsg, setSaveMsg] = useState<{ type: 'success' | 'error' | 'warning'; text: string } | null>(null)
   const [autoSaveMsg, setAutoSaveMsg] = useState<string | null>(null)
   const autoSaveTimer = useRef<any>(null)
   const [status, setStatus] = useState<'PENDING' | 'ACTIVE' | 'PAUSED' | 'VERIFIED'>('PENDING')
@@ -626,7 +626,22 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
       if (typeof profileData.acceptsHandicapped === 'boolean') payload.acceptsHandicapped = profileData.acceptsHandicapped
       if (typeof profileData.acceptsSeniors === 'boolean') payload.acceptsSeniors = profileData.acceptsSeniors
       payload.timeSlots = scheduleToJson()
-      console.log('[DASHBOARD] Auto-saving agenda data:', payload.timeSlots)
+
+      // Inclure les médias dans l'autosave
+      const galleryMedia = mandatoryMedia.filter(m => m.preview && m.id).map((m, idx) => ({
+        id: m.id,
+        url: m.preview,
+        slot: idx,
+        type: idx === 0 ? 'profile' : 'gallery'
+      }))
+      if (galleryMedia.length > 0) {
+        payload.galleryPhotos = JSON.stringify(galleryMedia)
+        // Photo de profil séparée (slot 0)
+        const profilePhoto = galleryMedia.find(m => m.slot === 0)
+        if (profilePhoto) payload.profilePhoto = profilePhoto.url
+      }
+
+      console.log('[DASHBOARD] Auto-saving agenda + media:', { timeSlots: payload.timeSlots, mediaCount: galleryMedia.length })
       await doSave(payload, true)
     }, 700)
   }
@@ -634,7 +649,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
   useEffect(() => {
     triggerAutoSave()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [profileData.description, profileData.city, profileData.canton, profileData.phone, profileData.phoneVisibility, profileData.incall, profileData.outcall, profileData.languages, profileData.serviceType, profileData.specialties, profileData.prices?.oneHour, profileData.prices?.twoHours, profileData.prices?.overnight, profileData.height, profileData.bodyType, profileData.breastType, profileData.hairColor, profileData.eyeColor, profileData.ethnicity, profileData.breastSize, profileData.pubicHair, profileData.smoker, profileData.tattoos, profileData.piercings, profileData.acceptsCouples, profileData.acceptsWomen, profileData.acceptsHandicapped, profileData.acceptsSeniors, weekly, pauseEnabled, pauseStart, pauseEnd, absences])
+  }, [profileData.description, profileData.city, profileData.canton, profileData.phone, profileData.phoneVisibility, profileData.incall, profileData.outcall, profileData.languages, profileData.serviceType, profileData.specialties, profileData.prices?.oneHour, profileData.prices?.twoHours, profileData.prices?.overnight, profileData.height, profileData.bodyType, profileData.breastType, profileData.hairColor, profileData.eyeColor, profileData.ethnicity, profileData.breastSize, profileData.pubicHair, profileData.smoker, profileData.tattoos, profileData.piercings, profileData.acceptsCouples, profileData.acceptsWomen, profileData.acceptsHandicapped, profileData.acceptsSeniors, weekly, pauseEnabled, pauseStart, pauseEnd, absences, mandatoryMedia])
 
   const manualSave = async () => {
     try {
@@ -686,6 +701,21 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
       if (typeof profileData.acceptsWomen === 'boolean') payload.acceptsWomen = profileData.acceptsWomen
       if (typeof profileData.acceptsHandicapped === 'boolean') payload.acceptsHandicapped = profileData.acceptsHandicapped
       if (typeof profileData.acceptsSeniors === 'boolean') payload.acceptsSeniors = profileData.acceptsSeniors
+
+      // Inclure les médias dans la sauvegarde manuelle aussi
+      const galleryMedia = mandatoryMedia.filter(m => m.preview && m.id).map((m, idx) => ({
+        id: m.id,
+        url: m.preview,
+        slot: idx,
+        type: idx === 0 ? 'profile' : 'gallery'
+      }))
+      if (galleryMedia.length > 0) {
+        payload.galleryPhotos = JSON.stringify(galleryMedia)
+        // Photo de profil séparée (slot 0)
+        const profilePhoto = galleryMedia.find(m => m.slot === 0)
+        if (profilePhoto) payload.profilePhoto = profilePhoto.url
+      }
+
       const ok = await doSave(payload, false)
       if (ok) {
         // actualiser le snapshot après sauvegarde
@@ -974,7 +1004,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
 
                     {/* Hidden input */}
                     <input
-                      ref={(el) => (fileInputsRef.current[idx] = el)}
+                      ref={(el) => { fileInputsRef.current[idx] = el; }}
                       id={`slot-file-${slot.n}`}
                       type="file"
                       accept={slot.accept}

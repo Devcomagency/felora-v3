@@ -242,6 +242,24 @@ export async function POST(req: NextRequest) {
     if (typeof input.acceptsHandicapped === 'boolean') dataToSave.acceptsHandicapped = input.acceptsHandicapped
     if (typeof input.acceptsSeniors === 'boolean') dataToSave.acceptsSeniors = input.acceptsSeniors
 
+    // Handle media updates (galleryPhotos, profilePhoto, videos)
+    if (input.galleryPhotos !== undefined) {
+      // Assurer que c'est une string pour Prisma
+      dataToSave.galleryPhotos = typeof input.galleryPhotos === 'string' ? input.galleryPhotos : JSON.stringify(input.galleryPhotos)
+      console.log('🔧 [MEDIA FIX] Gallery Type:', typeof input.galleryPhotos, 'Value:', input.galleryPhotos)
+      console.log('🔧 [MEDIA FIX] Saving gallery to DB:', dataToSave.galleryPhotos)
+    }
+    if (input.profilePhoto !== undefined) {
+      dataToSave.profilePhoto = typeof input.profilePhoto === 'string' ? input.profilePhoto : null
+      console.log('🔧 [MEDIA FIX] Profile photo:', dataToSave.profilePhoto)
+    }
+    if (input.videos !== undefined) {
+      // Assurer que c'est une string pour Prisma
+      dataToSave.videos = typeof input.videos === 'string' ? input.videos : JSON.stringify(input.videos)
+      console.log('🔧 [MEDIA FIX] Videos Type:', typeof input.videos, 'Value:', input.videos)
+      console.log('🔧 [MEDIA FIX] Saving videos to DB:', dataToSave.videos)
+    }
+
     // Update phone in User table separately
     if (typeof input.phone === 'string') {
       await prisma.user.update({ 
