@@ -118,9 +118,11 @@ export async function GET(request: NextRequest) {
 
     console.log('📡 API GET PROFILE - Données envoyées:')
     console.log('- ID utilisateur:', session.user.id)
+    console.log('- galleryPhotos type:', typeof escortProfile.galleryPhotos)
     console.log('- galleryPhotos length:', escortProfile.galleryPhotos?.length || 0)
+    console.log('- galleryPhotos content:', escortProfile.galleryPhotos)
     console.log('- videos length:', escortProfile.videos?.length || 0)
-    console.log('- galleryPhotos preview:', escortProfile.galleryPhotos?.substring(0, 100) + '...')
+    console.log('- profilePhoto:', escortProfile.profilePhoto)
 
     return NextResponse.json({
       success: true,
