@@ -606,6 +606,8 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
       })
       if (allServices.length > 0) payload.services = JSON.stringify(allServices)
       if (profileData.specialties && profileData.specialties.length > 0) payload.practices = JSON.stringify(profileData.specialties)
+      if (profileData.prices?.fifteenMin !== undefined) payload.rate15Min = profileData.prices.fifteenMin
+      if (profileData.prices?.thirtyMin !== undefined) payload.rate30Min = profileData.prices.thirtyMin
       if (profileData.prices?.oneHour !== undefined) payload.rate1H = profileData.prices.oneHour
       if (profileData.prices?.twoHours !== undefined) payload.rate2H = profileData.prices.twoHours
       if (profileData.prices?.overnight !== undefined) payload.rateOvernight = profileData.prices.overnight
@@ -690,6 +692,8 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
       if (profileData.breastSize !== undefined) payload.bustSize = profileData.breastSize
       if (profileData.tattoos !== undefined) payload.tattoos = String(profileData.tattoos)
       if (profileData.piercings !== undefined) payload.piercings = String(profileData.piercings)
+      if (profileData.prices?.fifteenMin !== undefined) payload.rate15Min = profileData.prices.fifteenMin
+      if (profileData.prices?.thirtyMin !== undefined) payload.rate30Min = profileData.prices.thirtyMin
       if (profileData.prices?.oneHour !== undefined) payload.rate1H = profileData.prices.oneHour
       if (profileData.prices?.twoHours !== undefined) payload.rate2H = profileData.prices.twoHours
       if (profileData.prices?.overnight !== undefined) payload.rateOvernight = profileData.prices.overnight
