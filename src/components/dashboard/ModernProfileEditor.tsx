@@ -758,6 +758,33 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
           {autoSaveMsg}
         </div>
       )}
+
+      {/* Bouton de sauvegarde manuel */}
+      <div className="flex justify-end">
+        <button
+          onClick={manualSave}
+          disabled={saving}
+          className={`
+            inline-flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all
+            ${saving
+              ? 'bg-gray-600/50 text-gray-400 cursor-not-allowed'
+              : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105'
+            }
+          `}
+        >
+          {saving ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Sauvegarde...
+            </>
+          ) : (
+            <>
+              <Save className="w-4 h-4" />
+              Sauvegarder les modifications
+            </>
+          )}
+        </button>
+      </div>
       {/* Checklist obligatoire (pills) */}
       <div className="flex flex-wrap gap-2">
         {requiredChecks.map(c => (
