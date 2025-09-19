@@ -169,15 +169,12 @@ model EscortProfile {
   bustSize            String?
   tattoos             String?
   piercings           String?
-  rate15Min           Float?
-  rate30Min           Float?
   rate1H              Float?
   rate2H              Float?
   rateHalfDay         Float?
   rateFullDay         Float?
   rateOvernight       Float?
   currency            String       @default("CHF")
-  paymentMethods      String?
   minimumDuration     String?
   practices           String?
   orientation         String?
@@ -204,6 +201,9 @@ model EscortProfile {
   phoneVisibility     String?      @default("hidden")
   pubicHair           String?
   smoker              Boolean?
+  paymentMethods      String?
+  rate15Min           Float?
+  rate30Min           Float?
   user                User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("escort_profiles")
