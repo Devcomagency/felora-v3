@@ -177,7 +177,7 @@ model EscortProfile {
   rateFullDay         Float?
   rateOvernight       Float?
   currency            String       @default("CHF")
-  paymentMethods      String?
+  // paymentMethods      String? // TODO: Uncomment when DB has column
   minimumDuration     String?
   practices           String?
   orientation         String?
