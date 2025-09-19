@@ -234,8 +234,8 @@ export default function EscortProfile() {
 
             // Tarifs et disponibilités
             prices: {
-              fifteenMin: p.rate15Min,
-              thirtyMin: p.rate30Min,
+              fifteenMin: undefined, // p.rate15Min - TODO: réactiver quand prod aura la colonne
+              thirtyMin: undefined,  // p.rate30Min - TODO: réactiver quand prod aura la colonne
               oneHour: p.rate1H || 200,
               twoHours: p.rate2H,
               overnight: p.rateOvernight
