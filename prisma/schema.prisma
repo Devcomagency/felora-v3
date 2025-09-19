@@ -169,8 +169,8 @@ model EscortProfile {
   bustSize            String?
   tattoos             String?
   piercings           String?
-  rate15Min           Float?
-  rate30Min           Float?
+  // rate15Min           Float? // TODO: Uncomment when DB has column
+  // rate30Min           Float? // TODO: Uncomment when DB has column
   rate1H              Float?
   rate2H              Float?
   rateHalfDay         Float?
