@@ -644,19 +644,19 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
         // Inclure seulement les URLs courtes (pas de base64 volumineux)
         const safeMedia = galleryMedia.filter(m => m.url && !m.url.startsWith('data:')).map(m => ({
           ...m,
-          url: m.url.length > 500 ? '' : m.url // Exclure URLs très longues
+          url: m.url.length > 2000 ? '' : m.url // Limite plus haute pour Cloudflare R2
         })).filter(m => m.url)
         if (safeMedia.length > 0) {
           payload.galleryPhotos = JSON.stringify(safeMedia)
         }
         // Photo de profil séparée (slot 0)
         const profilePhoto = galleryMedia.find(m => m.slot === 0)
-        if (profilePhoto && profilePhoto.url && !profilePhoto.url.startsWith('data:') && profilePhoto.url.length < 500) {
+        if (profilePhoto && profilePhoto.url && !profilePhoto.url.startsWith('data:') && profilePhoto.url.length < 2000) {
           payload.profilePhoto = profilePhoto.url
         }
       }
 
-      const safeMediaCount = galleryMedia.filter(m => m.url && !m.url.startsWith('data:') && m.url.length < 500).length
+      const safeMediaCount = galleryMedia.filter(m => m.url && !m.url.startsWith('data:') && m.url.length < 2000).length
       console.log('[DASHBOARD] Auto-saving agenda + safe media:', { timeSlots: payload.timeSlots, safeMediaCount })
       await doSave(payload, true)
     }, 700)
@@ -732,14 +732,14 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
         // Inclure seulement les URLs courtes (pas de base64 volumineux)
         const safeMedia = galleryMedia.filter(m => m.url && !m.url.startsWith('data:')).map(m => ({
           ...m,
-          url: m.url.length > 500 ? '' : m.url // Exclure URLs très longues
+          url: m.url.length > 2000 ? '' : m.url // Limite plus haute pour Cloudflare R2
         })).filter(m => m.url)
         if (safeMedia.length > 0) {
           payload.galleryPhotos = JSON.stringify(safeMedia)
         }
         // Photo de profil séparée (slot 0)
         const profilePhoto = galleryMedia.find(m => m.slot === 0)
-        if (profilePhoto && profilePhoto.url && !profilePhoto.url.startsWith('data:') && profilePhoto.url.length < 500) {
+        if (profilePhoto && profilePhoto.url && !profilePhoto.url.startsWith('data:') && profilePhoto.url.length < 2000) {
           payload.profilePhoto = profilePhoto.url
         }
       }
