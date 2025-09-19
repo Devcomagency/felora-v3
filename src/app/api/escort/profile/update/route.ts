@@ -216,8 +216,9 @@ export async function POST(req: NextRequest) {
     // Toggles, rates, physical attributes  
     if (typeof input.incall === 'boolean') dataToSave.incall = input.incall
     if (typeof input.outcall === 'boolean') dataToSave.outcall = input.outcall
-    if (typeof input.rate15Min === 'number') dataToSave.rate15Min = input.rate15Min
-    if (typeof input.rate30Min === 'number') dataToSave.rate30Min = input.rate30Min
+    // TODO: Activer quand la prod aura ces colonnes
+    // if (typeof input.rate15Min === 'number') dataToSave.rate15Min = input.rate15Min
+    // if (typeof input.rate30Min === 'number') dataToSave.rate30Min = input.rate30Min
     if (typeof input.rate1H === 'number') dataToSave.rate1H = input.rate1H
     if (typeof input.rate2H === 'number') dataToSave.rate2H = input.rate2H
     if (typeof input.rateOvernight === 'number') dataToSave.rateOvernight = input.rateOvernight
