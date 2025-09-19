@@ -22,32 +22,24 @@ export class MediaStorage {
   }
 
   async upload(file: File, folder: string = 'general'): Promise<UploadResult> {
-    const provider = (process.env.STORAGE_PROVIDER || 'cloudflare-r2').toLowerCase()
-
-    console.log('🔍 [STORAGE DEBUG] Starting upload, provider:', provider, 'isProduction:', this.isProduction)
-    console.log('🔍 [STORAGE DEBUG] File:', file.name, 'Size:', file.size, 'Type:', file.type)
-
-    // Cloudflare R2 en priorité (défaut pour production)
-    if (provider === 'cloudflare-r2' || provider === '') {
-      console.log('📦 [STORAGE] Using Cloudflare R2 storage')
-      return await this.uploadToCloud(file, folder)
-    }
-
-    // Local pour développement
-    if (!this.isProduction || provider === 'local') {
-      console.log('📦 [STORAGE] Using Local storage')
-      return await this.uploadLocal(file, folder)
-    }
-
-    // Base64 seulement si explicitement demandé
-    if (provider === 'base64') {
-      console.log('📦 [STORAGE] Using Base64 storage')
+    const provider = (process.env.STORAGE_PROVIDER || '').toLowerCase()
+    
+    // FORCE Base64 storage for reliability 
+    if (provider === 'base64' || provider === '') {
       return await this.uploadBase64(file, folder)
     }
-
-    // Default: Cloudflare R2 pour production
-    console.log('📦 [STORAGE] Fallback to Cloudflare R2')
-    return await this.uploadToCloud(file, folder)
+    
+    if (!this.isProduction || provider === 'local') {
+      return await this.uploadLocal(file, folder)
+    }
+    
+    // cloud providers (fallback)
+    if (provider === 'cloudflare-r2') {
+      return await this.uploadToCloud(file, folder)
+    }
+    
+    // Default: Base64 for production reliability
+    return await this.uploadBase64(file, folder)
   }
 
   // Stockage local pour le développement
@@ -126,25 +118,11 @@ export class MediaStorage {
 
   private async uploadToR2(file: File, folder: string): Promise<UploadResult> {
     try {
-      console.log('🌩️ [R2 DEBUG] Starting R2 upload process')
-
       // Normaliser l'endpoint R2 (S3 API), ex: https://<account-id>.r2.cloudflarestorage.com
       let endpoint = process.env.CLOUDFLARE_R2_ENDPOINT || ''
       const accountId = process.env.CLOUDFLARE_R2_ACCOUNT_ID || ''
-      const accessKey = process.env.CLOUDFLARE_R2_ACCESS_KEY
-      const secretKey = process.env.CLOUDFLARE_R2_SECRET_KEY
-      const bucketName = process.env.CLOUDFLARE_R2_BUCKET
-
-      console.log('🌩️ [R2 DEBUG] Config check:')
-      console.log('- endpoint:', endpoint ? 'SET' : 'MISSING')
-      console.log('- accountId:', accountId ? 'SET' : 'MISSING')
-      console.log('- accessKey:', accessKey ? 'SET' : 'MISSING')
-      console.log('- secretKey:', secretKey ? 'SET' : 'MISSING')
-      console.log('- bucketName:', bucketName ? 'SET' : 'MISSING')
-
       if (!endpoint && accountId) {
         endpoint = `https://${accountId}.r2.cloudflarestorage.com`
-        console.log('🌩️ [R2 DEBUG] Generated endpoint from accountId:', endpoint)
       }
       if (endpoint && !endpoint.startsWith('https://')) {
         endpoint = `https://${endpoint.replace(/^https?:\/\//, '')}`
@@ -155,9 +133,11 @@ export class MediaStorage {
         const u = new URL(endpoint)
         endpoint = `${u.protocol}//${u.host}`
       }
+      const accessKey = process.env.CLOUDFLARE_R2_ACCESS_KEY
+      const secretKey = process.env.CLOUDFLARE_R2_SECRET_KEY
+      const bucketName = process.env.CLOUDFLARE_R2_BUCKET
 
       if (!endpoint || !accessKey || !secretKey || !bucketName) {
-        console.log('❌ [R2 DEBUG] Missing configuration, falling back to Base64')
         throw new Error('Cloudflare R2 configuration missing')
       }
 
