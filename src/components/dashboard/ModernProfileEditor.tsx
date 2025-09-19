@@ -641,14 +641,23 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
         type: idx === 0 ? 'profile' : 'gallery'
       }))
       if (galleryMedia.length > 0) {
-        // FIXME: Médias exclus temporairement pour éviter erreur 413
-        // payload.galleryPhotos = JSON.stringify(galleryMedia)
+        // Inclure seulement les URLs courtes (pas de base64 volumineux)
+        const safeMedia = galleryMedia.filter(m => m.url && !m.url.startsWith('data:')).map(m => ({
+          ...m,
+          url: m.url.length > 500 ? '' : m.url // Exclure URLs très longues
+        })).filter(m => m.url)
+        if (safeMedia.length > 0) {
+          payload.galleryPhotos = JSON.stringify(safeMedia)
+        }
         // Photo de profil séparée (slot 0)
         const profilePhoto = galleryMedia.find(m => m.slot === 0)
-        // if (profilePhoto) payload.profilePhoto = profilePhoto.url
+        if (profilePhoto && profilePhoto.url && !profilePhoto.url.startsWith('data:') && profilePhoto.url.length < 500) {
+          payload.profilePhoto = profilePhoto.url
+        }
       }
 
-      console.log('[DASHBOARD] Auto-saving agenda + media:', { timeSlots: payload.timeSlots, mediaCount: galleryMedia.length })
+      const safeMediaCount = galleryMedia.filter(m => m.url && !m.url.startsWith('data:') && m.url.length < 500).length
+      console.log('[DASHBOARD] Auto-saving agenda + safe media:', { timeSlots: payload.timeSlots, safeMediaCount })
       await doSave(payload, true)
     }, 700)
   }
@@ -720,11 +729,19 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
         type: idx === 0 ? 'profile' : 'gallery'
       }))
       if (galleryMedia.length > 0) {
-        // FIXME: Médias exclus temporairement pour éviter erreur 413
-        // payload.galleryPhotos = JSON.stringify(galleryMedia)
+        // Inclure seulement les URLs courtes (pas de base64 volumineux)
+        const safeMedia = galleryMedia.filter(m => m.url && !m.url.startsWith('data:')).map(m => ({
+          ...m,
+          url: m.url.length > 500 ? '' : m.url // Exclure URLs très longues
+        })).filter(m => m.url)
+        if (safeMedia.length > 0) {
+          payload.galleryPhotos = JSON.stringify(safeMedia)
+        }
         // Photo de profil séparée (slot 0)
         const profilePhoto = galleryMedia.find(m => m.slot === 0)
-        // if (profilePhoto) payload.profilePhoto = profilePhoto.url
+        if (profilePhoto && profilePhoto.url && !profilePhoto.url.startsWith('data:') && profilePhoto.url.length < 500) {
+          payload.profilePhoto = profilePhoto.url
+        }
       }
 
       const ok = await doSave(payload, false)
