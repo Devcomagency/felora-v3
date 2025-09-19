@@ -22,28 +22,32 @@ export class MediaStorage {
   }
 
   async upload(file: File, folder: string = 'general'): Promise<UploadResult> {
-    const provider = (process.env.STORAGE_PROVIDER || '').toLowerCase()
+    const provider = (process.env.STORAGE_PROVIDER || 'cloudflare-r2').toLowerCase()
 
     console.log('🔍 [STORAGE DEBUG] Starting upload, provider:', provider, 'isProduction:', this.isProduction)
     console.log('🔍 [STORAGE DEBUG] File:', file.name, 'Size:', file.size, 'Type:', file.type)
 
-    // FORCE Base64 storage for reliability
-    if (provider === 'base64' || provider === '') {
+    // Cloudflare R2 en priorité (défaut pour production)
+    if (provider === 'cloudflare-r2' || provider === '') {
+      console.log('📦 [STORAGE] Using Cloudflare R2 storage')
+      return await this.uploadToCloud(file, folder)
+    }
+
+    // Local pour développement
+    if (!this.isProduction || provider === 'local') {
+      console.log('📦 [STORAGE] Using Local storage')
+      return await this.uploadLocal(file, folder)
+    }
+
+    // Base64 seulement si explicitement demandé
+    if (provider === 'base64') {
       console.log('📦 [STORAGE] Using Base64 storage')
       return await this.uploadBase64(file, folder)
     }
-    
-    if (!this.isProduction || provider === 'local') {
-      return await this.uploadLocal(file, folder)
-    }
-    
-    // cloud providers (fallback)
-    if (provider === 'cloudflare-r2') {
-      return await this.uploadToCloud(file, folder)
-    }
-    
-    // Default: Base64 for production reliability
-    return await this.uploadBase64(file, folder)
+
+    // Default: Cloudflare R2 pour production
+    console.log('📦 [STORAGE] Fallback to Cloudflare R2')
+    return await this.uploadToCloud(file, folder)
   }
 
   // Stockage local pour le développement
