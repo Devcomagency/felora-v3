@@ -276,7 +276,11 @@ export async function POST(req: NextRequest) {
 
     // Persist unified update
     console.log('🔍 [API PROFILE UPDATE] About to update profile for userId:', userId)
-    await prisma.escortProfile.update({ where: { userId }, data: dataToSave })
+    await prisma.escortProfile.update({
+      where: { userId },
+      data: dataToSave,
+      select: { id: true }
+    })
     console.log('✅ [API PROFILE UPDATE] Profile updated successfully')
 
     return NextResponse.json({ success: true, message: 'Modifications enregistrées' })
