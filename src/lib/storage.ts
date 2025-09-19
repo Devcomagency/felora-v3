@@ -23,11 +23,10 @@ export class MediaStorage {
 
   async upload(file: File, folder: string = 'general'): Promise<UploadResult> {
     const provider = (process.env.STORAGE_PROVIDER || '').toLowerCase()
-    
-    // FORCE Base64 storage for reliability 
-    if (provider === 'base64' || provider === '') {
-      return await this.uploadBase64(file, folder)
-    }
+
+    // TEMPORAIRE: FORCE Base64 pour éviter erreurs R2
+    console.log('🔧 [STORAGE FIX] Forcing Base64 upload, provider was:', provider)
+    return await this.uploadBase64(file, folder)
     
     if (!this.isProduction || provider === 'local') {
       return await this.uploadLocal(file, folder)
