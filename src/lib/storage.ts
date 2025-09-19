@@ -24,9 +24,14 @@ export class MediaStorage {
   async upload(file: File, folder: string = 'general'): Promise<UploadResult> {
     const provider = (process.env.STORAGE_PROVIDER || '').toLowerCase()
 
-    // TEMPORAIRE: FORCE Base64 pour éviter erreurs R2
-    console.log('🔧 [STORAGE FIX] Forcing Base64 upload, provider was:', provider)
-    return await this.uploadBase64(file, folder)
+    console.log('🔍 [STORAGE DEBUG] Starting upload, provider:', provider, 'isProduction:', this.isProduction)
+    console.log('🔍 [STORAGE DEBUG] File:', file.name, 'Size:', file.size, 'Type:', file.type)
+
+    // FORCE Base64 storage for reliability
+    if (provider === 'base64' || provider === '') {
+      console.log('📦 [STORAGE] Using Base64 storage')
+      return await this.uploadBase64(file, folder)
+    }
     
     if (!this.isProduction || provider === 'local') {
       return await this.uploadLocal(file, folder)
@@ -117,11 +122,25 @@ export class MediaStorage {
 
   private async uploadToR2(file: File, folder: string): Promise<UploadResult> {
     try {
+      console.log('🌩️ [R2 DEBUG] Starting R2 upload process')
+
       // Normaliser l'endpoint R2 (S3 API), ex: https://<account-id>.r2.cloudflarestorage.com
       let endpoint = process.env.CLOUDFLARE_R2_ENDPOINT || ''
       const accountId = process.env.CLOUDFLARE_R2_ACCOUNT_ID || ''
+      const accessKey = process.env.CLOUDFLARE_R2_ACCESS_KEY
+      const secretKey = process.env.CLOUDFLARE_R2_SECRET_KEY
+      const bucketName = process.env.CLOUDFLARE_R2_BUCKET
+
+      console.log('🌩️ [R2 DEBUG] Config check:')
+      console.log('- endpoint:', endpoint ? 'SET' : 'MISSING')
+      console.log('- accountId:', accountId ? 'SET' : 'MISSING')
+      console.log('- accessKey:', accessKey ? 'SET' : 'MISSING')
+      console.log('- secretKey:', secretKey ? 'SET' : 'MISSING')
+      console.log('- bucketName:', bucketName ? 'SET' : 'MISSING')
+
       if (!endpoint && accountId) {
         endpoint = `https://${accountId}.r2.cloudflarestorage.com`
+        console.log('🌩️ [R2 DEBUG] Generated endpoint from accountId:', endpoint)
       }
       if (endpoint && !endpoint.startsWith('https://')) {
         endpoint = `https://${endpoint.replace(/^https?:\/\//, '')}`
@@ -132,11 +151,9 @@ export class MediaStorage {
         const u = new URL(endpoint)
         endpoint = `${u.protocol}//${u.host}`
       }
-      const accessKey = process.env.CLOUDFLARE_R2_ACCESS_KEY
-      const secretKey = process.env.CLOUDFLARE_R2_SECRET_KEY
-      const bucketName = process.env.CLOUDFLARE_R2_BUCKET
 
       if (!endpoint || !accessKey || !secretKey || !bucketName) {
+        console.log('❌ [R2 DEBUG] Missing configuration, falling back to Base64')
         throw new Error('Cloudflare R2 configuration missing')
       }
 
