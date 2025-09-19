@@ -536,13 +536,16 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
 
   const doSave = async (payload: any, silent = false, retryCount = 0): Promise<boolean> => {
     const maxRetries = 3
+    console.log('🚀 [DEBUG] doSave appelée avec payload:', payload)
     try {
+      console.log('🌐 [DEBUG] Envoi requête à /api/escort/profile/update')
       const res = await fetch('/api/escort/profile/update', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify(payload)
       })
+      console.log('📡 [DEBUG] Réponse reçue, status:', res.status)
       const data = await res.json().catch(() => ({}))
 
       // Si erreur 500 ou 401, on retry automatiquement
