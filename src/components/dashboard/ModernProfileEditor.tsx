@@ -282,7 +282,9 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
           } catch { return [] } })(),
           outcall: !!p.outcall,
           incall: !!p.incall,
-          prices: { 
+          prices: {
+            fifteenMin: p.rate15Min || undefined,
+            thirtyMin: p.rate30Min || undefined,
             oneHour: p.rate1H || undefined,
             twoHours: p.rate2H || undefined,
             overnight: p.rateOvernight || undefined
@@ -309,6 +311,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
           height: p.height || undefined,
           bodyType: p.bodyType || '',
           hairColor: p.hairColor || '',
+          hairLength: p.hairLength || '',
           eyeColor: p.eyeColor || '',
           ethnicity: p.ethnicity || '',
           breastSize: p.bustSize || '',
@@ -321,6 +324,12 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
           acceptsWomen: !!p.acceptsWomen,
           acceptsHandicapped: !!p.acceptsHandicapped,
           acceptsSeniors: !!p.acceptsSeniors,
+          paymentMethods: (()=>{ try {
+            const raw = String(p.paymentMethods||'')
+            if (!raw) return []
+            if (raw.trim().startsWith('[')) { const P = JSON.parse(raw); return Array.isArray(P)?P:[] }
+            return raw.split(',').map((x:string)=>x.trim()).filter(Boolean)
+          } catch { return [] } })(),
         }))
 
         // Parse agenda (timeSlots JSON)
@@ -609,15 +618,16 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
       })
       if (allServices.length > 0) payload.services = JSON.stringify(allServices)
       if (profileData.specialties && profileData.specialties.length > 0) payload.practices = JSON.stringify(profileData.specialties)
-      // TODO: Activer quand la prod aura ces colonnes
-      // if (profileData.prices?.fifteenMin !== undefined) payload.rate15Min = profileData.prices.fifteenMin
-      // if (profileData.prices?.thirtyMin !== undefined) payload.rate30Min = profileData.prices.thirtyMin
+      if (profileData.paymentMethods && profileData.paymentMethods.length > 0) payload.paymentMethods = JSON.stringify(profileData.paymentMethods)
+      if (profileData.prices?.fifteenMin !== undefined) payload.rate15Min = profileData.prices.fifteenMin
+      if (profileData.prices?.thirtyMin !== undefined) payload.rate30Min = profileData.prices.thirtyMin
       if (profileData.prices?.oneHour !== undefined) payload.rate1H = profileData.prices.oneHour
       if (profileData.prices?.twoHours !== undefined) payload.rate2H = profileData.prices.twoHours
       if (profileData.prices?.overnight !== undefined) payload.rateOvernight = profileData.prices.overnight
       if (profileData.height !== undefined) payload.height = profileData.height
       if (profileData.bodyType !== undefined) payload.bodyType = profileData.bodyType
       if (profileData.hairColor !== undefined) payload.hairColor = profileData.hairColor
+      if (profileData.hairLength !== undefined) payload.hairLength = profileData.hairLength
       if (profileData.eyeColor !== undefined) payload.eyeColor = profileData.eyeColor
       if (profileData.ethnicity !== undefined) payload.ethnicity = profileData.ethnicity
       if (profileData.breastSize !== undefined) payload.bustSize = profileData.breastSize
@@ -697,18 +707,19 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
       })
       if (allServices.length > 0) payload.services = JSON.stringify(allServices)
       if (profileData.specialties && profileData.specialties.length > 0) payload.practices = JSON.stringify(profileData.specialties)
+      if (profileData.paymentMethods && profileData.paymentMethods.length > 0) payload.paymentMethods = JSON.stringify(profileData.paymentMethods)
       payload.timeSlots = scheduleToJson()
       if (profileData.height !== undefined) payload.height = profileData.height
       if (profileData.bodyType !== undefined) payload.bodyType = profileData.bodyType
       if (profileData.hairColor !== undefined) payload.hairColor = profileData.hairColor
+      if (profileData.hairLength !== undefined) payload.hairLength = profileData.hairLength
       if (profileData.eyeColor !== undefined) payload.eyeColor = profileData.eyeColor
       if (profileData.ethnicity !== undefined) payload.ethnicity = profileData.ethnicity
       if (profileData.breastSize !== undefined) payload.bustSize = profileData.breastSize
       if (profileData.tattoos !== undefined) payload.tattoos = String(profileData.tattoos)
       if (profileData.piercings !== undefined) payload.piercings = String(profileData.piercings)
-      // TODO: Activer quand la prod aura ces colonnes
-      // if (profileData.prices?.fifteenMin !== undefined) payload.rate15Min = profileData.prices.fifteenMin
-      // if (profileData.prices?.thirtyMin !== undefined) payload.rate30Min = profileData.prices.thirtyMin
+      if (profileData.prices?.fifteenMin !== undefined) payload.rate15Min = profileData.prices.fifteenMin
+      if (profileData.prices?.thirtyMin !== undefined) payload.rate30Min = profileData.prices.thirtyMin
       if (profileData.prices?.oneHour !== undefined) payload.rate1H = profileData.prices.oneHour
       if (profileData.prices?.twoHours !== undefined) payload.rate2H = profileData.prices.twoHours
       if (profileData.prices?.overnight !== undefined) payload.rateOvernight = profileData.prices.overnight
