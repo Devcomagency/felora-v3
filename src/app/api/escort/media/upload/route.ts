@@ -72,9 +72,12 @@ async function uploadFileToStorage(file: File, folder: string = 'profiles'): Pro
 }
 
 export async function POST(request: NextRequest) {
+  console.log('🚀 [UPLOAD API] Starting upload request')
   try {
     const session = await getServerSession(authOptions)
+    console.log('🚀 [UPLOAD API] Session check:', session?.user?.id ? 'OK' : 'MISSING')
     if (!session?.user?.id) {
+      console.log('❌ [UPLOAD API] No session, returning 401')
       return NextResponse.json({ success: false, error: 'Non authentifié' }, { status: 401 })
     }
 
@@ -109,7 +112,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Fichier trop volumineux (>4MB). Veuillez compresser votre vidéo.' }, { status: 400 })
     }
 
+    console.log('🚀 [UPLOAD API] About to call uploadFileToStorage with file:', file.name, file.size)
     const url = await uploadFileToStorage(file, 'profiles')
+    console.log('🚀 [UPLOAD API] uploadFileToStorage returned URL:', url ? 'SUCCESS' : 'FAILED')
 
     // Normaliser les 6 slots existants
     const slots = normalizeSixSlots(escortProfile.galleryPhotos)
