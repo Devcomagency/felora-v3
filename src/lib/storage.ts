@@ -22,23 +22,8 @@ export class MediaStorage {
   }
 
   async upload(file: File, folder: string = 'general'): Promise<UploadResult> {
-    const provider = (process.env.STORAGE_PROVIDER || '').toLowerCase()
-    
-    // FORCE Base64 storage for reliability 
-    if (provider === 'base64' || provider === '') {
-      return await this.uploadBase64(file, folder)
-    }
-    
-    if (!this.isProduction || provider === 'local') {
-      return await this.uploadLocal(file, folder)
-    }
-    
-    // cloud providers (fallback)
-    if (provider === 'cloudflare-r2') {
-      return await this.uploadToCloud(file, folder)
-    }
-    
-    // Default: Base64 for production reliability
+    // FORCE Base64 storage - ignore environment variable to avoid R2 500 errors
+    console.log('🔧 [STORAGE] FORCING Base64 storage to avoid R2 errors')
     return await this.uploadBase64(file, folder)
   }
 
