@@ -384,7 +384,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
     setProfileData(prev => ({
       ...prev,
       [parent]: {
-        ...prev[parent as keyof ProfileData],
+        ...(prev[parent as keyof ProfileData] as any || {}),
         [field]: value
       }
     }))
@@ -641,10 +641,11 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
         type: idx === 0 ? 'profile' : 'gallery'
       }))
       if (galleryMedia.length > 0) {
-        payload.galleryPhotos = JSON.stringify(galleryMedia)
+        // FIXME: Médias exclus temporairement pour éviter erreur 413
+        // payload.galleryPhotos = JSON.stringify(galleryMedia)
         // Photo de profil séparée (slot 0)
         const profilePhoto = galleryMedia.find(m => m.slot === 0)
-        if (profilePhoto) payload.profilePhoto = profilePhoto.url
+        // if (profilePhoto) payload.profilePhoto = profilePhoto.url
       }
 
       console.log('[DASHBOARD] Auto-saving agenda + media:', { timeSlots: payload.timeSlots, mediaCount: galleryMedia.length })
@@ -719,10 +720,11 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
         type: idx === 0 ? 'profile' : 'gallery'
       }))
       if (galleryMedia.length > 0) {
-        payload.galleryPhotos = JSON.stringify(galleryMedia)
+        // FIXME: Médias exclus temporairement pour éviter erreur 413
+        // payload.galleryPhotos = JSON.stringify(galleryMedia)
         // Photo de profil séparée (slot 0)
         const profilePhoto = galleryMedia.find(m => m.slot === 0)
-        if (profilePhoto) payload.profilePhoto = profilePhoto.url
+        // if (profilePhoto) payload.profilePhoto = profilePhoto.url
       }
 
       const ok = await doSave(payload, false)
