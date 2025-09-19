@@ -64,6 +64,8 @@ function normalizeSixSlots(galleryPhotos: any): MediaItem[] {
 }
 
 async function uploadFileToStorage(file: File, folder: string = 'profiles'): Promise<string> {
+  // FORCE Base64 storage pour éviter erreur 500 R2
+  process.env.STORAGE_PROVIDER = 'base64'
   const result = await mediaStorage.upload(file, folder)
   if (!result?.success || !result?.url) {
     throw new Error(result?.error || 'Upload failed')
