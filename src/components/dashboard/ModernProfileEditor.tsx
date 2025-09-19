@@ -665,7 +665,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
   useEffect(() => {
     triggerAutoSave()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [profileData.description, profileData.city, profileData.canton, profileData.phone, profileData.phoneVisibility, profileData.incall, profileData.outcall, profileData.languages, profileData.serviceType, profileData.specialties, profileData.prices?.oneHour, profileData.prices?.twoHours, profileData.prices?.overnight, profileData.height, profileData.bodyType, profileData.breastType, profileData.hairColor, profileData.eyeColor, profileData.ethnicity, profileData.breastSize, profileData.pubicHair, profileData.smoker, profileData.tattoos, profileData.piercings, profileData.acceptsCouples, profileData.acceptsWomen, profileData.acceptsHandicapped, profileData.acceptsSeniors, weekly, pauseEnabled, pauseStart, pauseEnd, absences])
+  }, [profileData.description, profileData.city, profileData.canton, profileData.phone, profileData.phoneVisibility, profileData.incall, profileData.outcall, profileData.languages, profileData.serviceType, profileData.specialties, profileData.prices?.oneHour, profileData.prices?.twoHours, profileData.prices?.overnight, profileData.height, profileData.bodyType, profileData.breastType, profileData.hairColor, profileData.eyeColor, profileData.ethnicity, profileData.breastSize, profileData.pubicHair, profileData.smoker, profileData.tattoos, profileData.piercings, profileData.acceptsCouples, profileData.acceptsWomen, profileData.acceptsHandicapped, profileData.acceptsSeniors, weekly, pauseEnabled, pauseStart, pauseEnd, absences, mandatoryMedia])
 
   const manualSave = async () => {
     try {
@@ -923,9 +923,18 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                     fd.append('slot', String(zeroBasedSlot))
                     fd.append('isPrivate', 'false')
                     const res = await fetch('/api/escort/media/upload', { method: 'POST', body: fd, credentials: 'include' })
-                    const data = await res.json().catch(() => ({}))
+                    let data = await res.json().catch(() => ({}))
                     if (!res.ok || !data?.success) {
-                      throw new Error(data?.error || 'Upload échoué')
+                      // Fallback to legacy endpoint if new one fails
+                      const fd2 = new FormData()
+                      fd2.append('file', fileToUpload)
+                      fd2.append('type', (fileToUpload.type.startsWith('image/') ? 'IMAGE' : 'VIDEO'))
+                      fd2.append('visibility', 'PUBLIC')
+                      fd2.append('position', String(slot.n))
+                      const res2 = await fetch('/api/media/upload', { method: 'POST', body: fd2, credentials: 'include' })
+                      const d2 = await res2.json().catch(() => ({}))
+                      if (!res2.ok || !d2?.mediaId) throw new Error(d2?.error || data?.error || 'Upload échoué')
+                      data = { success: true, url: (d2?.url || preview), slot: zeroBasedSlot, legacyMediaId: d2.mediaId, slots: undefined }
                     }
                     setMandatoryMedia(prev => {
                       const next = [...prev]
@@ -937,7 +946,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                       const serverUrl = data?.url || preview
                       const returnedSlot = typeof data?.slot === 'number' ? data.slot : zeroBasedSlot
                       const returnedId = (Array.isArray(data?.slots) && data.slots[returnedSlot]?.id) ? String(data.slots[returnedSlot].id) : undefined
-                      const id = returnedId || `slot-${returnedSlot}`
+                      const id = data?.legacyMediaId ? String(data.legacyMediaId) : (returnedId || `slot-${returnedSlot}`)
                       next[idx] = { file, preview: serverUrl, id, uploading: false }
                       return next
                     })
