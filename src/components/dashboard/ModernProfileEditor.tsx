@@ -665,7 +665,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
   useEffect(() => {
     triggerAutoSave()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [profileData.description, profileData.city, profileData.canton, profileData.phone, profileData.phoneVisibility, profileData.incall, profileData.outcall, profileData.languages, profileData.serviceType, profileData.specialties, profileData.prices?.oneHour, profileData.prices?.twoHours, profileData.prices?.overnight, profileData.height, profileData.bodyType, profileData.breastType, profileData.hairColor, profileData.eyeColor, profileData.ethnicity, profileData.breastSize, profileData.pubicHair, profileData.smoker, profileData.tattoos, profileData.piercings, profileData.acceptsCouples, profileData.acceptsWomen, profileData.acceptsHandicapped, profileData.acceptsSeniors, weekly, pauseEnabled, pauseStart, pauseEnd, absences, mandatoryMedia])
+  }, [profileData.description, profileData.city, profileData.canton, profileData.phone, profileData.phoneVisibility, profileData.incall, profileData.outcall, profileData.languages, profileData.serviceType, profileData.specialties, profileData.prices?.oneHour, profileData.prices?.twoHours, profileData.prices?.overnight, profileData.height, profileData.bodyType, profileData.breastType, profileData.hairColor, profileData.eyeColor, profileData.ethnicity, profileData.breastSize, profileData.pubicHair, profileData.smoker, profileData.tattoos, profileData.piercings, profileData.acceptsCouples, profileData.acceptsWomen, profileData.acceptsHandicapped, profileData.acceptsSeniors, weekly, pauseEnabled, pauseStart, pauseEnd, absences])
 
   const manualSave = async () => {
     try {
