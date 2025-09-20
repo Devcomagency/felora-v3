@@ -514,14 +514,15 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
     checks.push({ key: 'medias', label: '6 médias requis', ok: mediasOk, targetTab: 'media' })
     checks.push({ key: 'stageName', label: 'Pseudo', ok: !!profileData.stageName, targetTab: 'basic' })
     checks.push({ key: 'category', label: 'Catégorie', ok: (profileData.serviceType||[]).length>0, targetTab: 'basic' })
-    checks.push({ key: 'age', label: 'Âge', ok: !!profileData.age, targetTab: 'basic' })
+    checks.push({ key: 'age', label: 'Âge', ok: profileData.age !== undefined && profileData.age > 0, targetTab: 'basic' })
     checks.push({ key: 'description', label: 'Description (≥ 200 car.)', ok: (profileData.description||'').trim().length >= 200, targetTab: 'basic' })
     checks.push({ key: 'languages', label: 'Langues (≥1)', ok: (profileData.languages||[]).length >= 1, targetTab: 'basic' })
     checks.push({ key: 'canton', label: 'Canton', ok: !!profileData.canton, targetTab: 'basic' })
     checks.push({ key: 'city', label: 'Ville principale', ok: !!profileData.city, targetTab: 'basic' })
-    checks.push({ key: 'address', label: 'Adresse complète', ok: !!profileData.address && !!profileData.coordinates, targetTab: 'basic' })
+    checks.push({ key: 'address', label: 'Adresse complète', ok: !!profileData.address, targetTab: 'basic' })
+    checks.push({ key: 'rates', label: 'Au moins un tarif', ok: !!(profileData.prices?.oneHour || profileData.prices?.twoHours || profileData.prices?.overnight), targetTab: 'pricing' })
     return checks
-  }, [mandatoryMedia, profileData.stageName, profileData.serviceType, profileData.age, profileData.description, profileData.languages, profileData.canton, profileData.city, profileData.address, profileData.coordinates])
+  }, [mandatoryMedia, profileData.stageName, profileData.serviceType, profileData.age, profileData.description, profileData.languages, profileData.canton, profileData.city, profileData.address, profileData.prices])
 
   const completionPct = useMemo(() => {
     const total = requiredChecks.length
