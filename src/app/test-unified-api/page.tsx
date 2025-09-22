@@ -78,6 +78,18 @@ export default function TestUnifiedApiPage() {
               </div>
 
               <div>
+                <h3 className="font-semibold text-blue-400 mb-2">🆕 Nouveaux Champs</h3>
+                <p>Catégorie: {dashboardProfile.category || 'N/A'}</p>
+                <p>Âge vérifié: {dashboardProfile.ageVerified ? '✅' : '❌'}</p>
+                <p>Tarif base: {dashboardProfile.rates.baseRate || 'N/A'} {dashboardProfile.rates.currency}</p>
+                <p>Services Classic: {dashboardProfile.servicesDetailed?.classic?.length || 0} service(s)</p>
+                <p>Services BDSM: {dashboardProfile.servicesDetailed?.bdsm?.length || 0} service(s)</p>
+                <p>Services Massage: {dashboardProfile.servicesDetailed?.massage?.length || 0} service(s)</p>
+                <p>Contact mode: {dashboardProfile.phoneDisplayType || 'N/A'}</p>
+                <p>Origine détails: {dashboardProfile.originDetails || 'N/A'}</p>
+              </div>
+
+              <div>
                 <h3 className="font-semibold text-blue-400 mb-2">Verification & Complétion</h3>
                 <p>Badge vérifié: {dashboardProfile.isVerifiedBadge ? '✅' : '❌'}</p>
                 <p>Profil complété: {dashboardProfile.profileCompleted ? '✅' : '❌'}</p>
@@ -119,6 +131,7 @@ export default function TestUnifiedApiPage() {
                     <div>
                       <h3 className="font-semibold text-purple-300 mb-2">Identité Publique</h3>
                       <p>Nom: {publicProfile.stageName}</p>
+                      <p>Catégorie: {publicProfile.category || 'N/A'}</p>
                       <p>Âge: {publicProfile.age || 'N/A'}</p>
                       <p>Ville: {publicProfile.city}</p>
                       <p>Description: {publicProfile.description.substring(0, 100)}...</p>
@@ -128,8 +141,17 @@ export default function TestUnifiedApiPage() {
                       <h3 className="font-semibold text-purple-300 mb-2">Services Publics</h3>
                       <p>Langues: {publicProfile.languages.join(', ') || 'Aucune'}</p>
                       <p>Services: {publicProfile.services.length} service(s)</p>
+                      <p>Tarif base: {publicProfile.rates.baseRate || 'N/A'} {publicProfile.rates.currency}</p>
                       <p>Tarif 1H: {publicProfile.rates.oneHour || 'N/A'} {publicProfile.rates.currency}</p>
                       <p>Disponible: {publicProfile.availability.availableNow ? '🟢 Oui' : '🔴 Non'}</p>
+                    </div>
+
+                    <div>
+                      <h3 className="font-semibold text-purple-300 mb-2">🆕 Services Détaillés</h3>
+                      <p>Classic: {publicProfile.servicesDetailed?.classic?.length || 0} service(s)</p>
+                      <p>BDSM: {publicProfile.servicesDetailed?.bdsm?.length || 0} service(s)</p>
+                      <p>Massage: {publicProfile.servicesDetailed?.massage?.length || 0} service(s)</p>
+                      <p>Physique: {publicProfile.physical.breastType || 'N/A'} / {publicProfile.physical.pubicHair || 'N/A'}</p>
                     </div>
                   </div>
 
