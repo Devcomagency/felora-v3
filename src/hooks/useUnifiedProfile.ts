@@ -27,12 +27,20 @@ export interface UnifiedProfileData {
   services: string[]
   practices: string[]
 
+  // Services détaillés
+  servicesDetailed: {
+    classic: string[] // Rapport, French kiss, GFE, etc.
+    bdsm: string[] // Domination soft, Fessées, Donjon SM, etc.
+    massage: string[] // Tantrique, Érotique, Corps à corps, etc.
+  }
+
   // Tarifs
   rates: {
     oneHour?: number
     twoHours?: number
     overnight?: number
     currency: string
+    baseRate?: number // Tarif "À partir de"
   }
 
   // Physique
@@ -83,6 +91,8 @@ export interface UnifiedProfileData {
   minimumDuration?: string
   legacyRates?: string
   legacyAvailability?: string
+  rateStructure?: string // Structure tarifs détaillée
+  ageVerified?: boolean // Âge certifié
   isVerifiedBadge?: boolean
   profileCompleted?: boolean
   telegram?: {

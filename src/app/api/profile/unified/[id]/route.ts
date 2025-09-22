@@ -114,6 +114,18 @@ export async function GET(
           pubicHair: true,
           smoker: true,
 
+          // Services détaillés
+          servicesClassic: true,
+          servicesBdsm: true,
+          servicesMassage: true,
+
+          // Tarifs détaillés
+          baseRate: true,
+          rateStructure: true,
+
+          // Validation
+          ageVerified: true,
+
           // Verification et badges
           isVerifiedBadge: true,
           profileCompleted: true,
@@ -207,6 +219,14 @@ export async function GET(
           category: true,
           breastType: true,
           pubicHair: true,
+
+          // Services publics
+          servicesClassic: true,
+          servicesBdsm: true,
+          servicesMassage: true,
+
+          // Tarifs publics
+          baseRate: true,
 
           // Statut
           status: true,
@@ -303,6 +323,11 @@ function transformProfileData(rawProfile: any, mode: 'dashboard' | 'public') {
   const venueOptions = parseStringArray((rawProfile as any).venueOptions)
   const acceptedCurrencies = parseStringArray((rawProfile as any).acceptedCurrencies)
 
+  // Parse des services détaillés
+  const servicesClassic = parseStringArray(rawProfile.servicesClassic)
+  const servicesBdsm = parseStringArray(rawProfile.servicesBdsm)
+  const servicesMassage = parseStringArray(rawProfile.servicesMassage)
+
   // Données communes
   const commonData = {
     id: rawProfile.id,
@@ -322,12 +347,20 @@ function transformProfileData(rawProfile: any, mode: 'dashboard' | 'public') {
     services,
     practices,
 
+    // Services détaillés
+    servicesDetailed: {
+      classic: servicesClassic,
+      bdsm: servicesBdsm,
+      massage: servicesMassage
+    },
+
     // Tarifs
     rates: {
       oneHour: rawProfile.rate1H || undefined,
       twoHours: rawProfile.rate2H || undefined,
       overnight: rawProfile.rateOvernight || undefined,
-      currency: rawProfile.currency || 'CHF'
+      currency: rawProfile.currency || 'CHF',
+      baseRate: rawProfile.baseRate || undefined
     },
 
     // Physique
@@ -399,6 +432,12 @@ function transformProfileData(rawProfile: any, mode: 'dashboard' | 'public') {
       minimumDuration: rawProfile.minimumDuration || '',
       legacyRates: rawProfile.rates || '', // Tarifs format legacy
       legacyAvailability: rawProfile.availability || '', // Disponibilité format legacy
+
+      // Tarifs dashboard détaillés
+      rateStructure: rawProfile.rateStructure || '',
+
+      // Validation
+      ageVerified: !!rawProfile.ageVerified,
 
       // Verification et complétion
       isVerifiedBadge: !!rawProfile.isVerifiedBadge,
