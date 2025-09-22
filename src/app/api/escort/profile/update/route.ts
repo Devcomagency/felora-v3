@@ -36,6 +36,7 @@ export async function POST(req: NextRequest) {
       longitude: z.coerce.number().optional(),
       // Arrays (JSON strings client-side)
       languages: z.union([z.string(), z.array(z.string())]).optional(),
+      languageLevels: z.union([z.string(), z.record(z.number())]).optional(),
       services: z.union([z.string(), z.array(z.string())]).optional(),
       practices: z.union([z.string(), z.array(z.string())]).optional(),
       // Toggles
@@ -180,6 +181,11 @@ export async function POST(req: NextRequest) {
     if (typeof input.languages !== 'undefined') {
       const csv = toCsv(input.languages)
       if (csv) dataToSave.languages = csv
+    }
+    if (typeof input.languageLevels !== 'undefined') {
+      // Sauvegarder les niveaux de langues comme JSON string
+      const levels = typeof input.languageLevels === 'string' ? input.languageLevels : JSON.stringify(input.languageLevels)
+      dataToSave.languageLevels = levels
     }
     if (typeof input.services !== 'undefined') {
       const csv = toCsv(input.services)

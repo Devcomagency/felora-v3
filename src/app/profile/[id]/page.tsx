@@ -762,9 +762,14 @@ export default function EscortProfilePage() {
                     {extendedProfileData.languages.map((language, index) => {
                       // Ajouter des étoiles selon le niveau (simulation de niveaux)
                       const getLanguageLevel = (lang: string) => {
-                        // Par défaut, on met 3 étoiles pour toutes les langues
-                        // Dans le futur, on pourrait avoir un système de niveaux plus sophistiqué
-                        return '★★★'
+                        // Utiliser les vrais niveaux depuis la base de données
+                        try {
+                          const savedLevels = profile.languageLevels ? JSON.parse(profile.languageLevels) : {}
+                          const level = savedLevels[lang] || 3 // Défaut: 3 étoiles
+                          return '★'.repeat(level)
+                        } catch {
+                          return '★★★' // Fallback: 3 étoiles
+                        }
                       }
 
                       return (

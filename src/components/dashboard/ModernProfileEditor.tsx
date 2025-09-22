@@ -282,7 +282,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
               return undefined
             }
           })(),
-          languages: (()=>{ try { 
+          languages: (()=>{ try {
             const raw = String(p.languages||'')
             if (!raw) return []
             if (raw.trim().startsWith('[')) { const L = JSON.parse(raw); return Array.isArray(L)?L:[] }
@@ -345,6 +345,14 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
             return raw.split(',').map((x:string)=>x.trim()).filter(Boolean)
           } catch { return [] } })(),
         }))
+
+        // Charger les niveaux de langues depuis la base
+        try {
+          if (p.languageLevels) {
+            const levels = JSON.parse(p.languageLevels)
+            setLanguageLevels(levels)
+          }
+        } catch {}
 
         // Parse agenda (timeSlots JSON)
         try {
@@ -622,6 +630,8 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
       if (profileData.outcall !== undefined) payload.outcall = !!profileData.outcall
       if (profileData.coordinates) { payload.latitude = profileData.coordinates.lat; payload.longitude = profileData.coordinates.lng }
       if (profileData.languages && profileData.languages.length > 0) payload.languages = JSON.stringify(profileData.languages)
+      // Sauvegarder les niveaux de langues
+      if (Object.keys(languageLevels).length > 0) payload.languageLevels = JSON.stringify(languageLevels)
       // Combiner catégorie et services détaillés dans le champ services
       const serviceDetails = (profileData.specialties || []).filter(s => s.startsWith('srv:'))
       const allServices = [
@@ -693,7 +703,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
   useEffect(() => {
     triggerAutoSave()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [profileData.stageName, profileData.age, profileData.description, profileData.city, profileData.canton, profileData.phone, profileData.phoneVisibility, profileData.incall, profileData.outcall, profileData.languages, profileData.serviceType, profileData.specialties, profileData.prices?.oneHour, profileData.prices?.twoHours, profileData.prices?.overnight, profileData.height, profileData.bodyType, profileData.breastType, profileData.hairColor, profileData.eyeColor, profileData.ethnicity, profileData.breastSize, profileData.pubicHair, profileData.smoker, profileData.tattoos, profileData.piercings, profileData.acceptsCouples, profileData.acceptsWomen, profileData.acceptsHandicapped, profileData.acceptsSeniors, weekly, pauseEnabled, pauseStart, pauseEnd, absences])
+  }, [profileData.stageName, profileData.age, profileData.description, profileData.city, profileData.canton, profileData.phone, profileData.phoneVisibility, profileData.incall, profileData.outcall, profileData.languages, languageLevels, profileData.serviceType, profileData.specialties, profileData.prices?.oneHour, profileData.prices?.twoHours, profileData.prices?.overnight, profileData.height, profileData.bodyType, profileData.breastType, profileData.hairColor, profileData.eyeColor, profileData.ethnicity, profileData.breastSize, profileData.pubicHair, profileData.smoker, profileData.tattoos, profileData.piercings, profileData.acceptsCouples, profileData.acceptsWomen, profileData.acceptsHandicapped, profileData.acceptsSeniors, weekly, pauseEnabled, pauseStart, pauseEnd, absences])
 
   const manualSave = async () => {
     try {
@@ -711,6 +721,8 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
       if (profileData.outcall !== undefined) payload.outcall = !!profileData.outcall
       if (profileData.coordinates) { payload.latitude = profileData.coordinates.lat; payload.longitude = profileData.coordinates.lng }
       if (profileData.languages && profileData.languages.length > 0) payload.languages = JSON.stringify(profileData.languages)
+      // Sauvegarder les niveaux de langues
+      if (Object.keys(languageLevels).length > 0) payload.languageLevels = JSON.stringify(languageLevels)
       // Combiner catégorie et services détaillés dans le champ services
       const serviceDetails = (profileData.specialties || []).filter(s => s.startsWith('srv:'))
       const allServices = [
@@ -1131,7 +1143,9 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Âge *</label>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Âge * {profileData.age && <span className="text-sm text-green-400 font-normal">({profileData.age} ans calculé)</span>}
+                  </label>
                   <select
                     value={profileData.age || ''}
                     onChange={(e) => updateProfileData('age', parseInt(e.target.value))}

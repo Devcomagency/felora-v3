@@ -29,6 +29,7 @@ export async function GET(
         profilePhoto: true,
         galleryPhotos: true, // AJOUT: récupérer les médias depuis galleryPhotos
         languages: true,
+        languageLevels: true,
         services: true,
         rate1H: true,
         rate2H: true,
