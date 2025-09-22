@@ -27,7 +27,6 @@ export async function GET(request: NextRequest) {
         city: true,
         canton: true,
         languages: true,
-        languageLevels: true,
         services: true,
         galleryPhotos: true,
         videos: true,

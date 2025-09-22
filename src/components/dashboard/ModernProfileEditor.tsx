@@ -346,13 +346,6 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
           } catch { return [] } })(),
         }))
 
-        // Charger les niveaux de langues depuis la base
-        try {
-          if (p.languageLevels) {
-            const levels = JSON.parse(p.languageLevels)
-            setLanguageLevels(levels)
-          }
-        } catch {}
 
         // Parse agenda (timeSlots JSON)
         try {
@@ -391,8 +384,6 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
     return () => { cancelled = true }
   }, [])
 
-  // Language levels (1-5) UI-only for now
-  const [languageLevels, setLanguageLevels] = useState<Record<string, number>>({})
 
   const tabs = [
     { key: 'media', label: 'Médias', icon: Image, description: 'Photos et vidéos' },
@@ -630,8 +621,6 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
       if (profileData.outcall !== undefined) payload.outcall = !!profileData.outcall
       if (profileData.coordinates) { payload.latitude = profileData.coordinates.lat; payload.longitude = profileData.coordinates.lng }
       if (profileData.languages && profileData.languages.length > 0) payload.languages = JSON.stringify(profileData.languages)
-      // Sauvegarder les niveaux de langues
-      if (Object.keys(languageLevels).length > 0) payload.languageLevels = JSON.stringify(languageLevels)
       // Combiner catégorie et services détaillés dans le champ services
       const serviceDetails = (profileData.specialties || []).filter(s => s.startsWith('srv:'))
       const allServices = [
@@ -703,7 +692,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
   useEffect(() => {
     triggerAutoSave()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [profileData.stageName, profileData.age, profileData.description, profileData.city, profileData.canton, profileData.phone, profileData.phoneVisibility, profileData.incall, profileData.outcall, profileData.languages, languageLevels, profileData.serviceType, profileData.specialties, profileData.prices?.oneHour, profileData.prices?.twoHours, profileData.prices?.overnight, profileData.height, profileData.bodyType, profileData.breastType, profileData.hairColor, profileData.eyeColor, profileData.ethnicity, profileData.breastSize, profileData.pubicHair, profileData.smoker, profileData.tattoos, profileData.piercings, profileData.acceptsCouples, profileData.acceptsWomen, profileData.acceptsHandicapped, profileData.acceptsSeniors, weekly, pauseEnabled, pauseStart, pauseEnd, absences])
+  }, [profileData.stageName, profileData.age, profileData.description, profileData.city, profileData.canton, profileData.phone, profileData.phoneVisibility, profileData.incall, profileData.outcall, profileData.languages, profileData.serviceType, profileData.specialties, profileData.prices?.oneHour, profileData.prices?.twoHours, profileData.prices?.overnight, profileData.height, profileData.bodyType, profileData.breastType, profileData.hairColor, profileData.eyeColor, profileData.ethnicity, profileData.breastSize, profileData.pubicHair, profileData.smoker, profileData.tattoos, profileData.piercings, profileData.acceptsCouples, profileData.acceptsWomen, profileData.acceptsHandicapped, profileData.acceptsSeniors, weekly, pauseEnabled, pauseStart, pauseEnd, absences])
 
   const manualSave = async () => {
     try {
@@ -721,8 +710,6 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
       if (profileData.outcall !== undefined) payload.outcall = !!profileData.outcall
       if (profileData.coordinates) { payload.latitude = profileData.coordinates.lat; payload.longitude = profileData.coordinates.lng }
       if (profileData.languages && profileData.languages.length > 0) payload.languages = JSON.stringify(profileData.languages)
-      // Sauvegarder les niveaux de langues
-      if (Object.keys(languageLevels).length > 0) payload.languageLevels = JSON.stringify(languageLevels)
       // Combiner catégorie et services détaillés dans le champ services
       const serviceDetails = (profileData.specialties || []).filter(s => s.startsWith('srv:'))
       const allServices = [
@@ -1193,11 +1180,10 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
 
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-1">Langues parlées</label>
-                <div className="text-xs text-gray-400 mb-2">Sélectionnez au moins une langue. Puis définissez le niveau: 1 Débutant · 3 Intermédiaire · 5 Courant/Fluide.</div>
+                <div className="text-xs text-gray-400 mb-2">Sélectionnez les langues que vous parlez.</div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {['Français', 'Anglais', 'Allemand', 'Italien', 'Espagnol', 'Russe', 'Arabe', 'Chinois'].map((lang) => {
                     const selected = profileData.languages?.includes(lang) || false
-                    const level = languageLevels[lang] || 3
                     return (
                       <div key={lang} className={`flex items-center justify-between rounded-lg border px-3 py-2 ${selected ? 'border-purple-500/30 bg-purple-500/10' : 'border-white/10 bg-white/5'}`}>
                         <label className="flex items-center gap-2">
@@ -1212,20 +1198,6 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                           />
                           <span className="text-sm text-gray-300">{lang}</span>
                         </label>
-                        {selected && (
-                          <div className="flex items-center gap-1">
-                            {[1,2,3,4,5].map(n => (
-                              <button
-                                key={n}
-                                onClick={()=> setLanguageLevels(prev => ({ ...prev, [lang]: n }))}
-                                className={`w-4 h-4 transform rotate-45 border transition-colors focus:outline-none focus:ring-2 ${n <= level ? 'bg-pink-500 border-pink-300 focus:ring-pink-400' : 'bg-transparent border-white/40 hover:bg-white/30'}`}
-                                title={`Niveau ${n}`}
-                                aria-label={`Niveau ${n}`}
-                              />
-                            ))}
-                            <span className="ml-2 text-[11px] text-white/70">Niv. {level}</span>
-                          </div>
-                        )}
                       </div>
                     )
                   })}

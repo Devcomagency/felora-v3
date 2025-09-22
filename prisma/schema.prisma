@@ -205,7 +205,6 @@ model EscortProfile {
   phoneVisibility     String?      @default("hidden")
   pubicHair           String?
   smoker              Boolean?
-  languageLevels      String?      // JSON: {"Français": 5, "Anglais": 3, "Allemand": 2}
   user                User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("escort_profiles")

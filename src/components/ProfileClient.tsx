@@ -1325,22 +1325,11 @@ export default function ProfileClient({ profile: initialProfile }: ProfileClient
               <div>
                 <h3 className="text-lg font-semibold text-white mb-3 border-b border-white/10 pb-2">Langues</h3>
                 <div className="flex flex-wrap gap-2">
-                  {extendedProfileData.languages.map((lang, index) => {
-                    // Niveau aléatoire entre 1 et 5 étoiles pour la démo
-                    const level = Math.floor(Math.random() * 5) + 1
-                    return (
-                      <span key={index} className="px-3 py-1 bg-blue-500/20 text-blue-300 rounded-full text-sm flex items-center gap-2">
-                        {lang}
-                        <div className="flex">
-                          {Array.from({ length: 5 }, (_, i) => (
-                            <span key={i} className={`text-xs ${i < level ? 'text-yellow-400' : 'text-gray-500'}`}>
-                              ★
-                            </span>
-                          ))}
-                        </div>
-                      </span>
-                    )
-                  })}
+                  {extendedProfileData.languages.map((lang, index) => (
+                    <span key={index} className="px-3 py-1 bg-blue-500/20 text-blue-300 rounded-full text-sm">
+                      {lang}
+                    </span>
+                  ))}
                 </div>
               </div>
 
