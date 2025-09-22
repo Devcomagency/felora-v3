@@ -612,8 +612,8 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
       const payload: any = {}
       if (profileData.age !== undefined) payload.age = profileData.age as number
       if (profileData.address !== undefined) payload.address = profileData.address
-      if (profileData.stageName !== undefined) payload.stageName = profileData.stageName
-      if (profileData.description !== undefined) payload.description = profileData.description
+      if (profileData.stageName !== undefined && profileData.stageName.trim() !== '') payload.stageName = profileData.stageName
+      if (profileData.description !== undefined && profileData.description.trim() !== '') payload.description = profileData.description
       if (profileData.city !== undefined) payload.city = profileData.city
       if (profileData.canton !== undefined) payload.canton = profileData.canton
       if (profileData.phone !== undefined) payload.phone = profileData.phone
@@ -701,8 +701,8 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
       const payload: any = {}
       if (profileData.age !== undefined) payload.age = profileData.age as number
       if (profileData.address !== undefined) payload.address = profileData.address
-      if (profileData.stageName !== undefined) payload.stageName = profileData.stageName
-      if (profileData.description !== undefined) payload.description = profileData.description
+      if (profileData.stageName !== undefined && profileData.stageName.trim() !== '') payload.stageName = profileData.stageName
+      if (profileData.description !== undefined && profileData.description.trim() !== '') payload.description = profileData.description
       if (profileData.city !== undefined) payload.city = profileData.city
       if (profileData.canton !== undefined) payload.canton = profileData.canton
       if (profileData.phone !== undefined) payload.phone = profileData.phone
