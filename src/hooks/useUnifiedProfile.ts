@@ -14,6 +14,7 @@ export interface UnifiedProfileData {
   stageName: string
   description: string
   age?: number
+  category?: string // escort, masseuse_erotique, dominatrice_bdsm, transsexuel
 
   // Localisation
   city: string
@@ -42,10 +43,10 @@ export interface UnifiedProfileData {
     eyeColor?: string
     ethnicity?: string
     bustSize?: string
-    breastType?: string
+    breastType?: string // naturel, silicone
     tattoos?: boolean
     piercings?: boolean
-    pubicHair?: string
+    pubicHair?: string // naturel, partiellement_rasee, rasee
     smoker?: boolean
   }
 
@@ -65,16 +66,30 @@ export interface UnifiedProfileData {
     acceptsSeniors: boolean
   }
 
-  // Options nouvelles
+  // Options de paiement et de lieu
   options: {
-    paymentMethods: string[]
-    venueOptions: string[]
-    acceptedCurrencies: string[]
+    paymentMethods: string[] // Cash, TWINT, Crypto, Visa, etc.
+    venueOptions: string[] // Douche à deux, Jacuzzi, Sauna, Climatisation, etc.
+    acceptedCurrencies: string[] // CHF, EUR, USD
   }
 
   // Méta (dashboard uniquement)
   userId?: string
+  firstName?: string
+  nationality?: string
+  originDetails?: string // Origine détaillée
   phoneVisibility?: string
+  phoneDisplayType?: string // visible, cache_avec_boutons, messagerie_privee
+  minimumDuration?: string
+  legacyRates?: string
+  legacyAvailability?: string
+  isVerifiedBadge?: boolean
+  profileCompleted?: boolean
+  telegram?: {
+    connected: boolean
+    enabled: boolean
+    preference: string
+  }
   status?: string
   user?: {
     email: string

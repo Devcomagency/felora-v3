@@ -207,6 +207,11 @@ model EscortProfile {
   phoneVisibility     String?      @default("hidden")
   pubicHair           String?
   smoker              Boolean?
+
+  // Nouveaux champs manquants ajoutés
+  category            String?      // escort, masseuse_erotique, dominatrice_bdsm, transsexuel
+  phoneDisplayType    String?      @default("hidden") // visible, cache_avec_boutons, messagerie_privee
+  originDetails       String?      // Origine détaillée
   user                User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("escort_profiles")

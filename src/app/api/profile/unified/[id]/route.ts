@@ -23,11 +23,20 @@ export async function GET(
     const session = await getServerSession(authOptions)
 
     console.log('🔄 [API UNIFIED PROFILE] Called with ID:', id)
+    console.log('🔄 [API UNIFIED PROFILE] Session found:', !!session)
+    console.log('🔄 [API UNIFIED PROFILE] User ID:', session?.user?.id || 'undefined')
 
     // Mode dashboard (profil privé de l'utilisateur connecté)
     if (id === 'me') {
       if (!session?.user?.id) {
-        return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
+        console.log('❌ [API UNIFIED PROFILE] No session or user ID for dashboard mode')
+        return NextResponse.json({
+          error: 'unauthorized',
+          debug: {
+            hasSession: !!session,
+            userId: session?.user?.id || null
+          }
+        }, { status: 401 })
       }
 
       // Récupérer le profil escort de l'utilisateur connecté
@@ -48,7 +57,7 @@ export async function GET(
           longitude: true,
           workingArea: true, // Adresse legacy
 
-          // Contact
+          // Contact et visibilité
           phoneVisibility: true,
 
           // Langues et services
@@ -69,11 +78,8 @@ export async function GET(
           eyeColor: true,
           ethnicity: true,
           bustSize: true,
-          breastType: true,
           tattoos: true,
           piercings: true,
-          pubicHair: true,
-          smoker: true,
 
           // Services et clientèle
           outcall: true,
@@ -83,15 +89,39 @@ export async function GET(
           acceptsHandicapped: true,
           acceptsSeniors: true,
 
-          // Nouveaux champs ajoutés
+          // Méthodes de paiement et options de lieu
           paymentMethods: true,
           venueOptions: true,
           acceptedCurrencies: true,
 
-          // Agenda
+          // Agenda et disponibilité
           timeSlots: true,
           availableNow: true,
           weekendAvailable: true,
+          minimumDuration: true,
+
+          // Champs manquants importants
+          firstName: true,
+          nationality: true,
+          rates: true, // Tarifs legacy
+          availability: true, // Disponibilité legacy
+
+          // Nouveaux champs ajoutés
+          category: true,
+          phoneDisplayType: true,
+          originDetails: true,
+          breastType: true,
+          pubicHair: true,
+          smoker: true,
+
+          // Verification et badges
+          isVerifiedBadge: true,
+          profileCompleted: true,
+
+          // Messaging
+          telegramConnected: true,
+          telegramEnabled: true,
+          messagingPreference: true,
 
           // Méta
           status: true,
@@ -153,11 +183,8 @@ export async function GET(
           eyeColor: true,
           ethnicity: true,
           bustSize: true,
-          breastType: true,
           tattoos: true,
           piercings: true,
-          pubicHair: true,
-          smoker: true,
 
           // Services publics
           outcall: true,
@@ -167,7 +194,7 @@ export async function GET(
           acceptsHandicapped: true,
           acceptsSeniors: true,
 
-          // Options publiques
+          // Méthodes de paiement et options (publiques)
           paymentMethods: true,
           venueOptions: true,
           acceptedCurrencies: true,
@@ -175,6 +202,11 @@ export async function GET(
           // Disponibilité publique
           availableNow: true,
           weekendAvailable: true,
+
+          // Nouveaux champs publics
+          category: true,
+          breastType: true,
+          pubicHair: true,
 
           // Statut
           status: true,
@@ -266,10 +298,10 @@ function transformProfileData(rawProfile: any, mode: 'dashboard' | 'public') {
     }
   })()
 
-  // Parse des nouvelles options
-  const paymentMethods = parseStringArray(rawProfile.paymentMethods)
-  const venueOptions = parseStringArray(rawProfile.venueOptions)
-  const acceptedCurrencies = parseStringArray(rawProfile.acceptedCurrencies)
+  // Parse des nouvelles options (avec fallback si champs manquants)
+  const paymentMethods = parseStringArray((rawProfile as any).paymentMethods)
+  const venueOptions = parseStringArray((rawProfile as any).venueOptions)
+  const acceptedCurrencies = parseStringArray((rawProfile as any).acceptedCurrencies)
 
   // Données communes
   const commonData = {
@@ -277,6 +309,9 @@ function transformProfileData(rawProfile: any, mode: 'dashboard' | 'public') {
     stageName: rawProfile.stageName || '',
     description: rawProfile.description || '',
     age,
+
+    // Catégorie et informations de base
+    category: rawProfile.category || '',
 
     // Localisation
     city: rawProfile.city || '',
@@ -341,12 +376,42 @@ function transformProfileData(rawProfile: any, mode: 'dashboard' | 'public') {
     return {
       ...commonData,
       userId: rawProfile.userId,
+      firstName: rawProfile.firstName || '',
+      nationality: rawProfile.nationality || '',
+
+      // Origine et détails
+      originDetails: rawProfile.originDetails || '',
+
+      // Contact étendu
+      phoneDisplayType: rawProfile.phoneDisplayType || 'hidden',
+
+      // Adresse et localisation
       address: rawProfile.workingArea || '', // Legacy
       coordinates: rawProfile.latitude && rawProfile.longitude ? {
         lat: rawProfile.latitude,
         lng: rawProfile.longitude
       } : undefined,
+
+      // Contact et visibilité
       phoneVisibility: rawProfile.phoneVisibility || 'hidden',
+
+      // Agenda et disponibilité détaillée
+      minimumDuration: rawProfile.minimumDuration || '',
+      legacyRates: rawProfile.rates || '', // Tarifs format legacy
+      legacyAvailability: rawProfile.availability || '', // Disponibilité format legacy
+
+      // Verification et complétion
+      isVerifiedBadge: !!rawProfile.isVerifiedBadge,
+      profileCompleted: !!rawProfile.profileCompleted,
+
+      // Messaging
+      telegram: {
+        connected: !!rawProfile.telegramConnected,
+        enabled: !!rawProfile.telegramEnabled,
+        preference: rawProfile.messagingPreference || 'APP_ONLY'
+      },
+
+      // Méta dashboard
       status: rawProfile.status,
       user: rawProfile.user,
       createdAt: rawProfile.createdAt

@@ -40,10 +40,13 @@ export default function TestUnifiedApiPage() {
               <div>
                 <h3 className="font-semibold text-blue-400 mb-2">Identité</h3>
                 <p>ID: {dashboardProfile.id}</p>
-                <p>Nom: {dashboardProfile.stageName}</p>
+                <p>Prénom: {dashboardProfile.firstName || 'N/A'}</p>
+                <p>Nom scène: {dashboardProfile.stageName}</p>
                 <p>Âge: {dashboardProfile.age || 'N/A'}</p>
+                <p>Nationalité: {dashboardProfile.nationality || 'N/A'}</p>
                 <p>Ville: {dashboardProfile.city}</p>
                 <p>Adresse: {dashboardProfile.address || 'N/A'}</p>
+                <p>Coordonnées: {dashboardProfile.coordinates ? `${dashboardProfile.coordinates.lat.toFixed(4)}, ${dashboardProfile.coordinates.lng.toFixed(4)}` : 'N/A'}</p>
               </div>
 
               <div>
@@ -67,9 +70,21 @@ export default function TestUnifiedApiPage() {
                 <h3 className="font-semibold text-blue-400 mb-2">Clientèle & Options</h3>
                 <p>Couples: {dashboardProfile.clientele.acceptsCouples ? '✅' : '❌'}</p>
                 <p>Femmes: {dashboardProfile.clientele.acceptsWomen ? '✅' : '❌'}</p>
+                <p>Handicapés: {dashboardProfile.clientele.acceptsHandicapped ? '✅' : '❌'}</p>
+                <p>Seniors: {dashboardProfile.clientele.acceptsSeniors ? '✅' : '❌'}</p>
                 <p>Paiements: {dashboardProfile.options.paymentMethods.join(', ') || 'Aucun'}</p>
                 <p>Devises: {dashboardProfile.options.acceptedCurrencies.join(', ') || 'Aucune'}</p>
                 <p>Lieu: {dashboardProfile.options.venueOptions.join(', ') || 'Aucune'}</p>
+              </div>
+
+              <div>
+                <h3 className="font-semibold text-blue-400 mb-2">Verification & Complétion</h3>
+                <p>Badge vérifié: {dashboardProfile.isVerifiedBadge ? '✅' : '❌'}</p>
+                <p>Profil complété: {dashboardProfile.profileCompleted ? '✅' : '❌'}</p>
+                <p>Statut: {dashboardProfile.status || 'N/A'}</p>
+                <p>Durée min: {dashboardProfile.minimumDuration || 'N/A'}</p>
+                <p>Telegram: {dashboardProfile.telegram?.connected ? '✅ Connecté' : '❌ Non connecté'}</p>
+                <p>Tél visibilité: {dashboardProfile.phoneVisibility || 'N/A'}</p>
               </div>
             </div>
           )}
