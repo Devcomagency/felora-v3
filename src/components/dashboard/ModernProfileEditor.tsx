@@ -1557,8 +1557,6 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">Lieu & Options</label>
                 <div className="grid grid-cols-2 gap-3">
-                  <label className="flex items-center gap-2"><input type="checkbox" className="w-4 h-4" checked={!!profileData.incall} onChange={(e)=> updateProfileData('incall', e.target.checked)} /><span className="text-sm text-gray-300">Incall</span></label>
-                  <label className="flex items-center gap-2"><input type="checkbox" className="w-4 h-4" checked={!!profileData.outcall} onChange={(e)=> updateProfileData('outcall', e.target.checked)} /><span className="text-sm text-gray-300">Outcall</span></label>
                   {['Douche à deux','Jacuzzi','Sauna','Climatisation','Fumoir','Parking','Accès handicapé','Ambiance musicale','Bar','Pole dance'].map(opt => {
                     const key = `opt:${opt}`
                     const selected = (profileData.specialties||[]).includes(key)
@@ -1576,12 +1574,6 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
               </div>
             </div>
 
-            <div className="mb-3">
-              <div className="flex items-center gap-2 p-2 rounded-lg border border-white/10 bg-white/5 max-w-md">
-                <Search size={16} className="text-gray-400"/>
-                <input placeholder="Rechercher un service…" className="bg-transparent focus:outline-none text-white w-full"/>
-              </div>
-            </div>
 
             <div className="space-y-4">
               {[
@@ -1596,12 +1588,12 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                   <div className="flex flex-wrap gap-2">
                     {group.items.map(it => {
                       const key = `srv:${it}`
-                      const selected = (profileData.specialties||[]).includes(key)
+                      const selected = (profileData.serviceType||[]).includes(key)
                       return (
                         <button key={key} onClick={()=>{
-                          const arr = new Set(profileData.specialties||[])
+                          const arr = new Set(profileData.serviceType||[])
                           if (arr.has(key)) arr.delete(key); else arr.add(key)
-                          updateProfileData('specialties', Array.from(arr))
+                          updateProfileData('serviceType', Array.from(arr))
                         }} className={`text-xs px-2.5 py-1 rounded-full border ${selected ? 'bg-purple-500/20 text-purple-200 border-purple-500/30' : 'bg-white/5 text-white/80 border-white/10 hover:bg-white/10'}`}>
                           {it}
                         </button>
