@@ -159,8 +159,8 @@ function SearchContent() {
       <StaticNavBar />
 
       {/* Header */}
-      <div 
-        className="sticky top-0 px-5 py-4 z-50"
+      <div
+        className="sticky top-0 px-5 z-50"
         style={{
           background: 'rgba(0, 0, 0, 0.85)',
           backdropFilter: 'blur(25px)',
@@ -169,19 +169,16 @@ function SearchContent() {
         }}
       >
         {/* Title */}
-        <div className="text-center mb-6">
-          <h1 
-            className="text-3xl font-bold mb-2"
-            style={{
-              background: 'linear-gradient(135deg, #FF6B9D 0%, #B794F6 50%, #4FD1C7 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text'
-            }}
-          >
-            FELORA
-          </h1>
-          <p className="text-sm text-white/60">
+        <div className="text-center mb-4">
+          <div className="flex justify-center">
+            <img
+              src="/logo-text.png"
+              alt="FELORA"
+              className="h-38 object-contain filter drop-shadow-lg"
+              style={{ filter: 'drop-shadow(0 0 15px rgba(255,107,157,0.6))', height: '9.5rem' }}
+            />
+          </div>
+          <p className="text-sm text-white/60 -mt-6">
             Découvrez des profils d'exception en Suisse
           </p>
         </div>

@@ -54,9 +54,13 @@ export default function RegisterPage() {
     <div className="min-h-screen bg-gradient-to-b from-black via-[#0D0D0D] to-[#1A1A1A] text-white px-6 py-12">
       {/* Header */}
       <div className="max-w-4xl mx-auto text-center mb-10">
-        <div className="mx-auto mb-6 w-20 h-20 rounded-2xl p-[2px]"
-             style={{ background: 'linear-gradient(135deg, #FF6B9D 0%, #B794F6 50%, #4FD1C7 100%)' }}>
-          <div className="w-full h-full rounded-2xl bg-black flex items-center justify-center text-3xl font-bold">F</div>
+        <div className="mx-auto mb-8">
+          <img
+            src="/logo-principal.png"
+            alt="FELORA"
+            className="w-32 h-32 object-contain mx-auto filter drop-shadow-2xl"
+            style={{ filter: 'drop-shadow(0 0 30px rgba(255,107,157,0.8)) drop-shadow(0 0 60px rgba(183,148,246,0.6))' }}
+          />
         </div>
         <h1 className="text-3xl font-extrabold tracking-tight">Rejoignez FELORA</h1>
         <p className="text-white/70 mt-2">Choisissez votre type de compte</p>

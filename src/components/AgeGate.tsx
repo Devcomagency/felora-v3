@@ -69,11 +69,18 @@ export default function AgeGate() {
       </div>
 
       <div className="glass-card relative max-w-lg w-[92%] p-6 sm:p-8">
-        {/* Gradient halo badge */}
-        <div className="absolute -top-6 left-1/2 -translate-x-1/2">
-          <div className="w-14 h-14 rounded-2xl flex items-center justify-center shadow-xl"
-               style={{ background: 'var(--grad-1)', boxShadow: '0 10px 30px rgba(0,0,0,.4)' }}>
-            <span className="text-white font-extrabold text-base">18+</span>
+        {/* Premium logo */}
+        <div className="absolute -top-16 left-1/2 -translate-x-1/2">
+          <img
+            src="/logo-principal.png"
+            alt="FELORA"
+            className="w-28 h-28 object-contain filter drop-shadow-2xl"
+            style={{ filter: 'drop-shadow(0 0 30px rgba(255,107,157,0.8)) drop-shadow(0 0 60px rgba(183,148,246,0.6))' }}
+          />
+          {/* Small 18+ indicator */}
+          <div className="absolute -bottom-2 -right-2 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold text-white"
+               style={{ background: 'var(--grad-1)', boxShadow: '0 6px 16px rgba(0,0,0,.7)' }}>
+            18+
           </div>
         </div>
 

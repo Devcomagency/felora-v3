@@ -92,11 +92,18 @@ function LoginContent() {
       <div className="w-full max-w-md rounded-2xl border border-white/10 bg-white/[0.06] backdrop-blur-xl p-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="mx-auto mb-5 w-16 h-16 rounded-xl p-[2px]" style={{ background: 'linear-gradient(135deg, #FF6B9D 0%, #B794F6 50%, #4FD1C7 100%)' }}>
-            <div className="w-full h-full rounded-xl bg-black grid place-items-center text-2xl font-bold">F</div>
+          <div className="mx-auto mb-8">
+            <img
+              src="/logo-principal.png"
+              alt="FELORA"
+              className="w-32 h-32 object-contain mx-auto filter drop-shadow-2xl"
+              style={{ filter: 'drop-shadow(0 0 30px rgba(255,107,157,0.8)) drop-shadow(0 0 60px rgba(183,148,246,0.6))' }}
+            />
           </div>
           <h1 className="text-2xl font-extrabold tracking-tight">Connexion</h1>
-          <p className="text-white/70 mt-1">Accédez à votre compte FELORA</p>
+          <p className="text-white/70 mt-1">
+            Accédez à votre compte FELORA
+          </p>
           <div className="mt-3 flex items-center justify-center gap-2 text-[11px] text-white/60">
             <Shield className="w-4 h-4 text-teal-300" /> Données protégées
             <span>•</span>
