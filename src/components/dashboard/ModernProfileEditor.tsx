@@ -267,7 +267,21 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
           ...prev,
           stageName: p.stageName || '',
           description: p.description || '',
-          age: (() => { try { return p.dateOfBirth ? (new Date().getFullYear() - new Date(p.dateOfBirth).getFullYear()) : undefined } catch { return undefined } })(),
+          age: (() => {
+            try {
+              if (!p.dateOfBirth) return undefined
+              const today = new Date()
+              const birthDate = new Date(p.dateOfBirth)
+              let age = today.getFullYear() - birthDate.getFullYear()
+              const monthDiff = today.getMonth() - birthDate.getMonth()
+              if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                age--
+              }
+              return age
+            } catch {
+              return undefined
+            }
+          })(),
           languages: (()=>{ try { 
             const raw = String(p.languages||'')
             if (!raw) return []

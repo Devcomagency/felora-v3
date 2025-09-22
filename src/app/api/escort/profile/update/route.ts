@@ -200,13 +200,15 @@ export async function POST(req: NextRequest) {
     if (typeof input.description === 'string') dataToSave.description = input.description
     if (typeof input.canton === 'string' && input.canton.trim()) dataToSave.canton = input.canton.trim()
     
-    // Age handling
+    // Age handling - Calcul précis pour éviter les désynchronisations
     if (typeof input.age === 'number' && isFinite(input.age)) {
       const a = Math.round(input.age)
       if (a >= 18 && a <= 80) {
         const today = new Date()
         const dobYear = today.getFullYear() - a
-        const dob = new Date(dobYear, 5, 15)
+        // Utiliser le 1er janvier pour un calcul cohérent
+        // Cela garantit que l'âge calculé depuis cette date sera toujours correct
+        const dob = new Date(dobYear, 0, 1) // 1er janvier de l'année calculée
         dataToSave.dateOfBirth = dob
       }
     }

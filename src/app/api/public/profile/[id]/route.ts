@@ -123,12 +123,18 @@ export async function GET(
       }
     })()
 
-    // Calculer l'âge
+    // Calculer l'âge avec précision (même logique que le dashboard)
     const age = (() => {
       try {
-        return escort.dateOfBirth 
-          ? new Date().getFullYear() - new Date(escort.dateOfBirth).getFullYear()
-          : undefined
+        if (!escort.dateOfBirth) return undefined
+        const today = new Date()
+        const birthDate = new Date(escort.dateOfBirth)
+        let age = today.getFullYear() - birthDate.getFullYear()
+        const monthDiff = today.getMonth() - birthDate.getMonth()
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+          age--
+        }
+        return age
       } catch {
         return undefined
       }

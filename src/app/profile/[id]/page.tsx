@@ -513,7 +513,7 @@ export default function EscortProfilePage() {
     })
 
     return {
-      languages: (profile.languages || []).filter(lang => lang !== 'Français' && lang !== 'FR' && lang !== 'French' && lang.trim() !== ''),
+      languages: (profile.languages || []).filter(lang => lang.trim() !== ''),
       services: (profile.services || []).filter(service => service !== 'escorte'),
       practices: profile.practices || [],
       paymentMethods: ['Espèces', 'Virement', 'PayPal', 'Cartes de crédit'], // Méthodes de paiement standard pour la Suisse
