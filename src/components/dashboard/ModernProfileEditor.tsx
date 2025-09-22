@@ -71,7 +71,7 @@ interface ProfileData {
     twoHours?: number
     overnight?: number
   }
-  // paymentMethods: string[] // TODO: Uncomment when DB has column
+  paymentMethods: string[]
   paymentCurrencies?: string[]
   availability: string[]
   timeSlots: string[]
@@ -236,7 +236,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
     outcall: false,
     incall: false,
     prices: { oneHour: undefined as any },
-    // paymentMethods: [], // TODO: Uncomment when DB has column
+    paymentMethods: [],
     paymentCurrencies: ['CHF'],
     availability: [],
     timeSlots: [],
@@ -324,12 +324,12 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
           acceptsWomen: !!p.acceptsWomen,
           acceptsHandicapped: !!p.acceptsHandicapped,
           acceptsSeniors: !!p.acceptsSeniors,
-          // paymentMethods: (()=>{ try { // TODO: Uncomment when DB has column
-            // const raw = String(p.paymentMethods||'')
-            // if (!raw) return []
-            // if (raw.trim().startsWith('[')) { const P = JSON.parse(raw); return Array.isArray(P)?P:[] }
-            // return raw.split(',').map((x:string)=>x.trim()).filter(Boolean)
-          // } catch { return [] } })(),
+          paymentMethods: (()=>{ try {
+            const raw = String(p.paymentMethods||'')
+            if (!raw) return []
+            if (raw.trim().startsWith('[')) { const P = JSON.parse(raw); return Array.isArray(P)?P:[] }
+            return raw.split(',').map((x:string)=>x.trim()).filter(Boolean)
+          } catch { return [] } })(),
         }))
 
         // Parse agenda (timeSlots JSON)
@@ -622,7 +622,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
       })
       if (allServices.length > 0) payload.services = JSON.stringify(allServices)
       if (profileData.specialties && profileData.specialties.length > 0) payload.practices = JSON.stringify(profileData.specialties)
-      // if (profileData.paymentMethods && profileData.paymentMethods.length > 0) payload.paymentMethods = JSON.stringify(profileData.paymentMethods) // TODO: Uncomment when DB has column
+      if (profileData.paymentMethods && profileData.paymentMethods.length > 0) payload.paymentMethods = JSON.stringify(profileData.paymentMethods)
       // if (profileData.prices?.fifteenMin !== undefined) payload.rate15Min = profileData.prices.fifteenMin // TODO: Uncomment when DB has column
       // if (profileData.prices?.thirtyMin !== undefined) payload.rate30Min = profileData.prices.thirtyMin // TODO: Uncomment when DB has column
       if (profileData.prices?.oneHour !== undefined) payload.rate1H = profileData.prices.oneHour
@@ -711,7 +711,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
       })
       if (allServices.length > 0) payload.services = JSON.stringify(allServices)
       if (profileData.specialties && profileData.specialties.length > 0) payload.practices = JSON.stringify(profileData.specialties)
-      // if (profileData.paymentMethods && profileData.paymentMethods.length > 0) payload.paymentMethods = JSON.stringify(profileData.paymentMethods) // TODO: Uncomment when DB has column
+      if (profileData.paymentMethods && profileData.paymentMethods.length > 0) payload.paymentMethods = JSON.stringify(profileData.paymentMethods)
       payload.timeSlots = scheduleToJson()
       if (profileData.height !== undefined) payload.height = profileData.height
       if (profileData.bodyType !== undefined) payload.bodyType = profileData.bodyType
@@ -1446,19 +1446,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Cheveux — Longueur</label>
-                  <select
-                    value={profileData.hairLength || ''}
-                    onChange={(e) => updateProfileData('hairLength', e.target.value)}
-                    className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600/50 rounded-xl text-white focus:border-purple-500 focus:outline-none"
-                  >
-                    <option value="court">Court</option>
-                    <option value="mi-long">Mi-long</option>
-                    <option value="long">Long</option>
-                  </select>
-                </div>
+              <div>
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">Couleur des yeux</label>
                   <select
@@ -1513,7 +1501,9 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                         onChange={(e) => updateProfileData('tattoos', e.target.checked)}
                         className="w-4 h-4 text-purple-500 bg-gray-700 border-gray-600 rounded focus:ring-purple-500"
                       />
-                      <span className="text-sm text-gray-300">Tatouages</span>
+                      <span className="text-sm text-gray-300">
+                        Tatouages {profileData.tattoos ? '(Oui)' : ''}
+                      </span>
                     </label>
                     <label className="flex items-center space-x-2">
                       <input
@@ -1522,7 +1512,9 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                         onChange={(e) => updateProfileData('piercings', e.target.checked)}
                         className="w-4 h-4 text-purple-500 bg-gray-700 border-gray-600 rounded focus:ring-purple-500"
                       />
-                      <span className="text-sm text-gray-300">Piercings</span>
+                      <span className="text-sm text-gray-300">
+                        Piercings {profileData.piercings ? '(Oui)' : ''}
+                      </span>
                     </label>
                     <div className="h-6 w-px bg-white/10" />
                     <label className="flex items-center gap-2 text-sm text-gray-300">
@@ -1532,14 +1524,6 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                         <option value="naturel">Naturel</option>
                         <option value="rase">Rasé</option>
                         <option value="partiel">Partiellement rasé</option>
-                      </select>
-                    </label>
-                    <label className="flex items-center gap-2 text-sm text-gray-300">
-                      Fumeuse:
-                      <select value={typeof profileData.smoker==='boolean' ? (profileData.smoker?'oui':'non') : ''} onChange={(e)=> updateProfileData('smoker', e.target.value==='oui')} className="px-2 py-1 bg-white/5 border border-white/10 rounded">
-                        <option value="">Sélectionner</option>
-                        <option value="oui">Oui</option>
-                        <option value="non">Non</option>
                       </select>
                     </label>
                   </div>
@@ -1649,76 +1633,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                 </select>
               </div>
 
-              {/* Tarifs détaillés */}
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <label className="block text-sm font-medium text-gray-300">Tarifs (en CHF)</label>
-                  <label className="flex items-center gap-2 text-xs text-gray-300">
-                    <input
-                      type="checkbox"
-                      checked={profileData.showPrices ?? true}
-                      onChange={(e) => updateProfileData('showPrices', e.target.checked)}
-                      className="w-4 h-4 text-purple-500 bg-gray-700 border-gray-600 rounded focus:ring-purple-500"
-                    />
-                    Afficher mes prix sur mon profil
-                  </label>
-                </div>
-                { (profileData.showPrices ?? true) && (
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {/* TODO: Uncomment when DB has column
-                  <div>
-                    <label className="block text-xs text-gray-400 mb-1">15 min</label>
-                    <input
-                      type="number"
-                      value={profileData.prices?.fifteenMin || ''}
-                      onChange={(e) => updateNestedProfileData('prices', 'fifteenMin', parseInt(e.target.value))}
-                      className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white text-sm focus:border-purple-500 focus:outline-none"
-                    />
-                  </div>
-                  */}
-                  {/* TODO: Uncomment when DB has column
-                  <div>
-                    <label className="block text-xs text-gray-400 mb-1">30 min</label>
-                    <input
-                      type="number"
-                      value={profileData.prices?.thirtyMin || ''}
-                      onChange={(e) => updateNestedProfileData('prices', 'thirtyMin', parseInt(e.target.value))}
-                      className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white text-sm focus:border-purple-500 focus:outline-none"
-                    />
-                  </div>
-                  */}
-                  <div>
-                    <label className="block text-xs text-gray-400 mb-1">1 heure *</label>
-                    <input
-                      type="number"
-                      value={profileData.prices?.oneHour || ''}
-                      onChange={(e) => updateNestedProfileData('prices', 'oneHour', parseInt(e.target.value))}
-                      className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white text-sm focus:border-purple-500 focus:outline-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs text-gray-400 mb-1">2 heures</label>
-                    <input
-                      type="number"
-                      value={profileData.prices?.twoHours || ''}
-                      onChange={(e) => updateNestedProfileData('prices', 'twoHours', parseInt(e.target.value))}
-                      className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white text-sm focus:border-purple-500 focus:outline-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs text-gray-400 mb-1">Nuit</label>
-                    <input
-                      type="number"
-                      value={profileData.prices?.overnight || ''}
-                      onChange={(e) => updateNestedProfileData('prices', 'overnight', parseInt(e.target.value))}
-                      className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white text-sm focus:border-purple-500 focus:outline-none"
-                    />
-                  </div>
-                </div>
-                )}
-              </div>
 
-              {/* TODO: Uncomment when DB has column
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-3">Méthodes de paiement acceptées</label>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -1759,7 +1674,6 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                   </div>
                 </div>
               </div>
-              */}
               <div className="mt-3 text-xs text-white/80">
                 Besoin d'ajuster vos disponibilités ?
                 <button onClick={()=> setActiveTab('agenda')} className="ml-2 text-purple-300 hover:text-purple-200 underline">Ouvrir l'onglet Agenda</button>

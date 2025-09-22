@@ -73,8 +73,8 @@ function LoginContent() {
           return
         }
         
-        // Redirection vers le tableau de bord unifié
-        router.push('/dashboard')
+        // Redirection vers le profil pour éviter les erreurs de données manquantes
+        router.push('/dashboard/profil')
       }
     } catch (error) {
       setErrors(['Erreur de connexion'])

@@ -37,6 +37,7 @@ interface EscortProfile {
   responseRate: number
   responseTime: string
   unlockPrice?: number
+  paymentMethods?: string[]
   languages?: string[]
   stats?: {
     views: number
@@ -81,7 +82,7 @@ const generateExtendedProfileData = (profile: EscortProfile) => {
   if (profile.rates?.overnight) rates.push({ duration: '24h', price: profile.rates.overnight, description: 'Week-end VIP' })
   
   return {
-    languages: profile.languages || ['Français'],
+    languages: profile.languages || [],
     practices: profile.practices || profile.services || [],
     rates: rates.length > 0 ? rates : [{ duration: '1h', price: profile.price, description: 'Rencontre intime' }],
     physicalDetails: {
@@ -735,7 +736,7 @@ export default function ProfileClient({ profile: initialProfile }: ProfileClient
                   <span>{profile.location}</span>
                 </div>
                 <span>•</span>
-                <span>{profile.age} ans</span>
+                <span>{profile.age || 'N/A'} ans</span>
                 <span>•</span>
                 <div className="flex items-center gap-1">
                   <Star className="w-3 h-3 text-yellow-400 fill-current" />
@@ -918,7 +919,7 @@ export default function ProfileClient({ profile: initialProfile }: ProfileClient
                               {(() => {
                                 const mediaId = `photo-${profile.id}-${content.url.split('/').pop()?.split('?')[0] || index}`
                                 const reactions = getProfileReactions(mediaId)
-                                const totalReactions = Object.values(reactions).reduce((sum, count) => sum + count, 0)
+                                const totalReactions = Object.values(reactions).reduce((sum, count) => sum + (typeof count === 'number' ? count : 0), 0)
                                 return totalReactions
                               })()}
                             </span>
@@ -1238,7 +1239,7 @@ export default function ProfileClient({ profile: initialProfile }: ProfileClient
                     gap: '4px'
                   }}>
                     <span style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.5)', fontWeight: '500', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Âge</span>
-                    <span style={{ fontSize: '14px', color: '#ffffff', fontWeight: '600' }}>{profile.age} ans</span>
+                    <span style={{ fontSize: '14px', color: '#ffffff', fontWeight: '600' }}>{profile.age || 'N/A'} ans</span>
                   </div>
                   <div style={{
                     display: 'flex',
@@ -1308,11 +1309,22 @@ export default function ProfileClient({ profile: initialProfile }: ProfileClient
               <div>
                 <h3 className="text-lg font-semibold text-white mb-3 border-b border-white/10 pb-2">Langues</h3>
                 <div className="flex flex-wrap gap-2">
-                  {extendedProfileData.languages.map((lang, index) => (
-                    <span key={index} className="px-3 py-1 bg-blue-500/20 text-blue-300 rounded-full text-sm">
-                      {lang}
-                    </span>
-                  ))}
+                  {extendedProfileData.languages.map((lang, index) => {
+                    // Niveau aléatoire entre 1 et 5 étoiles pour la démo
+                    const level = Math.floor(Math.random() * 5) + 1
+                    return (
+                      <span key={index} className="px-3 py-1 bg-blue-500/20 text-blue-300 rounded-full text-sm flex items-center gap-2">
+                        {lang}
+                        <div className="flex">
+                          {Array.from({ length: 5 }, (_, i) => (
+                            <span key={i} className={`text-xs ${i < level ? 'text-yellow-400' : 'text-gray-500'}`}>
+                              ★
+                            </span>
+                          ))}
+                        </div>
+                      </span>
+                    )
+                  })}
                 </div>
               </div>
 
@@ -1343,6 +1355,20 @@ export default function ProfileClient({ profile: initialProfile }: ProfileClient
                   ))}
                 </div>
               </div>
+
+              {/* Moyens de paiement */}
+              {profile.paymentMethods && profile.paymentMethods.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold text-white mb-3 border-b border-white/10 pb-2">Moyens de paiement</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {profile.paymentMethods.map((method, index) => (
+                      <span key={index} className="px-3 py-1 bg-green-500/20 text-green-300 rounded-full text-sm">
+                        {method}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Disponibilité */}
               <div>
@@ -1459,7 +1485,7 @@ export default function ProfileClient({ profile: initialProfile }: ProfileClient
                       const mediaId = `photo-${profile.id}-${fullscreenMedia?.split('/').pop()?.split('?')[0] || 'main'}`
                       const reactions = getProfileReactions(mediaId)
                       // Compter TOUTES les réactions (comme les likes)
-                      const totalReactions = Object.values(reactions).reduce((sum, count) => sum + count, 0)
+                      const totalReactions = Object.values(reactions).reduce((sum, count) => sum + (typeof count === 'number' ? count : 0), 0)
                       return totalReactions
                     })()}
                   </span>
