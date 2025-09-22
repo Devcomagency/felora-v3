@@ -42,17 +42,17 @@ export async function POST(req: NextRequest) {
       incall: z.coerce.boolean().optional(),
       outcall: z.coerce.boolean().optional(),
       // Rates
-      rate15Min: z.coerce.number().optional(),
-      rate30Min: z.coerce.number().optional(),
+      // rate15Min: z.coerce.number().optional(), // TODO: Uncomment when DB has column
+      // rate30Min: z.coerce.number().optional(), // TODO: Uncomment when DB has column
       rate1H: z.coerce.number().optional(),
       rate2H: z.coerce.number().optional(),
       rateOvernight: z.coerce.number().optional(),
-      paymentMethods: z.union([z.string(), z.array(z.string())]).optional(),
+      // paymentMethods: z.union([z.string(), z.array(z.string())]).optional(), // TODO: Uncomment when DB has column
       // Physical
       height: z.coerce.number().optional(),
       bodyType: z.string().optional(),
       hairColor: z.string().optional(),
-      hairLength: z.string().optional(),
+      // hairLength: z.string().optional(), // TODO: Uncomment when DB has column
       eyeColor: z.string().optional(),
       ethnicity: z.string().optional(),
       bustSize: z.string().optional(),
@@ -190,10 +190,10 @@ export async function POST(req: NextRequest) {
       const csv = toCsv(input.practices)
       if (csv) dataToSave.practices = csv
     }
-    if (typeof input.paymentMethods !== 'undefined') {
-      const csv = toCsv(input.paymentMethods)
-      if (csv) dataToSave.paymentMethods = csv
-    }
+    // if (typeof input.paymentMethods !== 'undefined') { // TODO: Uncomment when DB has column
+    //   const csv = toCsv(input.paymentMethods)
+    //   if (csv) dataToSave.paymentMethods = csv
+    // }
     
     // Add other fields to dataToSave
     if (typeof input.stageName === 'string') dataToSave.stageName = input.stageName
@@ -224,15 +224,15 @@ export async function POST(req: NextRequest) {
     // Toggles, rates, physical attributes  
     if (typeof input.incall === 'boolean') dataToSave.incall = input.incall
     if (typeof input.outcall === 'boolean') dataToSave.outcall = input.outcall
-    if (typeof input.rate15Min === 'number') dataToSave.rate15Min = input.rate15Min
-    if (typeof input.rate30Min === 'number') dataToSave.rate30Min = input.rate30Min
+    // if (typeof input.rate15Min === 'number') dataToSave.rate15Min = input.rate15Min // TODO: Uncomment when DB has column
+    // if (typeof input.rate30Min === 'number') dataToSave.rate30Min = input.rate30Min // TODO: Uncomment when DB has column
     if (typeof input.rate1H === 'number') dataToSave.rate1H = input.rate1H
     if (typeof input.rate2H === 'number') dataToSave.rate2H = input.rate2H
     if (typeof input.rateOvernight === 'number') dataToSave.rateOvernight = input.rateOvernight
     if (typeof input.height === 'number') dataToSave.height = input.height
     if (typeof input.bodyType === 'string') dataToSave.bodyType = input.bodyType
     if (typeof input.hairColor === 'string') dataToSave.hairColor = input.hairColor
-    if (typeof input.hairLength === 'string') dataToSave.hairLength = input.hairLength
+    // if (typeof input.hairLength === 'string') dataToSave.hairLength = input.hairLength // TODO: Uncomment when DB has column
     if (typeof input.eyeColor === 'string') dataToSave.eyeColor = input.eyeColor
     if (typeof input.ethnicity === 'string') dataToSave.ethnicity = input.ethnicity
     if (typeof input.bustSize === 'string') dataToSave.bustSize = input.bustSize

@@ -65,13 +65,13 @@ interface ProfileData {
 
   // Tarifs et disponibilités
   prices: {
-    fifteenMin?: number
-    thirtyMin?: number
+    // fifteenMin?: number // TODO: Uncomment when DB has column
+    // thirtyMin?: number // TODO: Uncomment when DB has column
     oneHour: number
     twoHours?: number
     overnight?: number
   }
-  paymentMethods: string[]
+  // paymentMethods: string[] // TODO: Uncomment when DB has column
   paymentCurrencies?: string[]
   availability: string[]
   timeSlots: string[]
@@ -236,7 +236,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
     outcall: false,
     incall: false,
     prices: { oneHour: undefined as any },
-    paymentMethods: [],
+    // paymentMethods: [], // TODO: Uncomment when DB has column
     paymentCurrencies: ['CHF'],
     availability: [],
     timeSlots: [],
@@ -283,8 +283,8 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
           outcall: !!p.outcall,
           incall: !!p.incall,
           prices: {
-            fifteenMin: p.rate15Min || undefined,
-            thirtyMin: p.rate30Min || undefined,
+            // fifteenMin: p.rate15Min || undefined, // TODO: Uncomment when DB has column
+            // thirtyMin: p.rate30Min || undefined, // TODO: Uncomment when DB has column
             oneHour: p.rate1H || undefined,
             twoHours: p.rate2H || undefined,
             overnight: p.rateOvernight || undefined
@@ -324,12 +324,12 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
           acceptsWomen: !!p.acceptsWomen,
           acceptsHandicapped: !!p.acceptsHandicapped,
           acceptsSeniors: !!p.acceptsSeniors,
-          paymentMethods: (()=>{ try {
-            const raw = String(p.paymentMethods||'')
-            if (!raw) return []
-            if (raw.trim().startsWith('[')) { const P = JSON.parse(raw); return Array.isArray(P)?P:[] }
-            return raw.split(',').map((x:string)=>x.trim()).filter(Boolean)
-          } catch { return [] } })(),
+          // paymentMethods: (()=>{ try { // TODO: Uncomment when DB has column
+            // const raw = String(p.paymentMethods||'')
+            // if (!raw) return []
+            // if (raw.trim().startsWith('[')) { const P = JSON.parse(raw); return Array.isArray(P)?P:[] }
+            // return raw.split(',').map((x:string)=>x.trim()).filter(Boolean)
+          // } catch { return [] } })(),
         }))
 
         // Parse agenda (timeSlots JSON)
@@ -619,9 +619,9 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
       })
       if (allServices.length > 0) payload.services = JSON.stringify(allServices)
       if (profileData.specialties && profileData.specialties.length > 0) payload.practices = JSON.stringify(profileData.specialties)
-      if (profileData.paymentMethods && profileData.paymentMethods.length > 0) payload.paymentMethods = JSON.stringify(profileData.paymentMethods)
-      if (profileData.prices?.fifteenMin !== undefined) payload.rate15Min = profileData.prices.fifteenMin
-      if (profileData.prices?.thirtyMin !== undefined) payload.rate30Min = profileData.prices.thirtyMin
+      // if (profileData.paymentMethods && profileData.paymentMethods.length > 0) payload.paymentMethods = JSON.stringify(profileData.paymentMethods) // TODO: Uncomment when DB has column
+      // if (profileData.prices?.fifteenMin !== undefined) payload.rate15Min = profileData.prices.fifteenMin // TODO: Uncomment when DB has column
+      // if (profileData.prices?.thirtyMin !== undefined) payload.rate30Min = profileData.prices.thirtyMin // TODO: Uncomment when DB has column
       if (profileData.prices?.oneHour !== undefined) payload.rate1H = profileData.prices.oneHour
       if (profileData.prices?.twoHours !== undefined) payload.rate2H = profileData.prices.twoHours
       if (profileData.prices?.overnight !== undefined) payload.rateOvernight = profileData.prices.overnight
@@ -708,7 +708,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
       })
       if (allServices.length > 0) payload.services = JSON.stringify(allServices)
       if (profileData.specialties && profileData.specialties.length > 0) payload.practices = JSON.stringify(profileData.specialties)
-      if (profileData.paymentMethods && profileData.paymentMethods.length > 0) payload.paymentMethods = JSON.stringify(profileData.paymentMethods)
+      // if (profileData.paymentMethods && profileData.paymentMethods.length > 0) payload.paymentMethods = JSON.stringify(profileData.paymentMethods) // TODO: Uncomment when DB has column
       payload.timeSlots = scheduleToJson()
       if (profileData.height !== undefined) payload.height = profileData.height
       if (profileData.bodyType !== undefined) payload.bodyType = profileData.bodyType
@@ -719,8 +719,8 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
       if (profileData.breastSize !== undefined) payload.bustSize = profileData.breastSize
       if (profileData.tattoos !== undefined) payload.tattoos = String(profileData.tattoos)
       if (profileData.piercings !== undefined) payload.piercings = String(profileData.piercings)
-      if (profileData.prices?.fifteenMin !== undefined) payload.rate15Min = profileData.prices.fifteenMin
-      if (profileData.prices?.thirtyMin !== undefined) payload.rate30Min = profileData.prices.thirtyMin
+      // if (profileData.prices?.fifteenMin !== undefined) payload.rate15Min = profileData.prices.fifteenMin // TODO: Uncomment when DB has column
+      // if (profileData.prices?.thirtyMin !== undefined) payload.rate30Min = profileData.prices.thirtyMin // TODO: Uncomment when DB has column
       if (profileData.prices?.oneHour !== undefined) payload.rate1H = profileData.prices.oneHour
       if (profileData.prices?.twoHours !== undefined) payload.rate2H = profileData.prices.twoHours
       if (profileData.prices?.overnight !== undefined) payload.rateOvernight = profileData.prices.overnight
@@ -1662,6 +1662,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                 </div>
                 { (profileData.showPrices ?? true) && (
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {/* TODO: Uncomment when DB has column
                   <div>
                     <label className="block text-xs text-gray-400 mb-1">15 min</label>
                     <input
@@ -1671,6 +1672,8 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                       className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white text-sm focus:border-purple-500 focus:outline-none"
                     />
                   </div>
+                  */}
+                  {/* TODO: Uncomment when DB has column
                   <div>
                     <label className="block text-xs text-gray-400 mb-1">30 min</label>
                     <input
@@ -1680,6 +1683,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                       className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white text-sm focus:border-purple-500 focus:outline-none"
                     />
                   </div>
+                  */}
                   <div>
                     <label className="block text-xs text-gray-400 mb-1">1 heure *</label>
                     <input
@@ -1711,6 +1715,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                 )}
               </div>
 
+              {/* TODO: Uncomment when DB has column
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-3">Méthodes de paiement acceptées</label>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -1750,10 +1755,11 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                     ))}
                   </div>
                 </div>
-                <div className="mt-3 text-xs text-white/80">
-                  Besoin d’ajuster vos disponibilités ?
-                  <button onClick={()=> setActiveTab('agenda')} className="ml-2 text-purple-300 hover:text-purple-200 underline">Ouvrir l’onglet Agenda</button>
-                </div>
+              </div>
+              */}
+              <div className="mt-3 text-xs text-white/80">
+                Besoin d'ajuster vos disponibilités ?
+                <button onClick={()=> setActiveTab('agenda')} className="ml-2 text-purple-300 hover:text-purple-200 underline">Ouvrir l'onglet Agenda</button>
               </div>
             </div>
           </div>

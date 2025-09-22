@@ -169,15 +169,15 @@ model EscortProfile {
   bustSize            String?
   tattoos             String?
   piercings           String?
-  rate15Min           Float?
-  rate30Min           Float?
+  // rate15Min           Float? // TODO: Uncomment when DB migration applied
+  // rate30Min           Float? // TODO: Uncomment when DB migration applied
   rate1H              Float?
   rate2H              Float?
   rateHalfDay         Float?
   rateFullDay         Float?
   rateOvernight       Float?
   currency            String       @default("CHF")
-  paymentMethods      String?
+  // paymentMethods      String? // TODO: Uncomment when DB migration applied
   minimumDuration     String?
   practices           String?
   orientation         String?
@@ -201,7 +201,7 @@ model EscortProfile {
   acceptsSeniors      Boolean      @default(false)
   acceptsWomen        Boolean      @default(false)
   breastType          String?
-  hairLength          String?
+  // hairLength          String? // TODO: Uncomment when DB migration applied
   phoneVisibility     String?      @default("hidden")
   pubicHair           String?
   smoker              Boolean?
