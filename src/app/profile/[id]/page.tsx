@@ -532,10 +532,10 @@ export default function EscortProfilePage() {
         ethnicity: profile.physical?.ethnicity || 'Non spécifié',
         bustSize: profile.physical?.bustSize || 'Non spécifié',
         breastType: profile.physical?.breastType || 'Non spécifié',
-        tattoos: profile.physical?.tattoos || 'Non spécifié',
-        piercings: profile.physical?.piercings || 'Non spécifié',
+        tattoos: profile.physical?.tattoos === true ? 'Oui' : undefined,
+        piercings: profile.physical?.piercings === true ? 'Oui' : undefined,
         pubicHair: profile.physical?.pubicHair || 'Non spécifié',
-        smoker: profile.physical?.smoker !== undefined ? (profile.physical.smoker ? 'Oui' : 'Non') : 'Non spécifié'
+        smoker: undefined
       },
       clientele: profile.clientele || {},
       availability: profile.availability || {},
@@ -736,8 +736,7 @@ export default function EscortProfilePage() {
                     { label: 'Type seins', value: extendedProfileData.physicalDetails.breastType },
                     { label: 'Tatouages', value: extendedProfileData.physicalDetails.tattoos },
                     { label: 'Piercings', value: extendedProfileData.physicalDetails.piercings },
-                    { label: 'Épilation', value: extendedProfileData.physicalDetails.pubicHair },
-                    { label: 'Fumeuse', value: extendedProfileData.physicalDetails.smoker }
+                    { label: 'Épilation', value: extendedProfileData.physicalDetails.pubicHair }
                   ].filter(item => item.value && item.value !== 'Non spécifié').map((item, index) => (
                     <div key={index} className="p-2 rounded-xl bg-gradient-to-br from-white/5 to-white/10 backdrop-blur-sm border border-white/10">
                       <div className="text-xs text-pink-300/80 font-medium uppercase tracking-wider">{item.label}</div>
