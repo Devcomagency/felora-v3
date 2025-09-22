@@ -53,6 +53,7 @@ export async function GET(request: NextRequest) {
         breastType: true,
         pubicHair: true,
         smoker: true,
+        paymentMethods: true,
         phoneVisibility: true,
         latitude: true,
         longitude: true,

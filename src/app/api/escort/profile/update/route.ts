@@ -47,7 +47,9 @@ export async function POST(req: NextRequest) {
       rate1H: z.coerce.number().optional(),
       rate2H: z.coerce.number().optional(),
       rateOvernight: z.coerce.number().optional(),
-      // paymentMethods: z.union([z.string(), z.array(z.string())]).optional(), // TODO: Uncomment when DB has column
+      paymentMethods: z.union([z.string(), z.array(z.string())]).optional(), // Méthodes de paiement
+      venueOptions: z.union([z.string(), z.array(z.string())]).optional(), // Lieu & Options
+      acceptedCurrencies: z.union([z.string(), z.array(z.string())]).optional(), // Devises acceptées
       // Physical
       height: z.coerce.number().optional(),
       bodyType: z.string().optional(),
@@ -190,10 +192,18 @@ export async function POST(req: NextRequest) {
       const csv = toCsv(input.practices)
       if (csv) dataToSave.practices = csv
     }
-    // if (typeof input.paymentMethods !== 'undefined') { // TODO: Uncomment when DB has column
-    //   const csv = toCsv(input.paymentMethods)
-    //   if (csv) dataToSave.paymentMethods = csv
-    // }
+    if (typeof input.paymentMethods !== 'undefined') { // Méthodes de paiement
+      const csv = toCsv(input.paymentMethods)
+      if (csv) dataToSave.paymentMethods = csv
+    }
+    if (typeof input.venueOptions !== 'undefined') { // Lieu & Options
+      const csv = toCsv(input.venueOptions)
+      if (csv) dataToSave.venueOptions = csv
+    }
+    if (typeof input.acceptedCurrencies !== 'undefined') { // Devises acceptées
+      const csv = toCsv(input.acceptedCurrencies)
+      if (csv) dataToSave.acceptedCurrencies = csv
+    }
     
     // Add other fields to dataToSave
     if (typeof input.stageName === 'string') dataToSave.stageName = input.stageName

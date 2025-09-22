@@ -177,7 +177,9 @@ model EscortProfile {
   rateFullDay         Float?
   rateOvernight       Float?
   currency            String       @default("CHF")
-  // paymentMethods      String? // TODO: Uncomment when DB migration applied
+  paymentMethods      String? // Méthodes de paiement acceptées (JSON)
+  venueOptions        String? // Lieu & Options (JSON): Douche à deux, Jacuzzi, etc.
+  acceptedCurrencies  String? // Devises acceptées (JSON): CHF, EUR, USD
   minimumDuration     String?
   practices           String?
   orientation         String?
