@@ -1,6 +1,7 @@
 'use client'
 
 import { useUnifiedProfile, useDashboardProfile, usePublicProfile } from '@/hooks/useUnifiedProfile'
+import { ProfileClientUnified } from '@/components/ProfileClientUnified'
 import { useState } from 'react'
 
 /**
@@ -10,6 +11,7 @@ import { useState } from 'react'
 
 export default function TestUnifiedApiPage() {
   const [testProfileId, setTestProfileId] = useState('')
+  const [showModal, setShowModal] = useState(false)
 
   // Test dashboard (profil privé)
   const { profile: dashboardProfile, loading: dashboardLoading, error: dashboardError } = useDashboardProfile()
@@ -97,21 +99,32 @@ export default function TestUnifiedApiPage() {
               {publicError && <p className="text-red-400">❌ Erreur profil public: {publicError}</p>}
 
               {publicProfile && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <h3 className="font-semibold text-purple-300 mb-2">Identité Publique</h3>
-                    <p>Nom: {publicProfile.stageName}</p>
-                    <p>Âge: {publicProfile.age || 'N/A'}</p>
-                    <p>Ville: {publicProfile.city}</p>
-                    <p>Description: {publicProfile.description.substring(0, 100)}...</p>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <h3 className="font-semibold text-purple-300 mb-2">Identité Publique</h3>
+                      <p>Nom: {publicProfile.stageName}</p>
+                      <p>Âge: {publicProfile.age || 'N/A'}</p>
+                      <p>Ville: {publicProfile.city}</p>
+                      <p>Description: {publicProfile.description.substring(0, 100)}...</p>
+                    </div>
+
+                    <div>
+                      <h3 className="font-semibold text-purple-300 mb-2">Services Publics</h3>
+                      <p>Langues: {publicProfile.languages.join(', ') || 'Aucune'}</p>
+                      <p>Services: {publicProfile.services.length} service(s)</p>
+                      <p>Tarif 1H: {publicProfile.rates.oneHour || 'N/A'} {publicProfile.rates.currency}</p>
+                      <p>Disponible: {publicProfile.availability.availableNow ? '🟢 Oui' : '🔴 Non'}</p>
+                    </div>
                   </div>
 
-                  <div>
-                    <h3 className="font-semibold text-purple-300 mb-2">Services Publics</h3>
-                    <p>Langues: {publicProfile.languages.join(', ') || 'Aucune'}</p>
-                    <p>Services: {publicProfile.services.length} service(s)</p>
-                    <p>Tarif 1H: {publicProfile.rates.oneHour || 'N/A'} {publicProfile.rates.currency}</p>
-                    <p>Disponible: {publicProfile.availability.availableNow ? '🟢 Oui' : '🔴 Non'}</p>
+                  <div className="pt-4 border-t border-gray-700">
+                    <button
+                      onClick={() => setShowModal(true)}
+                      className="w-full px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded transition-colors text-white font-medium"
+                    >
+                      🔍 Ouvrir Modal Unifié (Test)
+                    </button>
                   </div>
                 </div>
               )}
@@ -147,6 +160,14 @@ export default function TestUnifiedApiPage() {
         </div>
 
       </div>
+
+      {/* Modal Unifié */}
+      {showModal && testProfileId && (
+        <ProfileClientUnified
+          profileId={testProfileId}
+          onClose={() => setShowModal(false)}
+        />
+      )}
     </div>
   )
 }
