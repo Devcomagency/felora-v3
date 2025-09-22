@@ -533,7 +533,10 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
   // Propagate completion to header (live)
   useEffect(() => {
     try {
-      window.dispatchEvent(new CustomEvent('profile:progress', { detail: { pct: completionPct } }))
+      // Only emit event if completionPct is a valid number to avoid 'pct' undefined errors
+      if (typeof completionPct === 'number' && !isNaN(completionPct)) {
+        window.dispatchEvent(new CustomEvent('profile:progress', { detail: { pct: completionPct } }))
+      }
     } catch {}
   }, [completionPct])
 

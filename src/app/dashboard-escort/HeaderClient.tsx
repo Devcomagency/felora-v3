@@ -32,7 +32,10 @@ export default function HeaderClient() {
     }
     load()
     const onProgress = (e: any) => {
-      if (typeof e?.detail?.pct === 'number') setPct(Math.max(0, Math.min(100, Math.round(e.detail.pct))))
+      const pctValue = e?.detail?.pct
+      if (typeof pctValue === 'number' && !isNaN(pctValue) && isFinite(pctValue)) {
+        setPct(Math.max(0, Math.min(100, Math.round(pctValue))))
+      }
     }
     const onStatus = async () => { try { await load() } catch {} }
     window.addEventListener('profile:progress' as any, onProgress)
