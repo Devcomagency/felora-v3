@@ -32,8 +32,26 @@ export default function Step3KYCMobile({ userId, role='ESCORT', onSubmitted }:{ 
         return
       }
       
-      console.log('Submitting KYC with data:', { userId, role, docs })
-      const r = await fetch('/api/kyc-v2/submit', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ userId, role, ...docs }) })
+      // Optimisation: envoyer les clés courtes au lieu des URLs complètes pour éviter payload trop large (erreur 413)
+      const extractKey = (url?: string) => {
+        if (!url) return undefined
+        // Si c'est déjà une clé (pas d'URL), la retourner
+        if (!url.includes('/')) return url
+        // Sinon, extraire la clé de l'URL
+        return url.split('/').pop() || undefined
+      }
+
+      const optimizedPayload = {
+        userId,
+        role,
+        docFrontKey: extractKey(docs.docFrontUrl),
+        docBackKey: extractKey(docs.docBackUrl),
+        selfieSignKey: extractKey(docs.selfieSignUrl),
+        livenessKey: extractKey(docs.livenessVideoUrl)
+      }
+
+      console.log('Submitting KYC with optimized data:', optimizedPayload)
+      const r = await fetch('/api/kyc-v2/submit', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(optimizedPayload) })
       
       // Lire la réponse une seule fois
       const responseText = await r.text()
