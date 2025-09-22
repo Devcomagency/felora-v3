@@ -52,9 +52,11 @@ export default function TestUnifiedApiPage() {
               <div>
                 <h3 className="font-semibold text-blue-400 mb-2">Services</h3>
                 <p>Langues: {dashboardProfile.languages.join(', ') || 'Aucune'}</p>
-                <p>Services: {dashboardProfile.services.length} service(s)</p>
-                <p>Pratiques: {dashboardProfile.practices.length} pratique(s)</p>
-                <p>Outcall: {dashboardProfile.availability.outcall ? '✅' : '❌'}</p>
+                <p className="mt-2"><strong>Services ({dashboardProfile.services.length}):</strong></p>
+                <p className="text-xs text-gray-300 ml-2">{dashboardProfile.services.join(', ') || 'Aucun'}</p>
+                <p className="mt-2"><strong>Pratiques ({dashboardProfile.practices.length}):</strong></p>
+                <p className="text-xs text-gray-300 ml-2">{dashboardProfile.practices.join(', ') || 'Aucune'}</p>
+                <p className="mt-2">Outcall: {dashboardProfile.availability.outcall ? '✅' : '❌'}</p>
                 <p>Incall: {dashboardProfile.availability.incall ? '✅' : '❌'}</p>
               </div>
 
@@ -82,10 +84,17 @@ export default function TestUnifiedApiPage() {
                 <p>Catégorie: {dashboardProfile.category || 'N/A'}</p>
                 <p>Âge vérifié: {dashboardProfile.ageVerified ? '✅' : '❌'}</p>
                 <p>Tarif base: {dashboardProfile.rates.baseRate || 'N/A'} {dashboardProfile.rates.currency}</p>
-                <p>Services Classic: {dashboardProfile.servicesDetailed?.classic?.length || 0} service(s)</p>
-                <p>Services BDSM: {dashboardProfile.servicesDetailed?.bdsm?.length || 0} service(s)</p>
-                <p>Services Massage: {dashboardProfile.servicesDetailed?.massage?.length || 0} service(s)</p>
-                <p>Contact mode: {dashboardProfile.phoneDisplayType || 'N/A'}</p>
+
+                <p className="mt-2"><strong>Services Classic ({dashboardProfile.servicesDetailed?.classic?.length || 0}):</strong></p>
+                <p className="text-xs text-gray-300 ml-2">{dashboardProfile.servicesDetailed?.classic?.join(', ') || 'Aucun'}</p>
+
+                <p className="mt-2"><strong>Services BDSM ({dashboardProfile.servicesDetailed?.bdsm?.length || 0}):</strong></p>
+                <p className="text-xs text-gray-300 ml-2">{dashboardProfile.servicesDetailed?.bdsm?.join(', ') || 'Aucun'}</p>
+
+                <p className="mt-2"><strong>Services Massage ({dashboardProfile.servicesDetailed?.massage?.length || 0}):</strong></p>
+                <p className="text-xs text-gray-300 ml-2">{dashboardProfile.servicesDetailed?.massage?.join(', ') || 'Aucun'}</p>
+
+                <p className="mt-2">Contact mode: {dashboardProfile.phoneDisplayType || 'N/A'}</p>
                 <p>Origine détails: {dashboardProfile.originDetails || 'N/A'}</p>
               </div>
 
@@ -140,17 +149,21 @@ export default function TestUnifiedApiPage() {
                     <div>
                       <h3 className="font-semibold text-purple-300 mb-2">Services Publics</h3>
                       <p>Langues: {publicProfile.languages.join(', ') || 'Aucune'}</p>
-                      <p>Services: {publicProfile.services.length} service(s)</p>
-                      <p>Tarif base: {publicProfile.rates.baseRate || 'N/A'} {publicProfile.rates.currency}</p>
+                      <p className="mt-1"><strong>Services ({publicProfile.services.length}):</strong></p>
+                      <p className="text-xs text-gray-300 ml-2">{publicProfile.services.join(', ') || 'Aucun'}</p>
+                      <p className="mt-2">Tarif base: {publicProfile.rates.baseRate || 'N/A'} {publicProfile.rates.currency}</p>
                       <p>Tarif 1H: {publicProfile.rates.oneHour || 'N/A'} {publicProfile.rates.currency}</p>
                       <p>Disponible: {publicProfile.availability.availableNow ? '🟢 Oui' : '🔴 Non'}</p>
                     </div>
 
                     <div>
                       <h3 className="font-semibold text-purple-300 mb-2">🆕 Services Détaillés</h3>
-                      <p>Classic: {publicProfile.servicesDetailed?.classic?.length || 0} service(s)</p>
-                      <p>BDSM: {publicProfile.servicesDetailed?.bdsm?.length || 0} service(s)</p>
-                      <p>Massage: {publicProfile.servicesDetailed?.massage?.length || 0} service(s)</p>
+                      <p><strong>Classic ({publicProfile.servicesDetailed?.classic?.length || 0}):</strong></p>
+                      <p className="text-xs text-gray-300 ml-2 mb-2">{publicProfile.servicesDetailed?.classic?.join(', ') || 'Aucun'}</p>
+                      <p><strong>BDSM ({publicProfile.servicesDetailed?.bdsm?.length || 0}):</strong></p>
+                      <p className="text-xs text-gray-300 ml-2 mb-2">{publicProfile.servicesDetailed?.bdsm?.join(', ') || 'Aucun'}</p>
+                      <p><strong>Massage ({publicProfile.servicesDetailed?.massage?.length || 0}):</strong></p>
+                      <p className="text-xs text-gray-300 ml-2 mb-2">{publicProfile.servicesDetailed?.massage?.join(', ') || 'Aucun'}</p>
                       <p>Physique: {publicProfile.physical.breastType || 'N/A'} / {publicProfile.physical.pubicHair || 'N/A'}</p>
                     </div>
                   </div>
