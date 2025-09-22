@@ -513,9 +513,10 @@ export default function EscortProfilePage() {
     })
 
     return {
-      languages: profile.languages || [],
-      services: profile.services || [],
+      languages: (profile.languages || []).filter(lang => lang !== 'Français' && lang !== 'FR' && lang !== 'French' && lang.trim() !== ''),
+      services: (profile.services || []).filter(service => service !== 'escorte'),
       practices: profile.practices || [],
+      paymentMethods: ['Espèces', 'Virement', 'PayPal', 'Cartes de crédit'], // Méthodes de paiement standard pour la Suisse
       rates: {
         rate1H: profile.rates?.rate1H,
         rate2H: profile.rates?.rate2H,
@@ -758,11 +759,21 @@ export default function EscortProfilePage() {
                     <h3 className="text-sm font-semibold text-white">Langues parlées</h3>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    {extendedProfileData.languages.map((language, index) => (
-                      <span key={index} className="px-3 py-1 text-xs font-medium bg-gradient-to-r from-cyan-500/20 to-blue-600/20 text-cyan-300 rounded-full border border-cyan-500/30">
-                        {language}
-                      </span>
-                    ))}
+                    {extendedProfileData.languages.map((language, index) => {
+                      // Ajouter des étoiles selon le niveau (simulation de niveaux)
+                      const getLanguageLevel = (lang: string) => {
+                        // Par défaut, on met 3 étoiles pour toutes les langues
+                        // Dans le futur, on pourrait avoir un système de niveaux plus sophistiqué
+                        return '★★★'
+                      }
+
+                      return (
+                        <span key={index} className="px-3 py-1 text-xs font-medium bg-gradient-to-r from-cyan-500/20 to-blue-600/20 text-cyan-300 rounded-full border border-cyan-500/30 flex items-center gap-1">
+                          <span>{language}</span>
+                          <span className="text-yellow-400 text-xs">{getLanguageLevel(language)}</span>
+                        </span>
+                      )
+                    })}
                   </div>
                 </div>
               )}
@@ -770,6 +781,16 @@ export default function EscortProfilePage() {
               {/* Services */}
               {extendedProfileData.services && extendedProfileData.services.length > 0 && (
                 <div className="relative">
+                  {/* En-tête avec nom, âge, catégorie et lieu */}
+                  <div className="mb-4 p-3 rounded-xl bg-gradient-to-r from-purple-500/10 to-pink-600/10 border border-purple-500/20">
+                    <h3 className="text-lg font-bold text-white mb-1">{profile.stageName}</h3>
+                    <div className="flex flex-wrap gap-2 text-sm text-white/70">
+                      {profile.age && <span>{profile.age} ans</span>}
+                      {profile.age && profile.city && <span>•</span>}
+                      {profile.city && <span>{profile.city}</span>}
+                    </div>
+                  </div>
+
                   <div className="flex items-center gap-2 mb-3">
                     <div className="w-5 h-5 rounded-full bg-gradient-to-r from-purple-500 to-pink-600 flex items-center justify-center">
                       <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -972,7 +993,7 @@ export default function EscortProfilePage() {
               )}
 
               {/* Méthodes de paiement acceptées - connectées aux vraies données dashboard */}
-              {profile.paymentMethods && profile.paymentMethods.length > 0 && (
+              {extendedProfileData.paymentMethods && extendedProfileData.paymentMethods.length > 0 && (
                 <div className="relative">
                   <div className="flex items-center gap-2 mb-3">
                     <div className="w-5 h-5 rounded-full bg-gradient-to-r from-yellow-500 to-orange-600 flex items-center justify-center">
@@ -982,8 +1003,8 @@ export default function EscortProfilePage() {
                     </div>
                     <h3 className="text-sm font-semibold text-white">Méthodes de paiement acceptées</h3>
                   </div>
-                  <div className="grid grid-cols-3 gap-2">
-                    {profile.paymentMethods.map((method, index) => (
+                  <div className="grid grid-cols-2 gap-2">
+                    {extendedProfileData.paymentMethods.map((method: string, index: number) => (
                       <div key={index} className="p-2 rounded-xl bg-gradient-to-br from-yellow-500/5 to-orange-600/10 backdrop-blur-sm border border-yellow-500/20">
                         <div className="text-xs text-yellow-300/80 font-medium text-center">{method}</div>
                       </div>

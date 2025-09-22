@@ -202,8 +202,8 @@ export async function GET(
         ethnicity: escort.ethnicity || undefined,
         bustSize: escort.bustSize || undefined,
         breastType: escort.breastType || undefined,
-        tattoos: escort.tattoos || undefined,
-        piercings: escort.piercings || undefined,
+        tattoos: escort.tattoos === 'true' ? true : (escort.tattoos === 'false' ? false : undefined),
+        piercings: escort.piercings === 'true' ? true : (escort.piercings === 'false' ? false : undefined),
         pubicHair: escort.pubicHair || undefined,
         smoker: escort.smoker || undefined
       },

@@ -74,12 +74,28 @@ const EMOJI_REACTIONS = ['🔥', '💎', '😍', '🤤', '💋', '🥵', '❤️
 
 // Fonction pour générer les données étendues du profil à partir des vraies données
 const generateExtendedProfileData = (profile: EscortProfile) => {
+  // Seulement le tarif "À partir de" - le tarif le plus bas disponible
   const rates = []
-  if (profile.rates?.hour) rates.push({ duration: '1h', price: profile.rates.hour, description: 'Rencontre intime' })
-  if (profile.rates?.twoHours) rates.push({ duration: '2h', price: profile.rates.twoHours, description: 'Moment prolongé' })
-  if (profile.rates?.halfDay) rates.push({ duration: '4h', price: profile.rates.halfDay, description: 'Demi-journée' })
-  if (profile.rates?.fullDay) rates.push({ duration: '8h', price: profile.rates.fullDay, description: 'Journée complète' })
-  if (profile.rates?.overnight) rates.push({ duration: '24h', price: profile.rates.overnight, description: 'Week-end VIP' })
+
+  // Récupérer tous les tarifs disponibles pour trouver le plus bas
+  const availableRates = []
+  if (profile.rates?.hour) availableRates.push(profile.rates.hour)
+  if (profile.rates?.twoHours) availableRates.push(profile.rates.twoHours)
+  if (profile.rates?.halfDay) availableRates.push(profile.rates.halfDay)
+  if (profile.rates?.fullDay) availableRates.push(profile.rates.fullDay)
+  if (profile.rates?.overnight) availableRates.push(profile.rates.overnight)
+
+  // Utiliser le tarif le plus bas comme "à partir de"
+  if (availableRates.length > 0) {
+    const minRate = Math.min(...availableRates)
+    rates.push({
+      duration: 'À partir de',
+      price: minRate,
+      description: `${minRate} CHF`
+    })
+  } else if (profile.price) {
+    rates.push({ duration: 'À partir de', price: profile.price, description: `${profile.price} CHF` })
+  }
   
   return {
     languages: profile.languages || [],
