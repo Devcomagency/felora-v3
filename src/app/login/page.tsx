@@ -73,8 +73,8 @@ function LoginContent() {
           return
         }
         
-        // Redirection vers le profil pour éviter les erreurs de données manquantes
-        router.push('/dashboard/profil')
+        // Redirection vers le dashboard escort profil pour éviter les erreurs de données manquantes
+        router.push('/dashboard-escort/profil')
       }
     } catch (error) {
       setErrors(['Erreur de connexion'])
