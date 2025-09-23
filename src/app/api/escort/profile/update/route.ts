@@ -74,13 +74,10 @@ export async function POST(req: NextRequest) {
       acceptsWomen: z.coerce.boolean().optional(),
       acceptsHandicapped: z.coerce.boolean().optional(),
       acceptsSeniors: z.coerce.boolean().optional(),
-      // Nouveaux champs ajoutés pour API unifiée
+      // Nouveaux champs ajoutés pour API unifiée (services détaillés supprimés)
       category: z.enum(['escort', 'masseuse_erotique', 'dominatrice_bdsm', 'transsexuel']).optional(),
       phoneDisplayType: z.enum(['visible', 'cache_avec_boutons', 'messagerie_privee', 'hidden']).optional(),
       originDetails: z.string().max(200).optional(),
-      servicesClassic: z.union([z.string(), z.array(z.string())]).optional(),
-      servicesBdsm: z.union([z.string(), z.array(z.string())]).optional(),
-      servicesMassage: z.union([z.string(), z.array(z.string())]).optional(),
       baseRate: z.coerce.number().optional(),
       rateStructure: z.string().max(1000).optional(),
       ageVerified: z.coerce.boolean().optional(),
@@ -156,8 +153,26 @@ export async function POST(req: NextRequest) {
     }
 
     // Fonction de tri automatique des services par catégorie
-    function categorizeServices(services: string[]): { classic: string[], bdsm: string[], massage: string[] } {
-      const result = { classic: [], bdsm: [], massage: [] }
+    function categorizeServices(services: string[]): {
+      classic: string[],
+      bdsm: string[],
+      massage: string[],
+      category: string | null,
+      cleanedServices: string[]
+    } {
+      const result: {
+        classic: string[],
+        bdsm: string[],
+        massage: string[],
+        category: string | null,
+        cleanedServices: string[]
+      } = { classic: [], bdsm: [], massage: [], category: null, cleanedServices: [] }
+
+      // Définition des catégories principales (pas des services)
+      const mainCategories = [
+        'escort', 'masseuse_erotique', 'dominatrice_bdsm', 'transsexuel',
+        'masseuse', 'dominatrice', 'BDSM', 'massage'
+      ]
 
       // Définition des catégories de services
       const serviceCategories = {
@@ -182,16 +197,30 @@ export async function POST(req: NextRequest) {
         // Nettoyer le service (enlever préfixes srv:, opt:)
         let cleanService = service.replace(/^(srv:|opt:)/, '').trim()
 
-        // Trouver la catégorie appropriée
-        if (serviceCategories.massage.includes(cleanService)) {
-          result.massage.push(cleanService)
-        } else if (serviceCategories.bdsm.includes(cleanService)) {
-          result.bdsm.push(cleanService)
-        } else if (serviceCategories.classic.includes(cleanService)) {
-          result.classic.push(cleanService)
+        // D'abord vérifier si c'est une catégorie principale
+        if (mainCategories.includes(cleanService)) {
+          // Si c'est une catégorie principale, l'assigner
+          if (cleanService === 'masseuse' || cleanService === 'massage') {
+            result.category = 'masseuse_erotique'
+          } else if (cleanService === 'dominatrice' || cleanService === 'BDSM') {
+            result.category = 'dominatrice_bdsm'
+          } else {
+            result.category = cleanService
+          }
         } else {
-          // Service non catégorisé -> mettre dans classic par défaut
-          result.classic.push(cleanService)
+          // Sinon, c'est un service à catégoriser
+          result.cleanedServices.push(cleanService)
+
+          if (serviceCategories.massage.includes(cleanService)) {
+            result.massage.push(cleanService)
+          } else if (serviceCategories.bdsm.includes(cleanService)) {
+            result.bdsm.push(cleanService)
+          } else if (serviceCategories.classic.includes(cleanService)) {
+            result.classic.push(cleanService)
+          } else {
+            // Service non catégorisé -> mettre dans classic par défaut
+            result.classic.push(cleanService)
+          }
         }
       })
 
@@ -336,43 +365,30 @@ export async function POST(req: NextRequest) {
         // Tri automatique par catégorie
         const categorized = categorizeServices(servicesArray)
 
-        // Sauvegarder chaque catégorie
-        if (categorized.classic.length > 0) {
-          dataToSave.servicesClassic = categorized.classic.join(', ')
-        }
-        if (categorized.bdsm.length > 0) {
-          dataToSave.servicesBdsm = categorized.bdsm.join(', ')
-        }
-        if (categorized.massage.length > 0) {
-          dataToSave.servicesMassage = categorized.massage.join(', ')
+        // Sauvegarder la catégorie principale si trouvée
+        if (categorized.category) {
+          dataToSave.category = categorized.category
         }
 
-        // Garder aussi le champ services principal (nettoyé, sans préfixes)
-        const cleanServices = servicesArray.map((s: string) => s.replace(/^(srv:|opt:)/, '').trim()).filter(Boolean)
-        if (cleanServices.length > 0) {
-          dataToSave.services = cleanServices.join(', ')
+        // Les services détaillés ne sont plus sauvegardés pour éviter les doublons
+        // On garde seulement le champ services principal
+
+        // Garder le champ services principal avec SEULEMENT les vrais services (pas les catégories)
+        if (categorized.cleanedServices.length > 0) {
+          dataToSave.services = categorized.cleanedServices.join(', ')
         }
 
-        console.log('🔧 [SERVICE CATEGORIZATION] Original:', servicesArray.length, 'services')
+        console.log('🔧 [SERVICE CATEGORIZATION] Original:', servicesArray.length, 'items')
+        console.log('🔧 [SERVICE CATEGORIZATION] Category:', categorized.category)
+        console.log('🔧 [SERVICE CATEGORIZATION] Clean services:', categorized.cleanedServices.length)
         console.log('🔧 [SERVICE CATEGORIZATION] Classic:', categorized.classic.length)
         console.log('🔧 [SERVICE CATEGORIZATION] BDSM:', categorized.bdsm.length)
         console.log('🔧 [SERVICE CATEGORIZATION] Massage:', categorized.massage.length)
       }
     }
 
-    // Support aussi pour les champs services détaillés directs (si envoyés séparément)
-    if (typeof input.servicesClassic !== 'undefined') {
-      const csv = toCsv(input.servicesClassic)
-      if (csv) dataToSave.servicesClassic = csv
-    }
-    if (typeof input.servicesBdsm !== 'undefined') {
-      const csv = toCsv(input.servicesBdsm)
-      if (csv) dataToSave.servicesBdsm = csv
-    }
-    if (typeof input.servicesMassage !== 'undefined') {
-      const csv = toCsv(input.servicesMassage)
-      if (csv) dataToSave.servicesMassage = csv
-    }
+    // Services détaillés supprimés pour éviter doublons
+    // On garde seulement le champ services principal
 
     // Handle media updates (galleryPhotos, profilePhoto, videos)
     if (input.galleryPhotos !== undefined) {
