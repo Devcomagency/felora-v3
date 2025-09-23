@@ -172,6 +172,27 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
             </div>
           )}
 
+          {/* Service Mode */}
+          {(profile.availability.incall || profile.availability.outcall) && (
+            <div className="bg-gray-800 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                <span>📍</span> Mode de service
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {profile.availability.incall && (
+                  <span className="px-4 py-2 bg-green-500/20 text-green-300 rounded-full text-sm flex items-center gap-2">
+                    <span>🏠</span> Je reçois
+                  </span>
+                )}
+                {profile.availability.outcall && (
+                  <span className="px-4 py-2 bg-blue-500/20 text-blue-300 rounded-full text-sm flex items-center gap-2">
+                    <span>🚗</span> Je me déplace
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Practices */}
           {profile.practices.length > 0 && (
             <div className="bg-gray-800 rounded-lg p-6">

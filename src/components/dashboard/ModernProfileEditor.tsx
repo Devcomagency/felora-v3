@@ -1546,10 +1546,10 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
           <div>
             <h3 className="text-xl font-bold text-white mb-2">Clientèle & Services</h3>
             <div className="text-sm text-white/80 mb-4">Sélectionnez ce que vous proposez. Utilisez la recherche pour filtrer.</div>
-            <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">Clientèle acceptée</label>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 gap-3">
                   {[
                     { key:'acceptsCouples', label:'Couples' },
                     { key:'acceptsWomen', label:'Femmes' },
@@ -1561,6 +1561,29 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                       <span className="text-sm text-gray-300">{it.label}</span>
                     </label>
                   ))}
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Mode de service</label>
+                <div className="grid grid-cols-1 gap-3">
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      className="w-4 h-4"
+                      checked={profileData.incall || false}
+                      onChange={(e) => updateProfileData('incall', e.target.checked)}
+                    />
+                    <span className="text-sm text-gray-300">Je reçois</span>
+                  </label>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      className="w-4 h-4"
+                      checked={profileData.outcall || false}
+                      onChange={(e) => updateProfileData('outcall', e.target.checked)}
+                    />
+                    <span className="text-sm text-gray-300">Je me déplace</span>
+                  </label>
                 </div>
               </div>
               <div>
