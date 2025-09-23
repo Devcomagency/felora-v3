@@ -25,7 +25,6 @@ export interface UnifiedProfileData {
   // Langues et services
   languages: string[]
   services: string[]
-  practices: string[]
 
   // Services détaillés supprimés (pour éviter doublons avec services principal)
 

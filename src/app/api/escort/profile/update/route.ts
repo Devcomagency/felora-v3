@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
       // Arrays (JSON strings client-side)
       languages: z.union([z.string(), z.array(z.string())]).optional(),
       services: z.union([z.string(), z.array(z.string())]).optional(),
-      practices: z.union([z.string(), z.array(z.string())]).optional(),
+      // practices supprimé - remplacé par amenities
       // Toggles
       incall: z.coerce.boolean().optional(),
       outcall: z.coerce.boolean().optional(),
@@ -227,35 +227,7 @@ export async function POST(req: NextRequest) {
       return result
     }
 
-    // Fonction de tri pour séparer practices et amenities (équipements du lieu)
-    function categorizePractices(practices: string[]): {
-      realPractices: string[],
-      amenities: string[]
-    } {
-      const result = { realPractices: [], amenities: [] }
-
-      // Définition des équipements du lieu (amenities)
-      const amenitiesKeywords = [
-        'Douche à deux', 'Jacuzzi', 'Sauna', 'Climatisation', 'Fumoir',
-        'Parking', 'Accès handicapé', 'Ambiance musicale', 'Bar', 'Pole dance',
-        'Douche', 'Bain', 'Terrasse', 'Balcon', 'Vue', 'Ascenseur'
-      ]
-
-      practices.forEach(practice => {
-        // Nettoyer la pratique (enlever préfixes opt:, srv:)
-        let cleanPractice = practice.replace(/^(srv:|opt:)/, '').trim()
-
-        // Vérifier si c'est un équipement du lieu
-        if (amenitiesKeywords.includes(cleanPractice)) {
-          result.amenities.push(cleanPractice)
-        } else {
-          // C'est une vraie pratique
-          result.realPractices.push(cleanPractice)
-        }
-      })
-
-      return result
-    }
+    // Practices supprimé - plus besoin de fonction de tri
 
     function parseAddress(address?: string) {
       if (!address) return {}
@@ -300,34 +272,7 @@ export async function POST(req: NextRequest) {
       // Ne pas sauvegarder une chaîne vide pour les services
       if (csv && csv.length > 0) dataToSave.services = csv
     }
-    if (typeof input.practices !== 'undefined') {
-      // Convertir practices en array pour traitement
-      const practicesArray = Array.isArray(input.practices) ? input.practices :
-                           (typeof input.practices === 'string' ? input.practices.split(',').map((p: string) => p.trim()) : [])
-
-      if (practicesArray.length > 0) {
-        // Tri automatique practices vs venue options
-        const categorized = categorizePractices(practicesArray)
-
-        // Sauvegarder les vraies pratiques
-        if (categorized.realPractices.length > 0) {
-          dataToSave.practices = categorized.realPractices.join(', ')
-        }
-
-        // Sauvegarder les équipements du lieu (amenities)
-        if (categorized.amenities.length > 0) {
-          // Si amenities était déjà défini via input.amenities, fusionner
-          const existingAmenities = dataToSave.venueOptions ? dataToSave.venueOptions.split(', ') : []
-          const allAmenities = [...existingAmenities, ...categorized.amenities]
-          const uniqueAmenities = [...new Set(allAmenities)] // Supprimer les doublons
-          dataToSave.venueOptions = uniqueAmenities.join(', ') // Note: garde venueOptions en BDD
-        }
-
-        console.log('🔧 [PRACTICES CATEGORIZATION] Original:', practicesArray.length, 'items')
-        console.log('🔧 [PRACTICES CATEGORIZATION] Real practices:', categorized.realPractices.length)
-        console.log('🔧 [PRACTICES CATEGORIZATION] Amenities:', categorized.amenities.length)
-      }
-    }
+    // Practices supprimé - remplacé par amenities uniquement
     if (typeof input.paymentMethods !== 'undefined') { // Méthodes de paiement
       const csv = toCsv(input.paymentMethods)
       if (csv) dataToSave.paymentMethods = csv

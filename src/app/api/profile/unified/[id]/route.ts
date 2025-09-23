@@ -346,20 +346,7 @@ function transformProfileData(rawProfile: any, mode: 'dashboard' | 'public') {
     }
   })()
 
-  // Parse des pratiques
-  const practices = (() => {
-    try {
-      const raw = String(rawProfile.practices || '')
-      if (!raw) return []
-      if (raw.trim().startsWith('[')) {
-        const P = JSON.parse(raw)
-        return Array.isArray(P) ? P : []
-      }
-      return raw.split(',').map((x: string) => x.trim()).filter(Boolean)
-    } catch {
-      return []
-    }
-  })()
+  // Practices supprimé - remplacé par amenities uniquement
 
   // Parse des nouvelles options (avec fallback si champs manquants)
   const paymentMethods = parseStringArray((rawProfile as any).paymentMethods)
@@ -385,7 +372,6 @@ function transformProfileData(rawProfile: any, mode: 'dashboard' | 'public') {
     // Langues et services
     languages,
     services,
-    practices,
 
     // Services détaillés supprimés (pour éviter doublons)
 

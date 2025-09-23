@@ -54,8 +54,7 @@ export default function TestUnifiedApiPage() {
                 <p>Langues: {dashboardProfile.languages.join(', ') || 'Aucune'}</p>
                 <p className="mt-2"><strong>Services ({dashboardProfile.services.length}):</strong></p>
                 <p className="text-xs text-gray-300 ml-2">{dashboardProfile.services.join(', ') || 'Aucun'}</p>
-                <p className="mt-2"><strong>Pratiques ({dashboardProfile.practices.length}):</strong></p>
-                <p className="text-xs text-gray-300 ml-2">{dashboardProfile.practices.join(', ') || 'Aucune'}</p>
+                <p className="mt-2 text-blue-400"><strong>✅ Practices supprimées</strong> - remplacées par Équipements</p>
                 <p className="mt-2">Outcall: {dashboardProfile.availability.outcall ? '✅' : '❌'}</p>
                 <p>Incall: {dashboardProfile.availability.incall ? '✅' : '❌'}</p>
               </div>
