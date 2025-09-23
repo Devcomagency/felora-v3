@@ -74,6 +74,16 @@ export async function POST(req: NextRequest) {
       acceptsWomen: z.coerce.boolean().optional(),
       acceptsHandicapped: z.coerce.boolean().optional(),
       acceptsSeniors: z.coerce.boolean().optional(),
+      // Nouveaux champs ajoutés pour API unifiée
+      category: z.enum(['escort', 'masseuse_erotique', 'dominatrice_bdsm', 'transsexuel']).optional(),
+      phoneDisplayType: z.enum(['visible', 'cache_avec_boutons', 'messagerie_privee', 'hidden']).optional(),
+      originDetails: z.string().max(200).optional(),
+      servicesClassic: z.union([z.string(), z.array(z.string())]).optional(),
+      servicesBdsm: z.union([z.string(), z.array(z.string())]).optional(),
+      servicesMassage: z.union([z.string(), z.array(z.string())]).optional(),
+      baseRate: z.coerce.number().optional(),
+      rateStructure: z.string().max(1000).optional(),
+      ageVerified: z.coerce.boolean().optional(),
     })
     const parsed = Schema.safeParse(body)
     if (!parsed.success) {
@@ -264,6 +274,28 @@ export async function POST(req: NextRequest) {
     if (typeof input.acceptsWomen === 'boolean') dataToSave.acceptsWomen = input.acceptsWomen
     if (typeof input.acceptsHandicapped === 'boolean') dataToSave.acceptsHandicapped = input.acceptsHandicapped
     if (typeof input.acceptsSeniors === 'boolean') dataToSave.acceptsSeniors = input.acceptsSeniors
+
+    // Nouveaux champs pour API unifiée
+    if (typeof input.category === 'string') dataToSave.category = input.category
+    if (typeof input.phoneDisplayType === 'string') dataToSave.phoneDisplayType = input.phoneDisplayType
+    if (typeof input.originDetails === 'string') dataToSave.originDetails = input.originDetails
+    if (typeof input.baseRate === 'number') dataToSave.baseRate = input.baseRate
+    if (typeof input.rateStructure === 'string') dataToSave.rateStructure = input.rateStructure
+    if (typeof input.ageVerified === 'boolean') dataToSave.ageVerified = input.ageVerified
+
+    // Services détaillés - Format JSON/CSV comme les autres champs array
+    if (typeof input.servicesClassic !== 'undefined') {
+      const csv = toCsv(input.servicesClassic)
+      if (csv) dataToSave.servicesClassic = csv
+    }
+    if (typeof input.servicesBdsm !== 'undefined') {
+      const csv = toCsv(input.servicesBdsm)
+      if (csv) dataToSave.servicesBdsm = csv
+    }
+    if (typeof input.servicesMassage !== 'undefined') {
+      const csv = toCsv(input.servicesMassage)
+      if (csv) dataToSave.servicesMassage = csv
+    }
 
     // Handle media updates (galleryPhotos, profilePhoto, videos)
     if (input.galleryPhotos !== undefined) {
