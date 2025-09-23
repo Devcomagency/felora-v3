@@ -154,6 +154,49 @@ export async function POST(req: NextRequest) {
     function toCsv(v: any) {
       return Array.isArray(v) ? v.map((x:string)=>String(x).trim()).filter(Boolean).join(', ') : (typeof v === 'string' ? v.trim() : '')
     }
+
+    // Fonction de tri automatique des services par catégorie
+    function categorizeServices(services: string[]): { classic: string[], bdsm: string[], massage: string[] } {
+      const result = { classic: [], bdsm: [], massage: [] }
+
+      // Définition des catégories de services
+      const serviceCategories = {
+        massage: [
+          'Tantrique', 'Érotique', 'Corps à corps', 'Nuru', 'Prostate',
+          'Lingam', 'Yoni', '4 mains', 'Suédois', 'Huiles'
+        ],
+        bdsm: [
+          'Domination soft', 'Fessées', 'Donjon SM', 'Fétichisme pieds',
+          'Domination', 'SM', 'BDSM', 'Bondage', 'Discipline'
+        ],
+        classic: [
+          'Sodomie (donne)', 'Sodomie (reçoit)', 'Doigté anal',
+          'Fellation protégée', 'Fellation nature', 'Gorge profonde',
+          'Éjac en bouche', 'Éjac sur le corps', 'Éjac sur le visage',
+          'Rapport', 'French kiss', 'GFE', 'PSE', 'Lingerie',
+          'Duo/Trio', 'Jeux de rôles', 'Costumes'
+        ]
+      }
+
+      services.forEach(service => {
+        // Nettoyer le service (enlever préfixes srv:, opt:)
+        let cleanService = service.replace(/^(srv:|opt:)/, '').trim()
+
+        // Trouver la catégorie appropriée
+        if (serviceCategories.massage.includes(cleanService)) {
+          result.massage.push(cleanService)
+        } else if (serviceCategories.bdsm.includes(cleanService)) {
+          result.bdsm.push(cleanService)
+        } else if (serviceCategories.classic.includes(cleanService)) {
+          result.classic.push(cleanService)
+        } else {
+          // Service non catégorisé -> mettre dans classic par défaut
+          result.classic.push(cleanService)
+        }
+      })
+
+      return result
+    }
     
     function parseAddress(address?: string) {
       if (!address) return {}
@@ -283,7 +326,41 @@ export async function POST(req: NextRequest) {
     if (typeof input.rateStructure === 'string') dataToSave.rateStructure = input.rateStructure
     if (typeof input.ageVerified === 'boolean') dataToSave.ageVerified = input.ageVerified
 
-    // Services détaillés - Format JSON/CSV comme les autres champs array
+    // Services détaillés - Tri automatique depuis le champ services principal
+    if (typeof input.services !== 'undefined') {
+      // Convertir services en array pour traitement
+      const servicesArray = Array.isArray(input.services) ? input.services :
+                           (typeof input.services === 'string' ? input.services.split(',').map((s: string) => s.trim()) : [])
+
+      if (servicesArray.length > 0) {
+        // Tri automatique par catégorie
+        const categorized = categorizeServices(servicesArray)
+
+        // Sauvegarder chaque catégorie
+        if (categorized.classic.length > 0) {
+          dataToSave.servicesClassic = categorized.classic.join(', ')
+        }
+        if (categorized.bdsm.length > 0) {
+          dataToSave.servicesBdsm = categorized.bdsm.join(', ')
+        }
+        if (categorized.massage.length > 0) {
+          dataToSave.servicesMassage = categorized.massage.join(', ')
+        }
+
+        // Garder aussi le champ services principal (nettoyé, sans préfixes)
+        const cleanServices = servicesArray.map((s: string) => s.replace(/^(srv:|opt:)/, '').trim()).filter(Boolean)
+        if (cleanServices.length > 0) {
+          dataToSave.services = cleanServices.join(', ')
+        }
+
+        console.log('🔧 [SERVICE CATEGORIZATION] Original:', servicesArray.length, 'services')
+        console.log('🔧 [SERVICE CATEGORIZATION] Classic:', categorized.classic.length)
+        console.log('🔧 [SERVICE CATEGORIZATION] BDSM:', categorized.bdsm.length)
+        console.log('🔧 [SERVICE CATEGORIZATION] Massage:', categorized.massage.length)
+      }
+    }
+
+    // Support aussi pour les champs services détaillés directs (si envoyés séparément)
     if (typeof input.servicesClassic !== 'undefined') {
       const csv = toCsv(input.servicesClassic)
       if (csv) dataToSave.servicesClassic = csv
