@@ -363,7 +363,7 @@ function transformProfileData(rawProfile: any, mode: 'dashboard' | 'public') {
 
   // Parse des nouvelles options (avec fallback si champs manquants)
   const paymentMethods = parseStringArray((rawProfile as any).paymentMethods)
-  const venueOptions = parseStringArray((rawProfile as any).venueOptions)
+  const amenities = parseStringArray((rawProfile as any).venueOptions) // Note: venueOptions en BDD → amenities en interface
   const acceptedCurrencies = parseStringArray((rawProfile as any).acceptedCurrencies)
 
   // Services détaillés supprimés (pour éviter doublons)
@@ -432,7 +432,7 @@ function transformProfileData(rawProfile: any, mode: 'dashboard' | 'public') {
     // Options nouvelles
     options: {
       paymentMethods,
-      venueOptions,
+      amenities,
       acceptedCurrencies
     },
 

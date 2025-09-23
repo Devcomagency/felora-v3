@@ -83,7 +83,7 @@ export default function TestUnifiedApiPage() {
                 <p>Seniors: {dashboardProfile.clientele.acceptsSeniors ? '✅' : '❌'}</p>
                 <p>Paiements: {dashboardProfile.options.paymentMethods.join(', ') || 'Aucun'}</p>
                 <p>Devises: {dashboardProfile.options.acceptedCurrencies.join(', ') || 'Aucune'}</p>
-                <p>Lieu: {dashboardProfile.options.venueOptions.join(', ') || 'Aucune'}</p>
+                <p>Équipements: {dashboardProfile.options.amenities.join(', ') || 'Aucun'}</p>
               </div>
 
               <div>

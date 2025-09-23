@@ -69,10 +69,10 @@ export interface UnifiedProfileData {
     acceptsSeniors: boolean
   }
 
-  // Options de paiement et de lieu
+  // Options de paiement et équipements
   options: {
     paymentMethods: string[] // Cash, TWINT, Crypto, Visa, etc.
-    venueOptions: string[] // Douche à deux, Jacuzzi, Sauna, Climatisation, etc.
+    amenities: string[] // Équipements du lieu : Douche à deux, Jacuzzi, Sauna, Climatisation, etc.
     acceptedCurrencies: string[] // CHF, EUR, USD
   }
 

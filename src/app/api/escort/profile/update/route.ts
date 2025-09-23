@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
       rate2H: z.coerce.number().optional(),
       rateOvernight: z.coerce.number().optional(),
       paymentMethods: z.union([z.string(), z.array(z.string())]).optional(), // Méthodes de paiement
-      venueOptions: z.union([z.string(), z.array(z.string())]).optional(), // Lieu & Options
+      amenities: z.union([z.string(), z.array(z.string())]).optional(), // Équipements du lieu
       acceptedCurrencies: z.union([z.string(), z.array(z.string())]).optional(), // Devises acceptées
       // Physical
       height: z.coerce.number().optional(),
@@ -227,15 +227,15 @@ export async function POST(req: NextRequest) {
       return result
     }
 
-    // Fonction de tri pour séparer practices et venue options
+    // Fonction de tri pour séparer practices et amenities (équipements du lieu)
     function categorizePractices(practices: string[]): {
       realPractices: string[],
-      venueOptions: string[]
+      amenities: string[]
     } {
-      const result = { realPractices: [], venueOptions: [] }
+      const result = { realPractices: [], amenities: [] }
 
-      // Définition des options de lieu (venue)
-      const venueOptionsKeywords = [
+      // Définition des équipements du lieu (amenities)
+      const amenitiesKeywords = [
         'Douche à deux', 'Jacuzzi', 'Sauna', 'Climatisation', 'Fumoir',
         'Parking', 'Accès handicapé', 'Ambiance musicale', 'Bar', 'Pole dance',
         'Douche', 'Bain', 'Terrasse', 'Balcon', 'Vue', 'Ascenseur'
@@ -245,9 +245,9 @@ export async function POST(req: NextRequest) {
         // Nettoyer la pratique (enlever préfixes opt:, srv:)
         let cleanPractice = practice.replace(/^(srv:|opt:)/, '').trim()
 
-        // Vérifier si c'est une option de lieu
-        if (venueOptionsKeywords.includes(cleanPractice)) {
-          result.venueOptions.push(cleanPractice)
+        // Vérifier si c'est un équipement du lieu
+        if (amenitiesKeywords.includes(cleanPractice)) {
+          result.amenities.push(cleanPractice)
         } else {
           // C'est une vraie pratique
           result.realPractices.push(cleanPractice)
@@ -314,27 +314,27 @@ export async function POST(req: NextRequest) {
           dataToSave.practices = categorized.realPractices.join(', ')
         }
 
-        // Sauvegarder les venue options (fusionner avec celles existantes si nécessaire)
-        if (categorized.venueOptions.length > 0) {
-          // Si venueOptions était déjà défini via input.venueOptions, fusionner
-          const existingVenueOptions = dataToSave.venueOptions ? dataToSave.venueOptions.split(', ') : []
-          const allVenueOptions = [...existingVenueOptions, ...categorized.venueOptions]
-          const uniqueVenueOptions = [...new Set(allVenueOptions)] // Supprimer les doublons
-          dataToSave.venueOptions = uniqueVenueOptions.join(', ')
+        // Sauvegarder les équipements du lieu (amenities)
+        if (categorized.amenities.length > 0) {
+          // Si amenities était déjà défini via input.amenities, fusionner
+          const existingAmenities = dataToSave.venueOptions ? dataToSave.venueOptions.split(', ') : []
+          const allAmenities = [...existingAmenities, ...categorized.amenities]
+          const uniqueAmenities = [...new Set(allAmenities)] // Supprimer les doublons
+          dataToSave.venueOptions = uniqueAmenities.join(', ') // Note: garde venueOptions en BDD
         }
 
         console.log('🔧 [PRACTICES CATEGORIZATION] Original:', practicesArray.length, 'items')
         console.log('🔧 [PRACTICES CATEGORIZATION] Real practices:', categorized.realPractices.length)
-        console.log('🔧 [PRACTICES CATEGORIZATION] Venue options:', categorized.venueOptions.length)
+        console.log('🔧 [PRACTICES CATEGORIZATION] Amenities:', categorized.amenities.length)
       }
     }
     if (typeof input.paymentMethods !== 'undefined') { // Méthodes de paiement
       const csv = toCsv(input.paymentMethods)
       if (csv) dataToSave.paymentMethods = csv
     }
-    if (typeof input.venueOptions !== 'undefined') { // Lieu & Options
-      const csv = toCsv(input.venueOptions)
-      if (csv) dataToSave.venueOptions = csv
+    if (typeof input.amenities !== 'undefined') { // Équipements du lieu
+      const csv = toCsv(input.amenities)
+      if (csv) dataToSave.venueOptions = csv // Note: garde venueOptions en BDD pour compatibilité
     }
     if (typeof input.acceptedCurrencies !== 'undefined') { // Devises acceptées
       const csv = toCsv(input.acceptedCurrencies)
