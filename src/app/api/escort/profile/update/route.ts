@@ -450,7 +450,24 @@ export async function POST(req: NextRequest) {
     })
     console.log('✅ [API PROFILE UPDATE] Profile updated successfully')
 
-    return NextResponse.json({ success: true, message: 'Modifications enregistrées' })
+    return NextResponse.json({
+      success: true,
+      message: 'Modifications enregistrées',
+      debug: {
+        timestamp: new Date().toISOString(),
+        apiCalled: '🔥 API ESCORT UPDATE APPELÉE EN PRODUCTION',
+        receivedFields: Object.keys(input),
+        amenitiesReceived: input.amenities,
+        physicalReceived: {
+          bodyType: input.bodyType,
+          hairColor: input.hairColor,
+          eyeColor: input.eyeColor,
+          ethnicity: input.ethnicity,
+          bustSize: input.bustSize
+        },
+        savedFields: Object.keys(dataToSave)
+      }
+    })
   } catch (e:any) {
     console.error('❌ /api/escort/profile/update error:', e.message)
     console.error('❌ Full error:', e)

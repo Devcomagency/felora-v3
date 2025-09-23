@@ -573,6 +573,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
       })
       console.log('📡 [DEBUG] Réponse reçue, status:', res.status)
       const data = await res.json().catch(() => ({}))
+      console.log('📦 [DEBUG] Données de réponse API:', data)
 
       // Si erreur 500 ou 401, on retry automatiquement
       if ((res.status === 500 || res.status === 401) && retryCount < maxRetries) {
