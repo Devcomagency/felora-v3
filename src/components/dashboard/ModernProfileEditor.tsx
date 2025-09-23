@@ -635,7 +635,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
         allServices
       })
       if (allServices.length > 0) payload.services = JSON.stringify(allServices)
-      if (profileData.specialties && profileData.specialties.length > 0) payload.practices = JSON.stringify(profileData.specialties)
+      if (profileData.specialties && profileData.specialties.length > 0) payload.amenities = JSON.stringify(profileData.specialties)
       if (profileData.paymentMethods && profileData.paymentMethods.length > 0) payload.paymentMethods = JSON.stringify(profileData.paymentMethods)
       // if (profileData.prices?.fifteenMin !== undefined) payload.rate15Min = profileData.prices.fifteenMin // TODO: Uncomment when DB has column
       // if (profileData.prices?.thirtyMin !== undefined) payload.rate30Min = profileData.prices.thirtyMin // TODO: Uncomment when DB has column
@@ -724,7 +724,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
         allServices
       })
       if (allServices.length > 0) payload.services = JSON.stringify(allServices)
-      if (profileData.specialties && profileData.specialties.length > 0) payload.practices = JSON.stringify(profileData.specialties)
+      if (profileData.specialties && profileData.specialties.length > 0) payload.amenities = JSON.stringify(profileData.specialties)
       if (profileData.paymentMethods && profileData.paymentMethods.length > 0) payload.paymentMethods = JSON.stringify(profileData.paymentMethods)
       payload.timeSlots = scheduleToJson()
       if (profileData.height !== undefined) payload.height = profileData.height
