@@ -458,6 +458,7 @@ export async function POST(req: NextRequest) {
         apiCalled: '🔥 API ESCORT UPDATE APPELÉE EN PRODUCTION',
         receivedFields: Object.keys(input),
         amenitiesReceived: input.amenities,
+        acceptedCurrenciesReceived: input.acceptedCurrencies,
         physicalReceived: {
           bodyType: input.bodyType,
           hairColor: input.hairColor,
