@@ -92,14 +92,8 @@ export default function TestUnifiedApiPage() {
                 <p>Âge vérifié: {dashboardProfile.ageVerified ? '✅' : '❌'}</p>
                 <p>Tarif base: <span className={dashboardProfile.rates.baseRate ? 'text-green-400' : 'text-red-400'}>{dashboardProfile.rates.baseRate || '❌ VIDE'}</span> {dashboardProfile.rates.currency}</p>
 
-                <p className="mt-2"><strong>Services Classic ({dashboardProfile.servicesDetailed?.classic?.length || 0}):</strong></p>
-                <p className="text-xs text-gray-300 ml-2">{dashboardProfile.servicesDetailed?.classic?.join(', ') || '❌ VIDE - Dashboard ne sauvegarde pas encore'}</p>
-
-                <p className="mt-2"><strong>Services BDSM ({dashboardProfile.servicesDetailed?.bdsm?.length || 0}):</strong></p>
-                <p className="text-xs text-gray-300 ml-2">{dashboardProfile.servicesDetailed?.bdsm?.join(', ') || '❌ VIDE - Dashboard ne sauvegarde pas encore'}</p>
-
-                <p className="mt-2"><strong>Services Massage ({dashboardProfile.servicesDetailed?.massage?.length || 0}):</strong></p>
-                <p className="text-xs text-gray-300 ml-2">{dashboardProfile.servicesDetailed?.massage?.join(', ') || '❌ VIDE - Dashboard ne sauvegarde pas encore'}</p>
+                <p className="mt-2 text-green-400"><strong>✅ Services détaillés supprimés</strong> (pour éviter doublons)</p>
+                <p className="text-xs text-gray-300 ml-2">Les services sont maintenant uniquement dans le champ principal "Services"</p>
 
                 <p className="mt-2">Contact mode: <span className={dashboardProfile.phoneDisplayType !== 'hidden' ? 'text-green-400' : 'text-red-400'}>{dashboardProfile.phoneDisplayType || '❌ VIDE'}</span></p>
                 <p>Origine détails: <span className={dashboardProfile.originDetails ? 'text-green-400' : 'text-red-400'}>{dashboardProfile.originDetails || '❌ VIDE'}</span></p>
@@ -164,14 +158,11 @@ export default function TestUnifiedApiPage() {
                     </div>
 
                     <div>
-                      <h3 className="font-semibold text-purple-300 mb-2">🆕 Services Détaillés</h3>
-                      <p><strong>Classic ({publicProfile.servicesDetailed?.classic?.length || 0}):</strong></p>
-                      <p className="text-xs text-gray-300 ml-2 mb-2">{publicProfile.servicesDetailed?.classic?.join(', ') || 'Aucun'}</p>
-                      <p><strong>BDSM ({publicProfile.servicesDetailed?.bdsm?.length || 0}):</strong></p>
-                      <p className="text-xs text-gray-300 ml-2 mb-2">{publicProfile.servicesDetailed?.bdsm?.join(', ') || 'Aucun'}</p>
-                      <p><strong>Massage ({publicProfile.servicesDetailed?.massage?.length || 0}):</strong></p>
-                      <p className="text-xs text-gray-300 ml-2 mb-2">{publicProfile.servicesDetailed?.massage?.join(', ') || 'Aucun'}</p>
-                      <p>Physique: {publicProfile.physical.breastType || 'N/A'} / {publicProfile.physical.pubicHair || 'N/A'}</p>
+                      <h3 className="font-semibold text-purple-300 mb-2">🆕 Physique Détaillé</h3>
+                      <p>Type poitrine: {publicProfile.physical.breastType || 'N/A'}</p>
+                      <p>Pilosité: {publicProfile.physical.pubicHair || 'N/A'}</p>
+                      <p className="mt-2 text-green-400"><strong>✅ Services détaillés supprimés</strong></p>
+                      <p className="text-xs text-gray-300">Services unifiés dans le champ principal</p>
                     </div>
                   </div>
 

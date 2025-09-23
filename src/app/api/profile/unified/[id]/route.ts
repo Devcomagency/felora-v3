@@ -114,10 +114,7 @@ export async function GET(
           pubicHair: true,
           smoker: true,
 
-          // Services détaillés
-          servicesClassic: true,
-          servicesBdsm: true,
-          servicesMassage: true,
+          // Services détaillés supprimés (pour éviter doublons)
 
           // Tarifs détaillés
           baseRate: true,
@@ -220,10 +217,7 @@ export async function GET(
           breastType: true,
           pubicHair: true,
 
-          // Services publics
-          servicesClassic: true,
-          servicesBdsm: true,
-          servicesMassage: true,
+          // Services publics (services détaillés supprimés)
 
           // Tarifs publics
           baseRate: true,
@@ -249,6 +243,44 @@ export async function GET(
     console.error('❌ [API UNIFIED PROFILE] Error:', error)
     return NextResponse.json({ error: 'server_error' }, { status: 500 })
   }
+}
+
+/**
+ * Fonction de tri automatique des services pour séparer catégories et services
+ */
+function categorizeServicesForRead(services: string[]): {
+  category: string | null,
+  cleanedServices: string[]
+} {
+  const result = { category: null as string | null, cleanedServices: [] as string[] }
+
+  // Définition des catégories principales
+  const mainCategories = [
+    'escort', 'masseuse_erotique', 'dominatrice_bdsm', 'transsexuel',
+    'masseuse', 'dominatrice', 'BDSM', 'massage'
+  ]
+
+  services.forEach(service => {
+    // Nettoyer le service (enlever préfixes srv:, opt:)
+    let cleanService = service.replace(/^(srv:|opt:)/, '').trim()
+
+    // D'abord vérifier si c'est une catégorie principale
+    if (mainCategories.includes(cleanService)) {
+      // Si c'est une catégorie principale, l'assigner
+      if (cleanService === 'masseuse' || cleanService === 'massage') {
+        result.category = 'masseuse_erotique'
+      } else if (cleanService === 'dominatrice' || cleanService === 'BDSM') {
+        result.category = 'dominatrice_bdsm'
+      } else {
+        result.category = cleanService
+      }
+    } else {
+      // Sinon, c'est un vrai service
+      result.cleanedServices.push(cleanService)
+    }
+  })
+
+  return result
 }
 
 /**
@@ -288,18 +320,29 @@ function transformProfileData(rawProfile: any, mode: 'dashboard' | 'public') {
     }
   })()
 
-  // Parse des services (logique centralisée)
-  const services = (() => {
+  // Parse des services avec tri automatique (logique centralisée)
+  const { services, extractedCategory } = (() => {
     try {
       const raw = String(rawProfile.services || '')
-      if (!raw) return []
+      if (!raw) return { services: [], extractedCategory: null }
+
+      let servicesArray: string[] = []
       if (raw.trim().startsWith('[')) {
         const S = JSON.parse(raw)
-        return Array.isArray(S) ? S : []
+        servicesArray = Array.isArray(S) ? S : []
+      } else {
+        servicesArray = raw.split(',').map((x: string) => x.trim()).filter(Boolean)
       }
-      return raw.split(',').map((x: string) => x.trim()).filter(Boolean)
+
+      // Appliquer le tri automatique pour séparer catégorie et services
+      const categorized = categorizeServicesForRead(servicesArray)
+
+      return {
+        services: categorized.cleanedServices,
+        extractedCategory: categorized.category
+      }
     } catch {
-      return []
+      return { services: [], extractedCategory: null }
     }
   })()
 
@@ -323,10 +366,7 @@ function transformProfileData(rawProfile: any, mode: 'dashboard' | 'public') {
   const venueOptions = parseStringArray((rawProfile as any).venueOptions)
   const acceptedCurrencies = parseStringArray((rawProfile as any).acceptedCurrencies)
 
-  // Parse des services détaillés
-  const servicesClassic = parseStringArray(rawProfile.servicesClassic)
-  const servicesBdsm = parseStringArray(rawProfile.servicesBdsm)
-  const servicesMassage = parseStringArray(rawProfile.servicesMassage)
+  // Services détaillés supprimés (pour éviter doublons)
 
   // Données communes
   const commonData = {
@@ -335,8 +375,8 @@ function transformProfileData(rawProfile: any, mode: 'dashboard' | 'public') {
     description: rawProfile.description || '',
     age,
 
-    // Catégorie et informations de base
-    category: rawProfile.category || '',
+    // Catégorie : utiliser celle extraite des services ou celle de la BDD
+    category: extractedCategory || rawProfile.category || '',
 
     // Localisation
     city: rawProfile.city || '',
@@ -347,12 +387,7 @@ function transformProfileData(rawProfile: any, mode: 'dashboard' | 'public') {
     services,
     practices,
 
-    // Services détaillés
-    servicesDetailed: {
-      classic: servicesClassic,
-      bdsm: servicesBdsm,
-      massage: servicesMassage
-    },
+    // Services détaillés supprimés (pour éviter doublons)
 
     // Tarifs
     rates: {

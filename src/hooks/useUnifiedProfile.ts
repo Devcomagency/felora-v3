@@ -27,12 +27,7 @@ export interface UnifiedProfileData {
   services: string[]
   practices: string[]
 
-  // Services détaillés
-  servicesDetailed: {
-    classic: string[] // Rapport, French kiss, GFE, etc.
-    bdsm: string[] // Domination soft, Fessées, Donjon SM, etc.
-    massage: string[] // Tantrique, Érotique, Corps à corps, etc.
-  }
+  // Services détaillés supprimés (pour éviter doublons avec services principal)
 
   // Tarifs
   rates: {

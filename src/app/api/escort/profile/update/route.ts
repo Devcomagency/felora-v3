@@ -226,7 +226,37 @@ export async function POST(req: NextRequest) {
 
       return result
     }
-    
+
+    // Fonction de tri pour séparer practices et venue options
+    function categorizePractices(practices: string[]): {
+      realPractices: string[],
+      venueOptions: string[]
+    } {
+      const result = { realPractices: [], venueOptions: [] }
+
+      // Définition des options de lieu (venue)
+      const venueOptionsKeywords = [
+        'Douche à deux', 'Jacuzzi', 'Sauna', 'Climatisation', 'Fumoir',
+        'Parking', 'Accès handicapé', 'Ambiance musicale', 'Bar', 'Pole dance',
+        'Douche', 'Bain', 'Terrasse', 'Balcon', 'Vue', 'Ascenseur'
+      ]
+
+      practices.forEach(practice => {
+        // Nettoyer la pratique (enlever préfixes opt:, srv:)
+        let cleanPractice = practice.replace(/^(srv:|opt:)/, '').trim()
+
+        // Vérifier si c'est une option de lieu
+        if (venueOptionsKeywords.includes(cleanPractice)) {
+          result.venueOptions.push(cleanPractice)
+        } else {
+          // C'est une vraie pratique
+          result.realPractices.push(cleanPractice)
+        }
+      })
+
+      return result
+    }
+
     function parseAddress(address?: string) {
       if (!address) return {}
       // "rue numero, codePostal ville" → parse components
@@ -271,8 +301,32 @@ export async function POST(req: NextRequest) {
       if (csv && csv.length > 0) dataToSave.services = csv
     }
     if (typeof input.practices !== 'undefined') {
-      const csv = toCsv(input.practices)
-      if (csv) dataToSave.practices = csv
+      // Convertir practices en array pour traitement
+      const practicesArray = Array.isArray(input.practices) ? input.practices :
+                           (typeof input.practices === 'string' ? input.practices.split(',').map((p: string) => p.trim()) : [])
+
+      if (practicesArray.length > 0) {
+        // Tri automatique practices vs venue options
+        const categorized = categorizePractices(practicesArray)
+
+        // Sauvegarder les vraies pratiques
+        if (categorized.realPractices.length > 0) {
+          dataToSave.practices = categorized.realPractices.join(', ')
+        }
+
+        // Sauvegarder les venue options (fusionner avec celles existantes si nécessaire)
+        if (categorized.venueOptions.length > 0) {
+          // Si venueOptions était déjà défini via input.venueOptions, fusionner
+          const existingVenueOptions = dataToSave.venueOptions ? dataToSave.venueOptions.split(', ') : []
+          const allVenueOptions = [...existingVenueOptions, ...categorized.venueOptions]
+          const uniqueVenueOptions = [...new Set(allVenueOptions)] // Supprimer les doublons
+          dataToSave.venueOptions = uniqueVenueOptions.join(', ')
+        }
+
+        console.log('🔧 [PRACTICES CATEGORIZATION] Original:', practicesArray.length, 'items')
+        console.log('🔧 [PRACTICES CATEGORIZATION] Real practices:', categorized.realPractices.length)
+        console.log('🔧 [PRACTICES CATEGORIZATION] Venue options:', categorized.venueOptions.length)
+      }
     }
     if (typeof input.paymentMethods !== 'undefined') { // Méthodes de paiement
       const csv = toCsv(input.paymentMethods)
