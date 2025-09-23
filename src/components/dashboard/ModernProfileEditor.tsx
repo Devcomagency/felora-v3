@@ -316,12 +316,6 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
           coordinates: (typeof p.latitude === 'number' && typeof p.longitude === 'number') ? { lat: p.latitude, lng: p.longitude } : undefined,
           phone: p.user?.phone || '',
           phoneVisibility: p.phoneVisibility || 'hidden',
-          specialties: (()=>{ try { 
-            const raw = String(p.practices||'')
-            if (!raw) return []
-            if (raw.trim().startsWith('[')) { const S = JSON.parse(raw); return Array.isArray(S)?S:[] }
-            return raw.split(',').map((x:string)=>x.trim()).filter(Boolean)
-          } catch { return [] } })(),
           height: p.height || undefined,
           bodyType: p.bodyType || '',
           hairColor: p.hairColor || '',
