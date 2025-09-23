@@ -54,394 +54,357 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-75 z-50 overflow-auto">
-      <div className="min-h-screen p-4">
-        <div className="max-w-4xl mx-auto bg-gray-900 rounded-lg shadow-2xl">
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50">
+      <div className="flex min-h-full items-center justify-center p-4">
+        <div className="relative w-full max-w-2xl max-h-[90vh] overflow-hidden bg-white rounded-2xl shadow-2xl">
 
-          {/* Header */}
-          <div className="relative p-6 border-b border-gray-800">
-            <button
-              onClick={onClose}
-              className="absolute top-4 right-4 p-2 text-gray-400 hover:text-white rounded-full hover:bg-gray-800 transition-colors"
-            >
-              <X className="w-6 h-6" />
-            </button>
-
-            <div className="text-center">
-              <h1 className="text-3xl font-bold text-white mb-2">{profile.stageName}</h1>
-
-              <div className="flex items-center justify-center gap-4 text-sm text-gray-300 mb-4">
-                {profile.age && (
-                  <span className="flex items-center gap-1">
-                    <span>🎂</span> {profile.age} ans
-                  </span>
-                )}
-                {profile.city && (
-                  <span className="flex items-center gap-1">
-                    <MapPin className="w-4 h-4" />
-                    {profile.city}, {profile.canton}
-                  </span>
-                )}
-                {profile.category && (
-                  <span className="px-3 py-1 bg-pink-500/20 text-pink-300 rounded-full">
-                    {profile.category}
-                  </span>
-                )}
+          {/* Header avec fermeture */}
+          <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-6 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <h1 className="text-xl font-bold text-gray-900 truncate">{profile.stageName}</h1>
+                <div className="flex items-center gap-3 mt-1 text-sm text-gray-500">
+                  {profile.age && <span>{profile.age} ans</span>}
+                  {profile.city && (
+                    <span className="flex items-center gap-1">
+                      <MapPin className="w-3 h-3" />
+                      {profile.city}
+                    </span>
+                  )}
+                  {profile.category && (
+                    <span className="px-2 py-0.5 bg-pink-100 text-pink-700 rounded-full text-xs">
+                      {profile.category}
+                    </span>
+                  )}
+                </div>
               </div>
-
-              {profile.description && (
-                <p className="text-gray-300 max-w-2xl mx-auto leading-relaxed">
-                  {profile.description}
-                </p>
-              )}
+              <button
+                onClick={onClose}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-400" />
+              </button>
             </div>
           </div>
 
-          <div className="p-6 space-y-6">
+          {/* Contenu scrollable */}
+          <div className="overflow-y-auto max-h-[calc(90vh-80px)]">
+            <div className="p-6 space-y-6">
 
-            {/* Quick Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-gray-800 rounded-lg p-4 text-center">
-                <div className="text-2xl mb-1">💬</div>
-                <div className="text-sm text-gray-400">Langues</div>
-                <div className="text-xs text-white">{profile.languages.length}</div>
-              </div>
-              <div className="bg-gray-800 rounded-lg p-4 text-center">
-                <div className="text-2xl mb-1">💎</div>
-                <div className="text-sm text-gray-400">Services</div>
-                <div className="text-xs text-white">{profile.services.length}</div>
-              </div>
-              <div className="bg-gray-800 rounded-lg p-4 text-center">
-                <div className="text-2xl mb-1">
-                  {profile.availability.availableNow ? '🟢' : '🔴'}
+              {/* Description */}
+              {profile.description && (
+                <div className="text-gray-600 leading-relaxed">
+                  {profile.description}
                 </div>
-                <div className="text-sm text-gray-400">
-                  {profile.availability.availableNow ? 'Disponible' : 'Occupée'}
-                </div>
-              </div>
-              <div className="bg-gray-800 rounded-lg p-4 text-center">
-                <div className="text-2xl mb-1">
-                  {profile.availability.weekendAvailable ? '📅' : '🚫'}
-                </div>
-                <div className="text-sm text-gray-400">
-                  {profile.availability.weekendAvailable ? 'Week-end OK' : 'Semaine uniquement'}
-                </div>
-              </div>
-            </div>
+              )}
 
-            {/* Mode de service */}
-            {(profile.availability.incall || profile.availability.outcall) && (
-              <div className="bg-gray-800 rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                  <span>📍</span> Mode de service
+              {/* Mode de service */}
+              {(profile.availability.incall || profile.availability.outcall) && (
+                <div className="bg-gray-50 rounded-xl p-4">
+                  <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                    <MapPin className="w-4 h-4" />
+                    Mode de service
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {profile.availability.incall && (
+                      <div className="flex items-center gap-2 px-3 py-1.5 bg-green-100 text-green-700 rounded-full text-sm">
+                        <Home className="w-3 h-3" />
+                        <span>Je reçois</span>
+                      </div>
+                    )}
+                    {profile.availability.outcall && (
+                      <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-100 text-blue-700 rounded-full text-sm">
+                        <Car className="w-3 h-3" />
+                        <span>Je me déplace</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Disponibilité */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-gray-50 rounded-lg p-3 text-center">
+                  <div className={`w-3 h-3 rounded-full mx-auto mb-2 ${profile.availability.availableNow ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                  <div className="text-xs text-gray-600">
+                    {profile.availability.availableNow ? 'Disponible maintenant' : 'Non disponible'}
+                  </div>
+                </div>
+                <div className="bg-gray-50 rounded-lg p-3 text-center">
+                  <Clock className={`w-4 h-4 mx-auto mb-1 ${profile.availability.weekendAvailable ? 'text-green-600' : 'text-gray-400'}`} />
+                  <div className="text-xs text-gray-600">
+                    {profile.availability.weekendAvailable ? 'Week-ends OK' : 'Semaine uniquement'}
+                  </div>
+                </div>
+              </div>
+
+              {/* Tarifs */}
+              <div className="bg-gray-50 rounded-xl p-4">
+                <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                  <CreditCard className="w-4 h-4" />
+                  Tarifs
+                </h3>
+                <div className="grid grid-cols-2 gap-3">
+                  {(profile.rates.baseRate || profile.rates.oneHour) && (
+                    <div className="col-span-2 text-center p-3 bg-gradient-to-r from-pink-500 to-purple-500 rounded-lg text-white">
+                      <div className="text-lg font-bold">
+                        {profile.rates.baseRate || profile.rates.oneHour} {profile.rates.currency}
+                      </div>
+                      <div className="text-xs opacity-90">À partir de</div>
+                    </div>
+                  )}
+
+                  {profile.rates.fifteenMin && (
+                    <div className="text-center p-3 bg-white border border-gray-200 rounded-lg">
+                      <div className="font-semibold text-gray-900">{profile.rates.fifteenMin} {profile.rates.currency}</div>
+                      <div className="text-xs text-gray-500">15 min</div>
+                    </div>
+                  )}
+                  {profile.rates.thirtyMin && (
+                    <div className="text-center p-3 bg-white border border-gray-200 rounded-lg">
+                      <div className="font-semibold text-gray-900">{profile.rates.thirtyMin} {profile.rates.currency}</div>
+                      <div className="text-xs text-gray-500">30 min</div>
+                    </div>
+                  )}
+                  {profile.rates.oneHour && profile.rates.baseRate && profile.rates.oneHour !== profile.rates.baseRate && (
+                    <div className="text-center p-3 bg-white border border-gray-200 rounded-lg">
+                      <div className="font-semibold text-gray-900">{profile.rates.oneHour} {profile.rates.currency}</div>
+                      <div className="text-xs text-gray-500">1h</div>
+                    </div>
+                  )}
+                  {profile.rates.twoHours && (
+                    <div className="text-center p-3 bg-white border border-gray-200 rounded-lg">
+                      <div className="font-semibold text-gray-900">{profile.rates.twoHours} {profile.rates.currency}</div>
+                      <div className="text-xs text-gray-500">2h</div>
+                    </div>
+                  )}
+                  {profile.rates.halfDay && (
+                    <div className="text-center p-3 bg-white border border-gray-200 rounded-lg">
+                      <div className="font-semibold text-gray-900">{profile.rates.halfDay} {profile.rates.currency}</div>
+                      <div className="text-xs text-gray-500">Demi-journée</div>
+                    </div>
+                  )}
+                  {profile.rates.fullDay && (
+                    <div className="text-center p-3 bg-white border border-gray-200 rounded-lg">
+                      <div className="font-semibold text-gray-900">{profile.rates.fullDay} {profile.rates.currency}</div>
+                      <div className="text-xs text-gray-500">Journée</div>
+                    </div>
+                  )}
+                  {profile.rates.overnight && (
+                    <div className="text-center p-3 bg-white border border-gray-200 rounded-lg">
+                      <div className="font-semibold text-gray-900">{profile.rates.overnight} {profile.rates.currency}</div>
+                      <div className="text-xs text-gray-500">Nuit</div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Langues */}
+              {profile.languages.length > 0 && (
+                <div>
+                  <h3 className="font-semibold text-gray-900 mb-3">Langues parlées</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {profile.languages.map((lang, index) => (
+                      <span
+                        key={index}
+                        className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm"
+                      >
+                        {lang}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Services */}
+              {profile.services.length > 0 && (
+                <div>
+                  <h3 className="font-semibold text-gray-900 mb-3">Services proposés</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {profile.services.map((service, index) => (
+                      <span
+                        key={index}
+                        className="px-3 py-1 bg-pink-100 text-pink-700 rounded-full text-sm"
+                      >
+                        {service}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Clientèle acceptée */}
+              <div>
+                <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                  <Users className="w-4 h-4" />
+                  Clientèle acceptée
                 </h3>
                 <div className="flex flex-wrap gap-2">
-                  {profile.availability.incall && (
-                    <span className="px-4 py-2 bg-green-500/20 text-green-300 rounded-full text-sm flex items-center gap-2">
-                      <Home className="w-4 h-4" /> Je reçois
+                  {profile.clientele.acceptsCouples && (
+                    <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm">
+                      Couples
                     </span>
                   )}
-                  {profile.availability.outcall && (
-                    <span className="px-4 py-2 bg-blue-500/20 text-blue-300 rounded-full text-sm flex items-center gap-2">
-                      <Car className="w-4 h-4" /> Je me déplace
+                  {profile.clientele.acceptsWomen && (
+                    <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm">
+                      Femmes
+                    </span>
+                  )}
+                  {profile.clientele.acceptsHandicapped && (
+                    <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm">
+                      Personnes handicapées
+                    </span>
+                  )}
+                  {profile.clientele.acceptsSeniors && (
+                    <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm">
+                      Personnes âgées
                     </span>
                   )}
                 </div>
               </div>
-            )}
 
-            {/* Langues */}
-            {profile.languages.length > 0 && (
-              <div className="bg-gray-800 rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                  <span>🗣️</span> Langues parlées
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {profile.languages.map((lang, index) => (
-                    <span
-                      key={index}
-                      className="px-3 py-1 bg-blue-500/20 text-blue-300 rounded-full text-sm"
-                    >
-                      {lang}
-                    </span>
-                  ))}
+              {/* Caractéristiques physiques */}
+              <div>
+                <h3 className="font-semibold text-gray-900 mb-3">Caractéristiques</h3>
+                <div className="grid grid-cols-1 gap-2 text-sm">
+                  {profile.physical.height && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Taille</span>
+                      <span className="text-gray-900">{profile.physical.height} cm</span>
+                    </div>
+                  )}
+                  {profile.physical.bodyType && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Silhouette</span>
+                      <span className="text-gray-900">{profile.physical.bodyType}</span>
+                    </div>
+                  )}
+                  {profile.physical.hairColor && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Cheveux</span>
+                      <span className="text-gray-900">{profile.physical.hairColor}</span>
+                    </div>
+                  )}
+                  {profile.physical.eyeColor && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Yeux</span>
+                      <span className="text-gray-900">{profile.physical.eyeColor}</span>
+                    </div>
+                  )}
+                  {profile.physical.ethnicity && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Origine</span>
+                      <span className="text-gray-900">{profile.physical.ethnicity}</span>
+                    </div>
+                  )}
+                  {profile.physical.bustSize && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Tour poitrine</span>
+                      <span className="text-gray-900">{profile.physical.bustSize}</span>
+                    </div>
+                  )}
+                  {profile.physical.breastType && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Type poitrine</span>
+                      <span className="text-gray-900">{profile.physical.breastType}</span>
+                    </div>
+                  )}
+                  {profile.physical.pubicHair && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Pilosité</span>
+                      <span className="text-gray-900">{profile.physical.pubicHair}</span>
+                    </div>
+                  )}
+                  {profile.physical.tattoos && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Tatouages</span>
+                      <span className="text-gray-900">Oui</span>
+                    </div>
+                  )}
+                  {profile.physical.piercings && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Piercings</span>
+                      <span className="text-gray-900">Oui</span>
+                    </div>
+                  )}
+                  {profile.physical.smoker !== undefined && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Fumeur</span>
+                      <span className="text-gray-900">{profile.physical.smoker ? 'Oui' : 'Non'}</span>
+                    </div>
+                  )}
                 </div>
               </div>
-            )}
 
-            {/* Services */}
-            {profile.services.length > 0 && (
-              <div className="bg-gray-800 rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                  <span>💋</span> Services proposés
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {profile.services.map((service, index) => (
-                    <span
-                      key={index}
-                      className="px-3 py-1 bg-pink-500/20 text-pink-300 rounded-full text-sm"
-                    >
-                      {service}
-                    </span>
-                  ))}
+              {/* Méthodes de paiement */}
+              {profile.options.paymentMethods.length > 0 && (
+                <div>
+                  <h3 className="font-semibold text-gray-900 mb-3">Méthodes de paiement</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {profile.options.paymentMethods.map((method, index) => (
+                      <span
+                        key={index}
+                        className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm"
+                      >
+                        {method}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* Clientèle acceptée */}
-            <div className="bg-gray-800 rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                <Users className="w-5 h-5" /> Clientèle acceptée
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                {profile.clientele.acceptsCouples && (
-                  <span className="px-3 py-1 bg-purple-500/20 text-purple-300 rounded-full text-sm">
-                    👫 Couples
-                  </span>
-                )}
-                {profile.clientele.acceptsWomen && (
-                  <span className="px-3 py-1 bg-purple-500/20 text-purple-300 rounded-full text-sm">
-                    👩 Femmes
-                  </span>
-                )}
-                {profile.clientele.acceptsHandicapped && (
-                  <span className="px-3 py-1 bg-purple-500/20 text-purple-300 rounded-full text-sm">
-                    ♿ Personnes handicapées
-                  </span>
-                )}
-                {profile.clientele.acceptsSeniors && (
-                  <span className="px-3 py-1 bg-purple-500/20 text-purple-300 rounded-full text-sm">
-                    👴 Personnes âgées
-                  </span>
-                )}
-              </div>
-            </div>
-
-            {/* Caractéristiques physiques */}
-            <div className="bg-gray-800 rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                <span>👤</span> Caractéristiques physiques
-              </h3>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
-                {profile.physical.height && (
-                  <div>
-                    <span className="text-gray-400">Taille :</span>
-                    <span className="text-white ml-2">{profile.physical.height} cm</span>
+              {/* Devises acceptées */}
+              {profile.options.acceptedCurrencies.length > 0 && (
+                <div>
+                  <h3 className="font-semibold text-gray-900 mb-3">Devises acceptées</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {profile.options.acceptedCurrencies.map((currency, index) => (
+                      <span
+                        key={index}
+                        className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"
+                      >
+                        {currency}
+                      </span>
+                    ))}
                   </div>
-                )}
-                {profile.physical.bodyType && (
-                  <div>
-                    <span className="text-gray-400">Silhouette :</span>
-                    <span className="text-white ml-2">{profile.physical.bodyType}</span>
-                  </div>
-                )}
-                {profile.physical.hairColor && (
-                  <div>
-                    <span className="text-gray-400">Cheveux :</span>
-                    <span className="text-white ml-2">{profile.physical.hairColor}</span>
-                  </div>
-                )}
-                {profile.physical.eyeColor && (
-                  <div>
-                    <span className="text-gray-400">Yeux :</span>
-                    <span className="text-white ml-2">{profile.physical.eyeColor}</span>
-                  </div>
-                )}
-                {profile.physical.ethnicity && (
-                  <div>
-                    <span className="text-gray-400">Origine :</span>
-                    <span className="text-white ml-2">{profile.physical.ethnicity}</span>
-                  </div>
-                )}
-                {profile.physical.bustSize && (
-                  <div>
-                    <span className="text-gray-400">Tour poitrine :</span>
-                    <span className="text-white ml-2">{profile.physical.bustSize}</span>
-                  </div>
-                )}
-                {profile.physical.breastType && (
-                  <div>
-                    <span className="text-gray-400">Type poitrine :</span>
-                    <span className="text-white ml-2">{profile.physical.breastType}</span>
-                  </div>
-                )}
-                {profile.physical.pubicHair && (
-                  <div>
-                    <span className="text-gray-400">Pilosité :</span>
-                    <span className="text-white ml-2">{profile.physical.pubicHair}</span>
-                  </div>
-                )}
-                {profile.physical.tattoos !== undefined && (
-                  <div>
-                    <span className="text-gray-400">Tatouages :</span>
-                    <span className="text-white ml-2">{profile.physical.tattoos ? 'Oui' : 'Non'}</span>
-                  </div>
-                )}
-                {profile.physical.piercings !== undefined && (
-                  <div>
-                    <span className="text-gray-400">Piercings :</span>
-                    <span className="text-white ml-2">{profile.physical.piercings ? 'Oui' : 'Non'}</span>
-                  </div>
-                )}
-                {profile.physical.smoker !== undefined && (
-                  <div>
-                    <span className="text-gray-400">Fumeur :</span>
-                    <span className="text-white ml-2">{profile.physical.smoker ? 'Oui' : 'Non'}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Tarifs */}
-            <div className="bg-gray-800 rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                <span>💰</span> Tarifs
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {/* Tarif "à partir de" - utilise baseRate ou oneHour comme fallback */}
-                {(profile.rates.baseRate || profile.rates.oneHour) && (
-                  <div className="text-center p-4 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg">
-                    <div className="text-2xl font-bold text-white">
-                      {profile.rates.baseRate || profile.rates.oneHour} {profile.rates.currency}
-                    </div>
-                    <div className="text-sm text-blue-100">À partir de</div>
-                  </div>
-                )}
-
-                {/* Tarifs détaillés - seulement les tarifs remplis */}
-                {profile.rates.fifteenMin && (
-                  <div className="text-center p-4 bg-gray-700 rounded-lg">
-                    <div className="text-2xl font-bold text-green-400">
-                      {profile.rates.fifteenMin} {profile.rates.currency}
-                    </div>
-                    <div className="text-sm text-gray-400">15 minutes</div>
-                  </div>
-                )}
-                {profile.rates.thirtyMin && (
-                  <div className="text-center p-4 bg-gray-700 rounded-lg">
-                    <div className="text-2xl font-bold text-green-400">
-                      {profile.rates.thirtyMin} {profile.rates.currency}
-                    </div>
-                    <div className="text-sm text-gray-400">30 minutes</div>
-                  </div>
-                )}
-                {profile.rates.oneHour && profile.rates.baseRate && profile.rates.oneHour !== profile.rates.baseRate && (
-                  <div className="text-center p-4 bg-gray-700 rounded-lg">
-                    <div className="text-2xl font-bold text-green-400">
-                      {profile.rates.oneHour} {profile.rates.currency}
-                    </div>
-                    <div className="text-sm text-gray-400">1 heure</div>
-                  </div>
-                )}
-                {profile.rates.twoHours && (
-                  <div className="text-center p-4 bg-gray-700 rounded-lg">
-                    <div className="text-2xl font-bold text-green-400">
-                      {profile.rates.twoHours} {profile.rates.currency}
-                    </div>
-                    <div className="text-sm text-gray-400">2 heures</div>
-                  </div>
-                )}
-                {profile.rates.halfDay && (
-                  <div className="text-center p-4 bg-gray-700 rounded-lg">
-                    <div className="text-2xl font-bold text-green-400">
-                      {profile.rates.halfDay} {profile.rates.currency}
-                    </div>
-                    <div className="text-sm text-gray-400">Demi-journée</div>
-                  </div>
-                )}
-                {profile.rates.fullDay && (
-                  <div className="text-center p-4 bg-gray-700 rounded-lg">
-                    <div className="text-2xl font-bold text-green-400">
-                      {profile.rates.fullDay} {profile.rates.currency}
-                    </div>
-                    <div className="text-sm text-gray-400">Journée complète</div>
-                  </div>
-                )}
-                {profile.rates.overnight && (
-                  <div className="text-center p-4 bg-gray-700 rounded-lg">
-                    <div className="text-2xl font-bold text-green-400">
-                      {profile.rates.overnight} {profile.rates.currency}
-                    </div>
-                    <div className="text-sm text-gray-400">Nuit complète</div>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Méthodes de paiement */}
-            {profile.options.paymentMethods.length > 0 && (
-              <div className="bg-gray-800 rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                  <CreditCard className="w-5 h-5" /> Méthodes de paiement
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {profile.options.paymentMethods.map((method, index) => (
-                    <span
-                      key={index}
-                      className="px-3 py-1 bg-green-500/20 text-green-300 rounded-full text-sm"
-                    >
-                      {method}
-                    </span>
-                  ))}
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* Devises acceptées */}
-            {profile.options.acceptedCurrencies.length > 0 && (
-              <div className="bg-gray-800 rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                  <span>💱</span> Devises acceptées
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {profile.options.acceptedCurrencies.map((currency, index) => (
-                    <span
-                      key={index}
-                      className="px-3 py-1 bg-blue-500/20 text-blue-300 rounded-full text-sm"
-                    >
-                      {currency}
-                    </span>
-                  ))}
+              {/* Équipements du lieu */}
+              {profile.options.amenities.length > 0 && (
+                <div>
+                  <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                    <Settings className="w-4 h-4" />
+                    Lieu & Options
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {profile.options.amenities.map((amenity, index) => (
+                      <span
+                        key={index}
+                        className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm"
+                      >
+                        {amenity.replace(/^(opt:|srv:)/, '')}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* Équipements du lieu */}
-            {profile.options.amenities.length > 0 && (
-              <div className="bg-gray-800 rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                  <Settings className="w-5 h-5" /> Lieu & Options
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {profile.options.amenities.map((amenity, index) => (
-                    <span
-                      key={index}
-                      className="px-3 py-1 bg-orange-500/20 text-orange-300 rounded-full text-sm"
-                    >
-                      {amenity}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Contact Actions */}
-            <div className="bg-gradient-to-r from-pink-500/10 to-purple-500/10 rounded-lg p-6 border border-pink-500/20">
-              <div className="text-center">
-                <h3 className="text-lg font-semibold text-white mb-4">Contactez {profile.stageName}</h3>
-                <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                  <button className="px-6 py-3 bg-pink-600 hover:bg-pink-700 rounded-lg text-white font-medium transition-colors flex items-center justify-center gap-2">
-                    <MessageCircle className="w-5 h-5" />
-                    Envoyer un message
+              {/* Actions de contact */}
+              <div className="sticky bottom-0 bg-white border-t border-gray-200 -mx-6 px-6 py-4 mt-8">
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <button className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-pink-600 hover:bg-pink-700 rounded-lg text-white font-medium transition-colors">
+                    <MessageCircle className="w-4 h-4" />
+                    <span>Message</span>
                   </button>
-                  <button className="px-6 py-3 bg-green-600 hover:bg-green-700 rounded-lg text-white font-medium transition-colors flex items-center justify-center gap-2">
-                    <Heart className="w-5 h-5" />
-                    Ajouter aux favoris
+                  <button className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-700 font-medium transition-colors">
+                    <Heart className="w-4 h-4" />
+                    <span>Favoris</span>
                   </button>
                 </div>
               </div>
-            </div>
 
+            </div>
           </div>
         </div>
       </div>
