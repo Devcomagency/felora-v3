@@ -42,7 +42,6 @@ const nextConfig = {
   },
 
   // Désactive les expérimentations et la surcharge Webpack pour stabiliser le build prod
-  experimental: undefined,
   webpack: undefined,
 
   // Redirects: Canonical route consolidation
@@ -116,11 +115,8 @@ const nextConfig = {
     ]
   },
 
-  // Configuration des limites de requête
-  experimental: {
-    // Force la limite à 100MB pour les uploads
-    isrMemoryCacheSize: 0,
-  },
+  // Configuration des limites de requête (obsolète dans Next.js 15+)
+  // isrMemoryCacheSize supprimé car non supporté
 
   // Conservé depuis .js (si utilisé par getConfig côté serveur)
   serverRuntimeConfig: {
