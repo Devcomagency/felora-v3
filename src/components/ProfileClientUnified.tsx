@@ -103,62 +103,55 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
           <div className="overflow-y-auto max-h-[calc(95vh-100px)]">
             <div className="p-6 space-y-6">
 
-              {/* Description */}
+              {/* Description avec statut intégré */}
               {profile.description && (
                 <div className="glass-card">
-                  <div className="p-4 border-b border-gray-700/50">
-                    <h3 className="text-lg font-semibold text-white">À propos</h3>
-                  </div>
-                  <div className="p-4">
+                  <div className="p-5">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className={`w-3 h-3 rounded-full ${profile.availability.availableNow ? 'bg-green-500' : 'bg-red-500'} animate-pulse`}></div>
+                      <span className="text-sm font-medium text-white">
+                        {profile.availability.availableNow ? 'Disponible maintenant' : 'Actuellement occupée'}
+                      </span>
+                      {profile.availability.weekendAvailable && (
+                        <span className="text-xs px-2 py-1 bg-purple-500/20 text-purple-300 rounded-full border border-purple-500/30">
+                          Week-end OK
+                        </span>
+                      )}
+                    </div>
                     <p className="text-gray-300 leading-relaxed">{profile.description}</p>
                   </div>
                 </div>
               )}
 
-              {/* Quick Stats */}
-              <div className="glass-card">
-                <div className="p-4 border-b border-gray-700/50">
-                  <h3 className="text-lg font-semibold text-white">Aperçu</h3>
-                </div>
-                <div className="p-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="text-center p-3 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-lg border border-blue-500/20">
-                      <div className={`w-4 h-4 rounded-full mx-auto mb-2 ${profile.availability.availableNow ? 'bg-green-500' : 'bg-red-500'} animate-pulse`}></div>
-                      <div className="text-xs text-gray-300">
-                        {profile.availability.availableNow ? 'Disponible' : 'Occupée'}
-                      </div>
-                    </div>
-                    <div className="text-center p-3 bg-gradient-to-r from-purple-500/10 to-pink-500/10 rounded-lg border border-purple-500/20">
-                      <Clock className={`w-4 h-4 mx-auto mb-2 ${profile.availability.weekendAvailable ? 'text-green-400' : 'text-gray-400'}`} />
-                      <div className="text-xs text-gray-300">
-                        {profile.availability.weekendAvailable ? 'Week-end OK' : 'Semaine uniquement'}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Mode de service */}
+              {/* Mode de service - Design moderne */}
               {(profile.availability.incall || profile.availability.outcall) && (
                 <div className="glass-card">
-                  <div className="p-4 border-b border-gray-700/50">
-                    <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-                      <MapPin className="w-5 h-5" />
-                      Mode de service
+                  <div className="p-5">
+                    <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                      <MapPin className="w-5 h-5 text-pink-400" />
+                      Prestations
                     </h3>
-                  </div>
-                  <div className="p-4">
-                    <div className="flex flex-wrap gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {profile.availability.incall && (
-                        <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-500/20 to-emerald-500/20 text-green-300 rounded-full border border-green-500/30">
-                          <Home className="w-4 h-4" />
-                          <span>Je reçois</span>
+                        <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-green-500/10 to-emerald-500/10 rounded-xl border border-green-500/20 hover:border-green-500/40 transition-all">
+                          <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
+                            <Home className="w-5 h-5 text-green-400" />
+                          </div>
+                          <div>
+                            <div className="text-white font-medium">Je reçois</div>
+                            <div className="text-xs text-green-300">Chez moi</div>
+                          </div>
                         </div>
                       )}
                       {profile.availability.outcall && (
-                        <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 text-blue-300 rounded-full border border-blue-500/30">
-                          <Car className="w-4 h-4" />
-                          <span>Je me déplace</span>
+                        <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 rounded-xl border border-blue-500/20 hover:border-blue-500/40 transition-all">
+                          <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
+                            <Car className="w-5 h-5 text-blue-400" />
+                          </div>
+                          <div>
+                            <div className="text-white font-medium">Je me déplace</div>
+                            <div className="text-xs text-blue-300">Chez vous / Hôtel</div>
+                          </div>
                         </div>
                       )}
                     </div>
@@ -166,95 +159,99 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
                 </div>
               )}
 
-              {/* Tarifs */}
+              {/* Tarifs - Design premium */}
               <div className="glass-card">
-                <div className="p-4 border-b border-gray-700/50">
-                  <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-                    <CreditCard className="w-5 h-5" />
+                <div className="p-5">
+                  <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                    <CreditCard className="w-5 h-5 text-pink-400" />
                     Tarifs
                   </h3>
-                </div>
-                <div className="p-4">
-                  <div className="space-y-3">
-                    {/* Tarif principal */}
-                    {(profile.rates.baseRate || profile.rates.oneHour) && (
-                      <div className="text-center p-4 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 rounded-lg">
-                        <div className="text-2xl font-bold text-white">
+
+                  {/* Tarif principal en vedette */}
+                  {(profile.rates.baseRate || profile.rates.oneHour) && (
+                    <div className="relative mb-4 p-5 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 rounded-xl text-center overflow-hidden">
+                      <div className="absolute inset-0 bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-blue-500/10 animate-pulse"></div>
+                      <div className="relative">
+                        <div className="text-3xl font-bold text-white mb-1">
                           {profile.rates.baseRate || profile.rates.oneHour} {profile.rates.currency}
                         </div>
-                        <div className="text-sm text-white/80">À partir de</div>
+                        <div className="text-sm text-white/90 font-medium">À partir de</div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Grille des tarifs - Design moderne */}
+                  <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+                    {profile.rates.fifteenMin && (
+                      <div className="p-4 bg-gray-800/30 hover:bg-gray-800/50 border border-gray-700/30 hover:border-purple-500/50 rounded-xl transition-all group">
+                        <div className="text-lg font-bold text-white group-hover:text-purple-300 transition-colors">
+                          {profile.rates.fifteenMin} {profile.rates.currency}
+                        </div>
+                        <div className="text-xs text-gray-400 mt-1">15 minutes</div>
                       </div>
                     )}
-
-                    {/* Grille des tarifs détaillés */}
-                    <div className="grid grid-cols-2 gap-3">
-                      {profile.rates.fifteenMin && (
-                        <div className="text-center p-3 bg-gray-800/50 border border-gray-700/50 rounded-lg">
-                          <div className="font-semibold text-white">{profile.rates.fifteenMin} {profile.rates.currency}</div>
-                          <div className="text-xs text-gray-400">15 min</div>
+                    {profile.rates.thirtyMin && (
+                      <div className="p-4 bg-gray-800/30 hover:bg-gray-800/50 border border-gray-700/30 hover:border-purple-500/50 rounded-xl transition-all group">
+                        <div className="text-lg font-bold text-white group-hover:text-purple-300 transition-colors">
+                          {profile.rates.thirtyMin} {profile.rates.currency}
                         </div>
-                      )}
-                      {profile.rates.thirtyMin && (
-                        <div className="text-center p-3 bg-gray-800/50 border border-gray-700/50 rounded-lg">
-                          <div className="font-semibold text-white">{profile.rates.thirtyMin} {profile.rates.currency}</div>
-                          <div className="text-xs text-gray-400">30 min</div>
+                        <div className="text-xs text-gray-400 mt-1">30 minutes</div>
+                      </div>
+                    )}
+                    {profile.rates.oneHour && profile.rates.baseRate && profile.rates.oneHour !== profile.rates.baseRate && (
+                      <div className="p-4 bg-gray-800/30 hover:bg-gray-800/50 border border-gray-700/30 hover:border-purple-500/50 rounded-xl transition-all group">
+                        <div className="text-lg font-bold text-white group-hover:text-purple-300 transition-colors">
+                          {profile.rates.oneHour} {profile.rates.currency}
                         </div>
-                      )}
-                      {profile.rates.oneHour && profile.rates.baseRate && profile.rates.oneHour !== profile.rates.baseRate && (
-                        <div className="text-center p-3 bg-gray-800/50 border border-gray-700/50 rounded-lg">
-                          <div className="font-semibold text-white">{profile.rates.oneHour} {profile.rates.currency}</div>
-                          <div className="text-xs text-gray-400">1h</div>
+                        <div className="text-xs text-gray-400 mt-1">1 heure</div>
+                      </div>
+                    )}
+                    {profile.rates.twoHours && (
+                      <div className="p-4 bg-gray-800/30 hover:bg-gray-800/50 border border-gray-700/30 hover:border-purple-500/50 rounded-xl transition-all group">
+                        <div className="text-lg font-bold text-white group-hover:text-purple-300 transition-colors">
+                          {profile.rates.twoHours} {profile.rates.currency}
                         </div>
-                      )}
-                      {profile.rates.twoHours && (
-                        <div className="text-center p-3 bg-gray-800/50 border border-gray-700/50 rounded-lg">
-                          <div className="font-semibold text-white">{profile.rates.twoHours} {profile.rates.currency}</div>
-                          <div className="text-xs text-gray-400">2h</div>
+                        <div className="text-xs text-gray-400 mt-1">2 heures</div>
+                      </div>
+                    )}
+                    {profile.rates.halfDay && (
+                      <div className="p-4 bg-gray-800/30 hover:bg-gray-800/50 border border-gray-700/30 hover:border-purple-500/50 rounded-xl transition-all group">
+                        <div className="text-lg font-bold text-white group-hover:text-purple-300 transition-colors">
+                          {profile.rates.halfDay} {profile.rates.currency}
                         </div>
-                      )}
-                      {profile.rates.halfDay && (
-                        <div className="text-center p-3 bg-gray-800/50 border border-gray-700/50 rounded-lg">
-                          <div className="font-semibold text-white">{profile.rates.halfDay} {profile.rates.currency}</div>
-                          <div className="text-xs text-gray-400">Demi-journée</div>
+                        <div className="text-xs text-gray-400 mt-1">Demi-journée</div>
+                      </div>
+                    )}
+                    {profile.rates.fullDay && (
+                      <div className="p-4 bg-gray-800/30 hover:bg-gray-800/50 border border-gray-700/30 hover:border-purple-500/50 rounded-xl transition-all group">
+                        <div className="text-lg font-bold text-white group-hover:text-purple-300 transition-colors">
+                          {profile.rates.fullDay} {profile.rates.currency}
                         </div>
-                      )}
-                      {profile.rates.fullDay && (
-                        <div className="text-center p-3 bg-gray-800/50 border border-gray-700/50 rounded-lg">
-                          <div className="font-semibold text-white">{profile.rates.fullDay} {profile.rates.currency}</div>
-                          <div className="text-xs text-gray-400">Journée</div>
+                        <div className="text-xs text-gray-400 mt-1">Journée</div>
+                      </div>
+                    )}
+                    {profile.rates.overnight && (
+                      <div className="p-4 bg-gray-800/30 hover:bg-gray-800/50 border border-gray-700/30 hover:border-purple-500/50 rounded-xl transition-all group">
+                        <div className="text-lg font-bold text-white group-hover:text-purple-300 transition-colors">
+                          {profile.rates.overnight} {profile.rates.currency}
                         </div>
-                      )}
-                      {profile.rates.overnight && (
-                        <div className="text-center p-3 bg-gray-800/50 border border-gray-700/50 rounded-lg">
-                          <div className="font-semibold text-white">{profile.rates.overnight} {profile.rates.currency}</div>
-                          <div className="text-xs text-gray-400">Nuit</div>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Info note */}
-                    <div className="mt-4 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-                      <p className="text-blue-300 text-sm flex items-start gap-2">
-                        <Star className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                        Tarifs indicatifs, contactez pour un devis précis
-                      </p>
-                    </div>
+                        <div className="text-xs text-gray-400 mt-1">Nuit entière</div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
 
-              {/* Langues */}
+              {/* Langues parlées */}
               {profile.languages.length > 0 && (
                 <div className="glass-card">
-                  <div className="p-4 border-b border-gray-700/50">
-                    <h3 className="text-lg font-semibold text-white">Langues parlées</h3>
-                  </div>
-                  <div className="p-4">
+                  <div className="p-5">
+                    <h3 className="text-lg font-semibold text-white mb-4">Langues parlées</h3>
                     <div className="flex flex-wrap gap-2">
                       {profile.languages.map((lang, index) => (
                         <span
                           key={index}
-                          className="px-3 py-1 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 text-blue-300 rounded-full text-sm border border-blue-500/30"
+                          className="px-4 py-2 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 text-blue-300 rounded-full text-sm border border-blue-500/30 hover:border-blue-400/50 transition-all font-medium"
                         >
                           {lang}
                         </span>
@@ -264,220 +261,207 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
                 </div>
               )}
 
-              {/* Services */}
-              {profile.services.length > 0 && (
-                <div className="glass-card">
-                  <div className="p-4 border-b border-gray-700/50">
-                    <h3 className="text-lg font-semibold text-white">Services proposés</h3>
-                  </div>
-                  <div className="p-4">
-                    <div className="flex flex-wrap gap-2">
-                      {profile.services.map((service, index) => (
-                        <span
-                          key={index}
-                          className="px-3 py-1 bg-gradient-to-r from-pink-500/20 to-purple-500/20 text-pink-300 rounded-full text-sm border border-pink-500/30"
-                        >
-                          {service}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-
               {/* Clientèle acceptée */}
               <div className="glass-card">
-                <div className="p-4 border-b border-gray-700/50">
-                  <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-                    <Users className="w-5 h-5" />
+                <div className="p-5">
+                  <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                    <Users className="w-5 h-5 text-pink-400" />
                     Clientèle acceptée
                   </h3>
-                </div>
-                <div className="p-4">
-                  <div className="flex flex-wrap gap-2">
+                  <div className="grid grid-cols-2 gap-3">
                     {profile.clientele.acceptsCouples && (
-                      <span className="px-3 py-1 bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-300 rounded-full text-sm border border-purple-500/30">
-                        Couples
-                      </span>
+                      <div className="flex items-center gap-2 p-3 bg-gradient-to-r from-purple-500/10 to-pink-500/10 rounded-lg border border-purple-500/20">
+                        <span className="w-2 h-2 bg-purple-400 rounded-full"></span>
+                        <span className="text-purple-300 text-sm font-medium">Couples</span>
+                      </div>
                     )}
                     {profile.clientele.acceptsWomen && (
-                      <span className="px-3 py-1 bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-300 rounded-full text-sm border border-purple-500/30">
-                        Femmes
-                      </span>
+                      <div className="flex items-center gap-2 p-3 bg-gradient-to-r from-purple-500/10 to-pink-500/10 rounded-lg border border-purple-500/20">
+                        <span className="w-2 h-2 bg-purple-400 rounded-full"></span>
+                        <span className="text-purple-300 text-sm font-medium">Femmes</span>
+                      </div>
                     )}
                     {profile.clientele.acceptsHandicapped && (
-                      <span className="px-3 py-1 bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-300 rounded-full text-sm border border-purple-500/30">
-                        Personnes handicapées
-                      </span>
+                      <div className="flex items-center gap-2 p-3 bg-gradient-to-r from-purple-500/10 to-pink-500/10 rounded-lg border border-purple-500/20">
+                        <span className="w-2 h-2 bg-purple-400 rounded-full"></span>
+                        <span className="text-purple-300 text-sm font-medium">Personnes handicapées</span>
+                      </div>
                     )}
                     {profile.clientele.acceptsSeniors && (
-                      <span className="px-3 py-1 bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-300 rounded-full text-sm border border-purple-500/30">
-                        Personnes âgées
-                      </span>
+                      <div className="flex items-center gap-2 p-3 bg-gradient-to-r from-purple-500/10 to-pink-500/10 rounded-lg border border-purple-500/20">
+                        <span className="w-2 h-2 bg-purple-400 rounded-full"></span>
+                        <span className="text-purple-300 text-sm font-medium">Personnes âgées</span>
+                      </div>
                     )}
                   </div>
                 </div>
               </div>
 
-              {/* Caractéristiques physiques */}
+              {/* Caractéristiques physiques - Compact et moderne */}
               <div className="glass-card">
-                <div className="p-4 border-b border-gray-700/50">
-                  <h3 className="text-lg font-semibold text-white">Caractéristiques physiques</h3>
-                </div>
-                <div className="p-4">
-                  <div className="grid grid-cols-1 gap-3 text-sm">
+                <div className="p-5">
+                  <h3 className="text-lg font-semibold text-white mb-4">Profil physique</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {profile.physical.height && (
-                      <div className="flex justify-between py-2 border-b border-gray-700/30 last:border-b-0">
-                        <span className="text-gray-400">Taille</span>
-                        <span className="text-white font-medium">{profile.physical.height} cm</span>
+                      <div className="p-3 bg-gray-800/30 rounded-lg">
+                        <div className="text-xs text-gray-400 mb-1">Taille</div>
+                        <div className="text-white font-medium">{profile.physical.height} cm</div>
                       </div>
                     )}
                     {profile.physical.bodyType && (
-                      <div className="flex justify-between py-2 border-b border-gray-700/30 last:border-b-0">
-                        <span className="text-gray-400">Silhouette</span>
-                        <span className="text-white font-medium">{profile.physical.bodyType}</span>
+                      <div className="p-3 bg-gray-800/30 rounded-lg">
+                        <div className="text-xs text-gray-400 mb-1">Silhouette</div>
+                        <div className="text-white font-medium">{profile.physical.bodyType}</div>
                       </div>
                     )}
                     {profile.physical.hairColor && (
-                      <div className="flex justify-between py-2 border-b border-gray-700/30 last:border-b-0">
-                        <span className="text-gray-400">Cheveux</span>
-                        <span className="text-white font-medium">{profile.physical.hairColor}</span>
+                      <div className="p-3 bg-gray-800/30 rounded-lg">
+                        <div className="text-xs text-gray-400 mb-1">Cheveux</div>
+                        <div className="text-white font-medium">{profile.physical.hairColor}</div>
                       </div>
                     )}
                     {profile.physical.eyeColor && (
-                      <div className="flex justify-between py-2 border-b border-gray-700/30 last:border-b-0">
-                        <span className="text-gray-400">Yeux</span>
-                        <span className="text-white font-medium">{profile.physical.eyeColor}</span>
+                      <div className="p-3 bg-gray-800/30 rounded-lg">
+                        <div className="text-xs text-gray-400 mb-1">Yeux</div>
+                        <div className="text-white font-medium">{profile.physical.eyeColor}</div>
                       </div>
                     )}
                     {profile.physical.ethnicity && (
-                      <div className="flex justify-between py-2 border-b border-gray-700/30 last:border-b-0">
-                        <span className="text-gray-400">Origine</span>
-                        <span className="text-white font-medium">{profile.physical.ethnicity}</span>
+                      <div className="p-3 bg-gray-800/30 rounded-lg">
+                        <div className="text-xs text-gray-400 mb-1">Origine</div>
+                        <div className="text-white font-medium">{profile.physical.ethnicity}</div>
                       </div>
                     )}
                     {profile.physical.bustSize && (
-                      <div className="flex justify-between py-2 border-b border-gray-700/30 last:border-b-0">
-                        <span className="text-gray-400">Tour poitrine</span>
-                        <span className="text-white font-medium">{profile.physical.bustSize}</span>
+                      <div className="p-3 bg-gray-800/30 rounded-lg">
+                        <div className="text-xs text-gray-400 mb-1">Tour poitrine</div>
+                        <div className="text-white font-medium">{profile.physical.bustSize}</div>
                       </div>
                     )}
                     {profile.physical.breastType && (
-                      <div className="flex justify-between py-2 border-b border-gray-700/30 last:border-b-0">
-                        <span className="text-gray-400">Type poitrine</span>
-                        <span className="text-white font-medium">{profile.physical.breastType}</span>
+                      <div className="p-3 bg-gray-800/30 rounded-lg">
+                        <div className="text-xs text-gray-400 mb-1">Type poitrine</div>
+                        <div className="text-white font-medium">{profile.physical.breastType}</div>
                       </div>
                     )}
                     {profile.physical.pubicHair && (
-                      <div className="flex justify-between py-2 border-b border-gray-700/30 last:border-b-0">
-                        <span className="text-gray-400">Pilosité</span>
-                        <span className="text-white font-medium">{profile.physical.pubicHair}</span>
+                      <div className="p-3 bg-gray-800/30 rounded-lg">
+                        <div className="text-xs text-gray-400 mb-1">Pilosité</div>
+                        <div className="text-white font-medium">{profile.physical.pubicHair}</div>
                       </div>
                     )}
-                    {profile.physical.tattoos && (
-                      <div className="flex justify-between py-2 border-b border-gray-700/30 last:border-b-0">
-                        <span className="text-gray-400">Tatouages</span>
-                        <span className="text-white font-medium">Oui</span>
-                      </div>
-                    )}
-                    {profile.physical.piercings && (
-                      <div className="flex justify-between py-2 border-b border-gray-700/30 last:border-b-0">
-                        <span className="text-gray-400">Piercings</span>
-                        <span className="text-white font-medium">Oui</span>
-                      </div>
-                    )}
-                    {profile.physical.smoker !== undefined && (
-                      <div className="flex justify-between py-2 border-b border-gray-700/30 last:border-b-0">
-                        <span className="text-gray-400">Fumeur</span>
-                        <span className="text-white font-medium">{profile.physical.smoker ? 'Oui' : 'Non'}</span>
+                    {(profile.physical.tattoos || profile.physical.piercings || profile.physical.smoker !== undefined) && (
+                      <div className="p-3 bg-gray-800/30 rounded-lg">
+                        <div className="text-xs text-gray-400 mb-1">Autres</div>
+                        <div className="flex flex-wrap gap-1">
+                          {profile.physical.tattoos && (
+                            <span className="text-xs px-2 py-1 bg-purple-500/20 text-purple-300 rounded">
+                              Tatouages
+                            </span>
+                          )}
+                          {profile.physical.piercings && (
+                            <span className="text-xs px-2 py-1 bg-purple-500/20 text-purple-300 rounded">
+                              Piercings
+                            </span>
+                          )}
+                          {profile.physical.smoker !== undefined && (
+                            <span className={`text-xs px-2 py-1 rounded ${
+                              profile.physical.smoker ? 'bg-red-500/20 text-red-300' : 'bg-green-500/20 text-green-300'
+                            }`}>
+                              {profile.physical.smoker ? 'Fumeur' : 'Non-fumeur'}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     )}
                   </div>
                 </div>
               </div>
 
-              {/* Méthodes de paiement */}
-              {profile.options.paymentMethods.length > 0 && (
+              {/* Options et paiements - Design groupé */}
+              {(profile.options.paymentMethods.length > 0 || profile.options.acceptedCurrencies.length > 0 || profile.options.amenities.length > 0) && (
                 <div className="glass-card">
-                  <div className="p-4 border-b border-gray-700/50">
-                    <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-                      <CreditCard className="w-5 h-5" />
-                      Méthodes de paiement
+                  <div className="p-5">
+                    <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                      <Settings className="w-5 h-5 text-pink-400" />
+                      Options & Paiements
                     </h3>
-                  </div>
-                  <div className="p-4">
-                    <div className="flex flex-wrap gap-2">
-                      {profile.options.paymentMethods.map((method, index) => (
-                        <span
-                          key={index}
-                          className="px-3 py-1 bg-gradient-to-r from-green-500/20 to-emerald-500/20 text-green-300 rounded-full text-sm border border-green-500/30"
-                        >
-                          {method}
-                        </span>
-                      ))}
+
+                    <div className="space-y-4">
+                      {/* Méthodes de paiement */}
+                      {profile.options.paymentMethods.length > 0 && (
+                        <div>
+                          <h4 className="text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
+                            <CreditCard className="w-4 h-4" />
+                            Paiements acceptés
+                          </h4>
+                          <div className="flex flex-wrap gap-2">
+                            {profile.options.paymentMethods.map((method, index) => (
+                              <span
+                                key={index}
+                                className="px-3 py-2 bg-gradient-to-r from-green-500/20 to-emerald-500/20 text-green-300 rounded-lg text-sm border border-green-500/30 font-medium"
+                              >
+                                {method}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Devises acceptées */}
+                      {profile.options.acceptedCurrencies.length > 0 && (
+                        <div>
+                          <h4 className="text-sm font-medium text-gray-300 mb-2">Devises</h4>
+                          <div className="flex flex-wrap gap-2">
+                            {profile.options.acceptedCurrencies.map((currency, index) => (
+                              <span
+                                key={index}
+                                className="px-3 py-2 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 text-yellow-300 rounded-lg text-sm border border-yellow-500/30 font-medium"
+                              >
+                                {currency}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Équipements et options */}
+                      {profile.options.amenities.length > 0 && (
+                        <div>
+                          <h4 className="text-sm font-medium text-gray-300 mb-2">Lieu & Équipements</h4>
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                            {profile.options.amenities.map((amenity, index) => (
+                              <div
+                                key={index}
+                                className="flex items-center gap-2 p-2 bg-orange-500/10 rounded-lg border border-orange-500/20"
+                              >
+                                <span className="w-2 h-2 bg-orange-400 rounded-full flex-shrink-0"></span>
+                                <span className="text-orange-300 text-xs font-medium truncate">
+                                  {amenity.replace(/^(opt:|srv:)/, '')}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* Devises acceptées */}
-              {profile.options.acceptedCurrencies.length > 0 && (
-                <div className="glass-card">
-                  <div className="p-4 border-b border-gray-700/50">
-                    <h3 className="text-lg font-semibold text-white">Devises acceptées</h3>
-                  </div>
-                  <div className="p-4">
-                    <div className="flex flex-wrap gap-2">
-                      {profile.options.acceptedCurrencies.map((currency, index) => (
-                        <span
-                          key={index}
-                          className="px-3 py-1 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 text-yellow-300 rounded-full text-sm border border-yellow-500/30"
-                        >
-                          {currency}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Équipements du lieu */}
-              {profile.options.amenities.length > 0 && (
-                <div className="glass-card">
-                  <div className="p-4 border-b border-gray-700/50">
-                    <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-                      <Settings className="w-5 h-5" />
-                      Lieu & Options
-                    </h3>
-                  </div>
-                  <div className="p-4">
-                    <div className="flex flex-wrap gap-2">
-                      {profile.options.amenities.map((amenity, index) => (
-                        <span
-                          key={index}
-                          className="px-3 py-1 bg-gradient-to-r from-orange-500/20 to-red-500/20 text-orange-300 rounded-full text-sm border border-orange-500/30"
-                        >
-                          {amenity.replace(/^(opt:|srv:)/, '')}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Actions de contact - Style Felora */}
-              <div className="glass-card">
+              {/* Actions de contact - Premium CTA */}
+              <div className="glass-card border-gradient-to-r from-pink-500/30 via-purple-500/30 to-blue-500/30">
                 <div className="p-6">
-                  <div className="text-center mb-4">
-                    <h3 className="text-xl font-bold text-white mb-2">Contactez {profile.stageName}</h3>
-                    <p className="text-gray-300 text-sm">Démarrez une conversation maintenant</p>
+                  <div className="text-center mb-6">
+                    <h3 className="text-2xl font-bold text-white mb-2">Contactez {profile.stageName}</h3>
+                    <p className="text-gray-300">Réservez votre moment priviligié</p>
                   </div>
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    <button className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 hover:from-pink-600 hover:via-purple-600 hover:to-blue-600 rounded-xl text-white font-semibold transition-all duration-300 transform hover:scale-105">
+                  <div className="space-y-3">
+                    <button className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 hover:from-pink-600 hover:via-purple-600 hover:to-blue-600 rounded-xl text-white font-semibold transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-xl">
                       <MessageCircle className="w-5 h-5" />
                       <span>Envoyer un message</span>
                     </button>
-                    <button className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-gray-800/50 hover:bg-gray-700/50 rounded-xl text-gray-300 font-semibold transition-all duration-300 border border-gray-600/50 hover:border-gray-500/50">
+                    <button className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-gray-800/30 hover:bg-gray-700/50 rounded-xl text-gray-300 hover:text-white font-semibold transition-all duration-300 border border-gray-600/30 hover:border-pink-500/50">
                       <Heart className="w-5 h-5" />
                       <span>Ajouter aux favoris</span>
                     </button>

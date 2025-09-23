@@ -262,37 +262,39 @@ function categorizeServicesForRead(services: string[]): {
 } {
   const result = { category: null as string | null, cleanedServices: [] as string[] }
 
-  // Définition des catégories principales
-  const mainCategories = [
-    'escort', 'masseuse_erotique', 'dominatrice_bdsm', 'transsexuel',
-    'masseuse', 'dominatrice', 'BDSM', 'massage'
-  ]
+  // Définition des catégories principales avec variantes tirets/underscores
+  const categoryMap = new Map([
+    // Escort
+    ['escort', 'escort'],
+    // Masseuse érotique
+    ['masseuse', 'masseuse_erotique'],
+    ['masseuse_erotique', 'masseuse_erotique'],
+    ['masseuse-erotique', 'masseuse_erotique'],
+    ['massage', 'masseuse_erotique'],
+    ['massage_erotique', 'masseuse_erotique'],
+    ['massage-erotique', 'masseuse_erotique'],
+    // Dominatrice BDSM
+    ['dominatrice', 'dominatrice_bdsm'],
+    ['dominatrice_bdsm', 'dominatrice_bdsm'],
+    ['dominatrice-bdsm', 'dominatrice_bdsm'],
+    ['bdsm', 'dominatrice_bdsm'],
+    ['mistress', 'dominatrice_bdsm'],
+    // Transsexuel
+    ['transsexuel', 'transsexuel'],
+    ['trans', 'transsexuel'],
+    ['transgender', 'transsexuel']
+  ])
 
   services.forEach(service => {
     // Nettoyer le service (enlever préfixes srv:, opt:)
-    let cleanService = service.replace(/^(srv:|opt:)/, '').trim()
+    let cleanService = service.replace(/^(srv:|opt:)/, '').trim().toLowerCase()
 
-    // D'abord vérifier si c'est une catégorie principale
-    if (mainCategories.includes(cleanService)) {
-      // Si c'est une catégorie principale, l'assigner
-      if (cleanService === 'masseuse' || cleanService === 'massage') {
-        result.category = 'masseuse_erotique'
-      } else if (cleanService === 'dominatrice' || cleanService === 'BDSM') {
-        result.category = 'dominatrice_bdsm'
-      } else if (cleanService === 'masseuse_erotique') {
-        result.category = 'masseuse_erotique'
-      } else if (cleanService === 'dominatrice_bdsm') {
-        result.category = 'dominatrice_bdsm'
-      } else if (cleanService === 'transsexuel') {
-        result.category = 'transsexuel'
-      } else if (cleanService === 'escort') {
-        result.category = 'escort'
-      } else {
-        result.category = cleanService
-      }
+    // Vérifier si c'est une catégorie
+    if (categoryMap.has(cleanService)) {
+      result.category = categoryMap.get(cleanService)!
     } else {
       // Sinon, c'est un vrai service
-      result.cleanedServices.push(cleanService)
+      result.cleanedServices.push(service.replace(/^(srv:|opt:)/, '').trim())
     }
   })
 
