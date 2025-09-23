@@ -370,47 +370,20 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
             return raw.split(',').map((x:string)=>x.trim()).filter(Boolean)
           } catch { return ['CHF'] } })(),
           specialties: (()=>{ try {
-            // Charger les services détaillés depuis p.services ET les équipements depuis p.venueOptions
-            const servicesRaw = String(p.services||'')
+            // Charger UNIQUEMENT les équipements depuis venueOptions pour éviter doublons
             const venueRaw = String(p.venueOptions||'')
+            if (!venueRaw) return []
 
-            let allSpecialties = []
-
-            // 1. Extraire les services détaillés (avec préfixes srv:, opt:) depuis services
-            if (servicesRaw) {
-              let servicesArray: string[] = []
-              if (servicesRaw.trim().startsWith('[')) {
-                const S = JSON.parse(servicesRaw)
-                servicesArray = Array.isArray(S) ? S : []
-              } else {
-                servicesArray = servicesRaw.split(',').map((x:string)=>x.trim()).filter(Boolean)
-              }
-
-              // Garder seulement les services avec préfixes (pas les catégories)
-              const mainCategories = ['escort', 'masseuse_erotique', 'dominatrice_bdsm', 'transsexuel', 'masseuse', 'dominatrice', 'BDSM', 'massage']
-              const detailedServices = servicesArray.filter(service => {
-                const cleanService = service.replace(/^(srv:|opt:)/, '').trim()
-                return !mainCategories.includes(cleanService) && (service.startsWith('srv:') || service.startsWith('opt:'))
-              })
-              allSpecialties.push(...detailedServices)
+            let venueArray: string[] = []
+            if (venueRaw.trim().startsWith('[')) {
+              const V = JSON.parse(venueRaw)
+              venueArray = Array.isArray(V) ? V : []
+            } else {
+              venueArray = venueRaw.split(',').map((x:string)=>x.trim()).filter(Boolean)
             }
 
-            // 2. Ajouter les équipements depuis venueOptions avec préfixe opt:
-            if (venueRaw) {
-              let venueArray: string[] = []
-              if (venueRaw.trim().startsWith('[')) {
-                const V = JSON.parse(venueRaw)
-                venueArray = Array.isArray(V) ? V : []
-              } else {
-                venueArray = venueRaw.split(',').map((x:string)=>x.trim()).filter(Boolean)
-              }
-
-              // Ajouter préfixe opt: aux équipements s'il n'y en a pas déjà
-              const equipments = venueArray.map(item => item.startsWith('opt:') ? item : `opt:${item}`)
-              allSpecialties.push(...equipments)
-            }
-
-            return allSpecialties
+            // Ajouter préfixe opt: aux équipements s'il n'y en a pas déjà
+            return venueArray.map(item => item.startsWith('opt:') ? item : `opt:${item}`)
           } catch { return [] } })(),
         }))
 
