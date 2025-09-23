@@ -146,6 +146,10 @@ export async function POST(req: NextRequest) {
       data.latitude = input.latitude
       data.longitude = input.longitude
     }
+    // Address privacy setting
+    if (typeof input.addressPrivacy === 'string' && ['precise', 'approximate'].includes(input.addressPrivacy)) {
+      data.addressPrivacy = input.addressPrivacy
+    }
     // Optional: workingArea (legacy)
     if (typeof input.address === 'string' && input.address.trim()) {
       data.workingArea = input.address.trim()

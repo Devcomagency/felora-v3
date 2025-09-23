@@ -35,8 +35,8 @@ export async function GET(req: Request) {
       url.searchParams.set('country', 'ch')
       url.searchParams.set('limit', String(limit))
       url.searchParams.set('language', 'fr')
-      // Limiter aux entités de type ville/localité pour éviter les adresses complètes
-      url.searchParams.set('types', 'place,locality,region')
+      // Accepter les adresses complètes pour le dashboard
+      url.searchParams.set('types', 'address,place,locality,region')
       url.searchParams.set('access_token', MAPBOX_TOKEN)
 
       const r = await fetch(url.toString())
@@ -55,18 +55,21 @@ export async function GET(req: Request) {
         longitude: f.center?.[0] || f.geometry?.coordinates?.[0] || 0,
         type: f.place_type?.[0] || 'place'
       }))
-      // Dédupliquer par nom, garder villes/localités
+      // Dédupliquer et garder adresses + villes/localités
       const seen = new Set<string>()
       const hits = hitsRaw
-        .filter((h:any) => ['place','locality','region'].includes(h.type))
+        .filter((h:any) => ['address','place','locality','region'].includes(h.type))
         .filter((h:any) => {
-          const key = String(h.name || '').toLowerCase()
+          const key = String(h.address || h.name || '').toLowerCase()
           if (!key) return false
           if (seen.has(key)) return false
           seen.add(key)
           return true
         })
-        .map(h => ({ ...h, address: h.name }))
+        .map(h => ({
+          ...h,
+          address: h.address || h.name || h.place_name_fr || h.place_name
+        }))
 
       return NextResponse.json({ hits })
     }

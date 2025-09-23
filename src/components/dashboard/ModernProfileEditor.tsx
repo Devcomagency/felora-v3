@@ -83,6 +83,7 @@ interface ProfileData {
   city: string
   address: string
   coordinates?: { lat: number; lng: number }
+  addressPrivacy: 'precise' | 'approximate' // Affichage précis ou zone approximative (150m)
   phoneVisibility: 'visible' | 'hidden' | 'none'
   phone?: string
 
@@ -343,6 +344,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
             return p.workingArea || ''
           })(),
           coordinates: (typeof p.latitude === 'number' && typeof p.longitude === 'number') ? { lat: p.latitude, lng: p.longitude } : undefined,
+          addressPrivacy: (p as any).addressPrivacy || 'precise', // Par défaut, affichage précis
           phone: p.user?.phone || '',
           phoneVisibility: p.phoneVisibility || 'hidden',
           height: p.height || undefined,
@@ -666,6 +668,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
       if (profileData.incall !== undefined) payload.incall = !!profileData.incall
       if (profileData.outcall !== undefined) payload.outcall = !!profileData.outcall
       if (profileData.coordinates) { payload.latitude = profileData.coordinates.lat; payload.longitude = profileData.coordinates.lng }
+      if (profileData.addressPrivacy) payload.addressPrivacy = profileData.addressPrivacy
       if (profileData.languages && profileData.languages.length > 0) payload.languages = JSON.stringify(profileData.languages)
       // Combiner catégorie et services détaillés dans le champ services
       const serviceDetails = (profileData.specialties || []).filter(s => s.startsWith('srv:'))
@@ -758,6 +761,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
       if (profileData.incall !== undefined) payload.incall = !!profileData.incall
       if (profileData.outcall !== undefined) payload.outcall = !!profileData.outcall
       if (profileData.coordinates) { payload.latitude = profileData.coordinates.lat; payload.longitude = profileData.coordinates.lng }
+      if (profileData.addressPrivacy) payload.addressPrivacy = profileData.addressPrivacy
       if (profileData.languages && profileData.languages.length > 0) payload.languages = JSON.stringify(profileData.languages)
       // Combiner catégorie et services détaillés dans le champ services
       const serviceDetails = (profileData.specialties || []).filter(s => s.startsWith('srv:'))
@@ -1360,6 +1364,45 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                   ) : (
                     <div className="mt-2 text-xs text-green-400">
                       📍 Coordonnées GPS: {profileData.coordinates.lat.toFixed(6)}, {profileData.coordinates.lng.toFixed(6)}
+                    </div>
+                  )}
+
+                  {/* Option de confidentialité de l'adresse */}
+                  {profileData.address && profileData.coordinates && (
+                    <div className="mt-4 p-3 bg-gray-800/50 rounded-lg border border-gray-700/50">
+                      <label className="block text-sm font-medium text-gray-300 mb-3">
+                        🔒 Confidentialité de l'adresse
+                      </label>
+                      <div className="space-y-2">
+                        <label className="flex items-start gap-3 cursor-pointer p-2 rounded-lg hover:bg-gray-700/30">
+                          <input
+                            type="radio"
+                            name="addressPrivacy"
+                            value="precise"
+                            checked={profileData.addressPrivacy === 'precise'}
+                            onChange={(e) => updateProfileData('addressPrivacy', e.target.value as 'precise' | 'approximate')}
+                            className="mt-1"
+                          />
+                          <div>
+                            <div className="text-sm text-white font-medium">Adresse précise</div>
+                            <div className="text-xs text-gray-400">Les clients voient l'adresse exacte</div>
+                          </div>
+                        </label>
+                        <label className="flex items-start gap-3 cursor-pointer p-2 rounded-lg hover:bg-gray-700/30">
+                          <input
+                            type="radio"
+                            name="addressPrivacy"
+                            value="approximate"
+                            checked={profileData.addressPrivacy === 'approximate'}
+                            onChange={(e) => updateProfileData('addressPrivacy', e.target.value as 'precise' | 'approximate')}
+                            className="mt-1"
+                          />
+                          <div>
+                            <div className="text-sm text-white font-medium">Zone approximative</div>
+                            <div className="text-xs text-gray-400">Affichage dans un rayon de 150m pour préserver votre confidentialité</div>
+                          </div>
+                        </label>
+                      </div>
                     </div>
                   )}
                 </div>

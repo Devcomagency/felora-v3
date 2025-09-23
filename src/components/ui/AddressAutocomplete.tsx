@@ -29,7 +29,7 @@ interface AddressAutocompleteProps {
 export default function AddressAutocomplete({
   value,
   onChange,
-  placeholder = "Rechercher une adresse suisse...",
+  placeholder = "Rue, numéro, ville (ex: Rue de la Paix 15, Lausanne)",
   className = "",
   onAddressSelect,
   cantonCode,

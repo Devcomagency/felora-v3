@@ -139,6 +139,7 @@ model EscortProfile {
   addressVisible      Boolean      @default(false)
   latitude            Float?
   longitude           Float?
+  addressPrivacy      String?      @default("precise") // "precise" | "approximate"
   services            String
   rates               String
   availability        String
