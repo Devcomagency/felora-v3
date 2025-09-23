@@ -344,6 +344,18 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
             if (raw.trim().startsWith('[')) { const P = JSON.parse(raw); return Array.isArray(P)?P:[] }
             return raw.split(',').map((x:string)=>x.trim()).filter(Boolean)
           } catch { return [] } })(),
+          paymentCurrencies: (()=>{ try {
+            const raw = String(p.acceptedCurrencies||'')
+            if (!raw) return ['CHF'] // Default
+            if (raw.trim().startsWith('[')) { const C = JSON.parse(raw); return Array.isArray(C)?C:['CHF'] }
+            return raw.split(',').map((x:string)=>x.trim()).filter(Boolean)
+          } catch { return ['CHF'] } })(),
+          specialties: (()=>{ try {
+            const raw = String(p.venueOptions||'')
+            if (!raw) return []
+            if (raw.trim().startsWith('[')) { const S = JSON.parse(raw); return Array.isArray(S)?S:[] }
+            return raw.split(',').map((x:string)=>x.trim()).filter(Boolean)
+          } catch { return [] } })(),
         }))
 
 
