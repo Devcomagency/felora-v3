@@ -12,7 +12,8 @@ export async function POST(req: NextRequest) {
   let dataToSave: Record<string, any> = {}
 
   try {
-    console.log('🚀🚀🚀 [API ESCORT UPDATE] ====== REQUÊTE REÇUE ======')
+    console.log('🔥🔥🔥🔥🔥 [API ESCORT UPDATE] ====== POST REQUÊTE REÇUE ======')
+    console.log('🔥🔥🔥🔥🔥 [API ESCORT UPDATE] TIMESTAMP:', new Date().toISOString())
     console.log('🔍 [API PROFILE UPDATE] Starting request...')
     const session = await getServerSession(authOptions)
     console.log('🔍 [API PROFILE UPDATE] Session:', session ? 'found' : 'null', session?.user?.id)
