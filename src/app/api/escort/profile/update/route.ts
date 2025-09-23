@@ -278,8 +278,15 @@ export async function POST(req: NextRequest) {
       if (csv) dataToSave.paymentMethods = csv
     }
     if (typeof input.amenities !== 'undefined') { // Équipements du lieu
+      console.log('🔄 [API UPDATE] Amenities reçues:', input.amenities, typeof input.amenities)
       const csv = toCsv(input.amenities)
-      if (csv) dataToSave.venueOptions = csv // Note: garde venueOptions en BDD pour compatibilité
+      console.log('🔄 [API UPDATE] Amenities CSV:', csv)
+      if (csv) {
+        dataToSave.venueOptions = csv // Note: garde venueOptions en BDD pour compatibilité
+        console.log('✅ [API UPDATE] Amenities sauvegardées dans venueOptions:', csv)
+      } else {
+        console.log('❌ [API UPDATE] Amenities CSV vide, non sauvegardé')
+      }
     }
     if (typeof input.acceptedCurrencies !== 'undefined') { // Devises acceptées
       const csv = toCsv(input.acceptedCurrencies)
@@ -323,12 +330,26 @@ export async function POST(req: NextRequest) {
     if (typeof input.rate2H === 'number') dataToSave.rate2H = input.rate2H
     if (typeof input.rateOvernight === 'number') dataToSave.rateOvernight = input.rateOvernight
     if (typeof input.height === 'number') dataToSave.height = input.height
+    console.log('🔄 [API UPDATE] Champs physiques reçus:', {
+      bodyType: input.bodyType,
+      hairColor: input.hairColor,
+      eyeColor: input.eyeColor,
+      ethnicity: input.ethnicity,
+      bustSize: input.bustSize
+    })
     if (typeof input.bodyType === 'string') dataToSave.bodyType = input.bodyType
     if (typeof input.hairColor === 'string') dataToSave.hairColor = input.hairColor
     // if (typeof input.hairLength === 'string') dataToSave.hairLength = input.hairLength // TODO: Uncomment when DB has column
     if (typeof input.eyeColor === 'string') dataToSave.eyeColor = input.eyeColor
     if (typeof input.ethnicity === 'string') dataToSave.ethnicity = input.ethnicity
     if (typeof input.bustSize === 'string') dataToSave.bustSize = input.bustSize
+    console.log('✅ [API UPDATE] Champs physiques à sauvegarder:', {
+      bodyType: dataToSave.bodyType,
+      hairColor: dataToSave.hairColor,
+      eyeColor: dataToSave.eyeColor,
+      ethnicity: dataToSave.ethnicity,
+      bustSize: dataToSave.bustSize
+    })
     if (typeof input.tattoos === 'string') dataToSave.tattoos = input.tattoos
     if (typeof input.piercings === 'string') dataToSave.piercings = input.piercings
     if (input.timeSlots !== undefined) {

@@ -350,7 +350,9 @@ function transformProfileData(rawProfile: any, mode: 'dashboard' | 'public') {
 
   // Parse des nouvelles options (avec fallback si champs manquants)
   const paymentMethods = parseStringArray((rawProfile as any).paymentMethods)
+  console.log('🔄 [API UNIFIED] venueOptions brut:', (rawProfile as any).venueOptions, typeof (rawProfile as any).venueOptions)
   const amenities = parseStringArray((rawProfile as any).venueOptions) // Note: venueOptions en BDD → amenities en interface
+  console.log('🔄 [API UNIFIED] amenities parsées:', amenities)
   const acceptedCurrencies = parseStringArray((rawProfile as any).acceptedCurrencies)
 
   // Services détaillés supprimés (pour éviter doublons)
