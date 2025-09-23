@@ -66,6 +66,13 @@ export default function TestUnifiedApiPage() {
                 <p>Silhouette: {dashboardProfile.physical.bodyType || 'N/A'}</p>
                 <p>Cheveux: {dashboardProfile.physical.hairColor || 'N/A'}</p>
                 <p>Yeux: {dashboardProfile.physical.eyeColor || 'N/A'}</p>
+                <p>Origine: {dashboardProfile.physical.ethnicity || 'N/A'}</p>
+                <p>Tour poitrine: {dashboardProfile.physical.bustSize || 'N/A'}</p>
+                <p>Type poitrine: {dashboardProfile.physical.breastType || 'N/A'}</p>
+                <p>Tatouages: {dashboardProfile.physical.tattoos === true ? '✅' : dashboardProfile.physical.tattoos === false ? '❌' : 'N/A'}</p>
+                <p>Piercings: {dashboardProfile.physical.piercings === true ? '✅' : dashboardProfile.physical.piercings === false ? '❌' : 'N/A'}</p>
+                <p>Poils pubis: {dashboardProfile.physical.pubicHair || 'N/A'}</p>
+                <p>Fumeur: {dashboardProfile.physical.smoker === true ? '✅' : dashboardProfile.physical.smoker === false ? '❌' : 'N/A'}</p>
               </div>
 
               <div>
@@ -81,21 +88,21 @@ export default function TestUnifiedApiPage() {
 
               <div>
                 <h3 className="font-semibold text-blue-400 mb-2">🆕 Nouveaux Champs</h3>
-                <p>Catégorie: {dashboardProfile.category || 'N/A'}</p>
+                <p>Catégorie: <span className={dashboardProfile.category ? 'text-green-400' : 'text-red-400'}>{dashboardProfile.category || '❌ VIDE'}</span></p>
                 <p>Âge vérifié: {dashboardProfile.ageVerified ? '✅' : '❌'}</p>
-                <p>Tarif base: {dashboardProfile.rates.baseRate || 'N/A'} {dashboardProfile.rates.currency}</p>
+                <p>Tarif base: <span className={dashboardProfile.rates.baseRate ? 'text-green-400' : 'text-red-400'}>{dashboardProfile.rates.baseRate || '❌ VIDE'}</span> {dashboardProfile.rates.currency}</p>
 
                 <p className="mt-2"><strong>Services Classic ({dashboardProfile.servicesDetailed?.classic?.length || 0}):</strong></p>
-                <p className="text-xs text-gray-300 ml-2">{dashboardProfile.servicesDetailed?.classic?.join(', ') || 'Aucun'}</p>
+                <p className="text-xs text-gray-300 ml-2">{dashboardProfile.servicesDetailed?.classic?.join(', ') || '❌ VIDE - Dashboard ne sauvegarde pas encore'}</p>
 
                 <p className="mt-2"><strong>Services BDSM ({dashboardProfile.servicesDetailed?.bdsm?.length || 0}):</strong></p>
-                <p className="text-xs text-gray-300 ml-2">{dashboardProfile.servicesDetailed?.bdsm?.join(', ') || 'Aucun'}</p>
+                <p className="text-xs text-gray-300 ml-2">{dashboardProfile.servicesDetailed?.bdsm?.join(', ') || '❌ VIDE - Dashboard ne sauvegarde pas encore'}</p>
 
                 <p className="mt-2"><strong>Services Massage ({dashboardProfile.servicesDetailed?.massage?.length || 0}):</strong></p>
-                <p className="text-xs text-gray-300 ml-2">{dashboardProfile.servicesDetailed?.massage?.join(', ') || 'Aucun'}</p>
+                <p className="text-xs text-gray-300 ml-2">{dashboardProfile.servicesDetailed?.massage?.join(', ') || '❌ VIDE - Dashboard ne sauvegarde pas encore'}</p>
 
-                <p className="mt-2">Contact mode: {dashboardProfile.phoneDisplayType || 'N/A'}</p>
-                <p>Origine détails: {dashboardProfile.originDetails || 'N/A'}</p>
+                <p className="mt-2">Contact mode: <span className={dashboardProfile.phoneDisplayType !== 'hidden' ? 'text-green-400' : 'text-red-400'}>{dashboardProfile.phoneDisplayType || '❌ VIDE'}</span></p>
+                <p>Origine détails: <span className={dashboardProfile.originDetails ? 'text-green-400' : 'text-red-400'}>{dashboardProfile.originDetails || '❌ VIDE'}</span></p>
               </div>
 
               <div>
