@@ -64,6 +64,8 @@ interface EscortProfile {
   }
   workingArea?: string
   practices?: string[]
+  venueOptions?: string  // Équipements du lieu (JSON)
+  acceptedCurrencies?: string  // Devises acceptées (JSON)
   incall?: boolean
   outcall?: boolean
   availableNow?: boolean
@@ -97,9 +99,56 @@ const generateExtendedProfileData = (profile: EscortProfile) => {
     rates.push({ duration: 'À partir de', price: profile.price, description: `${profile.price} CHF` })
   }
   
+  // Parse et nettoie les services comme dans l'API unifiée
+  const cleanedServices = (() => {
+    try {
+      const raw = String(profile.services || '')
+      if (!raw) return []
+      if (raw.trim().startsWith('[')) {
+        const S = JSON.parse(raw)
+        return Array.isArray(S) ? S.filter(s => !['escort', 'masseuse', 'dominatrice', 'BDSM', 'massage', 'transsexuel', 'masseuse_erotique', 'dominatrice_bdsm'].includes(s)) : []
+      }
+      return raw.split(',').map((x: string) => x.trim()).filter(s => s && !['escort', 'masseuse', 'dominatrice', 'BDSM', 'massage', 'transsexuel', 'masseuse_erotique', 'dominatrice_bdsm'].includes(s))
+    } catch {
+      return []
+    }
+  })()
+
+  // Parse les équipements
+  const amenities = (() => {
+    try {
+      const raw = String(profile.venueOptions || '')
+      if (!raw) return []
+      if (raw.trim().startsWith('[')) {
+        const V = JSON.parse(raw)
+        return Array.isArray(V) ? V : []
+      }
+      return raw.split(',').map((x: string) => x.trim()).filter(Boolean)
+    } catch {
+      return []
+    }
+  })()
+
+  // Parse les devises
+  const currencies = (() => {
+    try {
+      const raw = String(profile.acceptedCurrencies || '')
+      if (!raw) return ['CHF'] // Default
+      if (raw.trim().startsWith('[')) {
+        const C = JSON.parse(raw)
+        return Array.isArray(C) ? C : ['CHF']
+      }
+      return raw.split(',').map((x: string) => x.trim()).filter(Boolean)
+    } catch {
+      return ['CHF']
+    }
+  })()
+
   return {
     languages: profile.languages || [],
-    practices: profile.practices || profile.services || [],
+    practices: cleanedServices, // Services nettoyés sans catégories
+    amenities: amenities, // Équipements du lieu
+    currencies: currencies, // Devises acceptées
     rates: rates.length > 0 ? rates : [{ duration: '1h', price: profile.price, description: 'Rencontre intime' }],
     physicalDetails: {
       height: profile.physicalDetails?.height || 'Non spécifié',
@@ -1369,6 +1418,34 @@ export default function ProfileClient({ profile: initialProfile }: ProfileClient
                     {profile.paymentMethods.map((method, index) => (
                       <span key={index} className="px-3 py-1 bg-green-500/20 text-green-300 rounded-full text-sm">
                         {method}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Devises acceptées */}
+              {extendedProfileData.currencies && extendedProfileData.currencies.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold text-white mb-3 border-b border-white/10 pb-2">Devises acceptées</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {extendedProfileData.currencies.map((currency, index) => (
+                      <span key={index} className="px-3 py-1 bg-blue-500/20 text-blue-300 rounded-full text-sm">
+                        {currency}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Équipements du lieu */}
+              {extendedProfileData.amenities && extendedProfileData.amenities.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold text-white mb-3 border-b border-white/10 pb-2">Lieu & Options</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {extendedProfileData.amenities.map((amenity, index) => (
+                      <span key={index} className="px-3 py-1 bg-orange-500/20 text-orange-300 rounded-full text-sm">
+                        {amenity}
                       </span>
                     ))}
                   </div>
