@@ -211,6 +211,14 @@ function categorizeServicesForDashboard(services: string[]): {
         result.category = 'masseuse_erotique'
       } else if (cleanService === 'dominatrice' || cleanService === 'BDSM') {
         result.category = 'dominatrice_bdsm'
+      } else if (cleanService === 'masseuse_erotique') {
+        result.category = 'masseuse_erotique'
+      } else if (cleanService === 'dominatrice_bdsm') {
+        result.category = 'dominatrice_bdsm'
+      } else if (cleanService === 'transsexuel') {
+        result.category = 'transsexuel'
+      } else if (cleanService === 'escort') {
+        result.category = 'escort'
       } else {
         result.category = cleanService
       }

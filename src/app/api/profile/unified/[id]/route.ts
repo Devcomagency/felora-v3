@@ -66,8 +66,12 @@ export async function GET(
           practices: true,
 
           // Tarifs
+          rate15Min: true,
+          rate30Min: true,
           rate1H: true,
           rate2H: true,
+          rateHalfDay: true,
+          rateFullDay: true,
           rateOvernight: true,
           currency: true,
 
@@ -180,8 +184,12 @@ export async function GET(
           practices: true,
 
           // Tarifs publics
+          rate15Min: true,
+          rate30Min: true,
           rate1H: true,
           rate2H: true,
+          rateHalfDay: true,
+          rateFullDay: true,
           rateOvernight: true,
           currency: true,
 
@@ -271,6 +279,14 @@ function categorizeServicesForRead(services: string[]): {
         result.category = 'masseuse_erotique'
       } else if (cleanService === 'dominatrice' || cleanService === 'BDSM') {
         result.category = 'dominatrice_bdsm'
+      } else if (cleanService === 'masseuse_erotique') {
+        result.category = 'masseuse_erotique'
+      } else if (cleanService === 'dominatrice_bdsm') {
+        result.category = 'dominatrice_bdsm'
+      } else if (cleanService === 'transsexuel') {
+        result.category = 'transsexuel'
+      } else if (cleanService === 'escort') {
+        result.category = 'escort'
       } else {
         result.category = cleanService
       }
@@ -379,8 +395,12 @@ function transformProfileData(rawProfile: any, mode: 'dashboard' | 'public') {
 
     // Tarifs
     rates: {
+      fifteenMin: rawProfile.rate15Min || undefined,
+      thirtyMin: rawProfile.rate30Min || undefined,
       oneHour: rawProfile.rate1H || undefined,
       twoHours: rawProfile.rate2H || undefined,
+      halfDay: rawProfile.rateHalfDay || undefined,
+      fullDay: rawProfile.rateFullDay || undefined,
       overnight: rawProfile.rateOvernight || undefined,
       currency: rawProfile.currency || 'CHF',
       baseRate: rawProfile.baseRate || undefined

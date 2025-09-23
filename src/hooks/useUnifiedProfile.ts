@@ -30,8 +30,12 @@ export interface UnifiedProfileData {
 
   // Tarifs
   rates: {
+    fifteenMin?: number
+    thirtyMin?: number
     oneHour?: number
     twoHours?: number
+    halfDay?: number
+    fullDay?: number
     overnight?: number
     currency: string
     baseRate?: number // Tarif "À partir de"

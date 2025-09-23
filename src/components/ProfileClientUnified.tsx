@@ -298,7 +298,34 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
                 <span>💰</span> Tarifs
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {profile.rates.oneHour && (
+                {/* Tarif "à partir de" - utilise baseRate ou oneHour comme fallback */}
+                {(profile.rates.baseRate || profile.rates.oneHour) && (
+                  <div className="text-center p-4 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg">
+                    <div className="text-2xl font-bold text-white">
+                      {profile.rates.baseRate || profile.rates.oneHour} {profile.rates.currency}
+                    </div>
+                    <div className="text-sm text-blue-100">À partir de</div>
+                  </div>
+                )}
+
+                {/* Tarifs détaillés - seulement les tarifs remplis */}
+                {profile.rates.fifteenMin && (
+                  <div className="text-center p-4 bg-gray-700 rounded-lg">
+                    <div className="text-2xl font-bold text-green-400">
+                      {profile.rates.fifteenMin} {profile.rates.currency}
+                    </div>
+                    <div className="text-sm text-gray-400">15 minutes</div>
+                  </div>
+                )}
+                {profile.rates.thirtyMin && (
+                  <div className="text-center p-4 bg-gray-700 rounded-lg">
+                    <div className="text-2xl font-bold text-green-400">
+                      {profile.rates.thirtyMin} {profile.rates.currency}
+                    </div>
+                    <div className="text-sm text-gray-400">30 minutes</div>
+                  </div>
+                )}
+                {profile.rates.oneHour && profile.rates.baseRate && profile.rates.oneHour !== profile.rates.baseRate && (
                   <div className="text-center p-4 bg-gray-700 rounded-lg">
                     <div className="text-2xl font-bold text-green-400">
                       {profile.rates.oneHour} {profile.rates.currency}
@@ -314,20 +341,28 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
                     <div className="text-sm text-gray-400">2 heures</div>
                   </div>
                 )}
+                {profile.rates.halfDay && (
+                  <div className="text-center p-4 bg-gray-700 rounded-lg">
+                    <div className="text-2xl font-bold text-green-400">
+                      {profile.rates.halfDay} {profile.rates.currency}
+                    </div>
+                    <div className="text-sm text-gray-400">Demi-journée</div>
+                  </div>
+                )}
+                {profile.rates.fullDay && (
+                  <div className="text-center p-4 bg-gray-700 rounded-lg">
+                    <div className="text-2xl font-bold text-green-400">
+                      {profile.rates.fullDay} {profile.rates.currency}
+                    </div>
+                    <div className="text-sm text-gray-400">Journée complète</div>
+                  </div>
+                )}
                 {profile.rates.overnight && (
                   <div className="text-center p-4 bg-gray-700 rounded-lg">
                     <div className="text-2xl font-bold text-green-400">
                       {profile.rates.overnight} {profile.rates.currency}
                     </div>
-                    <div className="text-sm text-gray-400">Nuit</div>
-                  </div>
-                )}
-                {profile.rates.baseRate && (
-                  <div className="text-center p-4 bg-gray-700 rounded-lg">
-                    <div className="text-2xl font-bold text-blue-400">
-                      {profile.rates.baseRate} {profile.rates.currency}
-                    </div>
-                    <div className="text-sm text-gray-400">Tarif de base</div>
+                    <div className="text-sm text-gray-400">Nuit complète</div>
                   </div>
                 )}
               </div>

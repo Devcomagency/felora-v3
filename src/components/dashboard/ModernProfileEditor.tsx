@@ -65,10 +65,12 @@ interface ProfileData {
 
   // Tarifs et disponibilités
   prices: {
-    // fifteenMin?: number // TODO: Uncomment when DB has column
-    // thirtyMin?: number // TODO: Uncomment when DB has column
+    fifteenMin?: number // Tarif 15 minutes
+    thirtyMin?: number // Tarif 30 minutes
     oneHour: number
     twoHours?: number
+    halfDay?: number // Demi-journée
+    fullDay?: number // Journée complète
     overnight?: number
   }
   paymentMethods: string[]
@@ -322,10 +324,12 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
           outcall: !!p.outcall,
           incall: !!p.incall,
           prices: {
-            // fifteenMin: p.rate15Min || undefined, // TODO: Uncomment when DB has column
-            // thirtyMin: p.rate30Min || undefined, // TODO: Uncomment when DB has column
+            fifteenMin: p.rate15Min || undefined, // Tarif 15 minutes
+            thirtyMin: p.rate30Min || undefined, // Tarif 30 minutes
             oneHour: p.rate1H || undefined,
             twoHours: p.rate2H || undefined,
+            halfDay: p.rateHalfDay || undefined, // Demi-journée
+            fullDay: p.rateFullDay || undefined, // Journée complète
             overnight: p.rateOvernight || undefined
           },
           canton: p.canton || '',
@@ -679,10 +683,12 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
       if (profileData.specialties && profileData.specialties.length > 0) payload.amenities = JSON.stringify(profileData.specialties)
       if (profileData.paymentMethods && profileData.paymentMethods.length > 0) payload.paymentMethods = JSON.stringify(profileData.paymentMethods)
       if (profileData.paymentCurrencies && profileData.paymentCurrencies.length > 0) payload.acceptedCurrencies = JSON.stringify(profileData.paymentCurrencies)
-      // if (profileData.prices?.fifteenMin !== undefined) payload.rate15Min = profileData.prices.fifteenMin // TODO: Uncomment when DB has column
-      // if (profileData.prices?.thirtyMin !== undefined) payload.rate30Min = profileData.prices.thirtyMin // TODO: Uncomment when DB has column
+      if (profileData.prices?.fifteenMin !== undefined) payload.rate15Min = profileData.prices.fifteenMin
+      if (profileData.prices?.thirtyMin !== undefined) payload.rate30Min = profileData.prices.thirtyMin
       if (profileData.prices?.oneHour !== undefined) payload.rate1H = profileData.prices.oneHour
       if (profileData.prices?.twoHours !== undefined) payload.rate2H = profileData.prices.twoHours
+      if (profileData.prices?.halfDay !== undefined) payload.rateHalfDay = profileData.prices.halfDay
+      if (profileData.prices?.fullDay !== undefined) payload.rateFullDay = profileData.prices.fullDay
       if (profileData.prices?.overnight !== undefined) payload.rateOvernight = profileData.prices.overnight
       if (profileData.height !== undefined) payload.height = profileData.height
       if (profileData.bodyType !== undefined) payload.bodyType = profileData.bodyType
@@ -735,7 +741,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
   useEffect(() => {
     triggerAutoSave()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [profileData.stageName, profileData.age, profileData.description, profileData.address, profileData.coordinates, profileData.city, profileData.canton, profileData.phone, profileData.phoneVisibility, profileData.incall, profileData.outcall, profileData.languages, profileData.serviceType, profileData.specialties, profileData.prices?.oneHour, profileData.prices?.twoHours, profileData.prices?.overnight, profileData.height, profileData.bodyType, profileData.breastType, profileData.hairColor, profileData.eyeColor, profileData.ethnicity, profileData.breastSize, profileData.pubicHair, profileData.smoker, profileData.tattoos, profileData.piercings, profileData.acceptsCouples, profileData.acceptsWomen, profileData.acceptsHandicapped, profileData.acceptsSeniors, weekly, pauseEnabled, pauseStart, pauseEnd, absences])
+  }, [profileData.stageName, profileData.age, profileData.description, profileData.address, profileData.coordinates, profileData.city, profileData.canton, profileData.phone, profileData.phoneVisibility, profileData.incall, profileData.outcall, profileData.languages, profileData.serviceType, profileData.specialties, profileData.paymentMethods, profileData.paymentCurrencies, profileData.prices?.fifteenMin, profileData.prices?.thirtyMin, profileData.prices?.oneHour, profileData.prices?.twoHours, profileData.prices?.halfDay, profileData.prices?.fullDay, profileData.prices?.overnight, profileData.height, profileData.bodyType, profileData.breastType, profileData.hairColor, profileData.eyeColor, profileData.ethnicity, profileData.breastSize, profileData.pubicHair, profileData.smoker, profileData.tattoos, profileData.piercings, profileData.acceptsCouples, profileData.acceptsWomen, profileData.acceptsHandicapped, profileData.acceptsSeniors, weekly, pauseEnabled, pauseStart, pauseEnd, absences])
 
   const manualSave = async () => {
     try {
@@ -779,10 +785,12 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
       if (profileData.breastSize !== undefined) payload.bustSize = profileData.breastSize
       if (profileData.tattoos !== undefined) payload.tattoos = String(profileData.tattoos)
       if (profileData.piercings !== undefined) payload.piercings = String(profileData.piercings)
-      // if (profileData.prices?.fifteenMin !== undefined) payload.rate15Min = profileData.prices.fifteenMin // TODO: Uncomment when DB has column
-      // if (profileData.prices?.thirtyMin !== undefined) payload.rate30Min = profileData.prices.thirtyMin // TODO: Uncomment when DB has column
+      if (profileData.prices?.fifteenMin !== undefined) payload.rate15Min = profileData.prices.fifteenMin
+      if (profileData.prices?.thirtyMin !== undefined) payload.rate30Min = profileData.prices.thirtyMin
       if (profileData.prices?.oneHour !== undefined) payload.rate1H = profileData.prices.oneHour
       if (profileData.prices?.twoHours !== undefined) payload.rate2H = profileData.prices.twoHours
+      if (profileData.prices?.halfDay !== undefined) payload.rateHalfDay = profileData.prices.halfDay
+      if (profileData.prices?.fullDay !== undefined) payload.rateFullDay = profileData.prices.fullDay
       if (profileData.prices?.overnight !== undefined) payload.rateOvernight = profileData.prices.overnight
       if (profileData.phoneVisibility) payload.phoneVisibility = profileData.phoneVisibility
       if (profileData.breastType) payload.breastType = profileData.breastType
@@ -1692,6 +1700,91 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                 </select>
               </div>
 
+              {/* Tarifs détaillés */}
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-3">Tarifs détaillés (optionnel)</label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs text-gray-400 mb-1">15 minutes</label>
+                    <select
+                      value={profileData.prices?.fifteenMin || ''}
+                      onChange={(e) => updateNestedProfileData('prices', 'fifteenMin', e.target.value ? parseInt(e.target.value) : undefined)}
+                      className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white text-sm focus:border-purple-500 focus:outline-none"
+                    >
+                      <option value="">Non proposé</option>
+                      {[50,80,100,120,150,180,200,250].map(v => (
+                        <option key={v} value={v}>{v} CHF</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-400 mb-1">30 minutes</label>
+                    <select
+                      value={profileData.prices?.thirtyMin || ''}
+                      onChange={(e) => updateNestedProfileData('prices', 'thirtyMin', e.target.value ? parseInt(e.target.value) : undefined)}
+                      className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white text-sm focus:border-purple-500 focus:outline-none"
+                    >
+                      <option value="">Non proposé</option>
+                      {[80,100,120,150,180,200,250,300].map(v => (
+                        <option key={v} value={v}>{v} CHF</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-400 mb-1">2 heures</label>
+                    <select
+                      value={profileData.prices?.twoHours || ''}
+                      onChange={(e) => updateNestedProfileData('prices', 'twoHours', e.target.value ? parseInt(e.target.value) : undefined)}
+                      className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white text-sm focus:border-purple-500 focus:outline-none"
+                    >
+                      <option value="">Non proposé</option>
+                      {[400,500,600,700,800,900,1000,1200].map(v => (
+                        <option key={v} value={v}>{v} CHF</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-400 mb-1">Demi-journée</label>
+                    <select
+                      value={profileData.prices?.halfDay || ''}
+                      onChange={(e) => updateNestedProfileData('prices', 'halfDay', e.target.value ? parseInt(e.target.value) : undefined)}
+                      className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white text-sm focus:border-purple-500 focus:outline-none"
+                    >
+                      <option value="">Non proposé</option>
+                      {[800,1000,1200,1500,1800,2000,2500,3000].map(v => (
+                        <option key={v} value={v}>{v} CHF</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-400 mb-1">Journée complète</label>
+                    <select
+                      value={profileData.prices?.fullDay || ''}
+                      onChange={(e) => updateNestedProfileData('prices', 'fullDay', e.target.value ? parseInt(e.target.value) : undefined)}
+                      className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white text-sm focus:border-purple-500 focus:outline-none"
+                    >
+                      <option value="">Non proposé</option>
+                      {[1500,2000,2500,3000,3500,4000,5000,6000].map(v => (
+                        <option key={v} value={v}>{v} CHF</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-400 mb-1">Nuit complète</label>
+                    <select
+                      value={profileData.prices?.overnight || ''}
+                      onChange={(e) => updateNestedProfileData('prices', 'overnight', e.target.value ? parseInt(e.target.value) : undefined)}
+                      className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white text-sm focus:border-purple-500 focus:outline-none"
+                    >
+                      <option value="">Non proposé</option>
+                      {[800,1000,1200,1500,2000,2500,3000,4000].map(v => (
+                        <option key={v} value={v}>{v} CHF</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                <div className="mt-2 text-xs text-gray-500">Seuls les tarifs remplis s'afficheront dans votre profil public</div>
+              </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-3">Méthodes de paiement acceptées</label>

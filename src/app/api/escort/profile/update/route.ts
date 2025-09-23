@@ -44,10 +44,12 @@ export async function POST(req: NextRequest) {
       incall: z.coerce.boolean().optional(),
       outcall: z.coerce.boolean().optional(),
       // Rates
-      // rate15Min: z.coerce.number().optional(), // TODO: Uncomment when DB has column
-      // rate30Min: z.coerce.number().optional(), // TODO: Uncomment when DB has column
+      rate15Min: z.coerce.number().optional(), // Tarif 15 minutes
+      rate30Min: z.coerce.number().optional(), // Tarif 30 minutes
       rate1H: z.coerce.number().optional(),
       rate2H: z.coerce.number().optional(),
+      rateHalfDay: z.coerce.number().optional(), // Demi-journée
+      rateFullDay: z.coerce.number().optional(), // Journée complète
       rateOvernight: z.coerce.number().optional(),
       paymentMethods: z.union([z.string(), z.array(z.string())]).optional(), // Méthodes de paiement
       amenities: z.union([z.string(), z.array(z.string())]).optional(), // Équipements du lieu
@@ -206,6 +208,14 @@ export async function POST(req: NextRequest) {
             result.category = 'masseuse_erotique'
           } else if (cleanService === 'dominatrice' || cleanService === 'BDSM') {
             result.category = 'dominatrice_bdsm'
+          } else if (cleanService === 'masseuse_erotique') {
+            result.category = 'masseuse_erotique'
+          } else if (cleanService === 'dominatrice_bdsm') {
+            result.category = 'dominatrice_bdsm'
+          } else if (cleanService === 'transsexuel') {
+            result.category = 'transsexuel'
+          } else if (cleanService === 'escort') {
+            result.category = 'escort'
           } else {
             result.category = cleanService
           }
@@ -323,13 +333,15 @@ export async function POST(req: NextRequest) {
       dataToSave.longitude = input.longitude
     }
     
-    // Toggles, rates, physical attributes  
+    // Toggles, rates, physical attributes
     if (typeof input.incall === 'boolean') dataToSave.incall = input.incall
     if (typeof input.outcall === 'boolean') dataToSave.outcall = input.outcall
-    // if (typeof input.rate15Min === 'number') dataToSave.rate15Min = input.rate15Min // TODO: Uncomment when DB has column
-    // if (typeof input.rate30Min === 'number') dataToSave.rate30Min = input.rate30Min // TODO: Uncomment when DB has column
+    if (typeof input.rate15Min === 'number') dataToSave.rate15Min = input.rate15Min
+    if (typeof input.rate30Min === 'number') dataToSave.rate30Min = input.rate30Min
     if (typeof input.rate1H === 'number') dataToSave.rate1H = input.rate1H
     if (typeof input.rate2H === 'number') dataToSave.rate2H = input.rate2H
+    if (typeof input.rateHalfDay === 'number') dataToSave.rateHalfDay = input.rateHalfDay
+    if (typeof input.rateFullDay === 'number') dataToSave.rateFullDay = input.rateFullDay
     if (typeof input.rateOvernight === 'number') dataToSave.rateOvernight = input.rateOvernight
     if (typeof input.height === 'number') dataToSave.height = input.height
     console.log('🔄 [API UPDATE] Champs physiques reçus:', {
