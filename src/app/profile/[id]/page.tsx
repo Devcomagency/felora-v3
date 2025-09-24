@@ -179,7 +179,7 @@ export default function EscortProfilePage() {
         setError(false)
         setNotFound(false)
 
-        const response = await fetch(`/api/profile/unified/${resolvedId}`, { signal: controller.signal })
+        const response = await fetch(`/api/public/profile/${resolvedId}`, { signal: controller.signal })
 
         if (isCancelled) return
 
