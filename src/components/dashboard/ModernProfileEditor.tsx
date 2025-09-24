@@ -127,7 +127,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
     let cancelled = false
     const load = async () => {
       try {
-        const res = await fetch('/api/escort/profile', { cache: 'no-store', credentials: 'include' })
+        const res = await fetch('/api/profile/unified/me', { cache: 'no-store', credentials: 'include' })
         const j = await res.json().catch(() => ({}))
         const gallery = j?.profile?.galleryPhotos
         const slots = Array.from({ length: 6 }, () => ({ file: undefined as File|undefined, preview: undefined as string|undefined, id: undefined as string|undefined, uploading: false }))
@@ -262,7 +262,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
     let cancelled = false
     ;(async () => {
       try {
-        const r = await fetch('/api/escort/profile', { cache: 'no-store', credentials: 'include' })
+        const r = await fetch('/api/profile/unified/me', { cache: 'no-store', credentials: 'include' })
         const j = await r.json()
         if (!r.ok || !j?.profile || cancelled) return
         const p = j.profile
@@ -270,133 +270,56 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
           ...prev,
           stageName: p.stageName || '',
           description: p.description || '',
-          age: (() => {
-            try {
-              if (!p.dateOfBirth) return undefined
-              const today = new Date()
-              const birthDate = new Date(p.dateOfBirth)
-              let age = today.getFullYear() - birthDate.getFullYear()
-              const monthDiff = today.getMonth() - birthDate.getMonth()
-              if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-                age--
-              }
-              return age
-            } catch {
-              return undefined
-            }
-          })(),
-          languages: (()=>{ try {
-            const raw = String(p.languages||'')
-            if (!raw) return []
-            if (raw.trim().startsWith('[')) { const L = JSON.parse(raw); return Array.isArray(L)?L:[] }
-            return raw.split(',').map((x:string)=>x.trim()).filter(Boolean)
-          } catch { return [] } })(),
-          serviceType: (()=>{ try {
-            const raw = String(p.services||'')
-            if (!raw) return []
-
-            let servicesArray: string[] = []
-            if (raw.trim().startsWith('[')) {
-              const S = JSON.parse(raw)
-              servicesArray = Array.isArray(S) ? S : []
-            } else {
-              servicesArray = raw.split(',').map((x:string)=>x.trim()).filter(Boolean)
-            }
-
-            // Séparer les catégories des services détaillés (comme dans l'API unifiée)
-            const categories = []
-            const mainCategories = ['escort', 'masseuse_erotique', 'dominatrice_bdsm', 'transsexuel', 'masseuse', 'dominatrice', 'BDSM', 'massage']
-
-            for (const service of servicesArray) {
-              const cleanService = service.replace(/^(srv:|opt:)/, '').trim()
-              if (mainCategories.includes(cleanService)) {
-                if (cleanService === 'masseuse' || cleanService === 'massage') {
-                  categories.push('masseuse_erotique')
-                } else if (cleanService === 'dominatrice' || cleanService === 'BDSM') {
-                  categories.push('dominatrice_bdsm')
-                } else {
-                  categories.push(cleanService)
-                }
-              }
-            }
-
-            return categories
-          } catch { return [] } })(),
-          outcall: !!p.outcall,
-          incall: !!p.incall,
+          age: p.age || undefined, // Déjà calculé par l'API unifiée
+          languages: p.languages || [], // Déjà parsé par l'API unifiée
+          serviceType: p.category ? [p.category] : [], // Catégorie déjà extraite par l'API
+          outcall: p.availability?.outcall || false,
+          incall: p.availability?.incall || false,
           prices: {
-            fifteenMin: p.rate15Min || undefined, // Tarif 15 minutes
-            thirtyMin: p.rate30Min || undefined, // Tarif 30 minutes
-            oneHour: p.rate1H || undefined,
-            twoHours: p.rate2H || undefined,
-            halfDay: p.rateHalfDay || undefined, // Demi-journée
-            fullDay: p.rateFullDay || undefined, // Journée complète
-            overnight: p.rateOvernight || undefined
+            fifteenMin: p.rates?.fifteenMin || undefined,
+            thirtyMin: p.rates?.thirtyMin || undefined,
+            oneHour: p.rates?.oneHour || undefined,
+            twoHours: p.rates?.twoHours || undefined,
+            halfDay: p.rates?.halfDay || undefined,
+            fullDay: p.rates?.fullDay || undefined,
+            overnight: p.rates?.overnight || undefined
           },
           canton: p.canton || '',
-          city: p.ville || p.city || '',  // Priorise ville (nouveau) puis city (legacy)
-          address: (() => {
-            // Reconstituer adresse complète à partir des nouveaux champs si disponibles
-            if (p.rue && p.codePostal) {
-              return `${p.rue}${p.numero ? ' ' + p.numero : ''}, ${p.codePostal} ${p.ville || p.city || ''}`.trim()
-            }
-            // Fallback sur workingArea (legacy)
-            return p.workingArea || ''
-          })(),
-          coordinates: (typeof p.latitude === 'number' && typeof p.longitude === 'number') ? { lat: p.latitude, lng: p.longitude } : undefined,
-          addressPrivacy: (p as any).addressPrivacy || 'precise', // Par défaut, affichage précis
+          city: p.city || '',
+          address: p.address || '', // Adresse unifiée déjà construite par l'API
+          coordinates: p.coordinates || undefined,
+          addressPrivacy: p.addressPrivacy || 'precise',
           phone: p.user?.phone || '',
           phoneVisibility: p.phoneVisibility || 'hidden',
-          height: p.height || undefined,
-          bodyType: p.bodyType || '',
-          hairColor: p.hairColor || '',
-          hairLength: p.hairLength || '',
-          eyeColor: p.eyeColor || '',
-          ethnicity: p.ethnicity || '',
-          breastSize: p.bustSize || '',
-          breastType: p.breastType || undefined,
-          pubicHair: p.pubicHair || undefined,
-          smoker: typeof p.smoker === 'boolean' ? p.smoker : undefined,
-          tattoos: p.tattoos ? p.tattoos === 'true' : false,
-          piercings: p.piercings ? p.piercings === 'true' : false,
-          acceptsCouples: !!p.acceptsCouples,
-          acceptsWomen: !!p.acceptsWomen,
-          acceptsHandicapped: !!p.acceptsHandicapped,
-          acceptsSeniors: !!p.acceptsSeniors,
-          paymentMethods: (()=>{ try {
-            const raw = String(p.paymentMethods||'')
-            if (!raw) return []
-            if (raw.trim().startsWith('[')) { const P = JSON.parse(raw); return Array.isArray(P)?P:[] }
-            return raw.split(',').map((x:string)=>x.trim()).filter(Boolean)
-          } catch { return [] } })(),
-          paymentCurrencies: (()=>{ try {
-            const raw = String(p.acceptedCurrencies||'')
-            if (!raw) return ['CHF'] // Default
-            if (raw.trim().startsWith('[')) { const C = JSON.parse(raw); return Array.isArray(C)?C:['CHF'] }
-            return raw.split(',').map((x:string)=>x.trim()).filter(Boolean)
-          } catch { return ['CHF'] } })(),
-          specialties: (()=>{ try {
-            // Charger UNIQUEMENT les équipements depuis venueOptions pour éviter doublons
-            const venueRaw = String(p.venueOptions||'')
-            if (!venueRaw) return []
-
-            let venueArray: string[] = []
-            if (venueRaw.trim().startsWith('[')) {
-              const V = JSON.parse(venueRaw)
-              venueArray = Array.isArray(V) ? V : []
-            } else {
-              venueArray = venueRaw.split(',').map((x:string)=>x.trim()).filter(Boolean)
-            }
-
-            // Ajouter préfixe opt: aux équipements s'il n'y en a pas déjà
-            return venueArray.map(item => item.startsWith('opt:') ? item : `opt:${item}`)
-          } catch { return [] } })(),
+          height: p.physical?.height || undefined,
+          bodyType: p.physical?.bodyType || '',
+          hairColor: p.physical?.hairColor || '',
+          hairLength: p.physical?.hairLength || '',
+          eyeColor: p.physical?.eyeColor || '',
+          ethnicity: p.physical?.ethnicity || '',
+          breastSize: p.physical?.bustSize || '',
+          breastType: p.physical?.breastType || undefined,
+          pubicHair: p.physical?.pubicHair || undefined,
+          smoker: p.physical?.smoker,
+          tattoos: p.physical?.tattoos || false,
+          piercings: p.physical?.piercings || false,
+          acceptsCouples: p.clientele?.acceptsCouples || false,
+          acceptsWomen: p.clientele?.acceptsWomen || false,
+          acceptsHandicapped: p.clientele?.acceptsHandicapped || false,
+          acceptsSeniors: p.clientele?.acceptsSeniors || false,
+          paymentMethods: p.options?.paymentMethods || [],
+          paymentCurrencies: p.options?.acceptedCurrencies || ['CHF'],
+          specialties: (p.options?.amenities || []).map(item =>
+            item.startsWith('opt:') ? item : `opt:${item}`
+          ),
         }))
 
 
-        // Parse agenda (timeSlots JSON)
+        // Parse agenda (timeSlots JSON) - Garde la logique actuelle car l'API unifiée ne transforme pas les timeSlots
         try {
-          const sched = normalizeScheduleData(p.timeSlots)
+          // Utiliser les données brutes pour l'agenda car c'est spécifique au dashboard
+          const rawTimeSlots = p.timeSlots // L'API unifiée en mode dashboard inclut ce champ
+          const sched = normalizeScheduleData(rawTimeSlots)
           if (sched?.weekly && Array.isArray(sched.weekly)) {
             const mapDays = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche']
             const nextWeekly: Record<string, DaySlot> = {} as Record<string, DaySlot>
@@ -1246,10 +1169,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                           <input
                             type="checkbox"
                             checked={selected}
-                            onChange={() => {
-                              toggleArrayItem('languages', lang)
-                              if (!selected) setLanguageLevels(prev => ({ ...prev, [lang]: prev[lang] || 3 }))
-                            }}
+                            onChange={() => toggleArrayItem('languages', lang)}
                             className="w-4 h-4 text-purple-500 bg-gray-700 border-gray-600 rounded focus:ring-purple-500"
                           />
                           <span className="text-sm text-gray-300">{lang}</span>
