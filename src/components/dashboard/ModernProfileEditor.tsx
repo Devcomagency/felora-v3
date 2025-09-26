@@ -530,6 +530,13 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
     return JSON.stringify({ weekly: packed, pause: pauseEnabled ? { start: pauseStart, end: pauseEnd } : null, absences })
   }
 
+  // Fonction pour éviter le sur-échappement JSON
+  const safeStringify = (data: any) => {
+    if (Array.isArray(data)) return JSON.stringify(data)
+    if (typeof data === 'string') return data
+    return JSON.stringify(data)
+  }
+
   const doSave = async (payload: any, silent = false, retryCount = 0): Promise<boolean> => {
     const maxRetries = 3
     console.log('🚀 [DEBUG] doSave appelée avec payload:', payload)
@@ -592,7 +599,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
       if (profileData.outcall !== undefined) payload.outcall = !!profileData.outcall
       if (profileData.coordinates) { payload.latitude = profileData.coordinates.lat; payload.longitude = profileData.coordinates.lng }
       if (profileData.addressPrivacy) payload.addressPrivacy = profileData.addressPrivacy
-      if (profileData.languages && profileData.languages.length > 0) payload.languages = JSON.stringify(profileData.languages)
+      if (profileData.languages && profileData.languages.length > 0) payload.languages = safeStringify(profileData.languages)
       // Combiner catégorie et services détaillés dans le champ services
       const serviceDetails = (profileData.specialties || []).filter(s => s.startsWith('srv:'))
       const allServices = [
@@ -605,10 +612,10 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
         serviceDetails,
         allServices
       })
-      if (allServices.length > 0) payload.services = JSON.stringify(allServices)
-      if (profileData.specialties && profileData.specialties.length > 0) payload.amenities = JSON.stringify(profileData.specialties)
-      if (profileData.paymentMethods && profileData.paymentMethods.length > 0) payload.paymentMethods = JSON.stringify(profileData.paymentMethods)
-      if (profileData.paymentCurrencies && profileData.paymentCurrencies.length > 0) payload.acceptedCurrencies = JSON.stringify(profileData.paymentCurrencies)
+      if (allServices.length > 0) payload.services = safeStringify(allServices)
+      if (profileData.specialties && profileData.specialties.length > 0) payload.amenities = safeStringify(profileData.specialties)
+      if (profileData.paymentMethods && profileData.paymentMethods.length > 0) payload.paymentMethods = safeStringify(profileData.paymentMethods)
+      if (profileData.paymentCurrencies && profileData.paymentCurrencies.length > 0) payload.acceptedCurrencies = safeStringify(profileData.paymentCurrencies)
       if (profileData.prices?.fifteenMin !== undefined) payload.rate15Min = profileData.prices.fifteenMin
       if (profileData.prices?.thirtyMin !== undefined) payload.rate30Min = profileData.prices.thirtyMin
       if (profileData.prices?.oneHour !== undefined) payload.rate1H = profileData.prices.oneHour
@@ -649,7 +656,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
           url: m.url // Pas de limite pour URLs Cloudflare R2 signées
         })).filter(m => m.url)
         if (safeMedia.length > 0) {
-          payload.galleryPhotos = JSON.stringify(safeMedia)
+          payload.galleryPhotos = safeStringify(safeMedia)
         }
         // Photo de profil séparée (slot 0)
         const profilePhoto = galleryMedia.find(m => m.slot === 0)
@@ -685,7 +692,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
       if (profileData.outcall !== undefined) payload.outcall = !!profileData.outcall
       if (profileData.coordinates) { payload.latitude = profileData.coordinates.lat; payload.longitude = profileData.coordinates.lng }
       if (profileData.addressPrivacy) payload.addressPrivacy = profileData.addressPrivacy
-      if (profileData.languages && profileData.languages.length > 0) payload.languages = JSON.stringify(profileData.languages)
+      if (profileData.languages && profileData.languages.length > 0) payload.languages = safeStringify(profileData.languages)
       // Combiner catégorie et services détaillés dans le champ services
       const serviceDetails = (profileData.specialties || []).filter(s => s.startsWith('srv:'))
       const allServices = [
@@ -698,10 +705,10 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
         serviceDetails,
         allServices
       })
-      if (allServices.length > 0) payload.services = JSON.stringify(allServices)
-      if (profileData.specialties && profileData.specialties.length > 0) payload.amenities = JSON.stringify(profileData.specialties)
-      if (profileData.paymentMethods && profileData.paymentMethods.length > 0) payload.paymentMethods = JSON.stringify(profileData.paymentMethods)
-      if (profileData.paymentCurrencies && profileData.paymentCurrencies.length > 0) payload.acceptedCurrencies = JSON.stringify(profileData.paymentCurrencies)
+      if (allServices.length > 0) payload.services = safeStringify(allServices)
+      if (profileData.specialties && profileData.specialties.length > 0) payload.amenities = safeStringify(profileData.specialties)
+      if (profileData.paymentMethods && profileData.paymentMethods.length > 0) payload.paymentMethods = safeStringify(profileData.paymentMethods)
+      if (profileData.paymentCurrencies && profileData.paymentCurrencies.length > 0) payload.acceptedCurrencies = safeStringify(profileData.paymentCurrencies)
       payload.timeSlots = scheduleToJson()
       if (profileData.height !== undefined) payload.height = profileData.height
       if (profileData.bodyType !== undefined) payload.bodyType = profileData.bodyType
@@ -742,7 +749,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
           url: m.url // Pas de limite pour URLs Cloudflare R2 signées
         })).filter(m => m.url)
         if (safeMedia.length > 0) {
-          payload.galleryPhotos = JSON.stringify(safeMedia)
+          payload.galleryPhotos = safeStringify(safeMedia)
         }
         // Photo de profil séparée (slot 0)
         const profilePhoto = galleryMedia.find(m => m.slot === 0)
@@ -930,18 +937,9 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                     fd.append('slot', String(zeroBasedSlot))
                     fd.append('isPrivate', 'false')
                     const res = await fetch('/api/escort/media/upload', { method: 'POST', body: fd, credentials: 'include' })
-                    let data = await res.json().catch(() => ({}))
+                    const data = await res.json().catch(() => ({}))
                     if (!res.ok || !data?.success) {
-                      // Fallback to legacy endpoint if new one fails
-                      const fd2 = new FormData()
-                      fd2.append('file', fileToUpload)
-                      fd2.append('type', (fileToUpload.type.startsWith('image/') ? 'IMAGE' : 'VIDEO'))
-                      fd2.append('visibility', 'PUBLIC')
-                      fd2.append('position', String(slot.n))
-                      const res2 = await fetch('/api/media/upload', { method: 'POST', body: fd2, credentials: 'include' })
-                      const d2 = await res2.json().catch(() => ({}))
-                      if (!res2.ok || !d2?.mediaId) throw new Error(d2?.error || data?.error || 'Upload échoué')
-                      data = { success: true, url: (d2?.url || preview), slot: zeroBasedSlot, legacyMediaId: d2.mediaId, slots: undefined }
+                      throw new Error(data?.error || 'Upload échoué')
                     }
                     setMandatoryMedia(prev => {
                       const next = [...prev]

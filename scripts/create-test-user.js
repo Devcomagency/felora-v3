@@ -5,40 +5,34 @@ const prisma = new PrismaClient()
 
 async function createTestUser() {
   try {
-    // Vérifier si l'utilisateur existe déjà
-    let user = await prisma.user.findUnique({
-      where: { email: 'test@felora.com' }
+    // Supprimer les données existantes pour recommencer proprement
+    await prisma.escortProfile.deleteMany({})
+    await prisma.wallet.deleteMany({})
+    await prisma.user.deleteMany({})
+
+    console.log('🧹 Base de données nettoyée')
+
+    // Créer un utilisateur avec l'ID exact de la session actuelle
+    const hashedPassword = await bcrypt.hash('password123', 10)
+
+    const user = await prisma.user.create({
+      data: {
+        id: 'cmg112vrp0000kj4ovpr6v71v', // ID exact de la session
+        email: 'test@felora.com',
+        password: hashedPassword,
+        passwordHash: hashedPassword,
+        name: 'Test User',
+        phone: '+41791234567',
+        role: 'ESCORT'
+      }
     })
 
-    if (!user) {
-      // Créer un utilisateur de test
-      const hashedPassword = await bcrypt.hash('password123', 10)
-      
-      user = await prisma.user.create({
-        data: {
-          email: 'test@felora.com',
-          password: hashedPassword,
-          passwordHash: hashedPassword, // Ajouter les deux champs pour compatibilité
-          name: 'Test User',
-          phone: '+41791234567',
-          role: 'ESCORT' // Changer en ESCORT pour accéder au dashboard
-        }
-      })
+    console.log('✅ Utilisateur créé avec ID session:', user.email)
 
-      console.log('✅ Utilisateur créé:', user.email)
-    } else {
-      console.log('✅ Utilisateur existe déjà:', user.email)
-    }
-
-    // Vérifier si le profil escort existe déjà
-    let escortProfile = await prisma.escortProfile.findUnique({
-      where: { userId: user.id }
-    })
-
-    if (!escortProfile) {
-      escortProfile = await prisma.escortProfile.create({
-        data: {
-          userId: user.id,
+    // Créer le profil escort avec les bonnes données
+    const escortProfile = await prisma.escortProfile.create({
+      data: {
+        userId: user.id,
           stageName: 'Sofia',
           firstName: 'Sofia',
           city: 'Genève',
@@ -69,28 +63,17 @@ async function createTestUser() {
         }
       })
 
-      console.log('✅ Profil escort créé:', escortProfile.stageName)
-    } else {
-      console.log('✅ Profil escort existe déjà:', escortProfile.stageName)
-    }
+    console.log('✅ Profil escort créé:', escortProfile.stageName)
 
-    // Vérifier si le wallet existe déjà
-    let wallet = await prisma.wallet.findUnique({
-      where: { userId: user.id }
+    // Créer le wallet
+    const wallet = await prisma.wallet.create({
+      data: {
+        userId: user.id,
+        balance: 1000
+      }
     })
 
-    if (!wallet) {
-      wallet = await prisma.wallet.create({
-        data: {
-          userId: user.id,
-          balance: 1000
-        }
-      })
-
-      console.log('✅ Wallet créé avec balance:', wallet.balance)
-    } else {
-      console.log('✅ Wallet existe déjà avec balance:', wallet.balance)
-    }
+    console.log('✅ Wallet créé avec balance:', wallet.balance)
 
     console.log('\n🎉 Données de test créées avec succès!')
     console.log('Email: test@felora.com')
