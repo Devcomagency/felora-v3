@@ -1629,12 +1629,12 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                   <div className="flex flex-wrap gap-2">
                     {group.items.map(it => {
                       const key = `srv:${it}`
-                      const selected = (profileData.serviceType||[]).includes(key)
+                      const selected = (profileData.specialties||[]).includes(key)
                       return (
                         <button key={key} onClick={()=>{
-                          const arr = new Set(profileData.serviceType||[])
+                          const arr = new Set(profileData.specialties||[])
                           if (arr.has(key)) arr.delete(key); else arr.add(key)
-                          updateProfileData('serviceType', Array.from(arr))
+                          updateProfileData('specialties', Array.from(arr))
                         }} className={`text-xs px-2.5 py-1 rounded-full border ${selected ? 'bg-purple-500/20 text-purple-200 border-purple-500/30' : 'bg-white/5 text-white/80 border-white/10 hover:bg-white/10'}`}>
                           {it}
                         </button>

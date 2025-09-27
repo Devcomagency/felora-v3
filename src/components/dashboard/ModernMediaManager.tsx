@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Eye, EyeOff, Upload, X, Play, Image as ImageIcon, Diamond, Unlock } from 'lucide-react'
 import { useSession } from 'next-auth/react'
-import toast from 'react-hot-toast'
+// import toast from 'react-hot-toast' // Utiliser alertes pour test
 
 interface Media {
   id: string
@@ -110,15 +110,15 @@ export default function ModernMediaManager() {
 
       if (response.ok) {
         const data = await response.json()
-        toast.success('Média uploadé avec succès')
+        alert('Média uploadé avec succès')
         loadMedias() // Recharger la liste
       } else {
         const error = await response.json()
-        toast.error(error.message || 'Erreur upload')
+        alert(error.message || 'Erreur upload')
       }
     } catch (error) {
       console.error('Erreur upload:', error)
-      toast.error('Erreur lors de l\'upload')
+      alert('Erreur lors de l\'upload')
     } finally {
       setUploading(false)
     }
@@ -127,7 +127,7 @@ export default function ModernMediaManager() {
   // Débloquer un média privé
   const unlockPrivateMedia = async (mediaId: string, price: number) => {
     if (userDiamonds.balance < price) {
-      toast.error(`Vous n'avez pas assez de diamants (${price} requis, ${userDiamonds.balance} disponibles)`)
+      alert(`Vous n'avez pas assez de diamants (${price} requis, ${userDiamonds.balance} disponibles)`)
       return
     }
 
@@ -140,16 +140,16 @@ export default function ModernMediaManager() {
 
       if (response.ok) {
         const data = await response.json()
-        toast.success('Média débloqué !')
+        alert('Média débloqué !')
         setUnlockedMedias(prev => new Set([...prev, mediaId]))
         setUserDiamonds(prev => ({ ...prev, balance: data.newBalance }))
       } else {
         const error = await response.json()
-        toast.error(error.error || 'Erreur déblocage')
+        alert(error.error || 'Erreur déblocage')
       }
     } catch (error) {
       console.error('Erreur déblocage:', error)
-      toast.error('Erreur lors du déblocage')
+      alert('Erreur lors du déblocage')
     }
   }
 
@@ -159,13 +159,13 @@ export default function ModernMediaManager() {
       const response = await fetch(`/api/media/${mediaId}`, { method: 'DELETE' })
       if (response.ok) {
         setMedias(prev => prev.filter(m => m.id !== mediaId))
-        toast.success('Média supprimé')
+        alert('Média supprimé')
       } else {
-        toast.error('Erreur suppression')
+        alert('Erreur suppression')
       }
     } catch (error) {
       console.error('Erreur suppression:', error)
-      toast.error('Erreur lors de la suppression')
+      alert('Erreur lors de la suppression')
     }
   }
 
@@ -178,7 +178,7 @@ export default function ModernMediaManager() {
       // Par défaut, upload en PUBLIC
       uploadMedia(file, 'PUBLIC')
     } else {
-      toast.error('Format non supporté')
+      alert('Format non supporté')
     }
   }
 
