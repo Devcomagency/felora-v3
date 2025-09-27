@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import { User, Image, Eye, Heart, Clock, Settings as SettingsIcon, CheckCircle2, AlertTriangle, ShieldCheck, Pause, Calendar, Save, X, BadgeCheck, Search, Loader2 } from 'lucide-react'
 import * as Dialog from '@radix-ui/react-dialog'
 import AddressAutocomplete from '../ui/AddressAutocomplete'
+// import ModernMediaManager from './ModernMediaManager'
 
 const CANTON_MAP: Record<string, string> = {
   GE: 'Genève', VD: 'Vaud', VS: 'Valais', ZH: 'Zurich', BE: 'Berne', BS: 'Bâle',
