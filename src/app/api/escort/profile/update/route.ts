@@ -4,6 +4,10 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 
+/**
+ * @deprecated Cette API est remplacée par /api/profile/unified/me (POST)
+ * Utilisez l'API unifiée pour une meilleure cohérence et performance
+ */
 // POST /api/escort/profile/update
 // Body: subset of fields { description?, city?, canton?, coordinates?: { lat, lng }, address?, phone?, languages?, services?, rates? }
 export async function POST(req: NextRequest) {

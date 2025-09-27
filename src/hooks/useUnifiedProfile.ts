@@ -113,11 +113,14 @@ interface UseUnifiedProfileReturn {
   loading: boolean
   error: string | null
   refetch: () => Promise<void>
+  save: (data: Partial<UnifiedProfileData>) => Promise<boolean>
+  saving: boolean
 }
 
 export function useUnifiedProfile(profileId: string): UseUnifiedProfileReturn {
   const [profile, setProfile] = useState<UnifiedProfileData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const fetchProfile = async () => {
@@ -149,6 +152,47 @@ export function useUnifiedProfile(profileId: string): UseUnifiedProfileReturn {
     }
   }
 
+  const saveProfile = async (data: Partial<UnifiedProfileData>): Promise<boolean> => {
+    // Seul le mode dashboard permet la sauvegarde
+    if (profileId !== 'me') {
+      console.error('❌ [useUnifiedProfile] Save only allowed in dashboard mode')
+      return false
+    }
+
+    try {
+      setSaving(true)
+      setError(null)
+
+      const response = await fetch(`/api/profile/unified/${profileId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(data)
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`)
+      }
+
+      const result = await response.json()
+
+      if (!result.success) {
+        throw new Error(result.message || 'Erreur de sauvegarde')
+      }
+
+      // Recharger le profil après sauvegarde
+      await fetchProfile()
+      return true
+
+    } catch (err: any) {
+      console.error('❌ [useUnifiedProfile] Save error:', err)
+      setError(err.message || 'Erreur de sauvegarde')
+      return false
+    } finally {
+      setSaving(false)
+    }
+  }
+
   useEffect(() => {
     if (profileId) {
       fetchProfile()
@@ -159,7 +203,9 @@ export function useUnifiedProfile(profileId: string): UseUnifiedProfileReturn {
     profile,
     loading,
     error,
-    refetch: fetchProfile
+    refetch: fetchProfile,
+    save: saveProfile,
+    saving
   }
 }
 

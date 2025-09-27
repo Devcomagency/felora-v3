@@ -416,7 +416,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
         const body = {
           timeSlots: JSON.stringify({ weekly: packed, pause: pauseEnabled ? { start: pauseStart, end: pauseEnd } : null, absences })
         }
-        await fetch('/api/escort/profile/update', {
+        await fetch('/api/profile/unified/me', {
           method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(body)
         })
       } catch {}
@@ -541,8 +541,8 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
     const maxRetries = 3
     console.log('🚀 [DEBUG] doSave appelée avec payload:', payload)
     try {
-      console.log('🌐 [DEBUG] Envoi requête à /api/escort/profile/update')
-      const res = await fetch('/api/escort/profile/update', {
+      console.log('🌐 [DEBUG] Envoi requête à /api/profile/unified/me')
+      const res = await fetch('/api/profile/unified/me', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -560,7 +560,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
         return doSave(payload, silent, retryCount + 1)
       }
 
-      if (!res.ok || !data?.success) throw new Error(data?.details || data?.error || 'Échec de la sauvegarde')
+      if (!res.ok || !data?.success) throw new Error(data?.message || data?.error || 'Échec de la sauvegarde')
       if (!silent) setSaveMsg({ type: 'success', text: data.message || 'Modifications enregistrées' })
       if (!silent) setTimeout(() => setSaveMsg(null), 3000)
       if (silent) {

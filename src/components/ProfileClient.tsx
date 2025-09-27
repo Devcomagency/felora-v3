@@ -21,7 +21,12 @@ interface EscortProfile {
   age: number
   location: string
   media: string
-  gallery: string[]
+  gallery: Array<string | {
+    url: string
+    type?: string
+    isPrivate?: boolean
+    visibility?: string
+  }>
   blurredGallery: string[]
   description: string
   services: string[]
@@ -523,19 +528,23 @@ export default function ProfileClient({ profile: initialProfile }: ProfileClient
     }
     
     const result = profile.gallery.map((media, index) => {
-      // 🔧 NOUVELLE DÉTECTION : Utiliser le paramètre ?type= dans l'URL
-      const isVideo = media.includes('?type=video') || media.includes('.mp4') || media.includes('.mov')
+      const mediaObject = (media && typeof media === 'object') ? media as any : null
+      const rawUrl = mediaObject?.url ?? String(media || '')
+
+      // 🔧 NOUVELLE DÉTECTION : Utiliser le paramètre ?type= dans l'URL ou la méta type déclarée
+      const explicitType = typeof mediaObject?.type === 'string' ? mediaObject.type.toLowerCase() : null
+      const isVideo = explicitType === 'video' || rawUrl.includes('?type=video') || rawUrl.includes('.mp4') || rawUrl.includes('.mov')
       const type = isVideo ? 'video' : 'photo'
       
       // Nettoyer l'URL pour l'affichage (enlever le paramètre type)
-      const cleanUrl = media.split('?type=')[0]
+      const cleanUrl = rawUrl.split('?type=')[0]
       
       console.log(`🎥 Média ${index}: ${media} -> Type: ${type} (URL nettoyée: ${cleanUrl})`)
       
       return {
         type,
         url: cleanUrl,
-        isPrivate: false, // Tous les médias sont publics par défaut
+        isPrivate: Boolean(mediaObject?.isPrivate || (typeof mediaObject?.visibility === 'string' && mediaObject.visibility.toUpperCase() === 'PRIVATE')),
         likes: Math.floor(Math.random() * 300) + 50,
         comments: Math.floor(Math.random() * 50) + 5
       }

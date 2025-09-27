@@ -3,6 +3,10 @@ import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
+/**
+ * @deprecated Cette API est remplacée par /api/profile/unified/me
+ * Utilisez l'API unifiée pour une meilleure cohérence
+ */
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)

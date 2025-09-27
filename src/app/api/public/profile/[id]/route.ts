@@ -161,7 +161,13 @@ export async function GET(
         type: slot.type === 'video' ? 'video' as const : 'image' as const,
         url: slot.url,
         thumb: slot.thumb || undefined,
-        pos: slot.slot || index
+        pos: slot.slot || index,
+        isPrivate: Boolean(slot.isPrivate || (typeof slot.visibility === 'string' && slot.visibility.toUpperCase() === 'PRIVATE')),
+        price: typeof slot.price === 'number'
+          ? slot.price
+          : typeof slot.price === 'string' && slot.price.trim() !== ''
+            ? Number(slot.price)
+            : undefined
       }))
       .sort((a, b) => a.pos - b.pos) // Trier par position
 

@@ -6,11 +6,11 @@ import { prisma } from '@/lib/prisma'
 /**
  * API UNIFIÉE PROFIL - Dashboard ET Modal
  *
- * IMPORTANT: Cette API NE GÈRE PAS les médias (galleryPhotos, videos, profilePhoto)
- * Les médias restent sur leurs APIs dédiées pour éviter la complexité.
+ * Cette API gère TOUT : lecture, sauvegarde, et médias
+ * Remplace les APIs legacy pour une expérience cohérente
  *
  * Usage:
- * - Dashboard: GET /api/profile/unified/me
+ * - Dashboard: GET/POST /api/profile/unified/me
  * - Modal: GET /api/profile/unified/[publicId]
  */
 
@@ -295,6 +295,286 @@ function categorizeServicesForRead(services: string[]): {
     } else {
       // Sinon, c'est un vrai service
       result.cleanedServices.push(service.replace(/^(srv:|opt:)/, '').trim())
+    }
+  })
+
+  return result
+}
+
+/**
+ * POST /api/profile/unified/[id] - Sauvegarde unifiée
+ * Remplace /api/escort/profile/update avec une logique simplifiée
+ */
+export async function POST(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params
+    const session = await getServerSession(authOptions)
+
+    console.log('🔄 [API UNIFIED POST] Called with ID:', id)
+    console.log('🔄 [API UNIFIED POST] Session found:', !!session)
+
+    // Seul le mode dashboard permet la sauvegarde
+    if (id !== 'me') {
+      return NextResponse.json({
+        error: 'forbidden',
+        message: 'Seul le mode dashboard permet la sauvegarde'
+      }, { status: 403 })
+    }
+
+    if (!session?.user?.id) {
+      return NextResponse.json({
+        error: 'unauthorized',
+        message: 'Session requise pour la sauvegarde'
+      }, { status: 401 })
+    }
+
+    const body = await request.json().catch(() => ({}))
+    console.log('🔄 [API UNIFIED POST] Body keys:', Object.keys(body))
+
+    // Validation et transformation des données
+    const transformedData = transformUpdateData(body)
+    console.log('🔄 [API UNIFIED POST] Transformed data keys:', Object.keys(transformedData))
+
+    // Vérifier que le profil existe
+    let existingProfile = await prisma.escortProfile.findUnique({
+      where: { userId: session.user.id },
+      select: { id: true }
+    })
+
+    if (!existingProfile) {
+      // Créer un profil minimal si absent
+      const user = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { name: true }
+      })
+      
+      const baseName = (user?.name?.split(' ')?.[0] || 'Escort').toString()
+      const today = new Date()
+      const dob = new Date(today.getFullYear() - 30, 0, 1) // âge par défaut ~30
+      
+      existingProfile = await prisma.escortProfile.create({
+        data: {
+          userId: session.user.id,
+          firstName: baseName,
+          stageName: baseName,
+          dateOfBirth: dob,
+          nationality: 'CH',
+          languages: '',
+          city: '',
+          workingArea: '',
+          description: '',
+          services: '',
+          rates: '',
+          availability: '',
+          galleryPhotos: '[]',
+          videos: '[]',
+        }
+      })
+    }
+
+    // Mettre à jour le profil
+    await prisma.escortProfile.update({
+      where: { userId: session.user.id },
+      data: transformedData
+    })
+
+    // Mettre à jour le téléphone dans la table User si fourni
+    if (body.phone) {
+      await prisma.user.update({
+        where: { id: session.user.id },
+        data: { phone: body.phone }
+      })
+    }
+
+    console.log('✅ [API UNIFIED POST] Profile updated successfully')
+
+    return NextResponse.json({
+      success: true,
+      message: 'Profil mis à jour avec succès',
+      timestamp: new Date().toISOString()
+    })
+
+  } catch (error: any) {
+    console.error('❌ [API UNIFIED POST] Error:', error)
+    return NextResponse.json({
+      success: false,
+      error: 'server_error',
+      message: error.message || 'Erreur lors de la sauvegarde'
+    }, { status: 500 })
+  }
+}
+
+/**
+ * Transforme les données du frontend vers le format de la base de données
+ */
+function transformUpdateData(body: any): Record<string, any> {
+  const data: Record<string, any> = {}
+
+  // Champs de base
+  if (body.stageName !== undefined) data.stageName = body.stageName
+  if (body.description !== undefined) data.description = body.description
+  if (body.city !== undefined) data.city = body.city
+  if (body.canton !== undefined) data.canton = body.canton
+
+  // Âge → dateOfBirth
+  if (body.age !== undefined && typeof body.age === 'number') {
+    const age = Math.round(body.age)
+    if (age >= 18 && age <= 80) {
+      const today = new Date()
+      const dobYear = today.getFullYear() - age
+      data.dateOfBirth = new Date(dobYear, 0, 1) // 1er janvier
+    }
+  }
+
+  // Coordonnées
+  if (body.coordinates?.lat && body.coordinates?.lng) {
+    data.latitude = body.coordinates.lat
+    data.longitude = body.coordinates.lng
+  }
+
+  // Adresse
+  if (body.address !== undefined) data.workingArea = body.address
+
+  // Arrays → CSV
+  if (body.languages !== undefined) {
+    data.languages = Array.isArray(body.languages) 
+      ? body.languages.join(', ') 
+      : body.languages
+  }
+
+  if (body.services !== undefined) {
+    // Gestion des services avec catégorisation automatique
+    const servicesArray = Array.isArray(body.services) ? body.services : []
+    const { category, cleanedServices } = categorizeServicesForUpdate(servicesArray)
+    
+    if (category) data.category = category
+    data.services = cleanedServices.join(', ')
+  }
+
+  // Nouvelles options
+  if (body.paymentMethods !== undefined) {
+    data.paymentMethods = Array.isArray(body.paymentMethods) 
+      ? body.paymentMethods.join(', ') 
+      : body.paymentMethods
+  }
+
+  if (body.amenities !== undefined) {
+    data.venueOptions = Array.isArray(body.amenities) 
+      ? body.amenities.join(', ') 
+      : body.amenities
+  }
+
+  if (body.acceptedCurrencies !== undefined) {
+    data.acceptedCurrencies = Array.isArray(body.acceptedCurrencies) 
+      ? body.acceptedCurrencies.join(', ') 
+      : body.acceptedCurrencies
+  }
+
+  // Tarifs
+  if (body.rates?.fifteenMin !== undefined) data.rate15Min = body.rates.fifteenMin
+  if (body.rates?.thirtyMin !== undefined) data.rate30Min = body.rates.thirtyMin
+  if (body.rates?.oneHour !== undefined) data.rate1H = body.rates.oneHour
+  if (body.rates?.twoHours !== undefined) data.rate2H = body.rates.twoHours
+  if (body.rates?.halfDay !== undefined) data.rateHalfDay = body.rates.halfDay
+  if (body.rates?.fullDay !== undefined) data.rateFullDay = body.rates.fullDay
+  if (body.rates?.overnight !== undefined) data.rateOvernight = body.rates.overnight
+  if (body.rates?.currency !== undefined) data.currency = body.rates.currency
+  if (body.rates?.baseRate !== undefined) data.baseRate = body.rates.baseRate
+
+  // Physique
+  if (body.physical?.height !== undefined) data.height = body.physical.height
+  if (body.physical?.bodyType !== undefined) data.bodyType = body.physical.bodyType
+  if (body.physical?.hairColor !== undefined) data.hairColor = body.physical.hairColor
+  if (body.physical?.eyeColor !== undefined) data.eyeColor = body.physical.eyeColor
+  if (body.physical?.ethnicity !== undefined) data.ethnicity = body.physical.ethnicity
+  if (body.physical?.bustSize !== undefined) data.bustSize = body.physical.bustSize
+  if (body.physical?.breastType !== undefined) data.breastType = body.physical.breastType
+  if (body.physical?.tattoos !== undefined) data.tattoos = body.physical.tattoos
+  if (body.physical?.piercings !== undefined) data.piercings = body.physical.piercings
+  if (body.physical?.pubicHair !== undefined) data.pubicHair = body.physical.pubicHair
+  if (body.physical?.smoker !== undefined) data.smoker = body.physical.smoker
+
+  // Disponibilité
+  if (body.availability?.outcall !== undefined) data.outcall = body.availability.outcall
+  if (body.availability?.incall !== undefined) data.incall = body.availability.incall
+  if (body.availability?.availableNow !== undefined) data.availableNow = body.availability.availableNow
+  if (body.availability?.weekendAvailable !== undefined) data.weekendAvailable = body.availability.weekendAvailable
+
+  // Clientèle
+  if (body.clientele?.acceptsCouples !== undefined) data.acceptsCouples = body.clientele.acceptsCouples
+  if (body.clientele?.acceptsWomen !== undefined) data.acceptsWomen = body.clientele.acceptsWomen
+  if (body.clientele?.acceptsHandicapped !== undefined) data.acceptsHandicapped = body.clientele.acceptsHandicapped
+  if (body.clientele?.acceptsSeniors !== undefined) data.acceptsSeniors = body.clientele.acceptsSeniors
+
+  // Contact et visibilité
+  if (body.phoneVisibility !== undefined) data.phoneVisibility = body.phoneVisibility
+  if (body.phoneDisplayType !== undefined) data.phoneDisplayType = body.phoneDisplayType
+
+  // Agenda
+  if (body.timeSlots !== undefined) {
+    data.timeSlots = typeof body.timeSlots === 'string' 
+      ? body.timeSlots 
+      : JSON.stringify(body.timeSlots)
+  }
+
+  // Médias
+  if (body.galleryPhotos !== undefined) {
+    data.galleryPhotos = typeof body.galleryPhotos === 'string' 
+      ? body.galleryPhotos 
+      : JSON.stringify(body.galleryPhotos)
+  }
+
+  if (body.videos !== undefined) {
+    data.videos = typeof body.videos === 'string' 
+      ? body.videos 
+      : JSON.stringify(body.videos)
+  }
+
+  if (body.profilePhoto !== undefined) {
+    data.profilePhoto = body.profilePhoto || null
+  }
+
+  // Champs supplémentaires
+  if (body.originDetails !== undefined) data.originDetails = body.originDetails
+  if (body.rateStructure !== undefined) data.rateStructure = body.rateStructure
+  if (body.ageVerified !== undefined) data.ageVerified = body.ageVerified
+  if (body.minimumDuration !== undefined) data.minimumDuration = body.minimumDuration
+
+  return data
+}
+
+/**
+ * Catégorise les services pour la sauvegarde (logique simplifiée)
+ */
+function categorizeServicesForUpdate(services: string[]): {
+  category: string | null,
+  cleanedServices: string[]
+} {
+  const result = { category: null as string | null, cleanedServices: [] as string[] }
+
+  const mainCategories = [
+    'escort', 'masseuse_erotique', 'dominatrice_bdsm', 'transsexuel',
+    'masseuse', 'dominatrice', 'BDSM', 'massage'
+  ]
+
+  services.forEach(service => {
+    const cleanService = service.replace(/^(srv:|opt:)/, '').trim()
+
+    if (mainCategories.includes(cleanService)) {
+      // C'est une catégorie principale
+      if (cleanService === 'masseuse' || cleanService === 'massage') {
+        result.category = 'masseuse_erotique'
+      } else if (cleanService === 'dominatrice' || cleanService === 'BDSM') {
+        result.category = 'dominatrice_bdsm'
+      } else {
+        result.category = cleanService
+      }
+    } else {
+      // C'est un service
+      result.cleanedServices.push(cleanService)
     }
   })
 

@@ -48,8 +48,8 @@ export default function StandaloneMediaSection({ userId, initialData }: Standalo
     ;(async () => {
       try {
         setLoading(true)
-        // On utilise le profil qui contient galleryPhotos
-        const res = await fetch('/api/escort/profile', { cache:'no-store' })
+        // On utilise l'API unifiée qui contient galleryPhotos
+        const res = await fetch('/api/profile/unified/me', { cache:'no-store' })
         const json = await res.json()
         const profile = json?.success ? json.profile : json
         const normalized = ensureSix(profile?.galleryPhotos)

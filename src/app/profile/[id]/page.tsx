@@ -31,6 +31,9 @@ interface EscortProfile {
     url: string
     thumb?: string
     poster?: string
+    isPrivate?: boolean
+    price?: number
+    pos?: number
   }>
   verified?: boolean
   premium?: boolean
@@ -199,17 +202,29 @@ export default function EscortProfilePage() {
         console.log('[DEBUG API] realTimeAvailability dans data:', data.realTimeAvailability)
         console.log('[DEBUG API] scheduleData dans data:', data.scheduleData)
 
+        const normalizedMedia = Array.isArray(data.media)
+          ? data.media.map((item: any) => ({
+              ...item,
+              isPrivate: Boolean(item?.isPrivate || (typeof item?.visibility === 'string' && item.visibility.toUpperCase() === 'PRIVATE')),
+              price: typeof item?.price === 'number'
+                ? item.price
+                : typeof item?.price === 'string' && item.price.trim() !== ''
+                  ? Number(item.price)
+                  : undefined
+            }))
+          : []
+
         // Transform API data to match EscortProfile interface
         const transformedProfile: EscortProfile = {
           id: data.id,
           name: data.stageName || 'Escort',
           stageName: data.stageName,
-          avatar: data.media?.[0]?.url,
+          avatar: normalizedMedia?.[0]?.url,
           city: data.city,
           age: data.age || undefined,
           languages: data.languages || [],
           services: data.services || [],
-          media: data.media || [],
+          media: normalizedMedia,
           verified: data.isVerifiedBadge,
           premium: false,
           online: false,
@@ -582,7 +597,17 @@ export default function EscortProfilePage() {
         {/* Séparation des médias : media[0] = photo de profil, media[1-5] = posts feed */}
         {(() => {
           const profilePhoto = profile.media && profile.media.length > 0 ? profile.media[0] : null
-          const feedMedia = profile.media ? profile.media.slice(1) : []
+          const feedMedia = profile.media
+            ? profile.media.slice(1).map((item) => ({
+                ...item,
+                isPrivate: Boolean(item?.isPrivate || (typeof (item as any)?.visibility === 'string' && (item as any).visibility.toUpperCase() === 'PRIVATE')),
+                price: typeof item?.price === 'number'
+                  ? item.price
+                  : typeof (item as any)?.price === 'string' && (item as any).price.trim() !== ''
+                    ? Number((item as any).price)
+                    : undefined
+              }))
+            : []
 
           return (
             <>
