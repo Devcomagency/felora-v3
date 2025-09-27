@@ -1,17 +1,22 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Eye, EyeOff, Upload, X, Play, Image as ImageIcon, Diamond, Unlock } from 'lucide-react'
+import {
+  Eye, Upload, X, Play, Image as ImageIcon, Diamond, Unlock,
+  Archive, MoreVertical, Check, ArrowLeft, Edit3, Trash2,
+  Grid, List, Filter, Search, Plus, Star, TrendingUp
+} from 'lucide-react'
 import { useSession } from 'next-auth/react'
-// import toast from 'react-hot-toast' // Utiliser alertes pour test
 
 interface Media {
   id: string
   url: string
   type: 'IMAGE' | 'VIDEO'
-  visibility: 'PUBLIC' | 'PRIVATE' | 'REQUESTABLE'
+  visibility: 'PUBLIC' | 'PREMIUM' | 'ARCHIVED'
   price?: number
   createdAt: string
+  views?: number
+  earnings?: number
 }
 
 interface UserDiamonds {
@@ -20,15 +25,27 @@ interface UserDiamonds {
   totalSpent: number
 }
 
+type UploadStep = 'select' | 'configure' | 'uploading' | 'success'
+type ViewMode = 'grid' | 'list'
+type FilterTab = 'all' | 'public' | 'premium' | 'archived'
+
 export default function ModernMediaManager() {
   const { data: session } = useSession()
   const [medias, setMedias] = useState<Media[]>([])
   const [userDiamonds, setUserDiamonds] = useState<UserDiamonds>({ balance: 0, totalEarned: 0, totalSpent: 0 })
   const [loading, setLoading] = useState(true)
-  const [uploading, setUploading] = useState(false)
   const [unlockedMedias, setUnlockedMedias] = useState<Set<string>>(new Set())
-  const [selectedVisibility, setSelectedVisibility] = useState<'PUBLIC' | 'PRIVATE' | 'REQUESTABLE'>('PUBLIC')
-  const [mediaPrice, setMediaPrice] = useState<number>(10)
+
+  // Upload workflow states
+  const [uploadStep, setUploadStep] = useState<UploadStep>('select')
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [uploadVisibility, setUploadVisibility] = useState<'PUBLIC' | 'PREMIUM'>('PUBLIC')
+  const [uploadPrice, setUploadPrice] = useState<number>(10)
+
+  // UI states
+  const [viewMode, setViewMode] = useState<ViewMode>('grid')
+  const [activeTab, setActiveTab] = useState<FilterTab>('all')
+  const [searchTerm, setSearchTerm] = useState('')
 
   // Charger les médias
   const loadMedias = async () => {

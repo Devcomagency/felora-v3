@@ -639,10 +639,16 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
       if (profileData.breastType) payload.breastType = profileData.breastType
       if (profileData.pubicHair) payload.pubicHair = profileData.pubicHair  
       if (typeof profileData.smoker === 'boolean') payload.smoker = profileData.smoker
-      if (typeof profileData.acceptsCouples === 'boolean') payload.acceptsCouples = profileData.acceptsCouples
-      if (typeof profileData.acceptsWomen === 'boolean') payload.acceptsWomen = profileData.acceptsWomen
-      if (typeof profileData.acceptsHandicapped === 'boolean') payload.acceptsHandicapped = profileData.acceptsHandicapped
-      if (typeof profileData.acceptsSeniors === 'boolean') payload.acceptsSeniors = profileData.acceptsSeniors
+      
+      // Clientèle
+      if (typeof profileData.acceptsCouples === 'boolean' || typeof profileData.acceptsWomen === 'boolean' || typeof profileData.acceptsHandicapped === 'boolean' || typeof profileData.acceptsSeniors === 'boolean') {
+        payload.clientele = {
+          acceptsCouples: profileData.acceptsCouples || false,
+          acceptsWomen: profileData.acceptsWomen || false,
+          acceptsHandicapped: profileData.acceptsHandicapped || false,
+          acceptsSeniors: profileData.acceptsSeniors || false
+        }
+      }
       payload.timeSlots = scheduleToJson()
 
       // Inclure les médias dans l'autosave
@@ -735,10 +741,16 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
       if (profileData.breastType) payload.breastType = profileData.breastType
       if (profileData.pubicHair) payload.pubicHair = profileData.pubicHair
       if (typeof profileData.smoker === 'boolean') payload.smoker = profileData.smoker
-      if (typeof profileData.acceptsCouples === 'boolean') payload.acceptsCouples = profileData.acceptsCouples
-      if (typeof profileData.acceptsWomen === 'boolean') payload.acceptsWomen = profileData.acceptsWomen
-      if (typeof profileData.acceptsHandicapped === 'boolean') payload.acceptsHandicapped = profileData.acceptsHandicapped
-      if (typeof profileData.acceptsSeniors === 'boolean') payload.acceptsSeniors = profileData.acceptsSeniors
+      
+      // Clientèle
+      if (typeof profileData.acceptsCouples === 'boolean' || typeof profileData.acceptsWomen === 'boolean' || typeof profileData.acceptsHandicapped === 'boolean' || typeof profileData.acceptsSeniors === 'boolean') {
+        payload.clientele = {
+          acceptsCouples: profileData.acceptsCouples || false,
+          acceptsWomen: profileData.acceptsWomen || false,
+          acceptsHandicapped: profileData.acceptsHandicapped || false,
+          acceptsSeniors: profileData.acceptsSeniors || false
+        }
+      }
 
       // Inclure les médias dans la sauvegarde manuelle aussi
       const galleryMedia = mandatoryMedia.filter(m => m.preview && m.id).map((m, idx) => ({
