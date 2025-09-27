@@ -472,6 +472,18 @@ function transformUpdateData(body: any): Record<string, any> {
       : body.amenities
   }
 
+  // Spécialités → practices
+  if (body.specialties !== undefined) {
+    data.practices = Array.isArray(body.specialties)
+      ? body.specialties.join(', ')
+      : body.specialties
+  }
+
+  // Catégorie directe (pour assurer la persistance)
+  if (body.category !== undefined) {
+    data.category = body.category
+  }
+
   if (body.acceptedCurrencies !== undefined) {
     data.acceptedCurrencies = Array.isArray(body.acceptedCurrencies) 
       ? body.acceptedCurrencies.join(', ') 
@@ -651,6 +663,9 @@ function transformProfileData(rawProfile: any, mode: 'dashboard' | 'public') {
 
   // Practices supprimé - remplacé par amenities uniquement
 
+  // Parse des spécialités depuis practices
+  const specialties = parseStringArray(rawProfile.practices)
+
   // Parse des nouvelles options (avec fallback si champs manquants)
   const paymentMethods = parseStringArray((rawProfile as any).paymentMethods)
   console.log('🔄 [API UNIFIED] venueOptions brut:', (rawProfile as any).venueOptions, typeof (rawProfile as any).venueOptions)
@@ -677,6 +692,7 @@ function transformProfileData(rawProfile: any, mode: 'dashboard' | 'public') {
     // Langues et services
     languages,
     services,
+    specialties, // Ajout des spécialités mappées depuis practices
 
     // Services détaillés supprimés (pour éviter doublons)
 
@@ -764,6 +780,7 @@ function transformProfileData(rawProfile: any, mode: 'dashboard' | 'public') {
       phoneVisibility: rawProfile.phoneVisibility || 'hidden',
 
       // Agenda et disponibilité détaillée
+      timeSlots: rawProfile.timeSlots || '', // Agenda JSON
       minimumDuration: rawProfile.minimumDuration || '',
       legacyRates: rawProfile.rates || '', // Tarifs format legacy
       legacyAvailability: rawProfile.availability || '', // Disponibilité format legacy
