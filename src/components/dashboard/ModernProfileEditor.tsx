@@ -619,13 +619,19 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
       if (profileData.paymentMethods && profileData.paymentMethods.length > 0) payload.paymentMethods = safeStringify(profileData.paymentMethods)
       if (profileData.paymentCurrencies && profileData.paymentCurrencies.length > 0) payload.acceptedCurrencies = safeStringify(profileData.paymentCurrencies)
       if (profileData.serviceType && profileData.serviceType.length > 0) payload.category = profileData.serviceType[0]
-      if (profileData.prices?.fifteenMin !== undefined) payload.rate15Min = profileData.prices.fifteenMin
-      if (profileData.prices?.thirtyMin !== undefined) payload.rate30Min = profileData.prices.thirtyMin
-      if (profileData.prices?.oneHour !== undefined) payload.rate1H = profileData.prices.oneHour
-      if (profileData.prices?.twoHours !== undefined) payload.rate2H = profileData.prices.twoHours
-      if (profileData.prices?.halfDay !== undefined) payload.rateHalfDay = profileData.prices.halfDay
-      if (profileData.prices?.fullDay !== undefined) payload.rateFullDay = profileData.prices.fullDay
-      if (profileData.prices?.overnight !== undefined) payload.rateOvernight = profileData.prices.overnight
+      
+      // Tarifs
+      if (profileData.prices?.fifteenMin !== undefined || profileData.prices?.thirtyMin !== undefined || profileData.prices?.oneHour !== undefined || profileData.prices?.twoHours !== undefined || profileData.prices?.halfDay !== undefined || profileData.prices?.fullDay !== undefined || profileData.prices?.overnight !== undefined) {
+        payload.rates = {
+          fifteenMin: profileData.prices?.fifteenMin,
+          thirtyMin: profileData.prices?.thirtyMin,
+          oneHour: profileData.prices?.oneHour,
+          twoHours: profileData.prices?.twoHours,
+          halfDay: profileData.prices?.halfDay,
+          fullDay: profileData.prices?.fullDay,
+          overnight: profileData.prices?.overnight
+        }
+      }
       if (profileData.height !== undefined) payload.height = profileData.height
       if (profileData.bodyType !== undefined) payload.bodyType = profileData.bodyType
       if (profileData.hairColor !== undefined) payload.hairColor = profileData.hairColor
@@ -730,13 +736,19 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
       if (profileData.breastSize !== undefined) payload.bustSize = profileData.breastSize
       if (profileData.tattoos !== undefined) payload.tattoos = String(profileData.tattoos)
       if (profileData.piercings !== undefined) payload.piercings = String(profileData.piercings)
-      if (profileData.prices?.fifteenMin !== undefined) payload.rate15Min = profileData.prices.fifteenMin
-      if (profileData.prices?.thirtyMin !== undefined) payload.rate30Min = profileData.prices.thirtyMin
-      if (profileData.prices?.oneHour !== undefined) payload.rate1H = profileData.prices.oneHour
-      if (profileData.prices?.twoHours !== undefined) payload.rate2H = profileData.prices.twoHours
-      if (profileData.prices?.halfDay !== undefined) payload.rateHalfDay = profileData.prices.halfDay
-      if (profileData.prices?.fullDay !== undefined) payload.rateFullDay = profileData.prices.fullDay
-      if (profileData.prices?.overnight !== undefined) payload.rateOvernight = profileData.prices.overnight
+      
+      // Tarifs
+      if (profileData.prices?.fifteenMin !== undefined || profileData.prices?.thirtyMin !== undefined || profileData.prices?.oneHour !== undefined || profileData.prices?.twoHours !== undefined || profileData.prices?.halfDay !== undefined || profileData.prices?.fullDay !== undefined || profileData.prices?.overnight !== undefined) {
+        payload.rates = {
+          fifteenMin: profileData.prices?.fifteenMin,
+          thirtyMin: profileData.prices?.thirtyMin,
+          oneHour: profileData.prices?.oneHour,
+          twoHours: profileData.prices?.twoHours,
+          halfDay: profileData.prices?.halfDay,
+          fullDay: profileData.prices?.fullDay,
+          overnight: profileData.prices?.overnight
+        }
+      }
       if (profileData.phoneVisibility) payload.phoneVisibility = profileData.phoneVisibility
       if (profileData.breastType) payload.breastType = profileData.breastType
       if (profileData.pubicHair) payload.pubicHair = profileData.pubicHair
