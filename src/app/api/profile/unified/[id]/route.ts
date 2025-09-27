@@ -98,6 +98,11 @@ export async function GET(
           venueOptions: true,
           acceptedCurrencies: true,
 
+          // Médias
+          galleryPhotos: true,
+          videos: true,
+          profilePhoto: true,
+
           // Agenda et disponibilité
           timeSlots: true,
           availableNow: true,
@@ -675,6 +680,11 @@ function transformProfileData(rawProfile: any, mode: 'dashboard' | 'public') {
 
     // Services détaillés supprimés (pour éviter doublons)
 
+    // Médias
+    galleryPhotos: parseStringArray(rawProfile.galleryPhotos),
+    videos: parseStringArray(rawProfile.videos),
+    profilePhoto: rawProfile.profilePhoto || null,
+
     // Tarifs
     rates: {
       fifteenMin: rawProfile.rate15Min || undefined,
@@ -789,7 +799,7 @@ function transformProfileData(rawProfile: any, mode: 'dashboard' | 'public') {
 /**
  * Helper pour parser les arrays JSON ou CSV
  */
-function parseStringArray(value: any): string[] {
+function parseStringArray(value: any): any[] {
   try {
     if (!value) return []
     const str = String(value)
