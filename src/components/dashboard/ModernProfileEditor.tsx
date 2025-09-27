@@ -615,8 +615,10 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
       })
       if (allServices.length > 0) payload.services = safeStringify(allServices)
       if (profileData.specialties && profileData.specialties.length > 0) payload.amenities = safeStringify(profileData.specialties)
+      if (profileData.specialties && profileData.specialties.length > 0) payload.specialties = safeStringify(profileData.specialties)
       if (profileData.paymentMethods && profileData.paymentMethods.length > 0) payload.paymentMethods = safeStringify(profileData.paymentMethods)
       if (profileData.paymentCurrencies && profileData.paymentCurrencies.length > 0) payload.acceptedCurrencies = safeStringify(profileData.paymentCurrencies)
+      if (profileData.serviceType && profileData.serviceType.length > 0) payload.category = profileData.serviceType[0]
       if (profileData.prices?.fifteenMin !== undefined) payload.rate15Min = profileData.prices.fifteenMin
       if (profileData.prices?.thirtyMin !== undefined) payload.rate30Min = profileData.prices.thirtyMin
       if (profileData.prices?.oneHour !== undefined) payload.rate1H = profileData.prices.oneHour
@@ -708,8 +710,10 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
       })
       if (allServices.length > 0) payload.services = safeStringify(allServices)
       if (profileData.specialties && profileData.specialties.length > 0) payload.amenities = safeStringify(profileData.specialties)
+      if (profileData.specialties && profileData.specialties.length > 0) payload.specialties = safeStringify(profileData.specialties)
       if (profileData.paymentMethods && profileData.paymentMethods.length > 0) payload.paymentMethods = safeStringify(profileData.paymentMethods)
       if (profileData.paymentCurrencies && profileData.paymentCurrencies.length > 0) payload.acceptedCurrencies = safeStringify(profileData.paymentCurrencies)
+      if (profileData.serviceType && profileData.serviceType.length > 0) payload.category = profileData.serviceType[0]
       payload.timeSlots = scheduleToJson()
       if (profileData.height !== undefined) payload.height = profileData.height
       if (profileData.bodyType !== undefined) payload.bodyType = profileData.bodyType
