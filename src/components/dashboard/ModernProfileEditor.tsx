@@ -310,8 +310,8 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
           acceptsSeniors: p.clientele?.acceptsSeniors || false,
           paymentMethods: p.options?.paymentMethods || [],
           paymentCurrencies: p.options?.acceptedCurrencies || ['CHF'],
-          specialties: (p.options?.amenities || []).map(item =>
-            item.startsWith('opt:') ? item : `opt:${item}`
+          specialties: (p.specialties || []).concat(p.options?.amenities || []).map(item =>
+            item.startsWith('opt:') || item.startsWith('srv:') ? item : `opt:${item}`
           ),
         }))
 

@@ -27,6 +27,8 @@ export default function ModernMediaManager() {
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState(false)
   const [unlockedMedias, setUnlockedMedias] = useState<Set<string>>(new Set())
+  const [selectedVisibility, setSelectedVisibility] = useState<'PUBLIC' | 'PRIVATE' | 'REQUESTABLE'>('PUBLIC')
+  const [mediaPrice, setMediaPrice] = useState<number>(10)
 
   // Charger les médias
   const loadMedias = async () => {
@@ -110,8 +112,19 @@ export default function ModernMediaManager() {
 
       if (response.ok) {
         const data = await response.json()
-        alert('Média uploadé avec succès')
-        loadMedias() // Recharger la liste
+
+        // Ajouter directement le média à la liste pour affichage immédiat
+        const newMedia: Media = {
+          id: data.media.id,
+          url: data.media.url,
+          type: data.media.type,
+          visibility: data.media.visibility,
+          price: data.media.price,
+          createdAt: new Date().toISOString()
+        }
+
+        setMedias(prev => [newMedia, ...prev])
+        alert(`Média uploadé avec succès (${visibility})`)
       } else {
         const error = await response.json()
         alert(error.message || 'Erreur upload')
@@ -175,8 +188,9 @@ export default function ModernMediaManager() {
     if (!file) return
 
     if (file.type.startsWith('image/') || file.type.startsWith('video/')) {
-      // Par défaut, upload en PUBLIC
-      uploadMedia(file, 'PUBLIC')
+      // Utiliser la visibilité sélectionnée et le prix si applicable
+      const price = selectedVisibility === 'REQUESTABLE' ? mediaPrice : undefined
+      uploadMedia(file, selectedVisibility, price)
     } else {
       alert('Format non supporté')
     }
@@ -201,6 +215,82 @@ export default function ModernMediaManager() {
         </div>
       </div>
 
+      {/* Configuration d'upload */}
+      <div className="bg-gray-800/40 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6 space-y-4">
+        <h4 className="text-lg font-semibold text-white flex items-center gap-2">
+          <Upload className="w-5 h-5 text-purple-400" />
+          Configuration Upload
+        </h4>
+
+        {/* Sélection de visibilité */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {/* PUBLIC */}
+          <button
+            onClick={() => setSelectedVisibility('PUBLIC')}
+            className={`p-4 rounded-lg border-2 transition-all ${
+              selectedVisibility === 'PUBLIC'
+                ? 'border-green-500 bg-green-500/20 text-green-300'
+                : 'border-gray-600 bg-gray-700/30 text-gray-300 hover:border-green-500/50'
+            }`}
+          >
+            <Eye className="w-5 h-5 mx-auto mb-2" />
+            <div className="font-medium">PUBLIC</div>
+            <div className="text-xs opacity-75">Visible par tous</div>
+          </button>
+
+          {/* PRIVATE */}
+          <button
+            onClick={() => setSelectedVisibility('PRIVATE')}
+            className={`p-4 rounded-lg border-2 transition-all ${
+              selectedVisibility === 'PRIVATE'
+                ? 'border-purple-500 bg-purple-500/20 text-purple-300'
+                : 'border-gray-600 bg-gray-700/30 text-gray-300 hover:border-purple-500/50'
+            }`}
+          >
+            <EyeOff className="w-5 h-5 mx-auto mb-2" />
+            <div className="font-medium">PRIVÉ</div>
+            <div className="text-xs opacity-75">Visible pour vous</div>
+          </button>
+
+          {/* REQUESTABLE */}
+          <button
+            onClick={() => setSelectedVisibility('REQUESTABLE')}
+            className={`p-4 rounded-lg border-2 transition-all ${
+              selectedVisibility === 'REQUESTABLE'
+                ? 'border-yellow-500 bg-yellow-500/20 text-yellow-300'
+                : 'border-gray-600 bg-gray-700/30 text-gray-300 hover:border-yellow-500/50'
+            }`}
+          >
+            <Diamond className="w-5 h-5 mx-auto mb-2" />
+            <div className="font-medium">PREMIUM</div>
+            <div className="text-xs opacity-75">Payant en diamants</div>
+          </button>
+        </div>
+
+        {/* Prix pour média premium */}
+        {selectedVisibility === 'REQUESTABLE' && (
+          <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4">
+            <label className="block text-sm font-medium text-yellow-300 mb-2">
+              Prix en diamants
+            </label>
+            <div className="flex items-center gap-3">
+              <input
+                type="number"
+                min="1"
+                max="1000"
+                value={mediaPrice}
+                onChange={(e) => setMediaPrice(parseInt(e.target.value) || 10)}
+                className="bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+              />
+              <div className="flex items-center gap-1 text-yellow-400">
+                <Diamond className="w-4 h-4" />
+                <span className="text-sm">diamants</span>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* Zone d'upload */}
       <div
         className="border-2 border-dashed border-gray-600 hover:border-purple-500 rounded-xl p-8 text-center transition-colors bg-gray-700/30"
@@ -213,6 +303,22 @@ export default function ModernMediaManager() {
         <Upload className="w-8 h-8 text-gray-400 mx-auto mb-4" />
         <p className="text-gray-300 mb-2">Glissez vos fichiers ici ou cliquez pour sélectionner</p>
         <p className="text-sm text-gray-500">Images et vidéos supportées (max 50MB)</p>
+
+        {/* Indicateur de mode sélectionné */}
+        <div className="mt-4 mb-4">
+          <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm ${
+            selectedVisibility === 'PUBLIC' ? 'bg-green-500/20 text-green-300' :
+            selectedVisibility === 'PRIVATE' ? 'bg-purple-500/20 text-purple-300' :
+            'bg-yellow-500/20 text-yellow-300'
+          }`}>
+            {selectedVisibility === 'PUBLIC' && <Eye className="w-4 h-4" />}
+            {selectedVisibility === 'PRIVATE' && <EyeOff className="w-4 h-4" />}
+            {selectedVisibility === 'REQUESTABLE' && <Diamond className="w-4 h-4" />}
+            Mode: {selectedVisibility}
+            {selectedVisibility === 'REQUESTABLE' && ` (${mediaPrice} 💎)`}
+          </div>
+        </div>
+
         <input
           type="file"
           accept="image/*,video/*"
@@ -222,7 +328,7 @@ export default function ModernMediaManager() {
         />
         <label
           htmlFor="media-upload"
-          className="inline-block mt-4 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg cursor-pointer transition-colors"
+          className="inline-block px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg cursor-pointer transition-all transform hover:scale-105 font-medium"
         >
           {uploading ? 'Upload en cours...' : 'Sélectionner fichier'}
         </label>
