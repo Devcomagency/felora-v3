@@ -887,7 +887,20 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
       {/* Contenu des onglets */}
       <div className="bg-gray-800/30 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6">
         {activeTab === 'media' && (
-          <ModernMediaManager />
+          <div>
+            <h3 className="text-xl font-bold text-white">Médias obligatoires</h3>
+            <div className="text-xs text-orange-300 mt-1">⚠️ 6 médias requis pour activer le profil</div>
+            <div className="text-xs text-purple-300 mb-5">Astuce : les profils avec vidéo sont 3× plus vus.</div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+              {/* 6 médias obligatoires avec drop/upload par emplacement */}
+              {[
+                { n: 1, label: 'Photo de profil', accept: 'image/*' },
+                { n: 2, label: 'Vidéo de présentation', note: 'Augmente votre visibilité', accept: 'video/*' },
+                { n: 3, label: 'Photo', accept: 'image/*' },
+                { n: 4, label: 'Vidéo', accept: 'video/*' },
+                { n: 5, label: 'Photo', accept: 'image/*' },
+                { n: 6, label: 'Photo', accept: 'image/*' }
+              ].map((slot, idx) => {
                 const media = mandatoryMedia[idx]
                 const isVideo = (!!media?.file && media.file.type.startsWith('video/')) || (!!media?.preview && slot.accept.startsWith('video'))
                 const isDragging = draggingIndex === idx
