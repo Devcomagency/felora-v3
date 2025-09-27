@@ -172,7 +172,7 @@ export default function ModernMediaManager() {
       }
     } catch (error) {
       console.error('Erreur upload:', error)
-      alert('Erreur lors de l\'upload')
+      alert("Erreur lors de l'upload")
       setUploadStep('configure')
     }
   }
@@ -201,7 +201,7 @@ export default function ModernMediaManager() {
       }
     } catch (error) {
       console.error('Erreur archivage:', error)
-      alert('Erreur lors de l\'archivage')
+      alert("Erreur lors de l'archivage")
     }
   }
 

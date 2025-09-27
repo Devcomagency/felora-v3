@@ -320,7 +320,10 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
         try {
           // Utiliser les données brutes pour l'agenda car c'est spécifique au dashboard
           const rawTimeSlots = p.timeSlots // L'API unifiée en mode dashboard inclut ce champ
+          console.log('[DASHBOARD] Loading agenda from API:', rawTimeSlots)
           const sched = normalizeScheduleData(rawTimeSlots)
+          console.log('[DASHBOARD] Normalized schedule:', sched)
+          
           if (sched?.weekly && Array.isArray(sched.weekly)) {
             const mapDays = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche']
             const nextWeekly: Record<string, DaySlot> = {} as Record<string, DaySlot>
@@ -333,23 +336,32 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                 end: String(w?.end || '22:00')
               }
             }
+            console.log('[DASHBOARD] Setting weekly schedule:', nextWeekly)
             setWeekly(nextWeekly)
           }
 
           if (sched?.pause) {
+            console.log('[DASHBOARD] Setting pause:', sched.pause)
             setPauseEnabled(true)
             setPauseStart(String(sched.pause.start || ''))
             setPauseEnd(String(sched.pause.end || ''))
           } else {
+            console.log('[DASHBOARD] No pause, resetting')
             setPauseEnabled(false)
             setPauseStart('')
             setPauseEnd('')
           }
 
           if (Array.isArray(sched?.absences)) {
+            console.log('[DASHBOARD] Setting absences:', sched.absences)
             setAbsences(sched.absences.map((a: any, idx: number) => ({ id: String(a.id || idx), start: String(a.start || ''), end: String(a.end || '') })))
+          } else {
+            console.log('[DASHBOARD] No absences, resetting')
+            setAbsences([])
           }
-        } catch {}
+        } catch (error) {
+          console.error('[DASHBOARD] Error parsing agenda:', error)
+        }
       } catch {}
     })()
     return () => { cancelled = true }
@@ -528,7 +540,9 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
   const scheduleToJson = () => {
     const mapDays = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche']
     const packed = mapDays.map((d, idx) => ({ weekday: idx, ...weekly[d as keyof typeof weekly] }))
-    return JSON.stringify({ weekly: packed, pause: pauseEnabled ? { start: pauseStart, end: pauseEnd } : null, absences })
+    const result = { weekly: packed, pause: pauseEnabled ? { start: pauseStart, end: pauseEnd } : null, absences }
+    console.log('[DASHBOARD] Converting schedule to JSON:', result)
+    return JSON.stringify(result)
   }
 
   // Fonction pour éviter le sur-échappement JSON
