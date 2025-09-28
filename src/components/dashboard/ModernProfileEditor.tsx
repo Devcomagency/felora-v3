@@ -295,7 +295,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
           height: p.physical?.height || undefined,
           bodyType: p.physical?.bodyType || '',
           hairColor: p.physical?.hairColor || '',
-          hairLength: p.physical?.hairLength || '',
+          hairLength: '', // hairLength n'est pas encore disponible dans l'API unifiée
           eyeColor: p.physical?.eyeColor || '',
           ethnicity: p.physical?.ethnicity || '',
           breastSize: p.physical?.bustSize || '',
@@ -646,19 +646,25 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
           overnight: profileData.prices?.overnight
         }
       }
-      if (profileData.height !== undefined) payload.height = profileData.height
-      if (profileData.bodyType !== undefined) payload.bodyType = profileData.bodyType
-      if (profileData.hairColor !== undefined) payload.hairColor = profileData.hairColor
-      if (profileData.hairLength !== undefined) payload.hairLength = profileData.hairLength
-      if (profileData.eyeColor !== undefined) payload.eyeColor = profileData.eyeColor
-      if (profileData.ethnicity !== undefined) payload.ethnicity = profileData.ethnicity
-      if (profileData.breastSize !== undefined) payload.bustSize = profileData.breastSize
-      if (profileData.tattoos !== undefined) payload.tattoos = String(profileData.tattoos)
-      if (profileData.piercings !== undefined) payload.piercings = String(profileData.piercings)
+      // Physique - Format unifié avec objet physical
+      if (profileData.height !== undefined || profileData.bodyType !== undefined || profileData.hairColor !== undefined || 
+          profileData.eyeColor !== undefined || profileData.ethnicity !== undefined || profileData.breastSize !== undefined ||
+          profileData.tattoos !== undefined || profileData.piercings !== undefined || profileData.breastType !== undefined ||
+          profileData.pubicHair !== undefined || typeof profileData.smoker === 'boolean') {
+        payload.physical = {}
+        if (profileData.height !== undefined) payload.physical.height = profileData.height
+        if (profileData.bodyType !== undefined) payload.physical.bodyType = profileData.bodyType
+        if (profileData.hairColor !== undefined) payload.physical.hairColor = profileData.hairColor
+        if (profileData.eyeColor !== undefined) payload.physical.eyeColor = profileData.eyeColor
+        if (profileData.ethnicity !== undefined) payload.physical.ethnicity = profileData.ethnicity
+        if (profileData.breastSize !== undefined) payload.physical.bustSize = profileData.breastSize
+        if (profileData.tattoos !== undefined) payload.physical.tattoos = profileData.tattoos
+        if (profileData.piercings !== undefined) payload.physical.piercings = profileData.piercings
+        if (profileData.breastType !== undefined) payload.physical.breastType = profileData.breastType
+        if (profileData.pubicHair !== undefined) payload.physical.pubicHair = profileData.pubicHair
+        if (typeof profileData.smoker === 'boolean') payload.physical.smoker = profileData.smoker
+      }
       if (profileData.phoneVisibility) payload.phoneVisibility = profileData.phoneVisibility
-      if (profileData.breastType) payload.breastType = profileData.breastType
-      if (profileData.pubicHair) payload.pubicHair = profileData.pubicHair  
-      if (typeof profileData.smoker === 'boolean') payload.smoker = profileData.smoker
       
       // Clientèle
       if (typeof profileData.acceptsCouples === 'boolean' || typeof profileData.acceptsWomen === 'boolean' || typeof profileData.acceptsHandicapped === 'boolean' || typeof profileData.acceptsSeniors === 'boolean') {
@@ -741,15 +747,24 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
       if (profileData.paymentCurrencies && profileData.paymentCurrencies.length > 0) payload.acceptedCurrencies = safeStringify(profileData.paymentCurrencies)
       if (profileData.serviceType && profileData.serviceType.length > 0) payload.category = profileData.serviceType[0]
       payload.timeSlots = scheduleToJson()
-      if (profileData.height !== undefined) payload.height = profileData.height
-      if (profileData.bodyType !== undefined) payload.bodyType = profileData.bodyType
-      if (profileData.hairColor !== undefined) payload.hairColor = profileData.hairColor
-      if (profileData.hairLength !== undefined) payload.hairLength = profileData.hairLength
-      if (profileData.eyeColor !== undefined) payload.eyeColor = profileData.eyeColor
-      if (profileData.ethnicity !== undefined) payload.ethnicity = profileData.ethnicity
-      if (profileData.breastSize !== undefined) payload.bustSize = profileData.breastSize
-      if (profileData.tattoos !== undefined) payload.tattoos = String(profileData.tattoos)
-      if (profileData.piercings !== undefined) payload.piercings = String(profileData.piercings)
+      // Physique - Format unifié avec objet physical
+      if (profileData.height !== undefined || profileData.bodyType !== undefined || profileData.hairColor !== undefined || 
+          profileData.eyeColor !== undefined || profileData.ethnicity !== undefined || profileData.breastSize !== undefined ||
+          profileData.tattoos !== undefined || profileData.piercings !== undefined || profileData.breastType !== undefined ||
+          profileData.pubicHair !== undefined || typeof profileData.smoker === 'boolean') {
+        payload.physical = {}
+        if (profileData.height !== undefined) payload.physical.height = profileData.height
+        if (profileData.bodyType !== undefined) payload.physical.bodyType = profileData.bodyType
+        if (profileData.hairColor !== undefined) payload.physical.hairColor = profileData.hairColor
+        if (profileData.eyeColor !== undefined) payload.physical.eyeColor = profileData.eyeColor
+        if (profileData.ethnicity !== undefined) payload.physical.ethnicity = profileData.ethnicity
+        if (profileData.breastSize !== undefined) payload.physical.bustSize = profileData.breastSize
+        if (profileData.tattoos !== undefined) payload.physical.tattoos = profileData.tattoos
+        if (profileData.piercings !== undefined) payload.physical.piercings = profileData.piercings
+        if (profileData.breastType !== undefined) payload.physical.breastType = profileData.breastType
+        if (profileData.pubicHair !== undefined) payload.physical.pubicHair = profileData.pubicHair
+        if (typeof profileData.smoker === 'boolean') payload.physical.smoker = profileData.smoker
+      }
       
       // Tarifs
       if (profileData.prices?.fifteenMin !== undefined || profileData.prices?.thirtyMin !== undefined || profileData.prices?.oneHour !== undefined || profileData.prices?.twoHours !== undefined || profileData.prices?.halfDay !== undefined || profileData.prices?.fullDay !== undefined || profileData.prices?.overnight !== undefined) {
@@ -764,9 +779,6 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
         }
       }
       if (profileData.phoneVisibility) payload.phoneVisibility = profileData.phoneVisibility
-      if (profileData.breastType) payload.breastType = profileData.breastType
-      if (profileData.pubicHair) payload.pubicHair = profileData.pubicHair
-      if (typeof profileData.smoker === 'boolean') payload.smoker = profileData.smoker
       
       // Clientèle
       if (typeof profileData.acceptsCouples === 'boolean' || typeof profileData.acceptsWomen === 'boolean' || typeof profileData.acceptsHandicapped === 'boolean' || typeof profileData.acceptsSeniors === 'boolean') {

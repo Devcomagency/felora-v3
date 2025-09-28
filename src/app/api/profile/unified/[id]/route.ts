@@ -509,8 +509,8 @@ function transformUpdateData(body: any): Record<string, any> {
   if (body.physical?.ethnicity !== undefined) data.ethnicity = body.physical.ethnicity
   if (body.physical?.bustSize !== undefined) data.bustSize = body.physical.bustSize
   if (body.physical?.breastType !== undefined) data.breastType = body.physical.breastType
-  if (body.physical?.tattoos !== undefined) data.tattoos = body.physical.tattoos
-  if (body.physical?.piercings !== undefined) data.piercings = body.physical.piercings
+  if (body.physical?.tattoos !== undefined) data.tattoos = String(body.physical.tattoos)
+  if (body.physical?.piercings !== undefined) data.piercings = String(body.physical.piercings)
   if (body.physical?.pubicHair !== undefined) data.pubicHair = body.physical.pubicHair
   if (body.physical?.smoker !== undefined) data.smoker = body.physical.smoker
 
@@ -670,7 +670,7 @@ function transformProfileData(rawProfile: any, mode: 'dashboard' | 'public') {
   const paymentMethods = parseStringArray((rawProfile as any).paymentMethods)
   console.log('🔄 [API UNIFIED] venueOptions brut:', (rawProfile as any).venueOptions, typeof (rawProfile as any).venueOptions)
   const amenities = parseStringArray((rawProfile as any).venueOptions) // Note: venueOptions en BDD → amenities en interface
-  console.log('🔄 [API UNIFIED] amenities parsées:', amenities)
+  console.log('🔄 [API UNIFIED] amenities parsées:', amenities.length, 'éléments')
   const acceptedCurrencies = parseStringArray((rawProfile as any).acceptedCurrencies)
 
   // Services détaillés supprimés (pour éviter doublons)
@@ -819,13 +819,36 @@ function transformProfileData(rawProfile: any, mode: 'dashboard' | 'public') {
 function parseStringArray(value: any): any[] {
   try {
     if (!value) return []
+    
+    // Si c'est déjà un array, le retourner directement
+    if (Array.isArray(value)) {
+      return value
+    }
+    
     const str = String(value)
+    
+    // Protection contre les chaînes trop longues (éviter les boucles infinies)
+    if (str.length > 10000) {
+      console.warn('⚠️ [API UNIFIED] String trop longue détectée, tronquée:', str.substring(0, 100) + '...')
+      return []
+    }
+    
     if (str.trim().startsWith('[')) {
       const parsed = JSON.parse(str)
       return Array.isArray(parsed) ? parsed : []
     }
-    return str.split(',').map((x: string) => x.trim()).filter(Boolean)
-  } catch {
+    
+    const result = str.split(',').map((x: string) => x.trim()).filter(Boolean)
+    
+    // Protection contre les arrays trop grands
+    if (result.length > 1000) {
+      console.warn('⚠️ [API UNIFIED] Array trop grand détecté, tronqué:', result.length, 'éléments')
+      return result.slice(0, 1000)
+    }
+    
+    return result
+  } catch (error) {
+    console.error('❌ [API UNIFIED] Erreur parseStringArray:', error)
     return []
   }
 }
