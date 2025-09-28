@@ -665,7 +665,7 @@ export default function EnhancedMediaManager() {
                       className={`w-full h-full object-cover ${shouldBlur ? 'blur-md' : ''}`}
                       muted
                       controls={!shouldBlur}
-                      poster={media.url}
+                      poster="/api/placeholder/400x400"
                       onError={(e) => {
                         console.log('Erreur chargement vidéo:', e)
                       }}

@@ -10,7 +10,10 @@ interface ProfileCardProps {
 
 export default function ProfileCard({ profile, type, className = '' }: ProfileCardProps) {
   const profileUrl = `/${type}/${profile.handle}`
-  
+
+  // Vérifier si l'avatar est une vidéo
+  const isVideoAvatar = profile.avatarUrl && /(\.mp4|\.webm|\.mov)(\?.*)?$/i.test(profile.avatarUrl)
+
   return (
     <Link href={profileUrl} className={`block ${className}`}>
       <div className="glass-card rounded-2xl p-4 hover:scale-105 transition-all duration-300 group">
@@ -18,13 +21,23 @@ export default function ProfileCard({ profile, type, className = '' }: ProfileCa
         <div className="relative mb-4">
           <div className="w-full aspect-square rounded-xl overflow-hidden">
             {profile.avatarUrl ? (
-              <Image
-                src={profile.avatarUrl}
-                alt={type === 'escort' ? (profile as EscortProfileDTO).displayName : (profile as ClubProfileDTO).name}
-                width={200}
-                height={200}
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-              />
+              isVideoAvatar ? (
+                <video
+                  src={profile.avatarUrl}
+                  poster="/api/placeholder/200x200"
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                  muted
+                  playsInline
+                />
+              ) : (
+                <Image
+                  src={profile.avatarUrl}
+                  alt={type === 'escort' ? (profile as EscortProfileDTO).displayName : (profile as ClubProfileDTO).name}
+                  width={200}
+                  height={200}
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                />
+              )
             ) : (
               <div className="w-full h-full bg-gradient-to-br from-felora-aurora to-felora-plasma flex items-center justify-center">
                 <span className="text-4xl font-bold text-felora-pearl">

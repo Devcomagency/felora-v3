@@ -267,6 +267,15 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
         const j = await r.json()
         if (!r.ok || !j?.profile || cancelled) return
         const p = j.profile
+        const processedPrices = {
+          fifteenMin: p.rates?.fifteenMin !== null && p.rates?.fifteenMin !== undefined && p.rates?.fifteenMin > 0 ? p.rates.fifteenMin : null,
+          thirtyMin: p.rates?.thirtyMin !== null && p.rates?.thirtyMin !== undefined && p.rates?.thirtyMin > 0 ? p.rates.thirtyMin : null,
+          oneHour: p.rates?.oneHour !== null && p.rates?.oneHour !== undefined && p.rates?.oneHour > 0 ? p.rates.oneHour : null,
+          twoHours: p.rates?.twoHours !== null && p.rates?.twoHours !== undefined && p.rates?.twoHours > 0 ? p.rates.twoHours : null,
+          halfDay: p.rates?.halfDay !== null && p.rates?.halfDay !== undefined && p.rates?.halfDay > 0 ? p.rates.halfDay : null,
+          fullDay: p.rates?.fullDay !== null && p.rates?.fullDay !== undefined && p.rates?.fullDay > 0 ? p.rates.fullDay : null,
+          overnight: p.rates?.overnight !== null && p.rates?.overnight !== undefined && p.rates?.overnight > 0 ? p.rates.overnight : null
+        }
         setProfileData(prev => ({
           ...prev,
           stageName: p.stageName || '',
@@ -276,15 +285,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
           serviceType: p.category ? [p.category] : [], // Catégorie déjà extraite par l'API
           outcall: p.availability?.outcall || false,
           incall: p.availability?.incall || false,
-          prices: {
-            fifteenMin: p.rates?.fifteenMin || undefined,
-            thirtyMin: p.rates?.thirtyMin || undefined,
-            oneHour: p.rates?.oneHour || undefined,
-            twoHours: p.rates?.twoHours || undefined,
-            halfDay: p.rates?.halfDay || undefined,
-            fullDay: p.rates?.fullDay || undefined,
-            overnight: p.rates?.overnight || undefined
-          },
+          prices: processedPrices,
           canton: p.canton || '',
           city: p.city || '',
           address: p.address || '', // Adresse unifiée déjà construite par l'API
@@ -516,7 +517,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
     checks.push({ key: 'canton', label: 'Canton', ok: !!profileData.canton, targetTab: 'basic' })
     checks.push({ key: 'city', label: 'Ville principale', ok: !!profileData.city, targetTab: 'basic' })
     checks.push({ key: 'address', label: 'Adresse complète', ok: !!profileData.address, targetTab: 'basic' })
-    checks.push({ key: 'rates', label: 'Au moins un tarif', ok: !!(profileData.prices?.oneHour || profileData.prices?.twoHours || profileData.prices?.overnight), targetTab: 'pricing' })
+    checks.push({ key: 'rates', label: 'Au moins un tarif', ok: !!(profileData.prices?.oneHour && profileData.prices.oneHour !== null || profileData.prices?.fifteenMin && profileData.prices.fifteenMin !== null || profileData.prices?.thirtyMin && profileData.prices.thirtyMin !== null || profileData.prices?.twoHours && profileData.prices.twoHours !== null || profileData.prices?.halfDay && profileData.prices.halfDay !== null || profileData.prices?.fullDay && profileData.prices.fullDay !== null || profileData.prices?.overnight && profileData.prices.overnight !== null), targetTab: 'pricing' })
     return checks
   }, [mandatoryMedia, profileData.stageName, profileData.serviceType, profileData.age, profileData.description, profileData.languages, profileData.canton, profileData.city, profileData.address, profileData.prices])
 
@@ -633,18 +634,16 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
       if (profileData.paymentMethods && profileData.paymentMethods.length > 0) payload.paymentMethods = safeStringify(profileData.paymentMethods)
       if (profileData.paymentCurrencies && profileData.paymentCurrencies.length > 0) payload.acceptedCurrencies = safeStringify(profileData.paymentCurrencies)
       if (profileData.serviceType && profileData.serviceType.length > 0) payload.category = profileData.serviceType[0]
-      
-      // Tarifs
-      if (profileData.prices?.fifteenMin !== undefined || profileData.prices?.thirtyMin !== undefined || profileData.prices?.oneHour !== undefined || profileData.prices?.twoHours !== undefined || profileData.prices?.halfDay !== undefined || profileData.prices?.fullDay !== undefined || profileData.prices?.overnight !== undefined) {
-        payload.rates = {
-          fifteenMin: profileData.prices?.fifteenMin,
-          thirtyMin: profileData.prices?.thirtyMin,
-          oneHour: profileData.prices?.oneHour,
-          twoHours: profileData.prices?.twoHours,
-          halfDay: profileData.prices?.halfDay,
-          fullDay: profileData.prices?.fullDay,
-          overnight: profileData.prices?.overnight
-        }
+
+      // Tarifs - Toujours sauvegarder pour permettre de désactiver tous les tarifs
+      payload.rates = {
+        fifteenMin: profileData.prices?.fifteenMin,
+        thirtyMin: profileData.prices?.thirtyMin,
+        oneHour: profileData.prices?.oneHour,
+        twoHours: profileData.prices?.twoHours,
+        halfDay: profileData.prices?.halfDay,
+        fullDay: profileData.prices?.fullDay,
+        overnight: profileData.prices?.overnight
       }
       // Physique - Format unifié avec objet physical
       if (profileData.height !== undefined || profileData.bodyType !== undefined || profileData.hairColor !== undefined || 
@@ -765,18 +764,16 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
         if (profileData.pubicHair !== undefined) payload.physical.pubicHair = profileData.pubicHair
         if (typeof profileData.smoker === 'boolean') payload.physical.smoker = profileData.smoker
       }
-      
-      // Tarifs
-      if (profileData.prices?.fifteenMin !== undefined || profileData.prices?.thirtyMin !== undefined || profileData.prices?.oneHour !== undefined || profileData.prices?.twoHours !== undefined || profileData.prices?.halfDay !== undefined || profileData.prices?.fullDay !== undefined || profileData.prices?.overnight !== undefined) {
-        payload.rates = {
-          fifteenMin: profileData.prices?.fifteenMin,
-          thirtyMin: profileData.prices?.thirtyMin,
-          oneHour: profileData.prices?.oneHour,
-          twoHours: profileData.prices?.twoHours,
-          halfDay: profileData.prices?.halfDay,
-          fullDay: profileData.prices?.fullDay,
-          overnight: profileData.prices?.overnight
-        }
+
+      // Tarifs - Toujours sauvegarder pour permettre de désactiver tous les tarifs
+      payload.rates = {
+        fifteenMin: profileData.prices?.fifteenMin,
+        thirtyMin: profileData.prices?.thirtyMin,
+        oneHour: profileData.prices?.oneHour,
+        twoHours: profileData.prices?.twoHours,
+        halfDay: profileData.prices?.halfDay,
+        fullDay: profileData.prices?.fullDay,
+        overnight: profileData.prices?.overnight
       }
       if (profileData.phoneVisibility) payload.phoneVisibility = profileData.phoneVisibility
       
@@ -1719,87 +1716,209 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
               {/* Tarifs détaillés */}
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-3">Tarifs détaillés (optionnel)</label>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs text-gray-400 mb-1">15 minutes</label>
-                    <select
-                      value={profileData.prices?.fifteenMin || ''}
-                      onChange={(e) => updateNestedProfileData('prices', 'fifteenMin', e.target.value ? parseInt(e.target.value) : undefined)}
-                      className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white text-sm focus:border-purple-500 focus:outline-none"
-                    >
-                      <option value="">Non proposé</option>
-                      {[50,80,100,120,150,180,200,250].map(v => (
-                        <option key={v} value={v}>{v} CHF</option>
-                      ))}
-                    </select>
+                <div className="space-y-4">
+                  {/* 15 minutes */}
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2 min-w-[120px]">
+                      <input
+                        type="checkbox"
+                        id="rate-15min"
+                        checked={!!(profileData.prices?.fifteenMin && profileData.prices.fifteenMin !== null)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            updateNestedProfileData('prices', 'fifteenMin', 100)
+                          } else {
+                            updateNestedProfileData('prices', 'fifteenMin', null)
+                          }
+                        }}
+                        className="w-4 h-4 text-purple-500 bg-gray-700 border-gray-600 rounded focus:ring-purple-500"
+                      />
+                      <label htmlFor="rate-15min" className="text-sm text-gray-300 cursor-pointer">15 minutes</label>
+                    </div>
+                    {profileData.prices?.fifteenMin && profileData.prices.fifteenMin !== null && (
+                      <div className="flex-1">
+                        <select
+                          value={profileData.prices.fifteenMin}
+                          onChange={(e) => updateNestedProfileData('prices', 'fifteenMin', parseInt(e.target.value))}
+                          className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white text-sm focus:border-purple-500 focus:outline-none"
+                        >
+                          {[50,80,100,120,150,180,200,250].map(v => (
+                            <option key={v} value={v}>{v} CHF</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
                   </div>
-                  <div>
-                    <label className="block text-xs text-gray-400 mb-1">30 minutes</label>
-                    <select
-                      value={profileData.prices?.thirtyMin || ''}
-                      onChange={(e) => updateNestedProfileData('prices', 'thirtyMin', e.target.value ? parseInt(e.target.value) : undefined)}
-                      className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white text-sm focus:border-purple-500 focus:outline-none"
-                    >
-                      <option value="">Non proposé</option>
-                      {[80,100,120,150,180,200,250,300].map(v => (
-                        <option key={v} value={v}>{v} CHF</option>
-                      ))}
-                    </select>
+
+                  {/* 30 minutes */}
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2 min-w-[120px]">
+                      <input
+                        type="checkbox"
+                        id="rate-30min"
+                        checked={!!(profileData.prices?.thirtyMin && profileData.prices.thirtyMin !== null)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            updateNestedProfileData('prices', 'thirtyMin', 150)
+                          } else {
+                            updateNestedProfileData('prices', 'thirtyMin', null)
+                          }
+                        }}
+                        className="w-4 h-4 text-purple-500 bg-gray-700 border-gray-600 rounded focus:ring-purple-500"
+                      />
+                      <label htmlFor="rate-30min" className="text-sm text-gray-300 cursor-pointer">30 minutes</label>
+                    </div>
+                    {profileData.prices?.thirtyMin && profileData.prices.thirtyMin !== null && (
+                      <div className="flex-1">
+                        <select
+                          value={profileData.prices.thirtyMin}
+                          onChange={(e) => updateNestedProfileData('prices', 'thirtyMin', parseInt(e.target.value))}
+                          className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white text-sm focus:border-purple-500 focus:outline-none"
+                        >
+                          {[80,100,120,150,180,200,250,300].map(v => (
+                            <option key={v} value={v}>{v} CHF</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
                   </div>
-                  <div>
-                    <label className="block text-xs text-gray-400 mb-1">2 heures</label>
-                    <select
-                      value={profileData.prices?.twoHours || ''}
-                      onChange={(e) => updateNestedProfileData('prices', 'twoHours', e.target.value ? parseInt(e.target.value) : undefined)}
-                      className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white text-sm focus:border-purple-500 focus:outline-none"
-                    >
-                      <option value="">Non proposé</option>
-                      {[400,500,600,700,800,900,1000,1200].map(v => (
-                        <option key={v} value={v}>{v} CHF</option>
-                      ))}
-                    </select>
+
+                  {/* 2 heures */}
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2 min-w-[120px]">
+                      <input
+                        type="checkbox"
+                        id="rate-2hours"
+                        checked={!!(profileData.prices?.twoHours && profileData.prices.twoHours !== null)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            updateNestedProfileData('prices', 'twoHours', 600)
+                          } else {
+                            updateNestedProfileData('prices', 'twoHours', null)
+                          }
+                        }}
+                        className="w-4 h-4 text-purple-500 bg-gray-700 border-gray-600 rounded focus:ring-purple-500"
+                      />
+                      <label htmlFor="rate-2hours" className="text-sm text-gray-300 cursor-pointer">2 heures</label>
+                    </div>
+                    {profileData.prices?.twoHours && profileData.prices.twoHours !== null && (
+                      <div className="flex-1">
+                        <select
+                          value={profileData.prices.twoHours}
+                          onChange={(e) => updateNestedProfileData('prices', 'twoHours', parseInt(e.target.value))}
+                          className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white text-sm focus:border-purple-500 focus:outline-none"
+                        >
+                          {[400,500,600,700,800,900,1000,1200].map(v => (
+                            <option key={v} value={v}>{v} CHF</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
                   </div>
-                  <div>
-                    <label className="block text-xs text-gray-400 mb-1">Demi-journée</label>
-                    <select
-                      value={profileData.prices?.halfDay || ''}
-                      onChange={(e) => updateNestedProfileData('prices', 'halfDay', e.target.value ? parseInt(e.target.value) : undefined)}
-                      className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white text-sm focus:border-purple-500 focus:outline-none"
-                    >
-                      <option value="">Non proposé</option>
-                      {[800,1000,1200,1500,1800,2000,2500,3000].map(v => (
-                        <option key={v} value={v}>{v} CHF</option>
-                      ))}
-                    </select>
+
+                  {/* Demi-journée */}
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2 min-w-[120px]">
+                      <input
+                        type="checkbox"
+                        id="rate-halfday"
+                        checked={!!(profileData.prices?.halfDay && profileData.prices.halfDay !== null)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            updateNestedProfileData('prices', 'halfDay', 1500)
+                          } else {
+                            updateNestedProfileData('prices', 'halfDay', null)
+                          }
+                        }}
+                        className="w-4 h-4 text-purple-500 bg-gray-700 border-gray-600 rounded focus:ring-purple-500"
+                      />
+                      <label htmlFor="rate-halfday" className="text-sm text-gray-300 cursor-pointer">Demi-journée</label>
+                    </div>
+                    {profileData.prices?.halfDay && profileData.prices.halfDay !== null && (
+                      <div className="flex-1">
+                        <select
+                          value={profileData.prices.halfDay}
+                          onChange={(e) => updateNestedProfileData('prices', 'halfDay', parseInt(e.target.value))}
+                          className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white text-sm focus:border-purple-500 focus:outline-none"
+                        >
+                          {[800,1000,1200,1500,1800,2000,2500,3000].map(v => (
+                            <option key={v} value={v}>{v} CHF</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
                   </div>
-                  <div>
-                    <label className="block text-xs text-gray-400 mb-1">Journée complète</label>
-                    <select
-                      value={profileData.prices?.fullDay || ''}
-                      onChange={(e) => updateNestedProfileData('prices', 'fullDay', e.target.value ? parseInt(e.target.value) : undefined)}
-                      className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white text-sm focus:border-purple-500 focus:outline-none"
-                    >
-                      <option value="">Non proposé</option>
-                      {[1500,2000,2500,3000,3500,4000,5000,6000].map(v => (
-                        <option key={v} value={v}>{v} CHF</option>
-                      ))}
-                    </select>
+
+                  {/* Journée complète */}
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2 min-w-[120px]">
+                      <input
+                        type="checkbox"
+                        id="rate-fullday"
+                        checked={!!(profileData.prices?.fullDay && profileData.prices.fullDay !== null)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            updateNestedProfileData('prices', 'fullDay', 3000)
+                          } else {
+                            updateNestedProfileData('prices', 'fullDay', null)
+                          }
+                        }}
+                        className="w-4 h-4 text-purple-500 bg-gray-700 border-gray-600 rounded focus:ring-purple-500"
+                      />
+                      <label htmlFor="rate-fullday" className="text-sm text-gray-300 cursor-pointer">Journée complète</label>
+                    </div>
+                    {profileData.prices?.fullDay && profileData.prices.fullDay !== null && (
+                      <div className="flex-1">
+                        <select
+                          value={profileData.prices.fullDay}
+                          onChange={(e) => updateNestedProfileData('prices', 'fullDay', parseInt(e.target.value))}
+                          className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white text-sm focus:border-purple-500 focus:outline-none"
+                        >
+                          {[1500,2000,2500,3000,3500,4000,5000,6000].map(v => (
+                            <option key={v} value={v}>{v} CHF</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
                   </div>
-                  <div>
-                    <label className="block text-xs text-gray-400 mb-1">Nuit complète</label>
-                    <select
-                      value={profileData.prices?.overnight || ''}
-                      onChange={(e) => updateNestedProfileData('prices', 'overnight', e.target.value ? parseInt(e.target.value) : undefined)}
-                      className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white text-sm focus:border-purple-500 focus:outline-none"
-                    >
-                      <option value="">Non proposé</option>
-                      {[800,1000,1200,1500,2000,2500,3000,4000].map(v => (
-                        <option key={v} value={v}>{v} CHF</option>
-                      ))}
-                    </select>
+
+                  {/* Nuit complète */}
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2 min-w-[120px]">
+                      <input
+                        type="checkbox"
+                        id="rate-overnight"
+                        checked={!!(profileData.prices?.overnight && profileData.prices.overnight !== null)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            updateNestedProfileData('prices', 'overnight', 2000)
+                          } else {
+                            updateNestedProfileData('prices', 'overnight', null)
+                          }
+                        }}
+                        className="w-4 h-4 text-purple-500 bg-gray-700 border-gray-600 rounded focus:ring-purple-500"
+                      />
+                      <label htmlFor="rate-overnight" className="text-sm text-gray-300 cursor-pointer">Nuit complète</label>
+                    </div>
+                    {profileData.prices?.overnight && profileData.prices.overnight !== null && (
+                      <div className="flex-1">
+                        <select
+                          value={profileData.prices.overnight}
+                          onChange={(e) => updateNestedProfileData('prices', 'overnight', parseInt(e.target.value))}
+                          className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white text-sm focus:border-purple-500 focus:outline-none"
+                        >
+                          {[800,1000,1200,1500,2000,2500,3000,4000].map(v => (
+                            <option key={v} value={v}>{v} CHF</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
                   </div>
                 </div>
-                <div className="mt-2 text-xs text-gray-500">Seuls les tarifs remplis s'afficheront dans votre profil public</div>
+                <div className="mt-4 text-xs text-gray-500 flex items-start gap-2">
+                  <span className="text-purple-400">💡</span>
+                  <span>Cochez les tarifs que vous souhaitez proposer. Seuls les tarifs cochés s'afficheront dans votre profil public.</span>
+                </div>
               </div>
 
               <div>

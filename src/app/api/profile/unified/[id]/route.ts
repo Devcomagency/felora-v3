@@ -339,9 +339,29 @@ export async function POST(
     const body = await request.json().catch(() => ({}))
     console.log('🔄 [API UNIFIED POST] Body keys:', Object.keys(body))
 
+    // Ignorer les requêtes vides (protection contre les race conditions)
+    if (Object.keys(body).length === 0) {
+      console.log('⚠️ [API UNIFIED POST] Body vide - requête ignorée')
+      return NextResponse.json({
+        success: true,
+        message: 'Aucune donnée à sauvegarder',
+        ignored: true
+      })
+    }
+
     // Validation et transformation des données
     const transformedData = transformUpdateData(body)
     console.log('🔄 [API UNIFIED POST] Transformed data keys:', Object.keys(transformedData))
+
+    // Sécurité : empêcher les updates vides
+    if (Object.keys(transformedData).length === 0) {
+      console.log('⚠️ [API UNIFIED POST] Données transformées vides - requête ignorée')
+      return NextResponse.json({
+        success: true,
+        message: 'Aucune donnée valide à sauvegarder',
+        ignored: true
+      })
+    }
 
     // Vérifier que le profil existe
     let existingProfile = await prisma.escortProfile.findUnique({
@@ -469,7 +489,7 @@ function transformUpdateData(body: any): Record<string, any> {
   if (body.amenities !== undefined) {
     // Déduplication des amenities pour éviter les doublons
     const uniqueAmenities = Array.isArray(body.amenities)
-      ? [...new Set(body.amenities)].filter(item => item && item.trim() !== '')
+      ? [...new Set(body.amenities)].filter(item => typeof item === 'string' && item && item.trim() !== '')
       : body.amenities
     data.venueOptions = Array.isArray(uniqueAmenities)
       ? uniqueAmenities.join(', ')
@@ -480,7 +500,7 @@ function transformUpdateData(body: any): Record<string, any> {
   if (body.specialties !== undefined) {
     const uniqueSpecialties = Array.isArray(body.specialties)
       ? [...new Set(body.specialties)]
-          .filter(item => item && item.trim() !== '' && !item.startsWith('opt:'))
+          .filter(item => typeof item === 'string' && item && item.trim() !== '' && !item.startsWith('opt:'))
       : body.specialties
     data.practices = Array.isArray(uniqueSpecialties)
       ? uniqueSpecialties.join(', ')
