@@ -81,10 +81,41 @@ export default function EnhancedMediaManager() {
     }
   }
 
+  // Vérifier les accès aux médias
+  const checkMediaAccess = async () => {
+    const accessChecks = await Promise.all(
+      medias
+        .filter(m => m.visibility === 'PREMIUM')
+        .map(async (media) => {
+          try {
+            const response = await fetch(`/api/media/unlock?mediaId=${media.id}`)
+            if (response.ok) {
+              const data = await response.json()
+              return { mediaId: media.id, hasAccess: data.hasAccess }
+            }
+          } catch (error) {
+            console.error('Erreur vérification accès:', error)
+          }
+          return { mediaId: media.id, hasAccess: false }
+        })
+    )
+
+    const unlockedSet = new Set(
+      accessChecks.filter(check => check.hasAccess).map(check => check.mediaId)
+    )
+    setUnlockedMedias(unlockedSet)
+  }
+
   useEffect(() => {
     loadMedias()
     loadDiamonds()
   }, [])
+
+  useEffect(() => {
+    if (medias.length > 0) {
+      checkMediaAccess()
+    }
+  }, [medias])
 
   // Gestion du drag & drop
   const handleDrag = (e: React.DragEvent) => {
@@ -200,7 +231,7 @@ export default function EnhancedMediaManager() {
   // Actions sur les médias
   const archiveMedia = async (mediaId: string) => {
     try {
-      const response = await fetch(`/api/media/${mediaId}`, {
+      const response = await fetch(`/api/media/${mediaId}/visibility`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ visibility: 'ARCHIVED' })
@@ -211,6 +242,8 @@ export default function EnhancedMediaManager() {
           m.id === mediaId ? { ...m, visibility: 'ARCHIVED' } : m
         ))
         alert('Média archivé')
+      } else {
+        alert('Erreur lors de l\'archivage')
       }
     } catch (error) {
       console.error('Erreur archivage:', error)
@@ -222,7 +255,7 @@ export default function EnhancedMediaManager() {
     if (!confirm('Êtes-vous sûr de vouloir supprimer définitivement ce média ?')) return
 
     try {
-      const response = await fetch(`/api/media/${mediaId}`, { method: 'DELETE' })
+      const response = await fetch(`/api/media/${mediaId}/delete`, { method: 'DELETE' })
       if (response.ok) {
         setMedias(prev => prev.filter(m => m.id !== mediaId))
         alert('Média supprimé')
@@ -237,7 +270,7 @@ export default function EnhancedMediaManager() {
 
   const publishMedia = async (mediaId: string) => {
     try {
-      const response = await fetch(`/api/media/${mediaId}`, {
+      const response = await fetch(`/api/media/${mediaId}/visibility`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ visibility: 'PUBLIC' })
@@ -248,10 +281,41 @@ export default function EnhancedMediaManager() {
           m.id === mediaId ? { ...m, visibility: 'PUBLIC' } : m
         ))
         alert('Média publié')
+      } else {
+        alert('Erreur lors de la publication')
       }
     } catch (error) {
       console.error('Erreur publication:', error)
       alert('Erreur lors de la publication')
+    }
+  }
+
+  // Débloquer un média premium
+  const unlockPremiumMedia = async (mediaId: string, price: number) => {
+    if (userDiamonds.balance < price) {
+      alert(`Vous n'avez pas assez de diamants (${price} requis, ${userDiamonds.balance} disponibles)`)
+      return
+    }
+
+    try {
+      const response = await fetch('/api/media/unlock', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mediaId, price })
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        alert('Média débloqué !')
+        setUnlockedMedias(prev => new Set([...prev, mediaId]))
+        setUserDiamonds(prev => ({ ...prev, balance: data.newBalance }))
+      } else {
+        const error = await response.json()
+        alert(error.error || 'Erreur déblocage')
+      }
+    } catch (error) {
+      console.error('Erreur déblocage:', error)
+      alert('Erreur lors du déblocage')
     }
   }
 
@@ -582,6 +646,8 @@ export default function EnhancedMediaManager() {
         }`}>
           {filteredMedias.map((media) => {
             const isPremium = media.visibility === 'PREMIUM'
+            const isUnlocked = unlockedMedias.has(media.id)
+            const shouldBlur = isPremium && !isUnlocked
             const isArchived = media.visibility === 'ARCHIVED'
 
             return (
@@ -596,9 +662,9 @@ export default function EnhancedMediaManager() {
                   {media.type === 'VIDEO' ? (
                     <video
                       src={media.url}
-                      className="w-full h-full object-cover"
+                      className={`w-full h-full object-cover ${shouldBlur ? 'blur-md' : ''}`}
                       muted
-                      controls
+                      controls={!shouldBlur}
                       poster={media.url}
                       onError={(e) => {
                         console.log('Erreur chargement vidéo:', e)
@@ -608,13 +674,29 @@ export default function EnhancedMediaManager() {
                     <img
                       src={media.url}
                       alt="Media preview"
-                      className="w-full h-full object-cover"
+                      className={`w-full h-full object-cover ${shouldBlur ? 'blur-md' : ''}`}
                       onError={(e) => {
                         console.log('Erreur chargement image:', e)
                         const target = e.target as HTMLImageElement
                         target.src = '/api/placeholder/400/400'
                       }}
                     />
+                  )}
+
+                  {/* Overlay pour médias premium */}
+                  {shouldBlur && (
+                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                      <div className="text-center">
+                        <Diamond className="w-8 h-8 text-amber-400 mb-2 mx-auto" />
+                        <div className="text-white font-medium text-sm">{media.price} 💎</div>
+                        <button
+                          onClick={() => media.price && unlockPremiumMedia(media.id, media.price)}
+                          className="mt-2 px-3 py-1 bg-gradient-to-r from-amber-600 to-yellow-600 text-white rounded-lg text-xs hover:scale-105 transition-transform"
+                        >
+                          Débloquer
+                        </button>
+                      </div>
+                    </div>
                   )}
 
                   {/* Badge visibilité */}

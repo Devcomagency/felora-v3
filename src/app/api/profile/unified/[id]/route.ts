@@ -467,16 +467,24 @@ function transformUpdateData(body: any): Record<string, any> {
   }
 
   if (body.amenities !== undefined) {
-    data.venueOptions = Array.isArray(body.amenities) 
-      ? body.amenities.join(', ') 
+    // Déduplication des amenities pour éviter les doublons
+    const uniqueAmenities = Array.isArray(body.amenities)
+      ? [...new Set(body.amenities)].filter(item => item && item.trim() !== '')
       : body.amenities
+    data.venueOptions = Array.isArray(uniqueAmenities)
+      ? uniqueAmenities.join(', ')
+      : uniqueAmenities
   }
 
-  // Spécialités → practices
+  // Spécialités → practices (filtrées pour ne garder que les services, pas les équipements)
   if (body.specialties !== undefined) {
-    data.practices = Array.isArray(body.specialties)
-      ? body.specialties.join(', ')
+    const uniqueSpecialties = Array.isArray(body.specialties)
+      ? [...new Set(body.specialties)]
+          .filter(item => item && item.trim() !== '' && !item.startsWith('opt:'))
       : body.specialties
+    data.practices = Array.isArray(uniqueSpecialties)
+      ? uniqueSpecialties.join(', ')
+      : uniqueSpecialties
   }
 
   // Catégorie directe (pour assurer la persistance)
@@ -663,14 +671,17 @@ function transformProfileData(rawProfile: any, mode: 'dashboard' | 'public') {
 
   // Practices supprimé - remplacé par amenities uniquement
 
-  // Parse des spécialités depuis practices
-  const specialties = parseStringArray(rawProfile.practices)
+  // Parse des spécialités depuis practices (en excluant les équipements opt:)
+  const rawSpecialties = parseStringArray(rawProfile.practices)
+  const specialties = [...new Set(rawSpecialties)].filter(item => item && item.trim() !== '' && !item.startsWith('opt:'))
 
   // Parse des nouvelles options (avec fallback si champs manquants)
   const paymentMethods = parseStringArray((rawProfile as any).paymentMethods)
   console.log('🔄 [API UNIFIED] venueOptions brut:', (rawProfile as any).venueOptions, typeof (rawProfile as any).venueOptions)
-  const amenities = parseStringArray((rawProfile as any).venueOptions) // Note: venueOptions en BDD → amenities en interface
-  console.log('🔄 [API UNIFIED] amenities parsées:', amenities.length, 'éléments')
+  const rawAmenities = parseStringArray((rawProfile as any).venueOptions) // Note: venueOptions en BDD → amenities en interface
+  // Déduplication des amenities depuis la BDD pour nettoyer les doublons existants
+  const amenities = [...new Set(rawAmenities)].filter(item => item && item.trim() !== '')
+  console.log('🔄 [API UNIFIED] amenities dédupliquées:', amenities.length, 'éléments (', rawAmenities.length, 'avant déduplication)')
   const acceptedCurrencies = parseStringArray((rawProfile as any).acceptedCurrencies)
 
   // Services détaillés supprimés (pour éviter doublons)
@@ -700,6 +711,48 @@ function transformProfileData(rawProfile: any, mode: 'dashboard' | 'public') {
     galleryPhotos: parseStringArray(rawProfile.galleryPhotos),
     videos: parseStringArray(rawProfile.videos),
     profilePhoto: rawProfile.profilePhoto || null,
+
+    // Médias au format moderne pour le gestionnaire
+    medias: (() => {
+      const gallery = parseStringArray(rawProfile.galleryPhotos)
+      const videos = parseStringArray(rawProfile.videos)
+      
+      const medias: any[] = []
+      
+      // Transformer les photos de galerie
+      gallery.forEach((item, index) => {
+        if (typeof item === 'object' && item.url) {
+          medias.push({
+            id: item.id || `media-${Date.now()}-${index}`,
+            url: item.url,
+            type: 'IMAGE',
+            visibility: item.isPrivate ? 'PREMIUM' : 'PUBLIC',
+            price: item.isPrivate ? 10 : undefined,
+            createdAt: item.uploadedAt || new Date().toISOString(),
+            views: 0,
+            earnings: 0
+          })
+        }
+      })
+      
+      // Transformer les vidéos
+      videos.forEach((item, index) => {
+        if (typeof item === 'object' && item.url) {
+          medias.push({
+            id: item.id || `video-${Date.now()}-${index}`,
+            url: item.url,
+            type: 'VIDEO',
+            visibility: item.isPrivate ? 'PREMIUM' : 'PUBLIC',
+            price: item.isPrivate ? 10 : undefined,
+            createdAt: item.uploadedAt || new Date().toISOString(),
+            views: 0,
+            earnings: 0
+          })
+        }
+      })
+      
+      return medias as any[]
+    })(),
 
     // Tarifs
     rates: {
