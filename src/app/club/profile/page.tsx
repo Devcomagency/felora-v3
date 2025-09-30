@@ -566,7 +566,7 @@ function ServicesPanel(){
   }, [languages, paymentMethods, services, equipments])
 
   // Fonction toggle avec auto-save
-  const toggle = (setter: React.Dispatch<React.SetStateAction<string[]>>, list: string[], value: string) => {
+  const toggle = (setter: React.Dispatch<React.SetStateAction<string[]>>, _list: string[], value: string) => {
     setter(prev => {
       const s = new Set(prev)
       if (s.has(value)) s.delete(value); else s.add(value)
