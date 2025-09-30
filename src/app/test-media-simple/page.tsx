@@ -82,7 +82,12 @@ export default function TestMediaSimplePage() {
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Vérifier si l'utilisateur est une escorte ou un club
-  const isEscortOrClub = session?.user?.escortProfile || session?.user?.clubProfile
+  const isEscortOrClub = session?.user && (
+    (session.user as any)?.escortProfile ||
+    (session.user as any)?.clubProfile ||
+    session.user.email?.includes('club') ||
+    session.user.email?.includes('escort')
+  )
 
   // Charger les médias récents depuis localStorage
   useEffect(() => {
@@ -317,7 +322,23 @@ export default function TestMediaSimplePage() {
         />
                       </div>
 
-      {/* Footer avec bouton + pour escortes/clubs connectés */}
+      {/* Bouton + flottant en bas à gauche - TOUJOURS VISIBLE */}
+      {isEscortOrClub && (
+        <button
+          onClick={() => setShowCamera(true)}
+          className="fixed bottom-24 left-4 w-16 h-16 rounded-full bg-gradient-to-r from-[#FF6B9D] to-[#B794F6] flex items-center justify-center shadow-2xl hover:scale-105 transition-all duration-200"
+          style={{
+            zIndex: 9999,
+            position: 'fixed',
+            display: 'flex'
+          }}
+          disabled={isLoading}
+        >
+          <Plus className={`w-10 h-10 text-white ${isLoading ? 'animate-spin' : ''}`} />
+        </button>
+      )}
+
+      {/* Footer avec navigation pour escortes/clubs connectés */}
       {isEscortOrClub && (
         <div className="fixed bottom-0 left-0 right-0 h-20 bg-black/80 backdrop-blur-md border-t border-white/10 z-40">
           <div className="flex items-center justify-center h-full px-4">
@@ -339,21 +360,11 @@ export default function TestMediaSimplePage() {
               <span className="text-xs text-white/70 mt-1">Recherche</span>
             </button>
 
-            {/* Bouton + central */}
-            <div className="flex-1 flex justify-center">
-              <button
-                onClick={() => setShowCamera(true)}
-                className="w-14 h-14 rounded-full bg-gradient-to-r from-[#FF6B9D] to-[#B794F6] flex items-center justify-center shadow-lg hover:scale-105 transition-all duration-200"
-                disabled={isLoading}
-              >
-                <Plus className={`w-8 h-8 text-white ${isLoading ? 'animate-spin' : ''}`} />
-              </button>
-            </div>
 
             {/* Bouton Profile */}
             <button
               onClick={() => {
-                if (session?.user?.clubProfile) {
+                if ((session?.user as any)?.clubProfile || session?.user?.email?.includes('club')) {
                   window.location.href = '/club/profile'
                 } else {
                   window.location.href = '/profile'
