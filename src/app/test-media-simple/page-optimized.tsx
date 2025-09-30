@@ -2,13 +2,9 @@
 
 import { useState, useRef, useEffect, useCallback, memo } from 'react'
 import dynamic from 'next/dynamic'
-import { useSession } from 'next-auth/react'
-import {
+import { 
   Plus,
-  ChevronLeft,
-  Home,
-  Search,
-  User
+  ChevronLeft
 } from 'lucide-react'
 
 // Lazy loading du composant caméra pour de meilleures performances
@@ -69,9 +65,6 @@ const MediaGallery = memo(({ media, onSelect }: {
 MediaGallery.displayName = 'MediaGallery'
 
 export default function TestMediaSimplePage() {
-  // Session d'authentification
-  const { data: session, status } = useSession()
-
   // États essentiels seulement
   const [showCamera, setShowCamera] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -81,9 +74,6 @@ export default function TestMediaSimplePage() {
 
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // Vérifier si l'utilisateur est une escorte ou un club
-  const isEscortOrClub = session?.user?.escortProfile || session?.user?.clubProfile
-
   // Charger les médias récents depuis localStorage
   useEffect(() => {
     try {
@@ -91,8 +81,8 @@ export default function TestMediaSimplePage() {
       if (saved) {
         const media = JSON.parse(saved)
         setRecentMedia(media)
-        }
-      } catch (error) {
+      }
+    } catch (error) {
       console.error('Erreur chargement médias récents:', error)
     }
   }, [])
@@ -107,85 +97,26 @@ export default function TestMediaSimplePage() {
   }, [])
 
   // Handler pour la capture vidéo/photo depuis CameraScreen
-  const handleVideoCapture = useCallback(async (mediaBlob: Blob | File, mediaDescription?: string) => {
+  const handleVideoCapture = useCallback((mediaBlob: Blob | File) => {
     setIsLoading(true)
-    console.log('🎬 Début upload média:', { size: mediaBlob.size, type: mediaBlob.type })
     
     try {
-      // Créer un objet File si c'est un Blob
-      const mediaType = mediaBlob.type || (mediaBlob instanceof Blob ? 'application/octet-stream' : 'image/jpeg')
-      const isVideo = mediaType.includes('video') || (mediaBlob as any).size > 10000000 // Si > 10MB, probablement une vidéo
-      const fileExtension = isVideo ? 'mp4' : 'jpg'
-      const mimeType = isVideo ? 'video/mp4' : 'image/jpeg'
-      
-      const file = mediaBlob instanceof File ? mediaBlob : new File([mediaBlob], `media-${Date.now()}.${fileExtension}`, {
-        type: mimeType
-      })
-      
-      console.log('📁 Fichier créé:', { 
-        name: file.name, 
-        type: file.type, 
-        size: file.size,
-        originalBlobType: mediaBlob.type 
-      })
-
-      // Récupérer le nombre de médias existants pour calculer la position
-      const mediaResponse = await fetch('/api/media/my')
-      const mediaData = await mediaResponse.json()
-      const existingMediaCount = mediaData.items?.length || 0
-      // Commencer les publications à partir de pos 2 (pos 0,1 réservés pour avatar/footer)
-      const newPos = Math.max(2, existingMediaCount + 2)
-
-      // Upload vers le profil utilisateur
-      const formData = new FormData()
-      formData.append('media', file)
-      formData.append('type', isVideo ? 'VIDEO' : 'IMAGE')
-      formData.append('pos', newPos.toString()) // Position dans la galerie
-      formData.append('description', mediaDescription || '') // Description depuis CameraScreenTest
-
-      console.log('📤 Envoi de la requête d\'upload...')
-      const response = await fetch('/api/media/upload', {
-        method: 'POST',
-        body: formData,
-        credentials: 'include'
-      })
-
-      console.log('📡 Réponse reçue:', { status: response.status, ok: response.ok })
-      
-      if (!response.ok) {
-        const errorText = await response.text()
-        console.error('❌ Erreur upload:', errorText)
-        throw new Error(`Échec de l'upload: ${response.status}`)
+      const mediaFile: MediaFile = {
+        file: mediaBlob,
+        previewUrl: URL.createObjectURL(mediaBlob),
+        type: mediaBlob.type.startsWith('video/') ? 'video' : 'image',
+        size: mediaBlob.size,
+        timestamp: Date.now()
       }
-
-      const result = await response.json()
-      console.log('✅ Résultat upload:', result)
       
-      if (result.success) {
-        // Créer l'objet media pour la galerie locale
-        const mediaFile: MediaFile = {
-          file: mediaBlob,
-          previewUrl: result.media?.url || URL.createObjectURL(mediaBlob),
-          type: isVideo ? 'video' : 'image',
-          size: mediaBlob.size,
-          timestamp: Date.now()
-        }
-        
-        saveRecentMedia(mediaFile)
-        setMessage(`Média ajouté à votre profil ${result.userType === 'CLUB' ? 'club' : 'escort'} !`)
-        setShowCamera(false)
-        
-        // Rediriger vers le bon profil selon le type d'utilisateur
-        const redirectUrl = result.redirectUrl || (result.userType === 'CLUB' ? '/profile-test/club' : '/profile')
-        setTimeout(() => {
-          window.location.href = redirectUrl
-        }, 2000)
-      } else {
-        throw new Error(result.error || 'Erreur inconnue')
-      }
-      } catch (error) {
-      console.error('Erreur upload média:', error)
-      setError(`Erreur: ${error instanceof Error ? error.message : 'Upload échoué'}`)
+      saveRecentMedia(mediaFile)
+      setMessage('Média capturé avec succès !')
+      setShowCamera(false)
+      
+      // Effacer le message après 3 secondes
+      setTimeout(() => setMessage(null), 3000)
+    } catch (error) {
+      setError('Erreur lors de la capture du média')
       setTimeout(() => setError(null), 5000)
     } finally {
       setIsLoading(false)
@@ -280,13 +211,11 @@ export default function TestMediaSimplePage() {
       {error && (
         <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 bg-red-500/90 text-white px-4 py-2 rounded-lg backdrop-blur-sm">
           {error}
-                      </div>
-                    )}
+        </div>
+      )}
 
       {/* Page principale */}
-      <div className={`pt-14 flex flex-col items-center justify-center px-4 ${
-        isEscortOrClub ? 'min-h-[calc(100vh-56px-80px)] pb-20' : 'min-h-[calc(100vh-56px)]'
-      }`}>
+      <div className="pt-14 flex flex-col items-center justify-center min-h-[calc(100vh-56px)] px-4">
         <div className="text-center">
           {/* Bouton + avec animation de chargement */}
           <div 
@@ -300,76 +229,22 @@ export default function TestMediaSimplePage() {
             }}
           >
             <Plus className={`w-16 h-16 text-white transition-transform duration-200 ${isLoading ? 'animate-spin' : ''}`} />
-              </div>
-
+          </div>
+          
           <p className="text-white/80 text-lg font-medium">
             {isLoading ? 'Chargement...' : 'Créer du contenu'}
           </p>
           <p className="text-white/60 text-sm mt-2">
             {isLoading ? 'Veuillez patienter' : 'Appuyez pour commencer'}
           </p>
-              </div>
+        </div>
 
         {/* Galerie des médias récents */}
         <MediaGallery 
           media={recentMedia} 
           onSelect={handleMediaSelect}
         />
-                      </div>
-
-      {/* Footer avec bouton + pour escortes/clubs connectés */}
-      {isEscortOrClub && (
-        <div className="fixed bottom-0 left-0 right-0 h-20 bg-black/80 backdrop-blur-md border-t border-white/10 z-40">
-          <div className="flex items-center justify-center h-full px-4">
-            {/* Bouton Home */}
-            <button
-              onClick={() => window.location.href = '/'}
-              className="flex flex-col items-center justify-center min-w-16 h-16 p-2 hover:bg-white/10 rounded-xl transition-colors"
-            >
-              <Home className="w-6 h-6 text-white/70" />
-              <span className="text-xs text-white/70 mt-1">Accueil</span>
-            </button>
-
-            {/* Bouton Search */}
-            <button
-              onClick={() => window.location.href = '/search'}
-              className="flex flex-col items-center justify-center min-w-16 h-16 p-2 hover:bg-white/10 rounded-xl transition-colors"
-            >
-              <Search className="w-6 h-6 text-white/70" />
-              <span className="text-xs text-white/70 mt-1">Recherche</span>
-            </button>
-
-            {/* Bouton + central */}
-            <div className="flex-1 flex justify-center">
-              <button
-                onClick={() => setShowCamera(true)}
-                className="w-14 h-14 rounded-full bg-gradient-to-r from-[#FF6B9D] to-[#B794F6] flex items-center justify-center shadow-lg hover:scale-105 transition-all duration-200"
-                disabled={isLoading}
-              >
-                <Plus className={`w-8 h-8 text-white ${isLoading ? 'animate-spin' : ''}`} />
-              </button>
-            </div>
-
-            {/* Bouton Profile */}
-            <button
-              onClick={() => {
-                if (session?.user?.clubProfile) {
-                  window.location.href = '/club/profile'
-                } else {
-                  window.location.href = '/profile'
-                }
-              }}
-              className="flex flex-col items-center justify-center min-w-16 h-16 p-2 hover:bg-white/10 rounded-xl transition-colors"
-            >
-              <User className="w-6 h-6 text-white/70" />
-              <span className="text-xs text-white/70 mt-1">Profil</span>
-            </button>
-
-            {/* Spacer pour équilibrer */}
-            <div className="min-w-16" />
-          </div>
-        </div>
-      )}
+      </div>
 
       {/* Écran caméra avec lazy loading */}
       {showCamera && (

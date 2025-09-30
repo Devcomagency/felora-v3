@@ -10,14 +10,42 @@ export async function GET(req: NextRequest) {
     const session = await getServerSession(authOptions as any)
     const userId = (session as any)?.user?.id as string | undefined
     if (!userId) return NextResponse.json({ items: [] })
+    
     const url = new URL(req.url)
     const visibility = (url.searchParams.get('visibility') || undefined) as MediaVisibility | undefined
-    const escort = await prisma.escortProfile.findUnique({ where: { userId }, select: { id: true } })
-    if (!escort) return NextResponse.json({ items: [] })
-    const service = await getMediaService()
-    const items = await service.listByEscort(escort.id, visibility)
+    
+    // Vérifier si l'utilisateur est un club
+    const clubProfile = await prisma.clubProfileV2.findUnique({
+      where: { userId }
+    })
+    
+    const ownerType = clubProfile ? 'CLUB' : 'ESCORT'
+    
+    // Récupérer les médias depuis la table Media (nouveau système)
+    const mediaFromTable = await prisma.media.findMany({
+      where: {
+        ownerType: ownerType,
+        ownerId: userId,
+        ...(visibility && { visibility: visibility })
+      },
+      orderBy: { createdAt: 'desc' }
+    })
+    
+    // Formater les médias pour correspondre au format attendu
+    const items = mediaFromTable.map(media => ({
+      id: media.id,
+      url: media.url,
+      type: media.type.toLowerCase(),
+      visibility: media.visibility,
+      pos: media.pos,
+      createdAt: media.createdAt
+    }))
+    
+    console.log(`📱 Médias récupérés pour utilisateur ${userId}:`, items.length, 'items')
+    
     return NextResponse.json({ items })
-  } catch (e:any) {
+  } catch (e: any) {
+    console.error('Erreur récupération médias:', e)
     return NextResponse.json({ items: [], error: e?.message || 'server_error' }, { status: 200 })
   }
 }

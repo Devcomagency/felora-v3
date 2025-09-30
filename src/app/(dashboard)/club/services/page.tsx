@@ -13,7 +13,7 @@ type ServicesForm = {
 
 const DEFAULT_LANGS = ['Français','Anglais','Allemand','Italien','Espagnol']
 const DEFAULT_PAYMENTS = ['Cash','Carte','TWINT','Virement']
-const DEFAULT_SERVICES = ['Bar','Champagne','Privé','Sécurité','Parking','Salle VIP']
+const DEFAULT_SERVICES = ['Bar','Privé','Sécurité','Parking','Salle VIP']
 
 export default function ClubServicesPage(){
   const [form, setForm] = useState<ServicesForm>({

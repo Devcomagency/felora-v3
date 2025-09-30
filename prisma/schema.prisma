@@ -66,8 +66,52 @@ model ClubProfileV2 {
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
   user        User        @relation("ClubProfileV2User", fields: [userId], references: [id], onDelete: Cascade)
+  details     ClubDetails?
+  services    ClubServices?
 
   @@map("club_profiles_v2")
+}
+
+model ClubDetails {
+  id           String    @id @default(cuid())
+  clubId       String    @unique
+  name         String?
+  description  String?
+  address      String?
+  city         String?
+  postalCode   String?
+  country      String?   @default("CH")
+  openingHours String?
+  websiteUrl   String?
+  email        String?
+  phone        String?
+  avatarUrl    String?
+  coverUrl     String?
+  isActive     Boolean   @default(false)
+  capacity     Int?
+  latitude     Float?
+  longitude    Float?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  club         ClubProfileV2 @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  @@map("club_details")
+}
+
+model ClubServices {
+  id             String   @id @default(cuid())
+  clubId         String   @unique
+  languages      String[] @default([])
+  paymentMethods String[] @default([])
+  services       String[] @default([])
+  equipments     String[] @default([])
+  isOpen24_7     Boolean  @default(false)
+  openingHours   String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  club           ClubProfileV2 @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  @@map("club_services")
 }
 
 model KycSubmission {
@@ -588,6 +632,7 @@ model Media {
   type        String
   url         String
   thumbUrl    String?
+  description String?
   visibility  MediaVisibility @default(PUBLIC)
   price       Int?
   pos         Int?

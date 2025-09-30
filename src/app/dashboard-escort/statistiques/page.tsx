@@ -363,15 +363,15 @@ function NewStatistiquesPage() {
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold">Sources de revenus</h3>
           </div>
-          {revenueBreakdownQ.data ? (
+          {revenueBreakdownQ.data && revenueBreakdownQ.data.orders ? (
             <div className="grid grid-cols-2 gap-4 items-center">
               {/* Donut via conic-gradient */}
               <div className="flex items-center justify-center">
                 <div className="relative w-40 h-40">
                   {(() => {
                     const d = revenueBreakdownQ.data!
-                    const a = d.orders.pct
-                    const b = a + d.paywalls.pct
+                    const a = d.orders?.pct || 0
+                    const b = a + (d.paywalls?.pct || 0)
                     const c = 100
                     const bg = `conic-gradient(#a855f7 0% ${a}%, #06b6d4 ${a}% ${b}%, #10b981 ${b}% ${c}%)`
                     return (
@@ -389,9 +389,9 @@ function NewStatistiquesPage() {
               </div>
               {/* Legend */}
               <div className="space-y-3">
-                <LegendRow color="from-purple-500 to-pink-500" label="Commandes privées" value={revenueBreakdownQ.data.orders.amount} pct={revenueBreakdownQ.data.orders.pct} onClick={()=>setScope('ondemand')} />
-                <LegendRow color="from-blue-500 to-cyan-500" label="Médias payants" value={revenueBreakdownQ.data.paywalls.amount} pct={revenueBreakdownQ.data.paywalls.pct} onClick={()=>setScope('public')} />
-                <LegendRow color="from-green-500 to-emerald-500" label="Cadeaux reçus" value={revenueBreakdownQ.data.gifts.amount} pct={revenueBreakdownQ.data.gifts.pct} onClick={()=>setScope('private')} />
+                <LegendRow color="from-purple-500 to-pink-500" label="Commandes privées" value={revenueBreakdownQ.data.orders?.amount || 0} pct={revenueBreakdownQ.data.orders?.pct || 0} onClick={()=>setScope('ondemand')} />
+                <LegendRow color="from-blue-500 to-cyan-500" label="Médias payants" value={revenueBreakdownQ.data.paywalls?.amount || 0} pct={revenueBreakdownQ.data.paywalls?.pct || 0} onClick={()=>setScope('public')} />
+                <LegendRow color="from-green-500 to-emerald-500" label="Cadeaux reçus" value={revenueBreakdownQ.data.gifts?.amount || 0} pct={revenueBreakdownQ.data.gifts?.pct || 0} onClick={()=>setScope('private')} />
               </div>
             </div>
           ) : (
@@ -420,11 +420,11 @@ function NewStatistiquesPage() {
       </div>
 
       {/* Sources detail cards */}
-      {revenueBreakdownQ.data && (
+      {revenueBreakdownQ.data && revenueBreakdownQ.data.orders && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <SourceCard emoji="📸" title="Commandes privées" pct={revenueBreakdownQ.data.orders.pct} amount={revenueBreakdownQ.data.orders.amount} delta={15} onClick={()=>setScope('ondemand')} />
-          <SourceCard emoji="💎" title="Médias payants" pct={revenueBreakdownQ.data.paywalls.pct} amount={revenueBreakdownQ.data.paywalls.amount} delta={8} onClick={()=>setScope('public')} />
-          <SourceCard emoji="🎁" title="Cadeaux" pct={revenueBreakdownQ.data.gifts.pct} amount={revenueBreakdownQ.data.gifts.amount} delta={22} onClick={()=>setScope('private')} />
+          <SourceCard emoji="📸" title="Commandes privées" pct={revenueBreakdownQ.data.orders?.pct || 0} amount={revenueBreakdownQ.data.orders?.amount || 0} delta={15} onClick={()=>setScope('ondemand')} />
+          <SourceCard emoji="💎" title="Médias payants" pct={revenueBreakdownQ.data.paywalls?.pct || 0} amount={revenueBreakdownQ.data.paywalls?.amount || 0} delta={8} onClick={()=>setScope('public')} />
+          <SourceCard emoji="🎁" title="Cadeaux" pct={revenueBreakdownQ.data.gifts?.pct || 0} amount={revenueBreakdownQ.data.gifts?.amount || 0} delta={22} onClick={()=>setScope('private')} />
         </div>
       )}
     </div>

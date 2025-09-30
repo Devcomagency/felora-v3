@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState, useTransition } from 'react'
 import DashboardLayout from '../../components/dashboard-v2/DashboardLayout'
 import ClubMediaManager from '../../components/dashboard-v2/club/ClubMediaManager'
 import ClubHeader from '../../components/dashboard-v2/club/ClubHeader'
+import AddressAutocomplete from '../../components/ui/AddressAutocomplete'
 import { useFeatureFlag } from '@/hooks/useFeatureFlag'
 
 type Club = {
@@ -43,14 +44,22 @@ export default function ClubProfilePage() {
 // New club page (V2 design)
 function NewClubProfilePage() {
   const [club, setClub] = useState<Club | null>(null)
-  const [form, setForm] = useState<Partial<Club> & { websiteUrl?: string }>({})
+  const [form, setForm] = useState<Partial<Club> & {
+    websiteUrl?: string;
+    email?: string;
+    phone?: string;
+    companyName?: string;
+    handle?: string;
+    managerName?: string;
+  }>({})
   const [loading, setLoading] = useState(true)
   const [saving, startSaving] = useTransition()
   const [message, setMessage] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
-  const [activeTab, setActiveTab] = useState<'info'|'services'|'medias'>('info')
+  const [activeTab, setActiveTab] = useState<'info'|'horaires'|'services'|'medias'>('info')
   const [mediaCount, setMediaCount] = useState<{ count:number; ok:boolean }>({ count: 0, ok: false })
+  const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -63,14 +72,20 @@ function NewClubProfilePage() {
           if (data?.club) {
             setClub(data.club)
             setForm({
-              name: data.club.name || '',
+              name: data.club.companyName || data.club.name || '',
               description: data.club.description || '',
               address: data.club.address || '',
               openingHours: data.club.openingHours || '',
               avatarUrl: data.club.avatarUrl || '',
               coverUrl: data.club.coverUrl || '',
               isActive: !!data.club.isActive,
-              websiteUrl: (data.club as any).websiteUrl || ''
+              websiteUrl: (data.club as any).websiteUrl || '',
+              // Pré-remplir avec les données d'inscription
+              email: data.club.user?.email || '',
+              phone: data.club.user?.phoneE164 || '',
+              handle: data.club.handle || '',
+              companyName: data.club.companyName || '',
+              managerName: data.club.managerName || ''
             })
           }
         }
@@ -110,9 +125,8 @@ function NewClubProfilePage() {
     if (String(form.name||'').trim()) n++
     if (String(form.description||'').trim()) n++
     if (String(form.address||'').trim()) n++
-    if (String(form.openingHours||'').trim()) n++
     return n
-  }, [form.name, form.description, form.address, form.openingHours])
+  }, [form.name, form.description, form.address])
 
   const updateField = (key: keyof Club, value: any) => {
     setForm(prev => ({ ...prev, [key]: value }))
@@ -176,6 +190,7 @@ function NewClubProfilePage() {
             className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white"
           >
             <option value="info">Informations</option>
+            <option value="horaires">Horaires</option>
             <option value="services">Services</option>
             <option value="medias">Médias</option>
           </select>
@@ -201,9 +216,24 @@ function NewClubProfilePage() {
             } : {}}
           >
             <span>Informations</span>
-            <span className={`bg-gray-600 text-xs px-2 py-0.5 rounded-full ${infoRequiredCount===4 ? 'bg-emerald-600/30 text-emerald-300' : ''}`}>
-              {infoRequiredCount}/4
+            <span className={`bg-gray-600 text-xs px-2 py-0.5 rounded-full ${infoRequiredCount===3 ? 'bg-emerald-600/30 text-emerald-300' : ''}`}>
+              {infoRequiredCount}/3
             </span>
+          </button>
+          <button
+            onClick={() => setActiveTab('horaires')}
+            className={`flex-1 min-w-[160px] sm:min-w-0 flex items-center justify-center space-x-2 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
+              activeTab === 'horaires'
+                ? 'text-white shadow-lg'
+                : 'text-gray-400 hover:text-gray-300 hover:bg-gray-700/30'
+            }`}
+            style={activeTab === 'horaires' ? {
+              background: 'linear-gradient(135deg, var(--felora-aurora) 0%, var(--felora-plasma) 100%)',
+              boxShadow: '0 4px 15px rgba(255, 107, 157, 0.3)'
+            } : {}}
+          >
+            <span>Horaires</span>
+            <span className="bg-gray-600 text-xs px-2 py-0.5 rounded-full">Requis</span>
           </button>
           <button
             onClick={() => setActiveTab('services')}
@@ -260,10 +290,30 @@ function NewClubProfilePage() {
             </div>
           ) : (
             <div className="space-y-4">
+              {/* Informations d'inscription (lecture seule) */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-lg bg-blue-900/20 border border-blue-500/30">
+                <div>
+                  <label className="block text-sm text-blue-300 mb-1">Email d'inscription</label>
+                  <input
+                    value={form.email || ''}
+                    disabled
+                    className="w-full px-3 py-2.5 text-[15px] bg-gray-800/40 border border-gray-600 rounded-lg text-gray-400 cursor-not-allowed"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm text-blue-300 mb-1">Téléphone d'inscription</label>
+                  <input
+                    value={form.phone || ''}
+                    disabled
+                    className="w-full px-3 py-2.5 text-[15px] bg-gray-800/40 border border-gray-600 rounded-lg text-gray-400 cursor-not-allowed"
+                  />
+                </div>
+              </div>
+
               <div>
                 <label className="block text-sm text-gray-300 mb-1">Nom du club</label>
                 <input
-                  value={form.name || ''}
+                  value={form.companyName || form.name || ''}
                   onChange={e => updateField('name', e.target.value)}
                   className={`w-full px-3 py-2.5 text-[15px] bg-gray-800/60 border ${fieldErrors.name? 'border-red-500/60':'border-gray-700'} rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500`}
                   placeholder="Ex. Club Luxe Geneva"
@@ -283,26 +333,28 @@ function NewClubProfilePage() {
               </div>
 
               <div>
-                <label className="block text-sm text-gray-300 mb-1">Adresse</label>
-                <input
+                <label className="block text-sm text-gray-300 mb-1">Adresse avec géolocalisation</label>
+                <AddressAutocomplete
                   value={form.address || ''}
-                  onChange={e => updateField('address', e.target.value)}
-                  className={`w-full px-3 py-2.5 text-[15px] bg-gray-800/60 border ${fieldErrors.address? 'border-red-500/60':'border-gray-700'} rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500`}
-                  placeholder="Rue, ville…"
+                  onChange={(value, coords) => {
+                    updateField('address', value)
+                    setCoordinates(coords || null)
+                  }}
+                  placeholder="Rue, numéro, ville (ex: Rue de la Paix 15, Lausanne)"
+                  className={fieldErrors.address ? 'border-red-500/60' : ''}
+                  onAddressSelect={(address) => {
+                    updateField('address', address.address)
+                    setCoordinates({ lat: address.latitude, lng: address.longitude })
+                  }}
                 />
                 {fieldErrors.address && <p className="text-xs text-red-400 mt-1">{fieldErrors.address}</p>}
+                {coordinates && (
+                  <p className="text-xs text-green-400 mt-1">
+                    📍 Coordonnées: {coordinates.lat.toFixed(6)}, {coordinates.lng.toFixed(6)}
+                  </p>
+                )}
               </div>
 
-              <div>
-                <label className="block text-sm text-gray-300 mb-1">Horaires d'ouverture</label>
-                <input
-                  value={form.openingHours || ''}
-                  onChange={e => updateField('openingHours', e.target.value)}
-                  className={`w-full px-3 py-2.5 text-[15px] bg-gray-800/60 border ${fieldErrors.openingHours? 'border-red-500/60':'border-gray-700'} rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500`}
-                  placeholder="Lun-Dim 18:00–05:00"
-                />
-                {fieldErrors.openingHours && <p className="text-xs text-red-400 mt-1">{fieldErrors.openingHours}</p>}
-              </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -348,6 +400,11 @@ function NewClubProfilePage() {
         </>
         )}
 
+        {/* Onglet: Horaires */}
+        {activeTab === 'horaires' && (
+          <HorairesPanel />
+        )}
+
         {/* Onglet: Services */}
         {activeTab === 'services' && (
           <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
@@ -376,11 +433,156 @@ function NewClubProfilePage() {
   )
 }
 
+// Panel component for Club Hours
+function HorairesPanel(){
+  const [schedule, setSchedule] = useState<Record<string, { open: string; close: string; closed: boolean }>>({
+    lundi: { open: '18:00', close: '05:00', closed: false },
+    mardi: { open: '18:00', close: '05:00', closed: false },
+    mercredi: { open: '18:00', close: '05:00', closed: false },
+    jeudi: { open: '18:00', close: '05:00', closed: false },
+    vendredi: { open: '18:00', close: '05:00', closed: false },
+    samedi: { open: '18:00', close: '05:00', closed: false },
+    dimanche: { open: '18:00', close: '05:00', closed: false },
+  })
+  const [isOpen24_7, setIsOpen24_7] = useState(false)
+  const [saving, startSaving] = useTransition()
+  const [message, setMessage] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  const days = [
+    { key: 'lundi', label: 'Lundi' },
+    { key: 'mardi', label: 'Mardi' },
+    { key: 'mercredi', label: 'Mercredi' },
+    { key: 'jeudi', label: 'Jeudi' },
+    { key: 'vendredi', label: 'Vendredi' },
+    { key: 'samedi', label: 'Samedi' },
+    { key: 'dimanche', label: 'Dimanche' },
+  ]
+
+  const updateDaySchedule = (day: string, field: 'open' | 'close' | 'closed', value: string | boolean) => {
+    setSchedule(prev => ({
+      ...prev,
+      [day]: {
+        ...prev[day],
+        [field]: value
+      }
+    }))
+  }
+
+  const copyToAllDays = (sourceDay: string) => {
+    const source = schedule[sourceDay]
+    setSchedule(prev =>
+      Object.keys(prev).reduce((acc, day) => ({
+        ...acc,
+        [day]: { ...source }
+      }), {})
+    )
+  }
+
+  const onSave = () => {
+    setMessage(null)
+    setError(null)
+    startSaving(async () => {
+      try {
+        const body = { schedule, isOpen24_7 }
+        const r = await fetch('/api/clubs/schedule/update', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(body) })
+        const d = await r.json()
+        if (!r.ok || !d?.ok) throw new Error(d?.error || 'save_failed')
+        setMessage('Horaires enregistrés')
+      } catch (e) {
+        setError('Échec de la sauvegarde')
+      }
+    })
+  }
+
+  return (
+    <div className="p-6 rounded-2xl bg-gray-900/60 border border-gray-800">
+      <h2 className="text-white font-semibold mb-6">Horaires d'ouverture</h2>
+
+      <div className="mb-6 flex items-center gap-2">
+        <input
+          id="open247"
+          type="checkbox"
+          checked={isOpen24_7}
+          onChange={e => setIsOpen24_7(e.target.checked)}
+          className="rounded border-gray-600 bg-gray-800 text-purple-600 focus:ring-purple-500"
+        />
+        <label htmlFor="open247" className="text-sm text-gray-300">Ouvert 24h/24, 7j/7</label>
+      </div>
+
+      {!isOpen24_7 && (
+        <div className="space-y-4">
+          {days.map(({ key, label }) => (
+            <div key={key} className="flex items-center gap-4 p-4 bg-gray-800/40 rounded-lg">
+              <div className="w-20 text-sm text-gray-300 font-medium">{label}</div>
+
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={schedule[key].closed}
+                  onChange={e => updateDaySchedule(key, 'closed', e.target.checked)}
+                  className="rounded border-gray-600 bg-gray-800 text-red-600 focus:ring-red-500"
+                />
+                <span className="text-xs text-gray-400">Fermé</span>
+              </div>
+
+              {!schedule[key].closed && (
+                <>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-gray-400">De</span>
+                    <input
+                      type="time"
+                      value={schedule[key].open}
+                      onChange={e => updateDaySchedule(key, 'open', e.target.value)}
+                      className="px-2 py-1 bg-gray-700 border border-gray-600 rounded text-white text-sm focus:ring-purple-500 focus:border-purple-500"
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-gray-400">à</span>
+                    <input
+                      type="time"
+                      value={schedule[key].close}
+                      onChange={e => updateDaySchedule(key, 'close', e.target.value)}
+                      className="px-2 py-1 bg-gray-700 border border-gray-600 rounded text-white text-sm focus:ring-purple-500 focus:border-purple-500"
+                    />
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => copyToAllDays(key)}
+                    className="text-xs px-2 py-1 bg-purple-600/20 text-purple-300 rounded hover:bg-purple-600/30 transition-colors"
+                  >
+                    Copier à tous
+                  </button>
+                </>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="mt-6 flex items-center gap-3">
+        <button
+          onClick={onSave}
+          disabled={saving}
+          className="px-4 py-2 rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 text-white disabled:opacity-60 hover:from-purple-600 hover:to-pink-600 transition-colors"
+        >
+          {saving ? 'Sauvegarde…' : 'Enregistrer les horaires'}
+        </button>
+        {message && <div className="text-sm text-green-400">{message}</div>}
+        {error && <div className="text-sm text-red-400">{error}</div>}
+      </div>
+    </div>
+  )
+}
+
 // Simple panel component for Services inside profile page
 function ServicesPanel(){
   const [languages, setLanguages] = useState<string[]>([])
   const [paymentMethods, setPaymentMethods] = useState<string[]>([])
   const [services, setServices] = useState<string[]>([])
+  const [equipments, setEquipments] = useState<string[]>([])
   const [isOpen24_7, setIsOpen24_7] = useState(false)
   const [openingHours, setOpeningHours] = useState('')
   const [saving, startSaving] = useTransition()
@@ -389,7 +591,8 @@ function ServicesPanel(){
 
   const DEFAULT_LANGS = ['Français','Anglais','Allemand','Italien','Espagnol']
   const DEFAULT_PAYMENTS = ['Cash','Carte','TWINT','Virement']
-  const DEFAULT_SERVICES = ['Bar','Champagne','Privé','Sécurité','Parking','Salle VIP']
+  const DEFAULT_SERVICES = ['Bar','Privé','Sécurité','Parking','Salle VIP']
+  const DEFAULT_EQUIPMENTS = ['Douche à deux','Jacuzzi','Sauna','Climatisation','Fumoir','Parking','Accès handicapé','Ambiance musicale','Bar','Pole dance']
 
   const toggle = (setter: React.Dispatch<React.SetStateAction<string[]>>, list: string[], value: string) => {
     setter(prev => {
@@ -411,6 +614,7 @@ function ServicesPanel(){
           setLanguages(Array.isArray(s.languages)? s.languages: [])
           setPaymentMethods(Array.isArray(s.paymentMethods)? s.paymentMethods: [])
           setServices(Array.isArray(s.services)? s.services: [])
+          setEquipments(Array.isArray(s.equipments)? s.equipments: [])
           setIsOpen24_7(!!s.isOpen24_7)
           setOpeningHours(typeof s.openingHours === 'string' ? s.openingHours : '')
         }
@@ -426,7 +630,7 @@ function ServicesPanel(){
     setError(null)
     startSaving(async () => {
       try {
-        const body = { languages, paymentMethods, services, isOpen24_7, openingHours }
+        const body = { languages, paymentMethods, services, equipments, isOpen24_7, openingHours }
         const r = await fetch('/api/clubs/services/update', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(body) })
         const d = await r.json()
         if (!r.ok || !d?.ok) throw new Error(d?.error || 'save_failed')
@@ -458,6 +662,13 @@ function ServicesPanel(){
         <div className="flex flex-wrap gap-2">
           {DEFAULT_SERVICES.map(s => (
             <button key={s} onClick={() => toggle(setServices, services, s)} className={`px-3 py-1.5 rounded-lg text-sm border ${services.includes(s) ? 'bg-purple-500/20 border-purple-500/40 text-purple-200' : 'bg-white/5 border-white/10 text-white'}`}>{s}</button>
+          ))}
+        </div>
+
+        <h2 className="text-white font-semibold mt-6 mb-4">Équipements</h2>
+        <div className="flex flex-wrap gap-2">
+          {DEFAULT_EQUIPMENTS.map(eq => (
+            <button key={eq} onClick={() => toggle(setEquipments, equipments, eq)} className={`px-3 py-1.5 rounded-lg text-sm border ${equipments.includes(eq) ? 'bg-purple-500/20 border-purple-500/40 text-purple-200' : 'bg-white/5 border-white/10 text-white'}`}>{eq}</button>
           ))}
         </div>
         <div className="mt-6 flex items-center gap-2">

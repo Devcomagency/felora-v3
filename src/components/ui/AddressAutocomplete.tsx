@@ -17,6 +17,7 @@ interface SwissAddress {
 interface AddressAutocompleteProps {
   value: string
   onChange: (value: string, coordinates?: { lat: number; lng: number }) => void
+  onCoordinatesChange?: (coordinates: { lat: number; lng: number } | null) => void
   placeholder?: string
   className?: string
   onAddressSelect?: (address: SwissAddress) => void
@@ -29,6 +30,7 @@ interface AddressAutocompleteProps {
 export default function AddressAutocomplete({
   value,
   onChange,
+  onCoordinatesChange,
   placeholder = "Rue, numéro, ville (ex: Rue de la Paix 15, Lausanne)",
   className = "",
   onAddressSelect,
@@ -180,7 +182,9 @@ export default function AddressAutocomplete({
   }
 
   const handleSelectAddress = (address: SwissAddress) => {
-    onChange(address.address, { lat: address.latitude, lng: address.longitude })
+    const coordinates = { lat: address.latitude, lng: address.longitude }
+    onChange(address.address, coordinates)
+    onCoordinatesChange?.(coordinates)
     onAddressSelect?.(address)
     setIsOpen(false)
     setSelectedIndex(-1)
@@ -189,6 +193,7 @@ export default function AddressAutocomplete({
 
   const clearValue = () => {
     onChange('', undefined)
+    onCoordinatesChange?.(null)
     setSuggestions([])
     setIsOpen(false)
     inputRef.current?.focus()
@@ -205,7 +210,10 @@ export default function AddressAutocomplete({
           ref={inputRef}
           type="text"
           value={value}
-          onChange={(e) => onChange(e.target.value, undefined)}
+          onChange={(e) => {
+            onChange(e.target.value, undefined)
+            if (e.target.value === '') onCoordinatesChange?.(null)
+          }}
           onKeyDown={handleKeyDown}
           onFocus={() => {
             if (suggestions.length > 0) {

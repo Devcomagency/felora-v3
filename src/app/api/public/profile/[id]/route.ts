@@ -153,26 +153,66 @@ export async function GET(
     // DEBUG: Log pour voir ce qui est dans galleryPhotos
     console.log(`[DEBUG] Profile ${profileId} - galleryPhotos:`, gallerySlots)
 
+    // Fonction pour détecter le type de média basé sur l'URL
+    const detectMediaType = (url: string): 'video' | 'image' => {
+      if (!url) return 'image'
+      const lowerUrl = url.toLowerCase()
+      const videoExtensions = ['.mp4', '.webm', '.mov', '.avi', '.mkv', '.m4v']
+      return videoExtensions.some(ext => lowerUrl.includes(ext)) ? 'video' : 'image'
+    }
+
     // Construire la galerie media depuis les slots
     const media = gallerySlots
       .filter(slot => slot?.url) // Seulement les slots avec URL
-      .map((slot, index) => ({
-        id: slot.id || `slot-${index}`,
-        type: slot.type === 'video' ? 'video' as const : 'image' as const,
-        url: slot.url,
-        thumb: slot.thumb || undefined,
-        pos: slot.slot || index,
-        isPrivate: Boolean(slot.isPrivate || (typeof slot.visibility === 'string' && slot.visibility.toUpperCase() === 'PRIVATE')),
-        price: typeof slot.price === 'number'
-          ? slot.price
-          : typeof slot.price === 'string' && slot.price.trim() !== ''
-            ? Number(slot.price)
-            : undefined
-      }))
+      .map((slot, index) => {
+        const detectedType = detectMediaType(slot.url)
+        return {
+          id: slot.id || `slot-${index}`,
+          type: detectedType, // Utiliser la détection automatique
+          url: slot.url,
+          thumb: slot.thumb || undefined,
+          pos: slot.slot || index,
+          isPrivate: Boolean(slot.isPrivate || (typeof slot.visibility === 'string' && slot.visibility.toUpperCase() === 'PRIVATE')),
+          price: typeof slot.price === 'number'
+            ? slot.price
+            : typeof slot.price === 'string' && slot.price.trim() !== ''
+              ? Number(slot.price)
+              : undefined
+        }
+      })
       .sort((a, b) => a.pos - b.pos) // Trier par position
 
     // DEBUG: Log des médias parsés
     console.log(`[DEBUG] Profile ${profileId} - Found ${media.length} media from galleryPhotos:`, media)
+
+    // Récupérer aussi les médias depuis la table Media (nouveau système)
+    const mediaFromTable = await prisma.media.findMany({
+      where: {
+        ownerType: 'ESCORT',
+        ownerId: profileId
+      },
+      orderBy: { createdAt: 'desc' }
+    })
+
+    // Ajouter les médias de la table Media à la liste existante
+    const mediaFromTableFormatted = mediaFromTable.map(mediaItem => {
+      const detectedType = detectMediaType(mediaItem.url)
+      return {
+        id: mediaItem.id,
+        type: detectedType,
+        url: mediaItem.url,
+        thumb: mediaItem.thumbUrl || undefined,
+        pos: mediaItem.pos,
+        isPrivate: mediaItem.visibility === 'PRIVATE',
+        price: undefined // Pas de prix pour les médias de la table Media pour l'instant
+      }
+    })
+
+    // Combiner les médias (galleryPhotos + table Media)
+    const allMedia = [...media, ...mediaFromTableFormatted]
+      .sort((a, b) => a.pos - b.pos)
+
+    console.log(`[DEBUG] Profile ${profileId} - Total media: ${allMedia.length} (${media.length} from galleryPhotos + ${mediaFromTableFormatted.length} from Media table)`)
 
     const normalizedSchedule = normalizeScheduleData(escort.timeSlots)
 
@@ -200,7 +240,7 @@ export async function GET(
       city: escort.city || undefined,
       canton: escort.canton || undefined,
       isVerifiedBadge: !!escort.isVerifiedBadge,
-      media,
+      media: allMedia,
       stats,
       services,
       languages,

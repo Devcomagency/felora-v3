@@ -2,18 +2,26 @@
 
 import React, { useState, useEffect, useCallback } from 'react'
 import { useRouter, useParams } from 'next/navigation'
-import dynamic from 'next/dynamic'
 import Image from 'next/image'
-import { useProfileViewTracker } from '@/hooks/useViewTracker'
-// Media gallery enrichie
-import { AboutSection, ClubLocationSection, AmenitiesSection, AvailabilitySection } from '../../../../../packages/ui/profile-test/Sections'
-import MediaFeedWithGallery from '../../../../../packages/ui/profile-test/MediaFeedWithGallery'
-// Club page: pas de cadeau / message
-import ProfileHeader from '../../../../../packages/ui/profile-test/ProfileHeader'
-import ActionsBar from '../../../../../packages/ui/profile-test/ActionsBar'
-import { ArrowLeft, Star, BadgeCheck } from 'lucide-react'
-
-// (Map retirée selon nouvelle direction design)
+import { 
+  ArrowLeft, 
+  MoreHorizontal, 
+  Eye, 
+  MessageSquare, 
+  Heart, 
+  Play,
+  Plus,
+  Home,
+  Search,
+  User,
+  X,
+  Calendar,
+  Phone,
+  Mail,
+  MapPin,
+  Clock,
+  Star
+} from 'lucide-react'
 
 interface ClubProfile {
   id: string
@@ -50,109 +58,49 @@ interface ClubProfile {
   workingHours?: string
 }
 
-// Loading skeleton (reused from escort page)
+// Loading skeleton
 function ProfileSkeleton() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900">
-      <div className="max-w-4xl mx-auto p-4">
+    <div className="min-h-screen bg-[#0B0B0B]">
+      <div className="animate-pulse">
         {/* Header skeleton */}
-        <div className="glass-card p-6 mb-6 animate-pulse">
-          <div className="flex items-start gap-4">
-            <div className="w-20 h-20 rounded-full" style={{ background: 'linear-gradient(135deg, rgba(183,148,246,0.18), rgba(255,107,157,0.18))' }} />
-            <div className="flex-1">
-              <div className="h-6 rounded w-48 mb-2" style={{ background: 'linear-gradient(90deg, rgba(255,255,255,0.14), rgba(255,255,255,0.06))' }} />
-              <div className="h-4 rounded w-32 mb-3" style={{ background: 'linear-gradient(90deg, rgba(255,255,255,0.14), rgba(255,255,255,0.06))' }} />
-              <div className="flex gap-2">
-                <div className="h-6 rounded w-16" style={{ background: 'linear-gradient(90deg, rgba(255,255,255,0.14), rgba(255,255,255,0.06))' }} />
-                <div className="h-6 rounded w-16" style={{ background: 'linear-gradient(90deg, rgba(255,255,255,0.14), rgba(255,255,255,0.06))' }} />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Actions skeleton */}
-        <div className="glass-card p-4 mb-6 animate-pulse">
-          <div className="flex gap-3">
-            <div className="flex-1 h-10 rounded-lg" style={{ background: 'linear-gradient(90deg, rgba(255,255,255,0.14), rgba(255,255,255,0.06))' }} />
-            <div className="flex-1 h-10 rounded-lg" style={{ background: 'linear-gradient(90deg, rgba(255,255,255,0.14), rgba(255,255,255,0.06))' }} />
-            <div className="h-10 w-10 rounded-full" style={{ background: 'linear-gradient(90deg, rgba(255,255,255,0.14), rgba(255,255,255,0.06))' }} />
-            <div className="h-10 w-10 rounded-full" style={{ background: 'linear-gradient(90deg, rgba(255,255,255,0.14), rgba(255,255,255,0.06))' }} />
-          </div>
-        </div>
-
-        {/* Media area skeleton */}
-        <div className="h-96 rounded-lg mb-6 animate-pulse" style={{ background: 'linear-gradient(135deg, rgba(183,148,246,0.18), rgba(255,107,157,0.18))' }} />
+        <div className="h-14 bg-black/60 backdrop-blur-md border-b border-white/10" />
+        
+        {/* Hero skeleton */}
+        <div className="h-72 bg-[#111318]" />
+        
+        {/* Header card skeleton */}
+        <div className="relative mx-4 -mt-10 rounded-3xl border border-white/8 bg-[#14171D]/80 backdrop-blur-xl p-6">
+          <div className="flex justify-center -mt-10 mb-4">
+            <div className="w-24 h-24 rounded-full bg-[#23262D]" />
       </div>
+          <div className="text-center">
+            <div className="h-6 bg-[#23262D] rounded w-48 mx-auto mb-2" />
+            <div className="h-4 bg-[#23262D] rounded w-32 mx-auto mb-4" />
+            <div className="grid grid-cols-3 gap-3 mb-4">
+              <div className="h-8 bg-[#23262D] rounded" />
+              <div className="h-8 bg-[#23262D] rounded" />
+              <div className="h-8 bg-[#23262D] rounded" />
     </div>
-  )
-}
-
-// Error boundary
-function ErrorBoundary({ children, fallback }: { children: React.ReactNode; fallback: React.ReactNode }) {
-  const [hasError, setHasError] = useState(false)
-  
-  useEffect(() => {
-    const handleError = () => setHasError(true)
-    window.addEventListener('error', handleError)
-    return () => window.removeEventListener('error', handleError)
-  }, [])
-  
-  if (hasError) return <>{fallback}</>
-  return <>{children}</>
-}
-
-// 404 page
-function NotFound() {
-  const router = useRouter()
-  
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center">
-      <div className="glass-card p-8 text-center max-w-md mx-4">
-        <div className="text-6xl mb-4">🏢</div>
-        <h1 className="text-2xl font-bold text-white mb-2">Club Not Found</h1>
-        <p className="text-gray-400 mb-6">This club profile doesn't exist or is no longer available.</p>
-        <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <button
-            onClick={() => router.back()}
-            className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors"
-          >
-            Go Back
-          </button>
-          <button
-            onClick={() => router.push('/search')}
-            className="px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-lg hover:from-pink-600 hover:to-purple-700 transition-all"
-          >
-            Browse Clubs
-          </button>
+            <div className="grid grid-cols-3 gap-3">
+              <div className="h-11 bg-[#23262D] rounded-xl" />
+              <div className="h-11 bg-[#23262D] rounded-xl" />
+              <div className="h-11 bg-[#23262D] rounded-xl" />
         </div>
       </div>
     </div>
-  )
-}
 
-// Error fallback
-function ErrorFallback() {
-  const router = useRouter()
-  
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center">
-      <div className="glass-card p-8 text-center max-w-md mx-4">
-        <div className="text-6xl mb-4">⚠️</div>
-        <h1 className="text-2xl font-bold text-white mb-2">Something went wrong</h1>
-        <p className="text-gray-400 mb-6">We're having trouble loading this club profile. Please try again.</p>
-        <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <button
-            onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors"
-          >
-            Retry
-          </button>
-          <button
-            onClick={() => router.push('/')}
-            className="px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-lg hover:from-pink-600 hover:to-purple-700 transition-all"
-          >
-            Go Home
-          </button>
+        {/* Tabs skeleton */}
+        <div className="sticky top-14 z-10 bg-[#0B0B0B] px-4 py-2 flex gap-6">
+          <div className="h-8 bg-[#23262D] rounded w-16" />
+          <div className="h-8 bg-[#23262D] rounded w-16" />
+        </div>
+
+        {/* Media grid skeleton */}
+        <div className="px-4 py-4 grid grid-cols-2 gap-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="aspect-[9/16] bg-[#23262D] rounded-2xl" />
+          ))}
         </div>
       </div>
     </div>
@@ -164,10 +112,10 @@ export default function ClubProfileTestPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
   const [notFound, setNotFound] = useState(false)
-  const [clubEscorts, setClubEscorts] = useState<Array<{ id: string; name: string; city?: string; avatar?: string }>>([])
-  const [isFavorite, setIsFavorite] = useState(false)
-  const [showContact, setShowContact] = useState(false)
+  const [activeTab, setActiveTab] = useState<'public' | 'private'>('public')
   const [totalReactions, setTotalReactions] = useState(0)
+  const [selectedMedia, setSelectedMedia] = useState<{ url: string; type: string; index: number } | null>(null)
+  const [showModal, setShowModal] = useState<'en-savoir-plus' | 'agenda' | 'contact' | null>(null)
   const router = useRouter()
 
   // Resolve params
@@ -193,7 +141,10 @@ export default function ClubProfileTestPage() {
         setError(false)
         setNotFound(false)
 
-        const response = await fetch(`/api/profile-test/club/${resolvedId}`, { signal: controller.signal })
+        const response = await fetch(`/api/profile-test/club/${resolvedId}?cache_bust=1`, { 
+          signal: controller.signal,
+          headers: { 'cache-control': 'no-cache' }
+        })
         const data = await response.json()
 
         if (isCancelled) return
@@ -232,839 +183,485 @@ export default function ClubProfileTestPage() {
     }
   }, [resolvedId])
 
-  // Vue en temps réel (même système que page escorte)
-  try { useProfileViewTracker({ profileId: resolvedId, profileType: 'club', enabled: true }) } catch {}
+  // Fonction pour ouvrir un média
+  const handleMediaClick = (media: any, index: number) => {
+    setSelectedMedia({
+      url: media.url,
+      type: media.type,
+      index
+    })
+  }
 
-  // Fetch escorts linked to this club (demo endpoint). Optional section.
-  useEffect(() => {
-    if (!resolvedId) return
-    let cancelled = false
-    const ctrl = new AbortController()
-    ;(async () => {
-      try {
-        const res = await fetch(`/api/profile-test/club/${resolvedId}/escorts`, { cache: 'no-store', signal: ctrl.signal })
-        if (!res.ok) return
-        const data = await res.json()
-        if (!cancelled && Array.isArray(data.escorts)) {
-          setClubEscorts(data.escorts)
-        }
-      } catch {}
-    })()
-    return () => { cancelled = true; ctrl.abort() }
-  }, [resolvedId])
+  // Fonctions pour les modals
+  const handleEnSavoirPlus = () => {
+    setShowModal('en-savoir-plus')
+  }
 
-  // Action handlers with localStorage persistence
-  const handleFollow = useCallback(async (profileId: string) => {
-    const key = `follow_club_${profileId}`
-    const currentState = localStorage.getItem(key) === 'true'
-    localStorage.setItem(key, (!currentState).toString())
-    
-    await new Promise(resolve => setTimeout(resolve, 500))
-  }, [])
+  const handleAgenda = () => {
+    setShowModal('agenda')
+  }
 
-  const handleLike = useCallback(async (profileId: string) => {
-    const key = `like_club_${profileId}`
-    const currentState = localStorage.getItem(key) === 'true'
-    localStorage.setItem(key, (!currentState).toString())
-    
-    await new Promise(resolve => setTimeout(resolve, 300))
-  }, [])
+  const handleContact = () => {
+    setShowModal('contact')
+  }
 
-  const handleSave = useCallback(async (profileId: string) => {
-    const key = `save_club_${profileId}`
-    const currentState = localStorage.getItem(key) === 'true'
-    localStorage.setItem(key, (!currentState).toString())
-    
-    await new Promise(resolve => setTimeout(resolve, 300))
-  }, [])
-
-  // Calcule le total des réactions (tous médias du club)
-  const calculateTotalReactions = useCallback(async () => {
-    if (!profile?.media || profile.media.length === 0) {
-      setTotalReactions(0)
-      return
-    }
-
-    try {
-      const { stableMediaId } = await import('@/lib/reactions/stableMediaId')
-      const mediaIds = profile.media.map(m => stableMediaId({ rawId: null, profileId: profile.id, url: m.url }))
-      const res = await fetch('/api/reactions/bulk', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mediaIds })
-      })
-      const data = await res.json()
-      if (data?.success && data?.totals) {
-        const sum = Object.values<number>(data.totals).reduce((a, b) => a + b, 0)
-        setTotalReactions(sum)
-      } else {
-        setTotalReactions(0)
-      }
-    } catch (error) {
-      console.error('Error fetching reactions bulk (club):', error)
-      setTotalReactions(0)
-    }
-  }, [profile?.media, profile?.id])
-
-  // Calcul au chargement/MAJ du profil
-  useEffect(() => {
-    calculateTotalReactions()
-  }, [calculateTotalReactions])
-
-  // Favorite toggle (local)
-  useEffect(() => {
-    if (!profile) return
-    const favs = JSON.parse(localStorage.getItem('felora-favorites') || '[]')
-    setIsFavorite(favs.includes(profile.id))
-  }, [profile?.id])
-
-  const handleFavoriteToggle = useCallback(() => {
-    if (!profile) return
-    const favs = JSON.parse(localStorage.getItem('felora-favorites') || '[]')
-    if (favs.includes(profile.id)) {
-      const next = favs.filter((x: string) => x !== profile.id)
-      localStorage.setItem('felora-favorites', JSON.stringify(next))
-      setIsFavorite(false)
-    } else {
-      const next = [...favs, profile.id]
-      localStorage.setItem('felora-favorites', JSON.stringify(next))
-      setIsFavorite(true)
-    }
-  }, [profile])
-
-  const handleMediaSave = useCallback(async (index: number) => {
-    const key = `media_save_club_${resolvedId}_${index}`
-    const currentState = localStorage.getItem(key) === 'true'
-    localStorage.setItem(key, (!currentState).toString())
-    
-    await new Promise(resolve => setTimeout(resolve, 200))
-  }, [resolvedId])
-
-  // Pas de messagerie directe sur la page club
-
-  const handleShare = useCallback((profileId: string) => {
-    if (navigator.share) {
-      navigator.share({
-        title: profile?.name || 'Club Profile',
-        text: `Check out ${profile?.name} on Felora`,
-        url: window.location.href
-      })
-    } else {
-      navigator.clipboard.writeText(window.location.href)
-    }
-  }, [profile?.name])
-
-  const handleReport = useCallback((profileId: string) => {
-    router.push(`/report?type=club&id=${profileId}`)
-  }, [router])
-
-  // Get localStorage states (basic)
-  const [isFollowing, setIsFollowing] = useState(false)
-  const [isLiked, setIsLiked] = useState(false)
-  const [isSaved, setIsSaved] = useState(false)
-  
-  // Availability (open/closed) computed from workingHours like "Thu-Sat: 22:00-04:00"
-  const clubAvailability = React.useMemo(() => {
-    if (!profile?.workingHours) return undefined
-
-    const daysMap: Record<string, number> = {
-      SUN: 0, MON: 1, TUE: 2, WED: 3, THU: 4, FRI: 5, SAT: 6,
-      DIM: 0, LUN: 1, MAR: 2, MER: 3, JEU: 4, VEN: 5, SAM: 6
-    }
-
-    const now = new Date()
-    const curDay = now.getDay() // 0 (Sun) - 6 (Sat)
-    const curMin = now.getHours() * 60 + now.getMinutes()
-
-    const str = profile.workingHours.trim()
-    const m = str.match(/([A-Za-zÀ-ÿ]{3})\s*-\s*([A-Za-zÀ-ÿ]{3})\s*:\s*(\d{1,2})\s*:\s*(\d{2})\s*-\s*(\d{1,2})\s*:\s*(\d{2})/)
-    let days: Set<number> | null = null
-    let startMin = 0
-    let endMin = 0
-
-    if (m) {
-      const d1 = daysMap[m[1].toUpperCase()] ?? null
-      const d2 = daysMap[m[2].toUpperCase()] ?? null
-      const h1 = parseInt(m[3], 10); const mm1 = parseInt(m[4], 10)
-      const h2 = parseInt(m[5], 10); const mm2 = parseInt(m[6], 10)
-      startMin = h1 * 60 + mm1
-      endMin = h2 * 60 + mm2
-      if (d1 !== null && d2 !== null) {
-        days = new Set<number>()
-        let i = d1
-        while (true) {
-          days.add(i)
-          if (i === d2) break
-          i = (i + 1) % 7
-        }
-      }
-    } else {
-      const m2 = str.match(/(\d{1,2})\s*:\s*(\d{2})\s*-\s*(\d{1,2})\s*:\s*(\d{2})/)
-      if (m2) {
-        const h1 = parseInt(m2[1], 10); const mm1 = parseInt(m2[2], 10)
-        const h2 = parseInt(m2[3], 10); const mm2 = parseInt(m2[4], 10)
-        startMin = h1 * 60 + mm1
-        endMin = h2 * 60 + mm2
-        days = new Set<number>([0,1,2,3,4,5,6])
-      }
-    }
-
-    if (!days) return undefined
-
-    const crossesMidnight = endMin <= startMin
-    const prevDay = (curDay + 6) % 7
-
-    let isOpen = false
-    if (crossesMidnight) {
-      isOpen = (days.has(curDay) && curMin >= startMin) || (days.has(prevDay) && curMin < endMin)
-    } else {
-      isOpen = days.has(curDay) && curMin >= startMin && curMin < endMin
-    }
-
-    const pad = (n: number) => n.toString().padStart(2, '0')
-    function nextOpenString(): string {
-      if (days!.has(curDay) && (!isOpen)) {
-        if (!crossesMidnight && curMin < startMin) {
-          return `Ouvre à ${pad(Math.floor(startMin/60))}:${pad(startMin%60)}`
-        }
-        if (crossesMidnight && curMin < startMin) {
-          return `Ouvre à ${pad(Math.floor(startMin/60))}:${pad(startMin%60)}`
-        }
-      }
-      for (let offset = 1; offset <= 7; offset++) {
-        const d = (curDay + offset) % 7
-        if (days!.has(d)) {
-          return `Ouvre à ${pad(Math.floor(startMin/60))}:${pad(startMin%60)}`
-        }
-      }
-      return 'Fermé'
-    }
-
-    return {
-      available: isOpen,
-      schedule: isOpen ? 'Ouvert' : nextOpenString()
-    }
-  }, [profile?.workingHours])
-
-  useEffect(() => {
-    if (!resolvedId) return
-    
-    setIsFollowing(localStorage.getItem(`follow_club_${resolvedId}`) === 'true')
-    setIsLiked(localStorage.getItem(`like_club_${resolvedId}`) === 'true')
-    setIsSaved(localStorage.getItem(`save_club_${resolvedId}`) === 'true')
-  }, [resolvedId])
+  const closeModal = () => {
+    setShowModal(null)
+  }
 
   // Render states
   if (loading) return <ProfileSkeleton />
-  if (notFound) return <NotFound />
-  if (error || !profile) return <ErrorFallback />
+  if (notFound) return <div className="min-h-screen bg-[#0B0B0B] flex items-center justify-center text-white">Club Not Found</div>
+  if (error || !profile) return <div className="min-h-screen bg-[#0B0B0B] flex items-center justify-center text-white">Error Loading Profile</div>
 
   return (
-    <ErrorBoundary fallback={<ErrorFallback />}>
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900">
-        {/* Full-width hero (subtle colors) */}
-        {/* Header style TikTok */}
-        <div className="fixed top-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-b border-white/5" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
-          <div className="flex items-center justify-between p-4">
-            <div className="flex items-center gap-2">
+    <div className="min-h-screen bg-gradient-to-b from-[#111318] to-[#0B0B0B] relative overflow-hidden">
+      {/* Grain texture overlay */}
+      <div className="absolute inset-0 opacity-[0.02] bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48ZmlsdGVyIGlkPSJub2lzZSIgeD0iMCIgeT0iMCIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSI+PGZlVHVyYnVsZW5jZSBiYXNlRnJlcXVlbmN5PSIwLjkiIG51bU9jdGF2ZXM9IjQiIHN0aXRjaFRpbGVzPSJzdGl0Y2giLz48L2ZpbHRlcj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsdGVyPSJ1cmwoI25vaXNlKSIgb3BhY2l0eT0iMC40Ii8+PC9zdmc+')] pointer-events-none" />
+      {/* 1) BARRE SUPÉRIEURE */}
+      <div 
+        className="fixed top-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-b border-white/5"
+        style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
+      >
+        <div className="flex items-center justify-between p-4 h-14">
               <button
-                onClick={() => {
-                  try { (window as any)?.umami?.track?.('nav_back', { from: 'profile_test_club' }) } catch {}
-                  router.back()
-                }}
+            onClick={() => router.back()}
                 className="w-10 h-10 flex items-center justify-center hover:bg-white/10 rounded-full transition-colors"
-                title="Retour à la recherche"
+            aria-label="Retour"
               >
-                <ArrowLeft size={24} className="text-white" />
+            <ArrowLeft size={24} className="text-[#A1A5B0]" />
               </button>
-            </div>
 
             <div className="text-center">
-              <h1 className="text-lg font-bold">{profile?.name || 'Club'}</h1>
+            <h1 className="text-[14px] leading-5 text-[#A1A5B0] font-medium">
+              {profile?.name || 'Club'}
+            </h1>
             </div>
 
-            {/* Placeholder to keep the title centered (align with left controls) */}
-            <div className="w-10 h-10" />
+          <button className="w-10 h-10 flex items-center justify-center hover:bg-white/10 rounded-full transition-colors">
+            <MoreHorizontal size={22} className="text-[#EAECEF] opacity-80" />
+          </button>
           </div>
         </div>
 
-        {/* Contenu principal avec padding-top pour header fixe + safe-area (~72px) */}
-        <div className="relative w-full" style={{ paddingTop: 'calc(72px + env(safe-area-inset-top, 0px))' }}>
-          <div className="relative w-full h-56 md:h-72 lg:h-80">
+      {/* 2) CARTE HEADER PROFIL - Design premium avec halo et glassmorphism */}
+      <div className="relative mx-4 mt-24 rounded-3xl bg-black/99 backdrop-blur-xl border border-[#4FD1C7]/10 shadow-[0_0_20px_rgba(79,209,199,0.15)]">
+        {/* Halo effect rose/violet - éclairage très réduit */}
+        <div className="pointer-events-none absolute inset-0 rounded-3xl [background:radial-gradient(60%_60%_at_50%_20%,#FF6B9D33,#B794F633_50%,#4FD1C733)] opacity-10" />
+        
+        {/* Overlay turquoise subtil - éclairage très réduit */}
+        <div className="pointer-events-none absolute inset-0 rounded-3xl [background:radial-gradient(80%_80%_at_50%_75%,#4FD1C708,#4FD1C712_30%,transparent_70%)] opacity-15" />
+        
+        {/* Avatar avec double anneau luxueux */}
+        <div className="flex justify-center -mt-8 mb-6">
+          <div className="relative">
+            {/* Halo radial externe */}
+            <div className="absolute inset-0 w-24 h-24 rounded-full bg-gradient-to-r from-[#FF6B9D]/25 to-[#B794F6]/25 blur-2xl scale-125"></div>
+            
+            {/* Anneau externe rose→violet */}
+            <div className="relative w-24 h-24 rounded-full p-[3px] bg-gradient-to-r from-[#FF6B9D] to-[#B794F6] shadow-[0_0_30px_rgba(255,107,157,0.5)]">
+              {/* Anneau interne turquoise */}
+              <div className="w-full h-full rounded-full p-[1px] bg-gradient-to-r from-[#4FD1C7] to-[#4FD1C7] shadow-[0_0_15px_rgba(79,209,199,0.4)]">
+                <div className="w-full h-full rounded-full overflow-hidden bg-[#111318]">
             <Image
-              src={profile.avatar || profile.media?.[0]?.thumb || profile.media?.[0]?.url || '/icons/verified.svg'}
+                    src={profile.avatar || profile.media?.[0]?.url || '/icons/verified.svg'}
               alt={profile.name}
-              fill
-              className="object-cover"
-              sizes="100vw"
-              priority
+                    width={92}
+                    height={92}
+                    className="w-full h-full object-cover"
             />
           </div>
-          <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/25 to-transparent" />
-          <div className="absolute bottom-3 left-3 flex items-center gap-2">
-            {profile.premium && (
-              <span className="px-2 py-1 text-xs font-semibold rounded-md text-white/95 border border-white/25"
-                style={{ background: 'linear-gradient(135deg, rgba(255,215,0,0.25), rgba(255,107,157,0.25))' }}>
-                👑 Premium
-              </span>
-            )}
-          </div>
-
-          {/* Avatar chevauchant le hero (moitié) */}
-          <div className="absolute left-4 bottom-0 translate-y-1/2 z-10">
-            <div
-              className="w-24 h-24 md:w-28 md:h-28 rounded-full p-[3px]"
-              style={{ background: 'linear-gradient(135deg, rgba(183,148,246,0.9), rgba(255,107,157,0.9))' }}
-            >
-              <div className="relative w-full h-full">
-                <Image
-                  src={profile.avatar || profile.media?.[0]?.thumb || profile.media?.[0]?.url || '/icons/verified.svg'}
-                  alt={profile.name}
-                  fill
-                  className="rounded-full object-cover"
-                  sizes="(max-width: 768px) 6rem, 7rem"
-                />
-                <div className="absolute inset-0 rounded-full border-2 border-black/60 pointer-events-none" />
               </div>
             </div>
           </div>
+          </div>
+
+        <div className="px-6 pb-6 pt-2 text-center">
+          {/* Nom avec typo premium */}
+          <h1 className="text-[22px] leading-6 text-white/90 font-semibold font-inter">{profile.name}</h1>
+          
+          {/* Bio avec typo harmonisée */}
+          <p className="mt-2 text-[14px] leading-5 text-[#A1A5B0]/70 max-w-xs mx-auto">
+            {profile.description || 'Club premium'}
+          </p>
+          
+          {/* Stats avec espacement généreux */}
+          <div className="mt-6 grid grid-cols-3 gap-6">
+            <div className="space-y-1">
+              <div className="text-[18px] text-white font-semibold font-inter drop-shadow-[0_0_8px_rgba(79,209,199,0.3)]">
+                {profile.stats?.views || Math.floor(Math.random() * 1000) + 100}
+              </div>
+              <div className="text-[12px] text-[#A1A5B0]/60 font-inter">Vues</div>
+            </div>
+            <div className="space-y-1">
+              <div className="text-[18px] text-white font-semibold font-inter drop-shadow-[0_0_8px_rgba(79,209,199,0.3)]">
+                {totalReactions}
+              </div>
+              <div className="text-[12px] text-[#A1A5B0]/60 font-inter">React</div>
+            </div>
+            <div className="space-y-1">
+              <div className="text-[18px] text-white font-semibold font-inter drop-shadow-[0_0_8px_rgba(79,209,199,0.3)]">
+                {profile.media?.length || 0}
+              </div>
+              <div className="text-[12px] text-[#A1A5B0]/60 font-inter">Publications</div>
+          </div>
         </div>
 
-        <div className="max-w-4xl mx-auto">
-          {/* Decorative separator */}
-          <div className="h-[2px] w-full" style={{ background: 'linear-gradient(90deg, rgba(183,148,246,0.35), rgba(255,107,157,0.35), rgba(79,209,199,0.25))' }} />
-
-          {/* Escort-style header section */}
-          {/* Décaler (léger) pour que le titre ne soit plus masqué */}
-          <section className="px-4 mt-[36px] md:mt-[48px]">
-            {/* Tracker de vues en temps réel */}
-            {/* Utilise le même système que la page escort */}
-            <ProfileHeader
-              name={profile.name}
-              avatar={profile.avatar}
-              verified={profile.verified}
-              premium={profile.premium}
-              online={true}
-              languages={[]}
-              services={profile.services}
-              stats={{
-                likes: totalReactions || 0,
-                followers: profile.stats?.followers || 0,
-                views: profile.stats?.views || 0
-              }}
-              description={profile.description}
-              availability={clubAvailability}
-              mediaCount={Array.isArray(profile.media) ? profile.media.length : 0}
-              showAvatar={false}
-            />
-            <ActionsBar
-              profileId={profile.id}
-              isFollowing={false}
-              isLiked={false}
-              isSaved={false}
-              onShowDetails={() => setShowContact(true)}
-              showGift={false}
-              showMessage={false}
-              primaryLabel="Contacter le club"
-            />
-          </section>
-
-          {/* Les filles du club (horizontal, glass, scroll) */}
-          {clubEscorts.length > 0 && (
-            <section className="px-4 mt-4">
-              <div className="glass-card rounded-2xl p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <h2 className="text-white font-semibold text-base">Les filles du club</h2>
-                  <span className="text-xs text-white/60">{clubEscorts.length}</span>
-                </div>
-                <div className="flex gap-1 overflow-x-auto pb-1.5 [-ms-overflow-style:none] [scrollbar-width:none]" style={{ scrollbarWidth: 'none' }}>
-                  {/* hide webkit scrollbar */}
-                  <style jsx>{`
-                    div::-webkit-scrollbar { display: none; }
-                  `}</style>
-                  {clubEscorts.map((e) => (
-                    <a
-                      key={e.id}
-                      href={`/profile-test/escort/${e.id}`}
-                      className="group w-28 sm:w-28 flex-shrink-0 text-center"
-                      aria-label={`Voir le profil de ${e.name}`}
-                    >
-                      <div 
-                        className="relative mx-auto w-20 h-20 sm:w-24 sm:h-24 rounded-full p-[3px]"
-                        style={{ 
-                          background: 'linear-gradient(135deg, rgba(168,85,247,0.95), rgba(255,107,157,0.9))',
-                          boxShadow: '0 0 18px rgba(168,85,247,0.35), 0 0 10px rgba(255,107,157,0.25)'
-                        }}
-                      >
-                        <span 
-                          className="pointer-events-none absolute -inset-2 rounded-full blur-2xl opacity-50"
-                          style={{ background: 'radial-gradient(circle at 50% 50%, rgba(168,85,247,0.45), rgba(255,107,157,0.0) 60%)' }}
-                        />
-                        <div className="relative w-full h-full rounded-full overflow-hidden bg-black/50">
-                          <Image 
-                            src={e.avatar || '/icons/verified.svg'} 
-                            alt={e.name} 
-                            fill 
-                            className="object-cover" 
-                            sizes="(max-width: 768px) 30vw, 15vw" 
-                          />
-                        </div>
-                      </div>
-                      <div className="mt-1">
-                        <div className="text-white text-xs sm:text-sm font-semibold truncate">{e.name}</div>
-                      </div>
-                    </a>
-                  ))}
-                </div>
-              </div>
-            </section>
+          {/* Ligne lumineuse turquoise sous les stats */}
+          <div className="mt-4 w-full h-[1px] bg-gradient-to-r from-transparent via-[#4FD1C7] to-transparent shadow-[0_0_8px_rgba(79,209,199,0.5)]"></div>
+          
+          {/* Site web sous le trait turquoise */}
+          {profile.contact?.website && (
+            <div className="mt-4 text-center">
+              <a 
+                href={profile.contact.website.startsWith('http') ? profile.contact.website : `https://${profile.contact.website}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#4FD1C7] text-[13px] font-inter hover:text-[#4FD1C7]/80 transition-colors duration-200"
+              >
+                {profile.contact.website.replace(/^https?:\/\//, '')}
+              </a>
+            </div>
           )}
 
-          {/* Description déplacée dans le header (sous l'âge, au-dessus des langues) */}
-
-          {/* Galerie enrichie (inspirée escort), sans privé */}
-          <section className="px-4 mt-2">
-            <MediaFeedWithGallery
-              media={profile.media}
-              profileId={profile.id}
-              profileName={profile.name}
-              userId={null}
-              privateEnabled={false}
-              onLike={() => Promise.resolve()}
-              onSave={() => Promise.resolve()}
-              onReactionChange={calculateTotalReactions}
-              hideTabsHeader
-            />
-          </section>
-
-          {/* Section verticale retirée (remplacée par carrousel horizontal) */}
-          {/* Mobile layout (legacy) */}
-          <div className="hidden">
-            <div className="p-4 space-y-6">
-              {/* Avatar rond + nom sous le hero */}
-              <div className="-mt-10 flex flex-col items-center z-10">
-                <div className="relative">
-                  <div
-                    className="w-24 h-24 rounded-full p-[3px]"
-                    style={{ background: 'linear-gradient(135deg, rgba(183,148,246,0.8), rgba(255,107,157,0.8))' }}
-                  >
-                    <img
-                      src={profile.avatar || profile.media?.[0]?.thumb || profile.media?.[0]?.url || '/icons/verified.svg'}
-                      alt={profile.name}
-                      className="w-full h-full rounded-full object-cover border-2 border-black/60"
-                    />
-                  </div>
-                  {profile.verified && (
-                    <span
-                      className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full flex items-center justify-center bg-[#111827] border border-white/20 text-[#4FD1C7]"
-                      title="Profil vérifié"
-                    >
-                      <BadgeCheck className="w-4 h-4" />
-                    </span>
-                  )}
-                </div>
-                <div className="mt-2 text-white font-semibold text-lg text-center">{profile.name}</div>
-                {profile.city && (
-                  <div className="text-xs text-white/70">{profile.city}</div>
-                )}
+          {/* 3) BOUTONS ACTIONS - Design luxueux */}
+          <div className="mt-8 flex flex-col gap-3">
+            {/* Bouton CTA principal avec glow externe */}
+                <button
+              onClick={handleEnSavoirPlus}
+              className="h-12 rounded-xl text-[#0B0B0B] font-bold shadow-[0_0_25px_rgba(255,107,157,0.6)] [background:linear-gradient(135deg,#FF6B9D,#B794F6)] hover:shadow-[0_0_35px_rgba(255,107,157,0.8)] hover:scale-[1.02] transition-all duration-300 relative overflow-hidden"
+                >
+              <span className="relative z-10">En savoir plus</span>
+              <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
+                </button>
+            
+            {/* Boutons secondaires glass style */}
+            <div className="grid grid-cols-2 gap-3">
+                <button
+                onClick={handleAgenda}
+                className="h-10 rounded-xl border border-white/10 bg-black/20 backdrop-blur-xl text-white/80 hover:bg-white/[0.08] hover:text-white hover:border-white/20 hover:shadow-[0_0_15px_rgba(255,255,255,0.1)] transition-all duration-300"
+                >
+                  Agenda
+                </button>
+                <button
+                onClick={handleContact}
+                className="h-10 rounded-xl border border-white/10 bg-black/20 backdrop-blur-xl text-white/80 hover:bg-white/[0.08] hover:text-white hover:border-white/20 hover:shadow-[0_0_15px_rgba(255,255,255,0.1)] transition-all duration-300"
+                >
+                  Contact
+                </button>
               </div>
-              {/* En-tête club (nom + services + contact condensé), sans langues ni cadeau/message */}
-              <div className="glass-card rounded-2xl p-5">
-                <h2 className="text-sm font-semibold text-white/85 mb-3" style={{
-                  background: 'var(--grad-1)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent'
-                }}>Présentation</h2>
-                {Array.isArray(profile.services) && profile.services.length > 0 && (
-                  <div className="mb-3">
-                    <div className="flex flex-wrap gap-2">
-                      {profile.services.slice(0, 8).map((s, i) => (
-                        <span key={i} className="px-3 py-1 rounded-full text-xs bg-white/8 border border-white/12 text-gray-200">{s}</span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                {/* Actions rapides (couleurs charte, glam discret) */}
-                <div className="flex flex-wrap gap-2 mb-3">
-                  {profile.contact?.phone && (
-                    <a
-                      href={`tel:${profile.contact.phone}`}
-                      className="h-9 px-3 rounded-lg text-sm font-semibold text-white"
-                      style={{ background: 'linear-gradient(135deg, rgba(183,148,246,0.22), rgba(255,107,157,0.22))', border: '1px solid rgba(255,255,255,0.15)' }}
-                    >
-                      Appeler
-                    </a>
-                  )}
-                  {profile.contact?.website && (
-                    <a
-                      href={profile.contact.website}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="h-9 px-3 rounded-lg text-sm font-semibold text-white"
-                      style={{ background: 'linear-gradient(135deg, rgba(183,148,246,0.22), rgba(255,107,157,0.22))', border: '1px solid rgba(255,255,255,0.15)' }}
-                    >
-                      Site
-                    </a>
-                  )}
-                  {profile.contact?.email && (
-                    <a
-                      href={`mailto:${profile.contact.email}`}
-                      className="h-9 px-3 rounded-lg text-sm font-semibold text-white"
-                      style={{ background: 'linear-gradient(135deg, rgba(183,148,246,0.22), rgba(255,107,157,0.22))', border: '1px solid rgba(255,255,255,0.15)' }}
-                    >
-                      Email
-                    </a>
-                  )}
-                  {profile.location?.coordinates && Number.isFinite(profile.location.coordinates.lat) && Number.isFinite(profile.location.coordinates.lng) && (
-                    <a
-                      href={`https://www.google.com/maps?q=${profile.location.coordinates.lat},${profile.location.coordinates.lng}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="h-9 px-3 rounded-lg text-sm font-semibold text-white"
-                      style={{ background: 'linear-gradient(135deg, rgba(183,148,246,0.22), rgba(255,107,157,0.22))', border: '1px solid rgba(255,255,255,0.15)' }}
-                    >
-                      Itinéraire
-                    </a>
-                  )}
-                </div>
-
-                <div className="space-y-2 text-sm text-gray-300">
-                  {profile.location?.address && (
-                    <div className="flex items-center gap-2">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
-                      <span>{profile.location.address}</span>
-                    </div>
-                  )}
-                  {profile.contact?.phone && (
-                    <div className="flex items-center gap-2">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                      <a href={`tel:${profile.contact.phone}`} className="hover:underline">{profile.contact.phone}</a>
-                    </div>
-                  )}
-                  {profile.contact?.website && (
-                    <div className="flex items-center gap-2">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10Z"/></svg>
-                      <a href={profile.contact.website} target="_blank" rel="noopener noreferrer" className="hover:underline">{profile.contact.website.replace(/^https?:\/\//, '')}</a>
-                    </div>
-                  )}
-                  {profile.contact?.email && (
-                    <div className="flex items-center gap-2">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4h16v16H4z"/><path d="m22 6-10 7L2 6"/></svg>
-                      <a href={`mailto:${profile.contact.email}`} className="hover:underline">{profile.contact.email}</a>
-                    </div>
-                  )}
-                  {profile.workingHours && (
-                    <div className="flex items-center gap-2">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-                      <span>{profile.workingHours}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* About au-dessus des photos */}
-              <AboutSection description={profile.description} />
-
-              <MediaFeedWithGallery
-                media={profile.media}
-                profileId={profile.id}
-                profileName={profile.name}
-                userId={null}
-                privateEnabled={false}
-                onLike={() => Promise.resolve()}
-                onSave={handleMediaSave}
-                onReactionChange={calculateTotalReactions}
-                hideTabsHeader
-              />
-
-              {/* Section Les filles (escortes associées) */}
-              {clubEscorts.length > 0 && (
-                <div className="glass-card rounded-2xl p-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-white font-semibold text-base">Les filles du club</h3>
-                    <span className="text-xs text-white/60">{clubEscorts.length}</span>
-                  </div>
-                  <div className="grid grid-cols-3 sm:grid-cols-5 gap-1">
-                    {clubEscorts.map((e) => (
-                      <a key={e.id} href={`/profile-test/escort/${e.id}`} className="group block text-center">
-                        <div className="relative mx-auto w-20 h-20 sm:w-24 sm:h-24 rounded-full p-[3px]"
-                          style={{ 
-                            background: 'linear-gradient(135deg, rgba(168,85,247,0.95), rgba(255,107,157,0.9))',
-                            boxShadow: '0 0 22px rgba(168,85,247,0.35), 0 0 12px rgba(255,107,157,0.25)'
-                          }}
-                        >
-                          {/* Glow d’arrière-plan */}
-                          <span 
-                            className="pointer-events-none absolute -inset-2 rounded-full blur-2xl opacity-50"
-                            style={{ background: 'radial-gradient(circle at 50% 50%, rgba(168,85,247,0.45), rgba(255,107,157,0.0) 60%)' }}
-                          />
-                          <div className="relative w-full h-full rounded-full overflow-hidden bg-black/50">
-                            <Image 
-                              src={e.avatar || '/icons/verified.svg'} 
-                              alt={e.name} 
-                              fill 
-                              className="object-cover" 
-                              sizes="(max-width: 768px) 30vw, 15vw" 
-                            />
-                          </div>
-                        </div>
-                        <div className="mt-1">
-                          <div className="text-white text-sm sm:text-base font-semibold truncate">{e.name}</div>
-                        </div>
-                      </a>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
-          </div>
-
-          {/* Desktop layout (legacy) */}
-          <div className="hidden">
-            {/* Left column - header + about + infos */}
-            <div className="w-1/2 p-6 space-y-6 overflow-y-auto">
-              {/* Avatar rond + nom sous le hero (desktop) */}
-              <div className="-mt-14 flex flex-col items-center z-10">
-                <div className="relative">
-                  <div
-                    className="w-28 h-28 rounded-full p-[3px]"
-                    style={{ background: 'linear-gradient(135deg, rgba(183,148,246,0.8), rgba(255,107,157,0.8))' }}
-                  >
-                    <img
-                      src={profile.avatar || profile.media?.[0]?.thumb || profile.media?.[0]?.url || '/icons/verified.svg'}
-                      alt={profile.name}
-                      className="w-full h-full rounded-full object-cover border-2 border-black/60"
-                    />
-                  </div>
-                  {profile.verified && (
-                    <span
-                      className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full flex items-center justify-center bg-[#111827] border border-white/20 text-[#4FD1C7]"
-                      title="Profil vérifié"
-                    >
-                      <BadgeCheck className="w-4 h-4" />
-                    </span>
-                  )}
                 </div>
-                <div className="mt-2 text-white font-semibold text-lg text-center">{profile.name}</div>
-                {profile.city && (
-                  <div className="text-xs text-white/70">{profile.city}</div>
-                )}
-              </div>
-              <div className="glass-card rounded-2xl p-6">
-                <h2 className="text-sm font-semibold text-white/85 mb-3" style={{
-                  background: 'var(--grad-1)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent'
-                }}>Présentation</h2>
-                {Array.isArray(profile.services) && profile.services.length > 0 && (
-                  <div className="mb-3">
-                    <div className="flex flex-wrap gap-2">
-                      {profile.services.slice(0, 12).map((s, i) => (
-                        <span key={i} className="px-3 py-1 rounded-full text-xs bg-white/8 border border-white/12 text-gray-200">{s}</span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                {/* Actions rapides (couleurs charte, glam discret) */}
-                <div className="flex flex-wrap gap-2 mb-3">
-                  {profile.contact?.phone && (
-                    <a
-                      href={`tel:${profile.contact.phone}`}
-                      className="h-9 px-3 rounded-lg text-sm font-semibold text-white"
-                      style={{ background: 'linear-gradient(135deg, rgba(183,148,246,0.22), rgba(255,107,157,0.22))', border: '1px solid rgba(255,255,255,0.15)' }}
-                    >
-                      Appeler
-                    </a>
-                  )}
-                  {profile.contact?.website && (
-                    <a
-                      href={profile.contact.website}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="h-9 px-3 rounded-lg text-sm font-semibold text-white"
-                      style={{ background: 'linear-gradient(135deg, rgba(183,148,246,0.22), rgba(255,107,157,0.22))', border: '1px solid rgba(255,255,255,0.15)' }}
-                    >
-                      Site
-                    </a>
-                  )}
-                  {profile.contact?.email && (
-                    <a
-                      href={`mailto:${profile.contact.email}`}
-                      className="h-9 px-3 rounded-lg text-sm font-semibold text-white"
-                      style={{ background: 'linear-gradient(135deg, rgba(183,148,246,0.22), rgba(255,107,157,0.22))', border: '1px solid rgba(255,255,255,0.15)' }}
-                    >
-                      Email
-                    </a>
-                  )}
-                  {profile.location?.coordinates && Number.isFinite(profile.location.coordinates.lat) && Number.isFinite(profile.location.coordinates.lng) && (
-                    <a
-                      href={`https://www.google.com/maps?q=${profile.location.coordinates.lat},${profile.location.coordinates.lng}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="h-9 px-3 rounded-lg text-sm font-semibold text-white"
-                      style={{ background: 'linear-gradient(135deg, rgba(183,148,246,0.22), rgba(255,107,157,0.22))', border: '1px solid rgba(255,255,255,0.15)' }}
-                    >
-                      Itinéraire
-                    </a>
-                  )}
-                </div>
+      </div>
 
-                <div className="space-y-2 text-sm text-gray-300">
-                  {profile.location?.address && (
-                    <div className="flex items-center gap-2">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
-                      <span>{profile.location.address}</span>
-                    </div>
-                  )}
-                  {profile.contact?.phone && (
-                    <div className="flex items-center gap-2">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                      <a href={`tel:${profile.contact.phone}`} className="hover:underline">{profile.contact.phone}</a>
-                    </div>
-                  )}
-                  {profile.contact?.website && (
-                    <div className="flex items-center gap-2">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10Z"/></svg>
-                      <a href={profile.contact.website} target="_blank" rel="noopener noreferrer" className="hover:underline">{profile.contact.website.replace(/^https?:\/\//, '')}</a>
-                    </div>
-                  )}
-                  {profile.contact?.email && (
-                    <div className="flex items-center gap-2">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4h16v16H4z"/><path d="m22 6-10 7L2 6"/></svg>
-                      <a href={`mailto:${profile.contact.email}`} className="hover:underline">{profile.contact.email}</a>
-                    </div>
-                  )}
-                  {profile.workingHours && (
-                    <div className="flex items-center gap-2">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-                      <span>{profile.workingHours}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
+      {/* 4) TABS (Public / Privé) - Design luxueux */}
+      <nav className="sticky top-14 z-10 bg-gradient-to-b from-[#111318]/95 to-[#0B0B0B]/95 backdrop-blur-xl px-4 py-4 flex gap-8 mt-6 border-b border-white/[0.05]">
+        <button 
+          onClick={() => setActiveTab('public')}
+          className={`px-4 py-3 text-[14px] leading-5 relative transition-all duration-300 font-inter ${
+            activeTab === 'public' 
+              ? 'text-white font-medium' 
+              : 'text-white/70 hover:text-white'
+          }`}
+        >
+          Public
+          {activeTab === 'public' && (
+            <span className="absolute left-1/2 -bottom-2 h-[2px] w-8 -translate-x-1/2 rounded-full bg-[#4FD1C7] shadow-[0_0_15px_#4FD1C7] animate-pulse" />
+          )}
+        </button>
+        <button 
+          onClick={() => setActiveTab('private')}
+          className={`px-4 py-3 text-[14px] leading-5 relative transition-all duration-300 font-inter ${
+            activeTab === 'private' 
+              ? 'text-white font-medium' 
+              : 'text-white/70 hover:text-white'
+          }`}
+        >
+          Privé
+          {activeTab === 'private' && (
+            <span className="absolute left-1/2 -bottom-2 h-[2px] w-8 -translate-x-1/2 rounded-full bg-[#4FD1C7] shadow-[0_0_15px_#4FD1C7] animate-pulse" />
+          )}
+        </button>
+      </nav>
 
-              <AboutSection description={profile.description} />
-
-              {/* Details déjà couverts par l'InfoGrid en haut */}
-            </div>
-
-            {/* Right column - Media feed */}
-            <div className="w-1/2 p-6">
-              <div className="sticky top-6 h-[calc(100vh-3rem)] overflow-hidden">
-              <MediaFeedWithGallery
-                  media={profile.media}
-                  profileId={profile.id}
-                  profileName={profile.name}
-                  userId={null}
-                  privateEnabled={false}
-                  onLike={() => Promise.resolve()}
-                  onSave={handleMediaSave}
-                  onReactionChange={calculateTotalReactions}
-                  className="h-full overflow-y-auto"
-                  hideTabsHeader
-                />
-                {/* Section Les filles (escortes associées) - desktop */}
-                {clubEscorts.length > 0 && (
-                  <div className="mt-6 glass-card rounded-2xl p-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <h3 className="text-white font-semibold text-base">Les filles du club</h3>
-                      <span className="text-xs text-white/60">{clubEscorts.length}</span>
-                    </div>
-                <div className="grid grid-cols-4 gap-1">
-                  {clubEscorts.map((e) => (
-                    <a key={e.id} href={`/profile-test/escort/${e.id}`} className="group block text-center" aria-label={`Voir le profil de ${e.name}`}>
-                      <div 
-                        className="relative mx-auto w-20 h-20 md:w-24 md:h-24 rounded-full p-[3px]"
-                        style={{ 
-                          background: 'linear-gradient(135deg, rgba(168,85,247,0.95), rgba(255,107,157,0.9))',
-                          boxShadow: '0 0 22px rgba(168,85,247,0.35), 0 0 12px rgba(255,107,157,0.25)'
-                        }}
-                      >
-                        {/* Glow d’arrière-plan */}
-                        <span 
-                          className="pointer-events-none absolute -inset-2 rounded-full blur-2xl opacity-50"
-                          style={{ background: 'radial-gradient(circle at 50% 50%, rgba(168,85,247,0.45), rgba(255,107,157,0.0) 60%)' }}
-                        />
-                        <div className="relative w-full h-full rounded-full overflow-hidden bg-black/50">
+      {/* 5) GRID MÉDIAS (2 colonnes) */}
+      <div className="px-4 py-4 pb-24">
+        {profile.media && profile.media.length > 0 ? (
+          <div className="grid grid-cols-2 gap-3">
+            {profile.media.map((media, index) => (
+              <article key={index} className="relative aspect-[9/16] overflow-hidden rounded-2xl group cursor-pointer hover:scale-[1.02] transition-all duration-300 animate-in fade-in-0 slide-in-from-bottom-4" style={{ animationDelay: `${index * 100}ms` }} onClick={() => handleMediaClick(media, index)}>
+                {media.type === 'video' ? (
+                  <video 
+                    src={media.url} 
+                    poster={media.poster}
+                    className="w-full h-full object-cover"
+                    muted
+                  />
+                ) : (
                           <Image 
-                            src={e.avatar || '/icons/verified.svg'} 
-                            alt={e.name} 
+                    src={media.url}
+                    alt={`Media ${index + 1}`}
                             fill 
                             className="object-cover" 
-                            sizes="(max-width: 1280px) 20vw, 10vw" 
-                          />
-                        </div>
-                      </div>
-                      <div className="mt-1">
-                        <div className="text-white text-sm md:text-base font-semibold truncate">{e.name}</div>
-                      </div>
-                    </a>
-                  ))}
-                </div>
-                  </div>
+                    sizes="(max-width: 768px) 50vw, 25vw"
+                  />
                 )}
-              </div>
+                
+                {/* Overlay top */}
+                <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-black/55 to-transparent" />
+                
+                {/* Views counter */}
+                <div className="absolute right-2 top-2 flex items-center gap-1 text-white/90 text-[12px]">
+                  <Eye className="h-4 w-4" />
+                  <span>{Math.floor(Math.random() * 1000) + 100}</span>
+                </div>
+                
+                {/* Play button for videos - Design luxueux */}
+                {media.type === 'video' && (
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleMediaClick(media, index)
+                    }}
+                    className="absolute left-1/2 top-1/2 h-14 w-14 -translate-x-1/2 -translate-y-1/2 rounded-full bg-black/40 backdrop-blur-sm p-[3px] bg-gradient-to-r from-[#FF6B9D] to-[#B794F6] shadow-[0_0_25px_rgba(255,107,157,0.6)] flex items-center justify-center hover:scale-110 hover:shadow-[0_0_35px_rgba(255,107,157,0.8)] transition-all duration-300"
+                  >
+                    <div className="w-full h-full rounded-full bg-black/20 backdrop-blur-sm flex items-center justify-center">
+                      <Play className="h-5 w-5 text-white ml-0.5 drop-shadow-lg" />
+                  </div>
+                  </button>
+                )}
+                
+                {/* Overlay bottom */}
+                <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/55 to-transparent" />
+                
+                {/* Metrics row */}
+                <div className="absolute left-2 bottom-2 flex items-center gap-3 text-white/90 text-[12px]">
+                  <span className="flex items-center gap-1">
+                    <MessageSquare className="h-4 w-4" />
+                    {Math.floor(Math.random() * 10) + 1}
+                    </span>
+                  <span className="flex items-center gap-1">
+                    <Heart className="h-4 w-4" />
+                    {Math.floor(Math.random() * 1000) + 100}
+                  </span>
+                </div>
+                
+                {/* Visibility badge - Design premium */}
+                <span className="absolute right-2 bottom-2 rounded-full bg-[#FF6B9D]/20 backdrop-blur-sm border border-[#FF6B9D]/30 px-2 py-0.5 text-[11px] text-white font-medium shadow-[0_0_8px_rgba(255,107,157,0.3)]">
+                  Public
+                </span>
+              </article>
+                      ))}
+                    </div>
+        ) : (
+          <div className="text-center py-12">
+            <div className="text-[#A1A5B0] text-lg mb-2">Aucun média disponible</div>
+            <div className="text-[#A1A5B0] text-sm">Ce club n'a pas encore publié de contenu</div>
+                  </div>
+                  )}
+                </div>
+
+      {/* 6) BOTTOM-NAV - Design luxueux */}
+      <div 
+        className="fixed bottom-0 left-0 right-0 h-18 bg-[#111318]/95 backdrop-blur-xl border-t border-white/[0.05] flex items-center justify-around px-4"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+      >
+        <button className="flex flex-col items-center gap-1 p-2 hover:bg-white/5 rounded-xl transition-all duration-300">
+          <Home size={24} className="text-[#FF6B9D] hover:scale-110 transition-all duration-300" />
+          <span className="text-xs text-[#A1A5B0]/60 font-inter">Accueil</span>
+        </button>
+        
+        <button className="flex flex-col items-center gap-1 p-2 hover:bg-white/5 rounded-xl transition-all duration-300">
+          <Search size={24} className="text-white/70 hover:text-white hover:scale-110 transition-all duration-300" />
+          <span className="text-xs text-[#A1A5B0]/60 font-inter">Recherche</span>
+        </button>
+        
+        {/* FAB "+" central luxueux */}
+        <button className="relative w-16 h-16 rounded-full bg-gradient-to-r from-[#FF6B9D] to-[#B794F6] shadow-[0_0_30px_rgba(255,107,157,0.6)] flex items-center justify-center hover:shadow-[0_0_40px_rgba(255,107,157,0.8)] hover:scale-110 transition-all duration-300 group">
+          {/* Anneau de focus turquoise */}
+          <div className="absolute inset-0 rounded-full bg-gradient-to-r from-[#4FD1C7]/20 to-[#4FD1C7]/20 blur-lg scale-110 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <Plus size={28} className="text-white relative z-10 drop-shadow-lg" />
+        </button>
+        
+        <button className="flex flex-col items-center gap-1 p-2 hover:bg-white/5 rounded-xl transition-all duration-300">
+          <MessageSquare size={24} className="text-white/70 hover:text-white hover:scale-110 transition-all duration-300" />
+          <span className="text-xs text-[#A1A5B0]/60 font-inter">Messages</span>
+        </button>
+        
+        <button className="flex flex-col items-center gap-1 p-2 hover:bg-white/5 rounded-xl transition-all duration-300">
+          <User size={24} className="text-white/70 hover:text-white hover:scale-110 transition-all duration-300" />
+          <span className="text-xs text-[#A1A5B0]/60 font-inter">Profil</span>
+        </button>
+                  </div>
+
+      {/* Modal pour afficher le média en plein écran */}
+      {selectedMedia && (
+        <div className="fixed inset-0 z-50 bg-black/95 backdrop-blur-sm flex items-center justify-center" onClick={() => setSelectedMedia(null)}>
+          <div className="relative max-w-4xl max-h-[90vh] w-full mx-4">
+            <button 
+              onClick={() => setSelectedMedia(null)}
+              className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/70 transition-colors duration-200"
+            >
+              <X size={24} />
+            </button>
+            
+            {selectedMedia.type === 'video' ? (
+              <video 
+                src={selectedMedia.url}
+                controls
+                autoPlay
+                className="w-full h-full max-h-[90vh] object-contain rounded-2xl"
+                onClick={(e) => e.stopPropagation()}
+              />
+            ) : (
+                            <Image 
+                src={selectedMedia.url}
+                alt={`Media ${selectedMedia.index + 1}`}
+                width={800}
+                height={1200}
+                className="w-full h-full max-h-[90vh] object-contain rounded-2xl"
+                onClick={(e) => e.stopPropagation()}
+              />
+              )}
             </div>
           </div>
-      </div>
+      )}
+
+      {/* Modals pour les boutons d'action */}
+      {showModal && (
+        <div className="fixed inset-0 z-50 bg-black/95 backdrop-blur-sm flex items-center justify-center" onClick={closeModal}>
+          <div className="relative max-w-md w-full mx-4 bg-[#14171D]/95 backdrop-blur-xl border border-white/[0.05] rounded-3xl p-6 shadow-[0_20px_40px_rgba(0,0,0,0.4)]" onClick={(e) => e.stopPropagation()}>
+            <button 
+              onClick={closeModal}
+              className="absolute top-4 right-4 w-8 h-8 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/70 transition-colors duration-200"
+            >
+              <X size={20} />
+            </button>
+
+            {showModal === 'en-savoir-plus' && (
+              <div className="space-y-4">
+                <div className="text-center">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r from-[#FF6B9D] to-[#B794F6] flex items-center justify-center">
+                    <Star className="w-8 h-8 text-white" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-white mb-2">À propos de {profile?.name}</h3>
+                  <p className="text-[#A1A5B0]/70 text-sm leading-relaxed">
+                    {profile?.description || 'Club premium offrant une expérience luxueuse et raffinée. Découvrez nos services d\'exception dans un cadre élégant et intimiste.'}
+                  </p>
+                </div>
+                
+                {profile?.amenities && profile.amenities.length > 0 && (
+                  <div className="space-y-3">
+                    <h4 className="text-white font-medium">Équipements & Services</h4>
+                    <div className="grid grid-cols-2 gap-2">
+                      {profile.amenities.slice(0, 8).map((amenity, index) => (
+                        <div key={index} className="flex items-center gap-2 text-[#A1A5B0]/70 text-sm">
+                          <div className="w-1.5 h-1.5 rounded-full bg-[#4FD1C7]"></div>
+                          {amenity}
+              </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <button className="w-full h-12 rounded-xl text-[#0B0B0B] font-bold shadow-[0_0_25px_rgba(255,107,157,0.6)] [background:linear-gradient(135deg,#FF6B9D,#B794F6)] hover:shadow-[0_0_35px_rgba(255,107,157,0.8)] transition-all duration-300">
+                  Réserver maintenant
+                </button>
+                    </div>
+                  )}
+
+            {showModal === 'agenda' && (
+              <div className="space-y-4">
+                <div className="text-center">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r from-[#4FD1C7] to-[#4FD1C7] flex items-center justify-center">
+                    <Calendar className="w-8 h-8 text-white" />
+            </div>
+                  <h3 className="text-xl font-semibold text-white mb-2">Horaires d'ouverture</h3>
     </div>
 
-      {/* Contact Sheet (bottom) */}
-      {showContact && profile && (
-        <div onClick={(e) => { if (e.target === e.currentTarget) setShowContact(false) }} className="fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm flex items-end md:items-center justify-center p-4">
-          <div className="glass-card w-full max-w-md rounded-2xl p-5">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-white font-semibold text-base">Contact</h3>
-              <button onClick={() => setShowContact(false)} className="w-8 h-8 rounded-lg bg-white/10 text-white">✕</button>
-            </div>
-            <div className="space-y-3 text-sm">
-              {/* Adresse complète cliquable (ouvre la carte du téléphone) */}
-              {profile.location?.address && (
-                <button
-                  onClick={() => {
-                    const addr = profile.location!.address!
-                    const lat = profile.location?.coordinates?.lat
-                    const lng = profile.location?.coordinates?.lng
-                    const isApple = /iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)
-                    const url = isApple
-                      ? lat && lng
-                        ? `http://maps.apple.com/?ll=${lat},${lng}&q=${encodeURIComponent(addr)}`
-                        : `http://maps.apple.com/?q=${encodeURIComponent(addr)}`
-                      : lat && lng
-                        ? `https://maps.google.com/?q=${lat},${lng}`
-                        : `https://maps.google.com/?q=${encodeURIComponent(addr)}`
-                    window.open(url, '_blank')
-                  }}
-                  className="w-full flex items-center justify-between px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-left"
-                >
-                  <span>📍 {profile.location.address}</span>
-                  <span className="text-white/60">Ouvrir la carte</span>
+                <div className="space-y-3">
+                  {profile?.workingHours && typeof profile.workingHours === 'string' && (() => {
+                    try {
+                      const hours = JSON.parse(profile.workingHours);
+                      return Object.entries(hours).map(([day, schedule]: [string, any]) => (
+                        <div key={day} className="flex justify-between items-center py-2 border-b border-white/[0.05]">
+                          <span className="text-white capitalize">{day}</span>
+                          <div className="flex items-center gap-2">
+                            <Clock className="w-4 h-4 text-[#4FD1C7]" />
+                            <span className="text-[#A1A5B0]/70 text-sm">
+                              {schedule.closed ? 'Fermé' : `${schedule.open} - ${schedule.close}`}
+                    </span>
+                </div>
+              </div>
+                      ));
+                    } catch {
+                      return (
+                        <div className="text-center text-[#A1A5B0]/70 text-sm">
+                          Horaires non disponibles
+                </div>
+                      );
+                    }
+                  })()}
+              </div>
+
+                <button className="w-full h-12 rounded-xl border border-[#4FD1C7]/30 bg-[#4FD1C7]/10 backdrop-blur-sm text-[#4FD1C7] font-medium hover:bg-[#4FD1C7]/20 transition-all duration-300">
+                  Voir disponibilités
                 </button>
-              )}
-              {profile.contact?.phone && (
-                <a href={`tel:${profile.contact.phone}`} className="flex items-center justify-between px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white">
-                  <span>📞 {profile.contact.phone}</span>
-                  <span className="text-white/60">Appeler</span>
-                </a>
-              )}
-              {profile.contact?.email && (
-                <a href={`mailto:${profile.contact.email}`} className="flex items-center justify-between px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white">
-                  <span>✉️ {profile.contact.email}</span>
-                  <span className="text-white/60">Écrire</span>
-                </a>
-              )}
-              {profile.contact?.website && (
-                <a href={profile.contact.website} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white">
-                  <span>🌐 {profile.contact.website.replace(/^https?:\/\//, '')}</span>
-                  <span className="text-white/60">Ouvrir</span>
-                </a>
-              )}
-              {profile.workingHours && (
-                <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white">
-                  <span>🕐 {profile.workingHours}</span>
-                  <span className="text-white/60">Horaires</span>
+              </div>
+            )}
+
+            {showModal === 'contact' && (
+              <div className="space-y-4">
+                <div className="text-center">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r from-[#B794F6] to-[#B794F6] flex items-center justify-center">
+                    <Phone className="w-8 h-8 text-white" />
+          </div>
+                  <h3 className="text-xl font-semibold text-white mb-2">Contact</h3>
+        </div>
+
+                <div className="space-y-4">
+                  {profile?.location?.address && (
+                    <div className="flex items-start gap-3 p-3 rounded-xl bg-black/20 backdrop-blur-sm border border-white/[0.05]">
+                      <MapPin className="w-5 h-5 text-[#FF6B9D] mt-0.5 flex-shrink-0" />
+                      <div>
+                        <div className="text-white font-medium">Adresse</div>
+                        <div className="text-[#A1A5B0]/70 text-sm">{profile.location.address}</div>
+            </div>
+              </div>
+            )}
+
+                  <div className="flex items-start gap-3 p-3 rounded-xl bg-black/20 backdrop-blur-sm border border-white/[0.05]">
+                    <Phone className="w-5 h-5 text-[#4FD1C7] mt-0.5 flex-shrink-0" />
+                    <div>
+                      <div className="text-white font-medium">Téléphone</div>
+                      <div className="text-[#A1A5B0]/70 text-sm">+41 078 899 898</div>
+                </div>
+              </div>
+
+                  <div className="flex items-start gap-3 p-3 rounded-xl bg-black/20 backdrop-blur-sm border border-white/[0.05]">
+                    <Mail className="w-5 h-5 text-[#B794F6] mt-0.5 flex-shrink-0" />
+                    <div>
+                      <div className="text-white font-medium">Email</div>
+                      <div className="text-[#A1A5B0]/70 text-sm">salon@gmail.com</div>
+            </div>
+          </div>
+        </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <button className="h-10 rounded-xl border border-[#4FD1C7]/30 bg-[#4FD1C7]/10 backdrop-blur-sm text-[#4FD1C7] font-medium hover:bg-[#4FD1C7]/20 transition-all duration-300 flex items-center justify-center gap-2">
+                    <Phone className="w-4 h-4" />
+                    Appeler
+                </button>
+                  <button className="h-10 rounded-xl border border-[#B794F6]/30 bg-[#B794F6]/10 backdrop-blur-sm text-[#B794F6] font-medium hover:bg-[#B794F6]/20 transition-all duration-300 flex items-center justify-center gap-2">
+                    <MessageSquare className="w-4 h-4" />
+                    Message
+                  </button>
+                </div>
                 </div>
               )}
-            </div>
           </div>
         </div>
       )}
-    </ErrorBoundary>
+    </div>
   )
 }

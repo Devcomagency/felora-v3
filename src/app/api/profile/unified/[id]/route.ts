@@ -230,6 +230,10 @@ export async function GET(
           breastType: true,
           pubicHair: true,
 
+          // Contact et visibilité publique
+          phoneVisibility: true,
+          phoneDisplayType: true,
+
           // Services publics (services détaillés supprimés)
 
           // Tarifs publics
@@ -238,6 +242,13 @@ export async function GET(
           // Statut
           status: true,
           updatedAt: true,
+
+          // User data pour le téléphone si nécessaire
+          user: {
+            select: {
+              phone: true
+            }
+          }
         }
       })
 
@@ -823,6 +834,13 @@ function transformProfileData(rawProfile: any, mode: 'dashboard' | 'public') {
       paymentMethods,
       amenities,
       acceptedCurrencies
+    },
+
+    // Contact et visibilité (commun pour dashboard et public)
+    contact: {
+      phoneVisibility: rawProfile.phoneVisibility || 'hidden',
+      phoneDisplayType: rawProfile.phoneDisplayType || 'hidden',
+      phone: rawProfile.user?.phone || undefined
     },
 
     updatedAt: rawProfile.updatedAt

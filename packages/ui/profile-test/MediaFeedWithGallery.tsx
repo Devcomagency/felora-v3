@@ -126,6 +126,11 @@ function MediaPlayer({ id, type, url, thumb, poster, index, isActive, profileId,
           muted
           loop
           playsInline
+          preload="metadata"
+          disablePictureInPicture
+          webkit-playsinline="true"
+          x5-video-player-type="h5"
+          x5-video-player-fullscreen="true"
           poster={poster || thumb}
           onError={() => setError(true)}
         >
@@ -619,15 +624,37 @@ export default function MediaFeedWithGallery({
             </div>
 
             <div className="w-full h-full max-w-md max-h-screen bg-black relative border-radius-20">
-              {fullscreenMedia?.includes('.mp4') || fullscreenMedia?.includes('data:video/') ? (
+              {(() => {
+                const isVideo = fullscreenMedia && (
+                  fullscreenMedia.includes('.mp4') ||
+                  fullscreenMedia.includes('.webm') ||
+                  fullscreenMedia.includes('.mov') ||
+                  fullscreenMedia.includes('.avi') ||
+                  fullscreenMedia.includes('.mkv') ||
+                  fullscreenMedia.includes('.m4v') ||
+                  fullscreenMedia.includes('data:video/')
+                )
+                return isVideo
+              })() ? (
                 <div className="relative w-full h-full">
                   <video
                     src={fullscreenMedia}
                     controls
                     autoPlay
+                    muted
                     loop
                     playsInline
+                    preload="auto"
+                    disablePictureInPicture
+                    webkit-playsinline="true"
+                    x5-video-player-type="h5"
+                    x5-video-player-fullscreen="true"
                     className="w-full h-full object-cover"
+                    style={{
+                      willChange: 'transform',
+                      backfaceVisibility: 'hidden',
+                      WebkitBackfaceVisibility: 'hidden'
+                    }}
                   />
                 </div>
               ) : (

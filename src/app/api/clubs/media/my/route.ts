@@ -14,37 +14,45 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Vérifier que le club existe
+    // Récupérer le profil club
     const club = await prisma.clubProfileV2.findUnique({
       where: { userId: session.user.id }
     })
 
     if (!club) {
       return NextResponse.json(
-        { success: false, error: 'Club non trouvé' },
+        { success: false, error: 'Profil club non trouvé' },
         { status: 404 }
       )
     }
 
-    // Récupérer les services depuis ClubServices
-    const services = await prisma.clubServices.findUnique({
-      where: { clubId: club.id }
+    // Récupérer les médias du club depuis la table Media
+    const media = await prisma.media.findMany({
+      where: {
+        ownerType: 'CLUB',
+        ownerId: club.id
+      },
+      orderBy: { pos: 'asc' }
     })
+
+    // Formater les médias pour correspondre au format attendu par le frontend
+    const formattedMedia = media.map(item => ({
+      id: item.id,
+      pos: item.pos,
+      type: item.type,
+      url: item.url,
+      thumbUrl: item.thumbUrl,
+      visibility: item.visibility
+    }))
 
     return NextResponse.json({
       success: true,
-      services: {
-        languages: services?.languages || [],
-        paymentMethods: services?.paymentMethods || [],
-        services: services?.services || [],
-        equipments: services?.equipments || [],
-        isOpen24_7: services?.isOpen24_7 || false,
-        openingHours: services?.openingHours || ''
-      }
+      items: formattedMedia,
+      total: media.length
     })
 
   } catch (error) {
-    console.error('Erreur récupération services club:', error)
+    console.error('Erreur récupération médias club:', error)
     return NextResponse.json(
       { success: false, error: 'Erreur serveur' },
       { status: 500 }

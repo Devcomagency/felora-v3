@@ -1,0 +1,131 @@
+/* Felora Design Tokens CSS */
+.felora-design {
+  /* Fond & surfaces */
+  --felora-bg: #0B0B0B;
+  --felora-surface: #111318;
+  --felora-panel: #14171D;
+  --felora-border: #23262D;
+  --felora-text: #EAECEF;
+  --felora-muted: #A1A5B0;
+
+  /* Accents Felora */
+  --felora-rose: #FF6B9D;
+  --felora-violet: #B794F6;
+  --felora-turquoise: #4FD1C7;
+
+  /* Gradients */
+  --felora-grad-cta: linear-gradient(135deg, #FF6B9D 0%, #B794F6 100%);
+  --felora-grad-halo: radial-gradient(60% 60% at 50% 20%, #FF6B9D33 0%, #B794F633 50%, #4FD1C733 100%);
+
+  /* Rayons & ombres */
+  --r-xs: 10px;
+  --r-sm: 12px;
+  --r-md: 16px;
+  --r-lg: 20px;
+  --r-xl: 24px;
+  --shadow-soft: 0 8px 24px rgba(0,0,0,.35);
+  --glow-cta: 0 0 18px rgba(255,107,157,.35);
+}
+
+/* Micro-interactions */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: calc(200px + 100%) 0;
+  }
+}
+
+.felora-design .animate-fade-in-up {
+  animation: fade-in-up 0.3s ease-out;
+}
+
+.felora-design .animate-shimmer {
+  animation: shimmer 1.5s ease-in-out infinite;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+  background-size: 200px 100%;
+}
+
+/* Glass effect utilities */
+.felora-design .glass-button {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+}
+
+.felora-design .glass-button:hover {
+  background: rgba(255, 255, 255, 0.10);
+}
+
+/* Custom scrollbar */
+.felora-design ::-webkit-scrollbar {
+  width: 6px;
+}
+
+.felora-design ::-webkit-scrollbar-track {
+  background: var(--felora-surface);
+}
+
+.felora-design ::-webkit-scrollbar-thumb {
+  background: var(--felora-border);
+  border-radius: 3px;
+}
+
+.felora-design ::-webkit-scrollbar-thumb:hover {
+  background: var(--felora-muted);
+}
+
+/* Haptic feedback simulation */
+@media (hover: hover) {
+  .felora-design button:active,
+  .felora-design .haptic-button:active {
+    transform: scale(0.96);
+    transition: transform 0.1s ease;
+  }
+}
+
+/* Safe area handling */
+.felora-design .safe-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.felora-design .safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .felora-design .mobile-touch-target {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .felora-design {
+    --felora-border: #FFFFFF40;
+    --felora-muted: #FFFFFF80;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .felora-design * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

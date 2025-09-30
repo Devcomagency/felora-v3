@@ -86,6 +86,12 @@ interface EscortProfile {
     acceptsSeniors?: boolean
     acceptsHandicapped?: boolean
   }
+  // Contact intelligent
+  contact?: {
+    phoneVisibility: string
+    phoneDisplayType: string
+    phone?: string
+  }
 }
 
 // Loading skeleton
@@ -233,6 +239,8 @@ export default function EscortProfilePage() {
           rates: {
             hour: data.rates?.rate1H,
             twoHours: data.rates?.rate2H,
+            halfDay: data.rates?.rateHalfDay,
+            fullDay: data.rates?.rateFullDay,
             overnight: data.rates?.overnight
           },
           availability: {
@@ -244,9 +252,39 @@ export default function EscortProfilePage() {
           physical: data.physical || undefined,
           // Disponibilité temps réel de l'API
           realTimeAvailability: data.realTimeAvailability,
-          scheduleData: data.scheduleData
+          scheduleData: data.scheduleData,
+          // Contact intelligent - fetch séparé
+          contact: undefined
         }
         setProfile(transformedProfile)
+
+        // Fetch contact data separately from unified API
+        try {
+          const contactResponse = await fetch(`/api/profile/unified/${resolvedId}`, {
+            signal: controller.signal,
+            credentials: 'include'
+          })
+
+          if (contactResponse.ok) {
+            const contactData = await contactResponse.json()
+            if (contactData.success && contactData.profile?.contact) {
+              const contact = contactData.profile.contact
+              // Transform 'none' to 'hidden' for compatibility
+              if (contact.phoneVisibility === 'none') {
+                contact.phoneVisibility = 'hidden'
+              }
+
+              setProfile(prev => prev ? {
+                ...prev,
+                contact: contact
+              } : prev)
+            }
+          }
+        } catch (contactErr) {
+          console.warn('Could not fetch contact data:', contactErr)
+          // Non-blocking error - continue without contact functionality
+        }
+
       } catch (err) {
         if ((err as any)?.name === 'AbortError') return
         if (isCancelled) return
@@ -511,10 +549,10 @@ export default function EscortProfilePage() {
     console.log('[DEBUG REAL-TIME] profile.scheduleData:', profile.scheduleData)
 
     const rates = []
-    if (profile.rates?.rate1H) rates.push({ duration: '1h', price: profile.rates.rate1H, description: 'Rencontre intime' })
-    if (profile.rates?.rate2H) rates.push({ duration: '2h', price: profile.rates.rate2H, description: 'Moment prolongé' })
-    if (profile.rates?.rateHalfDay) rates.push({ duration: '4h', price: profile.rates.rateHalfDay, description: 'Demi-journée' })
-    if (profile.rates?.rateFullDay) rates.push({ duration: '8h', price: profile.rates.rateFullDay, description: 'Journée complète' })
+    if (profile.rates?.hour) rates.push({ duration: '1h', price: profile.rates.hour, description: 'Rencontre intime' })
+    if (profile.rates?.twoHours) rates.push({ duration: '2h', price: profile.rates.twoHours, description: 'Moment prolongé' })
+    if (profile.rates?.halfDay) rates.push({ duration: '4h', price: profile.rates.halfDay, description: 'Demi-journée' })
+    if (profile.rates?.fullDay) rates.push({ duration: '8h', price: profile.rates.fullDay, description: 'Journée complète' })
     if (profile.rates?.overnight) rates.push({ duration: '24h', price: profile.rates.overnight, description: 'Week-end VIP' })
 
     // DEBUG: Logs pour vérifier les données
@@ -534,12 +572,12 @@ export default function EscortProfilePage() {
       practices: profile.practices || [],
       paymentMethods: ['Espèces', 'Virement', 'PayPal', 'Cartes de crédit'], // Méthodes de paiement standard pour la Suisse
       rates: {
-        rate1H: profile.rates?.rate1H,
-        rate2H: profile.rates?.rate2H,
-        rateHalfDay: profile.rates?.rateHalfDay,
-        rateFullDay: profile.rates?.rateFullDay,
+        rate1H: profile.rates?.hour,
+        rate2H: profile.rates?.twoHours,
+        rateHalfDay: profile.rates?.halfDay,
+        rateFullDay: profile.rates?.fullDay,
         overnight: profile.rates?.overnight,
-        currency: profile.rates?.currency || 'CHF'
+        currency: 'CHF'
       },
       physicalDetails: {
         height: profile.physical?.height ? `${profile.physical.height}cm` : 'Non spécifié',
@@ -548,10 +586,8 @@ export default function EscortProfilePage() {
         eyeColor: profile.physical?.eyeColor || 'Non spécifié',
         ethnicity: profile.physical?.ethnicity || 'Non spécifié',
         bustSize: profile.physical?.bustSize || 'Non spécifié',
-        breastType: profile.physical?.breastType || 'Non spécifié',
         tattoos: profile.physical?.tattoos === true ? 'Oui' : undefined,
         piercings: profile.physical?.piercings === true ? 'Oui' : undefined,
-        pubicHair: profile.physical?.pubicHair || 'Non spécifié',
         smoker: undefined
       },
       clientele: profile.clientele || {},
@@ -648,6 +684,8 @@ export default function EscortProfilePage() {
                 onShowDetails={handleShowDetails}
                 isFavorite={isFavorite}
                 onFavoriteToggle={() => handleFavoriteToggle()}
+                contact={profile.contact}
+                profileName={profile.name}
               />
 
               <MediaFeedWithGallery

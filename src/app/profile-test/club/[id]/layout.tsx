@@ -1,11 +1,14 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Profil Club — Felora',
-  description: 'Présentation du club, médias et informations utiles.',
+  title: 'Club Profile - Felora',
+  description: 'Découvrez ce club premium sur Felora',
 }
 
-export default function ClubTestProfileLayout({ children }: { children: React.ReactNode }) {
-  return children as any
+export default function ClubProfileLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return children
 }
-

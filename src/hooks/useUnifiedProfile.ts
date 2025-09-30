@@ -79,6 +79,13 @@ export interface UnifiedProfileData {
     acceptedCurrencies: string[] // CHF, EUR, USD
   }
 
+  // Contact et visibilité téléphone
+  contact?: {
+    phoneVisibility: string // 'visible', 'hidden', 'private'
+    phoneDisplayType: string // 'visible', 'hidden', 'private_messaging'
+    phone?: string // Numéro de téléphone depuis user.phone
+  }
+
   // Méta (dashboard uniquement)
   userId?: string
   firstName?: string
@@ -143,7 +150,13 @@ export function useUnifiedProfile(profileId: string): UseUnifiedProfileReturn {
         throw new Error(data.error || 'Unknown error')
       }
 
-      setProfile(data.profile)
+      // Transform contact data for compatibility
+      const profileData = data.profile
+      if (profileData?.contact?.phoneVisibility === 'none') {
+        profileData.contact.phoneVisibility = 'hidden'
+      }
+
+      setProfile(profileData)
     } catch (err: any) {
       console.error('❌ [useUnifiedProfile] Error:', err)
       setError(err.message || 'Erreur de chargement')

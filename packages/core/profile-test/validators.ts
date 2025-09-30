@@ -23,9 +23,9 @@ export const ProfileQuerySchema = z.object({
 // Response schemas for type safety
 export const MediaItemSchema = z.object({
   type: z.enum(['image', 'video']),
-  url: z.string().url(),
-  thumb: z.string().url().optional(),
-  poster: z.string().url().optional()
+  url: z.string().min(1), // Accept both full URLs and relative paths
+  thumb: z.string().min(1).optional().nullable(),
+  poster: z.string().min(1).optional().nullable()
 })
 
 export const StatsSchema = z.object({
@@ -39,7 +39,8 @@ export const EscortProfileResponseSchema = z.object({
   name: z.string(),
   handle: z.string().optional(),
   stageName: z.string().optional(),
-  avatar: z.string().url().optional(),
+  avatar: z.string().min(1).optional().nullable(),
+  footerMedia: z.string().min(1).optional().nullable(),
   city: z.string().optional(),
   age: z.number().int().min(18).max(99).optional(),
   languages: z.array(z.string()),
@@ -77,29 +78,30 @@ export const ClubProfileResponseSchema = z.object({
   id: z.string(),
   name: z.string(),
   handle: z.string().optional(),
-  avatar: z.string().url().optional(),
-  city: z.string().optional(),
+  avatar: z.string().min(1).optional().nullable(),
+  footerMedia: z.string().min(1).optional().nullable(),
+  city: z.string().optional().nullable(),
   languages: z.array(z.string()),
   services: z.array(z.string()),
   media: z.array(MediaItemSchema),
   verified: z.boolean().optional(),
   premium: z.boolean().optional(),
-  description: z.string().optional(),
+  description: z.string().optional().nullable(),
   stats: StatsSchema.optional(),
   location: z.object({
-    address: z.string().optional(),
+    address: z.string().optional().nullable(),
     coordinates: z.object({
       lat: z.number().min(-90).max(90),
       lng: z.number().min(-180).max(180)
     }).optional()
   }).optional(),
   contact: z.object({
-    phone: z.string().optional(),
-    website: z.string().url().optional(),
-    email: z.string().email().optional()
+    phone: z.string().optional().nullable(),
+    website: z.string().min(1).optional().nullable(),
+    email: z.string().email().optional().nullable()
   }).optional(),
   amenities: z.array(z.string()).optional(),
-  workingHours: z.string().optional()
+  workingHours: z.string().optional().nullable()
 })
 
 // Error response schema
