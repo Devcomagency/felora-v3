@@ -4,9 +4,9 @@ import React, { useState, useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useSession, signOut } from 'next-auth/react'
-import { 
-  Home, Search, MessageCircle, User, Settings, Bell, Menu, 
-  Map, Globe, LogIn, UserPlus, BarChart3, Calendar, Heart
+import {
+  Home, Search, MessageCircle, User, Settings, Bell, Menu,
+  Map, Globe, LogIn, UserPlus, BarChart3, Calendar, Heart, Plus
 } from 'lucide-react'
 
 const languages = [
@@ -96,19 +96,38 @@ export default function StaticNavBar() {
 
   const navItems = (() => {
     const role = (user as any)?.role
+    const isEscortOrClub = role === 'ESCORT' || role === 'CLUB'
+
     const items: any[] = [
       { id: 'home', icon: Home, label: 'Accueil', href: '/', active: pathname === '/' },
       { id: 'search', icon: Search, label: 'Recherche', href: '/search', active: pathname === '/search' },
     ]
+
+    // Ajouter le bouton + au milieu pour escortes et clubs
+    if (isEscortOrClub) {
+      items.push({
+        id: 'create',
+        icon: Plus,
+        label: 'Créer',
+        href: '/test-media-simple',
+        active: pathname === '/test-media-simple',
+        special: true // Marqueur pour un style spécial
+      })
+    }
+
     // Messages: visible pour tous sauf CLUB (les clubs n'ont pas accès à la messagerie)
     if (role !== 'CLUB') {
       items.push({ id: 'messages', icon: MessageCircle, label: 'Messages', href: '/messages', active: pathname === '/messages' })
     }
+
     if (role === 'ESCORT') {
-      items.push({ id: 'dashboard', icon: BarChart3, label: 'Dashboard', href: '/dashboard-escort/profil', active: pathname?.startsWith('/dashboard-escort') })
+      items.push({ id: 'profile', icon: User, label: 'Profil', href: '/dashboard-escort/profil', active: pathname?.startsWith('/dashboard-escort') })
     } else if (role === 'CLUB') {
-      items.push({ id: 'dashboard', icon: BarChart3, label: 'Dashboard', href: '/club/profile', active: pathname?.startsWith('/club') })
+      items.push({ id: 'profile', icon: User, label: 'Profil', href: '/club/profile', active: pathname?.startsWith('/club') })
+    } else {
+      items.push({ id: 'profile', icon: User, label: 'Profil', href: '/profile', active: pathname?.startsWith('/profile') })
     }
+
     return items
   })()
 
@@ -148,14 +167,16 @@ export default function StaticNavBar() {
                 className={`
                   relative flex flex-col items-center justify-center px-3 py-2 rounded-xl
                   transition-all duration-200 min-w-[60px]
-                  ${item.active 
-                    ? 'text-[#FF6B9D] bg-[#FF6B9D]/10' 
-                    : 'text-white/70 hover:text-white hover:bg-white/5'
+                  ${item.special
+                    ? 'bg-gradient-to-r from-[#FF6B9D] to-[#B794F6] text-white shadow-lg hover:shadow-xl hover:scale-105'
+                    : item.active
+                      ? 'text-[#FF6B9D] bg-[#FF6B9D]/10'
+                      : 'text-white/70 hover:text-white hover:bg-white/5'
                   }
                 `}
               >
-                <Icon size={22} className="mb-1" />
-                <span className="text-xs font-medium">{item.label}</span>
+                <Icon size={item.special ? 24 : 22} className={item.special ? "" : "mb-1"} />
+                {!item.special && <span className="text-xs font-medium">{item.label}</span>}
                 {item.id === 'messages' && unreadConversations > 0 && (
                   <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-pink-500 text-white text-[10px] flex items-center justify-center">
                     {unreadConversations > 9 ? '9+' : unreadConversations}

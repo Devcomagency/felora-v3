@@ -20,7 +20,9 @@ import {
   Mail,
   MapPin,
   Clock,
-  Star
+  Star,
+  Flame,
+  Smile
 } from 'lucide-react'
 
 interface ClubProfile {
@@ -44,6 +46,7 @@ interface ClubProfile {
     likes?: number
     followers?: number
     views?: number
+    reactions?: number
   }
   location?: {
     address?: string
@@ -116,6 +119,18 @@ export default function ClubProfileTestPage() {
   const [totalReactions, setTotalReactions] = useState(0)
   const [selectedMedia, setSelectedMedia] = useState<{ url: string; type: string; index: number } | null>(null)
   const [showModal, setShowModal] = useState<'en-savoir-plus' | 'agenda' | 'contact' | null>(null)
+  const [refreshing, setRefreshing] = useState(false)
+  const [showReactions, setShowReactions] = useState(false)
+  const [mediaReactions, setMediaReactions] = useState<{[key: string]: {total: number, userReactions: string[]}}>({})
+  const [showFullDescription, setShowFullDescription] = useState(false)
+  
+  // Fonction pour déterminer si le texte dépasse 4 lignes
+  const shouldShowToggle = useCallback((text: string) => {
+    // Estimation : environ 50 caractères par ligne pour cette taille de police et largeur
+    // Avec une largeur max-w-xs (max-width: 20rem = 320px), on peut estimer ~60 caractères par ligne
+    // 4 lignes = ~240 caractères
+    return text && text.length > 240
+  }, [])
   const router = useRouter()
 
   // Resolve params
@@ -209,6 +224,59 @@ export default function ClubProfileTestPage() {
     setShowModal(null)
   }
 
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true)
+    try {
+      // Recharger les données du profil
+      const response = await fetch(`/api/profile-test/club/${resolvedId}?cache_bust=${Date.now()}`)
+      if (response.ok) {
+        const data = await response.json()
+        if (data?.data) {
+          setProfile(data.data)
+        }
+      }
+    } catch (error) {
+      console.error('Erreur lors du refresh:', error)
+    } finally {
+      setRefreshing(false)
+    }
+  }, [resolvedId])
+
+  // Fonction pour gérer les réactions sur les médias
+  const handleMediaReaction = useCallback(async (mediaUrl: string, reactionType: string) => {
+    try {
+      const response = await fetch('/api/reactions/toggle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mediaUrl,
+          reactionType,
+          ownerType: 'CLUB',
+          ownerId: profile?.id
+        })
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        // Mettre à jour l'état local des réactions
+        setMediaReactions(prev => ({
+          ...prev,
+          [mediaUrl]: {
+            total: data.total || 0,
+            userReactions: data.userReactions || []
+          }
+        }))
+      }
+    } catch (error) {
+      console.error('Erreur lors de la réaction:', error)
+    }
+  }, [profile?.id])
+
+  // Fonction pour obtenir les réactions d'un média
+  const getMediaReactions = useCallback((mediaUrl: string) => {
+    return mediaReactions[mediaUrl] || { total: 0, userReactions: [] }
+  }, [mediaReactions])
+
   // Render states
   if (loading) return <ProfileSkeleton />
   if (notFound) return <div className="min-h-screen bg-[#0B0B0B] flex items-center justify-center text-white">Club Not Found</div>
@@ -263,9 +331,9 @@ export default function ClubProfileTestPage() {
               {/* Anneau interne turquoise */}
               <div className="w-full h-full rounded-full p-[1px] bg-gradient-to-r from-[#4FD1C7] to-[#4FD1C7] shadow-[0_0_15px_rgba(79,209,199,0.4)]">
                 <div className="w-full h-full rounded-full overflow-hidden bg-[#111318]">
-            <Image
+                <Image
                     src={profile.avatar || profile.media?.[0]?.url || '/icons/verified.svg'}
-              alt={profile.name}
+                  alt={profile.name}
                     width={92}
                     height={92}
                     className="w-full h-full object-cover"
@@ -274,49 +342,77 @@ export default function ClubProfileTestPage() {
               </div>
             </div>
           </div>
-          </div>
+        </div>
 
         <div className="px-6 pb-6 pt-2 text-center">
           {/* Nom avec typo premium */}
           <h1 className="text-[22px] leading-6 text-white/90 font-semibold font-inter">{profile.name}</h1>
           
           {/* Bio avec typo harmonisée */}
-          <p className="mt-2 text-[14px] leading-5 text-[#A1A5B0]/70 max-w-xs mx-auto">
-            {profile.description || 'Club premium'}
-          </p>
+          <div className="mt-2 text-[14px] leading-5 text-[#A1A5B0]/70 max-w-xs mx-auto">
+            {profile.description ? (
+              <div>
+                <p 
+                  className={`transition-all duration-300 ${showFullDescription ? '' : 'line-clamp-4'}`}
+                >
+                  {profile.description}
+                </p>
+                {shouldShowToggle(profile.description) && (
+                <button
+                    onClick={() => setShowFullDescription(!showFullDescription)}
+                    className="mt-1 text-[#4FD1C7] text-[12px] font-medium hover:text-[#4FD1C7]/80 transition-colors duration-200 flex items-center gap-1 mx-auto"
+                  >
+                    {showFullDescription ? (
+                      <>
+                        <span>Voir moins</span>
+                        <ArrowLeft className="w-3 h-3 rotate-90" />
+                      </>
+                    ) : (
+                      <>
+                        <span>Voir plus</span>
+                        <ArrowLeft className="w-3 h-3 -rotate-90" />
+                      </>
+                    )}
+                </button>
+                )}
+              </div>
+            ) : (
+              <p>Club premium</p>
+            )}
+            </div>
           
           {/* Stats avec espacement généreux */}
           <div className="mt-6 grid grid-cols-3 gap-6">
             <div className="space-y-1">
               <div className="text-[18px] text-white font-semibold font-inter drop-shadow-[0_0_8px_rgba(79,209,199,0.3)]">
-                {profile.stats?.views || Math.floor(Math.random() * 1000) + 100}
-              </div>
+                {profile.stats?.views || 0}
+                </div>
               <div className="text-[12px] text-[#A1A5B0]/60 font-inter">Vues</div>
-            </div>
+                        </div>
             <div className="space-y-1">
               <div className="text-[18px] text-white font-semibold font-inter drop-shadow-[0_0_8px_rgba(79,209,199,0.3)]">
-                {totalReactions}
-              </div>
-              <div className="text-[12px] text-[#A1A5B0]/60 font-inter">React</div>
-            </div>
+                {profile.stats?.likes || 0}
+                      </div>
+              <div className="text-[12px] text-[#A1A5B0]/60 font-inter">Likes</div>
+                      </div>
             <div className="space-y-1">
               <div className="text-[18px] text-white font-semibold font-inter drop-shadow-[0_0_8px_rgba(79,209,199,0.3)]">
                 {profile.media?.length || 0}
-              </div>
+                </div>
               <div className="text-[12px] text-[#A1A5B0]/60 font-inter">Publications</div>
+              </div>
           </div>
-        </div>
 
           {/* Ligne lumineuse turquoise sous les stats */}
           <div className="mt-4 w-full h-[1px] bg-gradient-to-r from-transparent via-[#4FD1C7] to-transparent shadow-[0_0_8px_rgba(79,209,199,0.5)]"></div>
           
           {/* Site web sous le trait turquoise */}
-          {profile.contact?.website && (
+                  {profile.contact?.website && (
             <div className="mt-4 text-center">
-              <a 
+                    <a
                 href={profile.contact.website.startsWith('http') ? profile.contact.website : `https://${profile.contact.website}`}
-                target="_blank"
-                rel="noopener noreferrer"
+                      target="_blank"
+                      rel="noopener noreferrer"
                 className="text-[#4FD1C7] text-[13px] font-inter hover:text-[#4FD1C7]/80 transition-colors duration-200"
               >
                 {profile.contact.website.replace(/^https?:\/\//, '')}
@@ -349,10 +445,10 @@ export default function ClubProfileTestPage() {
                 >
                   Contact
                 </button>
-              </div>
-            </div>
                 </div>
-      </div>
+                    </div>
+                    </div>
+                    </div>
 
       {/* 4) TABS (Public / Privé) - Design luxueux */}
       <nav className="sticky top-14 z-10 bg-gradient-to-b from-[#111318]/95 to-[#0B0B0B]/95 backdrop-blur-xl px-4 py-4 flex gap-8 mt-6 border-b border-white/[0.05]">
@@ -398,11 +494,11 @@ export default function ClubProfileTestPage() {
                     muted
                   />
                 ) : (
-                          <Image 
+                            <Image 
                     src={media.url}
                     alt={`Media ${index + 1}`}
-                            fill 
-                            className="object-cover" 
+                              fill 
+                              className="object-cover" 
                     sizes="(max-width: 768px) 50vw, 25vw"
                   />
                 )}
@@ -413,9 +509,9 @@ export default function ClubProfileTestPage() {
                 {/* Views counter */}
                 <div className="absolute right-2 top-2 flex items-center gap-1 text-white/90 text-[12px]">
                   <Eye className="h-4 w-4" />
-                  <span>{Math.floor(Math.random() * 1000) + 100}</span>
-                </div>
-                
+                  <span>{Math.floor(Math.random() * 500) + 50}</span>
+          </div>
+
                 {/* Play button for videos - Design luxueux */}
                 {media.type === 'video' && (
                   <button 
@@ -436,14 +532,17 @@ export default function ClubProfileTestPage() {
                 
                 {/* Metrics row */}
                 <div className="absolute left-2 bottom-2 flex items-center gap-3 text-white/90 text-[12px]">
-                  <span className="flex items-center gap-1">
-                    <MessageSquare className="h-4 w-4" />
-                    {Math.floor(Math.random() * 10) + 1}
-                    </span>
-                  <span className="flex items-center gap-1">
-                    <Heart className="h-4 w-4" />
-                    {Math.floor(Math.random() * 1000) + 100}
-                  </span>
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      // TODO: Implémenter le système de réactions
+                      console.log('React media:', media.url)
+                    }}
+                    className="flex items-center gap-1 hover:scale-110 transition-transform duration-200"
+                  >
+                    <Heart className="h-4 w-4 hover:text-[#FF6B9D] transition-colors duration-200" />
+                    {Math.floor(Math.random() * 200) + 20}
+                  </button>
                 </div>
                 
                 {/* Visibility badge - Design premium */}
@@ -458,7 +557,7 @@ export default function ClubProfileTestPage() {
             <div className="text-[#A1A5B0] text-lg mb-2">Aucun média disponible</div>
             <div className="text-[#A1A5B0] text-sm">Ce club n'a pas encore publié de contenu</div>
                   </div>
-                  )}
+                )}
                 </div>
 
       {/* 6) BOTTOM-NAV - Design luxueux */}
@@ -466,40 +565,61 @@ export default function ClubProfileTestPage() {
         className="fixed bottom-0 left-0 right-0 h-18 bg-[#111318]/95 backdrop-blur-xl border-t border-white/[0.05] flex items-center justify-around px-4"
         style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       >
-        <button className="flex flex-col items-center gap-1 p-2 hover:bg-white/5 rounded-xl transition-all duration-300">
+        <button 
+          onClick={() => router.push('/')}
+          className="flex flex-col items-center gap-1 p-2 hover:bg-white/5 rounded-xl transition-all duration-300"
+        >
           <Home size={24} className="text-[#FF6B9D] hover:scale-110 transition-all duration-300" />
           <span className="text-xs text-[#A1A5B0]/60 font-inter">Accueil</span>
         </button>
         
-        <button className="flex flex-col items-center gap-1 p-2 hover:bg-white/5 rounded-xl transition-all duration-300">
+        <button 
+          onClick={() => router.push('/search')}
+          className="flex flex-col items-center gap-1 p-2 hover:bg-white/5 rounded-xl transition-all duration-300"
+        >
           <Search size={24} className="text-white/70 hover:text-white hover:scale-110 transition-all duration-300" />
           <span className="text-xs text-[#A1A5B0]/60 font-inter">Recherche</span>
         </button>
         
         {/* FAB "+" central luxueux */}
-        <button className="relative w-16 h-16 rounded-full bg-gradient-to-r from-[#FF6B9D] to-[#B794F6] shadow-[0_0_30px_rgba(255,107,157,0.6)] flex items-center justify-center hover:shadow-[0_0_40px_rgba(255,107,157,0.8)] hover:scale-110 transition-all duration-300 group">
+        <button 
+          onClick={() => router.push('/test-media-simple')}
+          className="relative w-16 h-16 rounded-full bg-gradient-to-r from-[#FF6B9D] to-[#B794F6] shadow-[0_0_30px_rgba(255,107,157,0.6)] flex items-center justify-center hover:shadow-[0_0_40px_rgba(255,107,157,0.8)] hover:scale-110 transition-all duration-300 group"
+        >
           {/* Anneau de focus turquoise */}
           <div className="absolute inset-0 rounded-full bg-gradient-to-r from-[#4FD1C7]/20 to-[#4FD1C7]/20 blur-lg scale-110 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
           <Plus size={28} className="text-white relative z-10 drop-shadow-lg" />
         </button>
         
-        <button className="flex flex-col items-center gap-1 p-2 hover:bg-white/5 rounded-xl transition-all duration-300">
+        <button 
+          onClick={() => router.push('/messages')}
+          className="flex flex-col items-center gap-1 p-2 hover:bg-white/5 rounded-xl transition-all duration-300"
+        >
           <MessageSquare size={24} className="text-white/70 hover:text-white hover:scale-110 transition-all duration-300" />
           <span className="text-xs text-[#A1A5B0]/60 font-inter">Messages</span>
         </button>
         
-        <button className="flex flex-col items-center gap-1 p-2 hover:bg-white/5 rounded-xl transition-all duration-300">
+        <button 
+          onClick={() => router.push('/profile')}
+          className="flex flex-col items-center gap-1 p-2 hover:bg-white/5 rounded-xl transition-all duration-300"
+        >
           <User size={24} className="text-white/70 hover:text-white hover:scale-110 transition-all duration-300" />
           <span className="text-xs text-[#A1A5B0]/60 font-inter">Profil</span>
         </button>
-                  </div>
+            </div>
 
       {/* Modal pour afficher le média en plein écran */}
       {selectedMedia && (
-        <div className="fixed inset-0 z-50 bg-black/95 backdrop-blur-sm flex items-center justify-center" onClick={() => setSelectedMedia(null)}>
+        <div className="fixed inset-0 z-50 bg-black/95 backdrop-blur-sm flex items-center justify-center" onClick={() => {
+          setSelectedMedia(null)
+          setShowReactions(false)
+        }}>
           <div className="relative max-w-4xl max-h-[90vh] w-full mx-4">
             <button 
-              onClick={() => setSelectedMedia(null)}
+              onClick={() => {
+                setSelectedMedia(null)
+                setShowReactions(false)
+              }}
               className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/70 transition-colors duration-200"
             >
               <X size={24} />
@@ -514,7 +634,7 @@ export default function ClubProfileTestPage() {
                 onClick={(e) => e.stopPropagation()}
               />
             ) : (
-                            <Image 
+                          <Image 
                 src={selectedMedia.url}
                 alt={`Media ${selectedMedia.index + 1}`}
                 width={800}
@@ -523,8 +643,47 @@ export default function ClubProfileTestPage() {
                 onClick={(e) => e.stopPropagation()}
               />
               )}
+
+            {/* Barre de réactions en bas */}
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
+              <div className="relative">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setShowReactions(!showReactions)
+                  }}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border transition backdrop-blur-sm bg-white/10 text-white/90 border-white/15 hover:bg-white/15"
+                >
+                  <Flame className="w-4 h-4" />
+                  <span className="text-xs font-medium">{getMediaReactions(selectedMedia.url).total}</span>
+                </button>
+                
+                {showReactions && (
+                  <div className="absolute left-1/2 transform -translate-x-1/2 -top-12 flex gap-1.5 p-1 rounded-xl bg-black/70 backdrop-blur-md border border-white/10 shadow-xl">
+                    {[
+                      { emoji: '💖', type: 'LOVE' },
+                      { emoji: '🔥', type: 'FIRE' },
+                      { emoji: '😮', type: 'WOW' },
+                      { emoji: '🙂', type: 'SMILE' },
+                    ].map((reaction) => (
+                      <button
+                        key={reaction.type}
+                        onClick={async (e) => {
+                          e.stopPropagation()
+                          await handleMediaReaction(selectedMedia.url, reaction.type)
+                          setShowReactions(false)
+                        }}
+                        className="w-8 h-8 rounded-full bg-black/50 hover:bg-black/70 border border-white/10 text-base hover:scale-110 transition-transform"
+                      >
+                        {reaction.emoji}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
+      </div>
       )}
 
       {/* Modals pour les boutons d'action */}
@@ -548,8 +707,8 @@ export default function ClubProfileTestPage() {
                   <p className="text-[#A1A5B0]/70 text-sm leading-relaxed">
                     {profile?.description || 'Club premium offrant une expérience luxueuse et raffinée. Découvrez nos services d\'exception dans un cadre élégant et intimiste.'}
                   </p>
-                </div>
-                
+            </div>
+
                 {profile?.amenities && profile.amenities.length > 0 && (
                   <div className="space-y-3">
                     <h4 className="text-white font-medium">Équipements & Services</h4>
@@ -559,16 +718,16 @@ export default function ClubProfileTestPage() {
                           <div className="w-1.5 h-1.5 rounded-full bg-[#4FD1C7]"></div>
                           {amenity}
               </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                  ))}
+                </div>
+              </div>
+            )}
 
                 <button className="w-full h-12 rounded-xl text-[#0B0B0B] font-bold shadow-[0_0_25px_rgba(255,107,157,0.6)] [background:linear-gradient(135deg,#FF6B9D,#B794F6)] hover:shadow-[0_0_35px_rgba(255,107,157,0.8)] transition-all duration-300">
                   Réserver maintenant
                 </button>
-                    </div>
-                  )}
+              </div>
+            )}
 
             {showModal === 'agenda' && (
               <div className="space-y-4">
@@ -598,17 +757,24 @@ export default function ClubProfileTestPage() {
                       return (
                         <div className="text-center text-[#A1A5B0]/70 text-sm">
                           Horaires non disponibles
-                </div>
+          </div>
                       );
                     }
                   })()}
               </div>
 
-                <button className="w-full h-12 rounded-xl border border-[#4FD1C7]/30 bg-[#4FD1C7]/10 backdrop-blur-sm text-[#4FD1C7] font-medium hover:bg-[#4FD1C7]/20 transition-all duration-300">
+                <button 
+                  onClick={() => {
+                    // TODO: Implémenter la page de réservation
+                    console.log('Voir disponibilités pour:', profile.name)
+                    alert('Fonctionnalité de réservation à venir !')
+                  }}
+                  className="w-full h-12 rounded-xl border border-[#4FD1C7]/30 bg-[#4FD1C7]/10 backdrop-blur-sm text-[#4FD1C7] font-medium hover:bg-[#4FD1C7]/20 transition-all duration-300"
+                >
                   Voir disponibilités
                 </button>
-              </div>
-            )}
+        </div>
+      )}
 
             {showModal === 'contact' && (
               <div className="space-y-4">
@@ -617,7 +783,7 @@ export default function ClubProfileTestPage() {
                     <Phone className="w-8 h-8 text-white" />
           </div>
                   <h3 className="text-xl font-semibold text-white mb-2">Contact</h3>
-        </div>
+            </div>
 
                 <div className="space-y-4">
                   {profile?.location?.address && (
@@ -626,33 +792,45 @@ export default function ClubProfileTestPage() {
                       <div>
                         <div className="text-white font-medium">Adresse</div>
                         <div className="text-[#A1A5B0]/70 text-sm">{profile.location.address}</div>
-            </div>
+                </div>
               </div>
             )}
 
-                  <div className="flex items-start gap-3 p-3 rounded-xl bg-black/20 backdrop-blur-sm border border-white/[0.05]">
-                    <Phone className="w-5 h-5 text-[#4FD1C7] mt-0.5 flex-shrink-0" />
-                    <div>
-                      <div className="text-white font-medium">Téléphone</div>
-                      <div className="text-[#A1A5B0]/70 text-sm">+41 078 899 898</div>
+                  {profile?.contact?.phone && (
+                    <div className="flex items-start gap-3 p-3 rounded-xl bg-black/20 backdrop-blur-sm border border-white/[0.05]">
+                      <Phone className="w-5 h-5 text-[#4FD1C7] mt-0.5 flex-shrink-0" />
+                      <div>
+                        <div className="text-white font-medium">Téléphone</div>
+                        <div className="text-[#A1A5B0]/70 text-sm">{profile.contact.phone}</div>
                 </div>
               </div>
+            )}
 
-                  <div className="flex items-start gap-3 p-3 rounded-xl bg-black/20 backdrop-blur-sm border border-white/[0.05]">
-                    <Mail className="w-5 h-5 text-[#B794F6] mt-0.5 flex-shrink-0" />
-                    <div>
-                      <div className="text-white font-medium">Email</div>
-                      <div className="text-[#A1A5B0]/70 text-sm">salon@gmail.com</div>
-            </div>
+                  {profile?.contact?.email && (
+                    <div className="flex items-start gap-3 p-3 rounded-xl bg-black/20 backdrop-blur-sm border border-white/[0.05]">
+                      <Mail className="w-5 h-5 text-[#B794F6] mt-0.5 flex-shrink-0" />
+                      <div>
+                        <div className="text-white font-medium">Email</div>
+                        <div className="text-[#A1A5B0]/70 text-sm">{profile.contact.email}</div>
           </div>
         </div>
+      )}
+            </div>
 
                 <div className="grid grid-cols-2 gap-3">
-                  <button className="h-10 rounded-xl border border-[#4FD1C7]/30 bg-[#4FD1C7]/10 backdrop-blur-sm text-[#4FD1C7] font-medium hover:bg-[#4FD1C7]/20 transition-all duration-300 flex items-center justify-center gap-2">
-                    <Phone className="w-4 h-4" />
-                    Appeler
+                  {profile?.contact?.phone && (
+                <button
+                      onClick={() => window.open(`tel:${profile.contact?.phone}`, '_self')}
+                      className="h-10 rounded-xl border border-[#4FD1C7]/30 bg-[#4FD1C7]/10 backdrop-blur-sm text-[#4FD1C7] font-medium hover:bg-[#4FD1C7]/20 transition-all duration-300 flex items-center justify-center gap-2"
+                    >
+                      <Phone className="w-4 h-4" />
+                      Appeler
                 </button>
-                  <button className="h-10 rounded-xl border border-[#B794F6]/30 bg-[#B794F6]/10 backdrop-blur-sm text-[#B794F6] font-medium hover:bg-[#B794F6]/20 transition-all duration-300 flex items-center justify-center gap-2">
+              )}
+                  <button 
+                    onClick={() => router.push('/messages')}
+                    className="h-10 rounded-xl border border-[#B794F6]/30 bg-[#B794F6]/10 backdrop-blur-sm text-[#B794F6] font-medium hover:bg-[#B794F6]/20 transition-all duration-300 flex items-center justify-center gap-2"
+                  >
                     <MessageSquare className="w-4 h-4" />
                     Message
                   </button>

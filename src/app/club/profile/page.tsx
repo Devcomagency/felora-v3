@@ -202,8 +202,14 @@ export default function ClubProfilePage() {
           avatarUrl: form.avatarUrl,
           coverUrl: form.coverUrl,
           isActive: form.isActive,
+          city: form.address ? form.address.split(',')[0] || '' : '',
+          websiteUrl: form.websiteUrl,
+          email: form.email,
+          phone: form.phone,
+          capacity: form.capacity ? Number(form.capacity) : null,
+          latitude: coordinates?.lat || null,
+          longitude: coordinates?.lng || null,
         }
-        // Note: websiteUrl non persisté pour l'instant côté serveur (champ à ajouter en DB si nécessaire)
         const res = await fetch('/api/clubs/profile/update', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -381,7 +387,17 @@ export default function ClubProfilePage() {
                     <label className="block text-sm text-gray-300 mb-1">Email</label>
                     <input
                       value={form.email || ''}
-                      onChange={e => setForm(prev => ({ ...prev, email: e.target.value }))}
+                      onChange={e => {
+                        const updatedForm = { ...form, email: e.target.value }
+                        setForm(updatedForm)
+                        // Auto-save pour email
+                        if (autoSaveTimeoutRef.current) {
+                          clearTimeout(autoSaveTimeoutRef.current)
+                        }
+                        autoSaveTimeoutRef.current = setTimeout(() => {
+                          autoSave(updatedForm)
+                        }, 1500)
+                      }}
                       className="w-full px-3 py-2.5 text-[15px] bg-gray-800/60 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500"
                       placeholder="contact@votre-club.ch"
                       type="email"
@@ -391,7 +407,17 @@ export default function ClubProfilePage() {
                     <label className="block text-sm text-gray-300 mb-1">Téléphone</label>
                     <input
                       value={form.phone || ''}
-                      onChange={e => setForm(prev => ({ ...prev, phone: e.target.value }))}
+                      onChange={e => {
+                        const updatedForm = { ...form, phone: e.target.value }
+                        setForm(updatedForm)
+                        // Auto-save pour phone
+                        if (autoSaveTimeoutRef.current) {
+                          clearTimeout(autoSaveTimeoutRef.current)
+                        }
+                        autoSaveTimeoutRef.current = setTimeout(() => {
+                          autoSave(updatedForm)
+                        }, 1500)
+                      }}
                       className="w-full px-3 py-2.5 text-[15px] bg-gray-800/60 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500"
                       placeholder="+41 XX XXX XX XX"
                       type="tel"
@@ -433,7 +459,17 @@ export default function ClubProfilePage() {
                   <label className="block text-sm text-gray-300 mb-1">Site web (facultatif)</label>
                   <input
                     value={form.websiteUrl || ''}
-                    onChange={e => updateField('websiteUrl', e.target.value)}
+                    onChange={e => {
+                      const updatedForm = { ...form, websiteUrl: e.target.value }
+                      setForm(updatedForm)
+                      // Auto-save pour websiteUrl
+                      if (autoSaveTimeoutRef.current) {
+                        clearTimeout(autoSaveTimeoutRef.current)
+                      }
+                      autoSaveTimeoutRef.current = setTimeout(() => {
+                        autoSave(updatedForm)
+                      }, 1500)
+                    }}
                     className="w-full px-3 py-2.5 text-[15px] bg-gray-800/60 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500"
                     placeholder="https://votre-site.ch"
                   />
@@ -532,7 +568,7 @@ function ServicesPanel(){
   // Fonction toggle avec auto-save
   const toggle = (setter: React.Dispatch<React.SetStateAction<string[]>>, list: string[], value: string) => {
     setter(prev => {
-      const s = new Set(list)
+      const s = new Set(prev)
       if (s.has(value)) s.delete(value); else s.add(value)
       const newArray = Array.from(s)
 

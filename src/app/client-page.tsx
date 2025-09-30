@@ -1,9 +1,6 @@
 'use client'
 
 import { useState, useCallback, useEffect, useRef } from 'react'
-import { useRouter } from 'next/navigation'
-import { useSession } from 'next-auth/react'
-import { Plus } from 'lucide-react'
 import VideoFeedCard from '../components/feed/VideoFeedCard'
 import { useFeedStore } from '../stores/feedStore'
 import { stableMediaId } from '@/lib/reactions/stableMediaId'
@@ -43,17 +40,6 @@ export default function ClientFeedPage({ initialItems, initialCursor }: ClientFe
   // Store du feed pour la gestion globale
   const { setVideoContainerRef, isRestore } = useFeedStore()
 
-  // Session d'authentification
-  // const { data: session } = useSession()
-  const router = useRouter()
-
-  // Vérifier si l'utilisateur est une escorte ou un club - TEMPORAIREMENT FORCÉ POUR TESTER
-  const isEscortOrClub = true // session?.user && (
-  //   (session.user as any)?.escortProfile ||
-  //   (session.user as any)?.clubProfile ||
-  //   session.user.email?.includes('club') ||
-  //   session.user.email?.includes('escort')
-  // )
   
   // Chargement de plus d'items (génération infinie)
   const loadMoreItems = useCallback(async () => {
@@ -200,20 +186,6 @@ export default function ClientFeedPage({ initialItems, initialCursor }: ClientFe
         </section>
       )}
 
-      {/* Bouton + flottant pour escortes/clubs connectés */}
-      {isEscortOrClub && (
-        <button
-          onClick={() => router.push('/test-media-simple')}
-          className="fixed bottom-24 left-4 w-16 h-16 rounded-full bg-gradient-to-r from-[#FF6B9D] to-[#B794F6] flex items-center justify-center shadow-2xl hover:scale-105 transition-all duration-200"
-          style={{
-            zIndex: 9999,
-            position: 'fixed',
-            display: 'flex'
-          }}
-        >
-          <Plus className="w-10 h-10 text-white" />
-        </button>
-      )}
     </main>
   )
 }
