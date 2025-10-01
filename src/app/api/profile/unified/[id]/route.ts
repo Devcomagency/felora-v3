@@ -659,7 +659,7 @@ function transformProfileData(rawProfile: any, mode: 'dashboard' | 'public') {
     }
   })()
 
-  // Parse des langues (logique centralisée)
+  // Parse des langues (logique centralisée) - RETOURNE TOUJOURS UN ARRAY
   const languages = (() => {
     try {
       const raw = String(rawProfile.languages || '')
@@ -668,7 +668,28 @@ function transformProfileData(rawProfile: any, mode: 'dashboard' | 'public') {
         const L = JSON.parse(raw)
         return Array.isArray(L) ? L : []
       }
-      return raw.split(',').map((x: string) => x.trim()).filter(Boolean)
+      // Convertir CSV en array avec mapping des codes courts
+      const csvArray = raw.split(',').map((x: string) => x.trim()).filter(Boolean)
+      return csvArray.map(lang => {
+        // Garder les codes courts pour cohérence avec le frontend
+        switch(lang.toLowerCase()) {
+          case 'français':
+          case 'francais':
+          case 'french': return 'fr'
+          case 'anglais':
+          case 'english': return 'en'
+          case 'allemand':
+          case 'german':
+          case 'deutsch': return 'de'
+          case 'italien':
+          case 'italian':
+          case 'italiano': return 'it'
+          case 'espagnol':
+          case 'spanish':
+          case 'español': return 'es'
+          default: return lang
+        }
+      })
     } catch {
       return []
     }
@@ -736,7 +757,10 @@ function transformProfileData(rawProfile: any, mode: 'dashboard' | 'public') {
     services,
     specialties, // Ajout des spécialités mappées depuis practices
 
-    // Services détaillés supprimés (pour éviter doublons)
+    // Nouvelles options (déplacées au niveau du profil pour cohérence)
+    paymentMethods,
+    amenities,
+    acceptedCurrencies,
 
     // Médias
     galleryPhotos: parseStringArray(rawProfile.galleryPhotos),
@@ -829,12 +853,6 @@ function transformProfileData(rawProfile: any, mode: 'dashboard' | 'public') {
       acceptsSeniors: !!rawProfile.acceptsSeniors
     },
 
-    // Options nouvelles
-    options: {
-      paymentMethods,
-      amenities,
-      acceptedCurrencies
-    },
 
     // Contact et visibilité (commun pour dashboard et public)
     contact: {

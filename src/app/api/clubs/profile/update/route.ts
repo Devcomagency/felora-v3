@@ -11,6 +11,8 @@ export async function POST(req: NextRequest) {
     if (!userId) return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 })
 
     const body = await req.json().catch(() => ({}))
+    console.log('📥 Club profile update payload:', JSON.stringify(body, null, 2))
+    
     const Schema = z.object({
       name: z.string().max(100).optional(),
       description: z.string().max(5000).optional(),
@@ -19,8 +21,8 @@ export async function POST(req: NextRequest) {
       postalCode: z.string().max(20).optional(),
       country: z.string().max(100).optional(),
       openingHours: z.string().max(200).optional(),
-      websiteUrl: z.string().url().optional().or(z.literal('')),
-      email: z.string().email().optional().or(z.literal('')),
+      websiteUrl: z.string().optional(),
+      email: z.string().optional(),
       phone: z.string().max(50).optional(),
       capacity: z.number().int().positive().optional().nullable(),
       latitude: z.number().nullable().optional(),
@@ -28,14 +30,19 @@ export async function POST(req: NextRequest) {
       languages: z.array(z.string()).optional(),
       paymentMethods: z.array(z.string()).optional(),
       services: z.array(z.string()).optional(),
-      avatarUrl: z.string().url().optional().or(z.literal('')),
-      coverUrl: z.string().url().optional().or(z.literal('')),
+      avatarUrl: z.string().optional(),
+      coverUrl: z.string().optional(),
       isActive: z.boolean().optional()
     })
     
     const parsed = Schema.safeParse(body)
     if (!parsed.success) {
-      return NextResponse.json({ ok: false, error: 'invalid_payload', details: parsed.error.flatten() }, { status: 400 })
+      console.log('❌ Validation error:', parsed.error.flatten())
+      return NextResponse.json({ 
+        ok: false, 
+        error: 'invalid_payload', 
+        details: parsed.error.flatten() 
+      }, { status: 400 })
     }
     const input = parsed.data
 
@@ -77,8 +84,14 @@ export async function POST(req: NextRequest) {
     if (typeof input.postalCode === 'string') detailsData.postalCode = input.postalCode
     if (typeof input.country === 'string') detailsData.country = input.country
     if (typeof input.openingHours === 'string') detailsData.openingHours = input.openingHours
-    if (typeof input.websiteUrl === 'string') detailsData.websiteUrl = input.websiteUrl || null
-    if (typeof input.email === 'string') detailsData.email = input.email || null
+    if (typeof input.websiteUrl === 'string') {
+      const websiteUrl = input.websiteUrl.trim()
+      detailsData.websiteUrl = websiteUrl ? (websiteUrl.startsWith('http') ? websiteUrl : `https://${websiteUrl}`) : null
+    }
+    if (typeof input.email === 'string') {
+      const email = input.email.trim()
+      detailsData.email = email || null
+    }
     if (typeof input.phone === 'string') detailsData.phone = input.phone
     if (typeof input.capacity === 'number') detailsData.capacity = input.capacity
     if (typeof input.latitude === 'number') detailsData.latitude = input.latitude
