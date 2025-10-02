@@ -112,64 +112,38 @@ export default function SimpleUploader({
       onSuccess: async () => {
         console.log('✅ Upload réussi:', fileUpload.file.name)
 
-        // Déclencher le transcodage si vidéo
-        if (fileUpload.file.type.startsWith('video/')) {
-          console.log('🎬 Déclenchement transcodage Livepeer...')
+        // Pour l'instant, on désactive le transcodage Livepeer
+        // (nécessite configuration spécifique upload direct vers Livepeer)
+        const isVideo = fileUpload.file.type.startsWith('video/')
 
-          try {
-            const response = await fetch('/api/video/transcode', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                fileUrl: upload.url, // URL du fichier uploadé
-                fileName: fileUpload.file.name
-              })
-            })
+        if (isVideo) {
+          console.log('🎬 Vidéo uploadée (transcodage désactivé temporairement)')
+        }
 
-            if (response.ok) {
-              const data = await response.json()
-              console.log('✅ Transcodage démarré:', data.asset.id)
-
-              setUploads(prev => {
-                const updated = new Map(prev)
-                const upload = updated.get(fileId)
-                if (upload) {
-                  upload.status = 'completed'
-                  upload.progress = 100
-                  updated.set(fileId, upload)
-                }
-                return updated
-              })
-
-              // Appeler onComplete avec les infos Livepeer
-              if (onComplete) {
-                onComplete([{
-                  name: fileUpload.file.name,
-                  size: fileUpload.file.size,
-                  url: upload.url || undefined,
-                  assetId: data.asset.id,
-                  playbackId: data.asset.playbackId,
-                  status: 'transcoding'
-                }])
-              }
-            } else {
-              throw new Error('Erreur API transcodage')
-            }
-          } catch (error) {
-            console.error('❌ Erreur transcodage:', error)
-            // Continuer malgré l'erreur de transcodage
-            setUploads(prev => {
-              const updated = new Map(prev)
-              const upload = updated.get(fileId)
-              if (upload) {
-                upload.status = 'completed'
-                upload.progress = 100
-                updated.set(fileId, upload)
-              }
-              return updated
-            })
+        // Marquer comme complété
+        setUploads(prev => {
+          const updated = new Map(prev)
+          const upload = updated.get(fileId)
+          if (upload) {
+            upload.status = 'completed'
+            upload.progress = 100
+            updated.set(fileId, upload)
           }
-        } else {
+          return updated
+        })
+
+        // Appeler onComplete
+        if (onComplete) {
+          onComplete([{
+            name: fileUpload.file.name,
+            size: fileUpload.file.size,
+            url: upload.url || undefined,
+            status: 'ready'
+          }])
+        }
+
+        // Code original pour images (gardé pour compatibilité)
+        if (false) {
           // Image, pas de transcodage
           setUploads(prev => {
             const updated = new Map(prev)
