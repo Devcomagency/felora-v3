@@ -197,6 +197,35 @@ export default function MapTest() {
     longitude: number
     escorts: EscortData[]
   } | null>(null)
+
+  // 🎯 ÉCOUTER LES ÉVÉNEMENTS D'ADRESSE CHANGÉE POUR SYNCHRONISER LA CARTE
+  useEffect(() => {
+    const handleAddressChanged = (event: any) => {
+      const { coordinates } = event.detail
+      if (coordinates && coordinates.lat && coordinates.lng) {
+        console.log('🗺️ Mise à jour de la carte depuis le dashboard:', coordinates)
+        
+        // Mettre à jour la vue de la carte
+        setViewState(prev => ({
+          ...prev,
+          latitude: coordinates.lat,
+          longitude: coordinates.lng,
+          zoom: Math.max(prev.zoom, 15) // Zoom plus proche pour une adresse spécifique
+        }))
+        
+        // Mettre à jour l'URL pour refléter la nouvelle position
+        const newCenter = `${coordinates.lat},${coordinates.lng}`
+        const newUrl = `/map?center=${newCenter}&zoom=15`
+        router.push(newUrl, { scroll: false })
+      }
+    }
+
+    window.addEventListener('addressChanged', handleAddressChanged)
+    
+    return () => {
+      window.removeEventListener('addressChanged', handleAddressChanged)
+    }
+  }, [router])
   const [search, setSearch] = useState('')
   const [selectedServices, setSelectedServices] = useState<string[]>([])
   const [userLocation, setUserLocation] = useState<{latitude: number, longitude: number} | null>(null)

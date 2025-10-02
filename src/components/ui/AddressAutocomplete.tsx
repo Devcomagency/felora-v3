@@ -211,6 +211,17 @@ export default function AddressAutocomplete({
     
     // Sauvegarder dans l'historique
     saveToHistory(address.address, coordinates)
+    
+    // 🎯 ÉMISSION D'ÉVÉNEMENT POUR SYNCHRONISER LA CARTE
+    const mapUpdateEvent = new CustomEvent('addressChanged', {
+      detail: {
+        address: address.address,
+        coordinates: coordinates,
+        city: address.address.split(', ')[1] || '',
+        canton: extractCantonFromAddress(address.address)
+      }
+    })
+    window.dispatchEvent(mapUpdateEvent)
   }
 
   const handleHistorySelect = (address: string, coordinates?: { lat: number; lng: number }) => {
@@ -359,6 +370,17 @@ export default function AddressAutocomplete({
                 window.dispatchEvent(event)
               }
             }
+            
+            // 🎯 ÉMISSION D'ÉVÉNEMENT POUR SYNCHRONISER LA CARTE (GÉOLOCALISATION)
+            const mapUpdateEvent = new CustomEvent('addressChanged', {
+              detail: {
+                address: data.address,
+                coordinates: { lat: latitude, lng: longitude },
+                city: cityName || '',
+                canton: extractCantonFromAddress(data.address)
+              }
+            })
+            window.dispatchEvent(mapUpdateEvent)
           } else {
             // Fallback si pas d'adresse trouvée
             onChange(`Position GPS: ${latitude.toFixed(6)}, ${longitude.toFixed(6)}`, { lat: latitude, lng: longitude })
