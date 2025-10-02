@@ -89,3 +89,68 @@ function formatAddress(data: any): string {
   
   return parts.join(', ')
 }
+
+// POST - Géocoder une adresse (forward geocoding)
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json()
+    const { address } = body
+
+    if (!address) {
+      return NextResponse.json({ error: 'Adresse requise' }, { status: 400 })
+    }
+
+    console.log('🔍 [API GEOCODE] Géocodage de l\'adresse:', address)
+
+    // Utiliser Nominatim pour le forward geocoding
+    const encodedAddress = encodeURIComponent(address)
+    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodedAddress}&addressdetails=1&accept-language=fr&limit=1&countrycodes=ch`
+    
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'FELORA/1.0 (contact@felora.com)'
+      }
+    })
+
+    if (!response.ok) {
+      throw new Error('Erreur API Nominatim')
+    }
+
+    const data = await response.json()
+    
+    if (!data || data.length === 0) {
+      console.log('❌ [API GEOCODE] Aucun résultat pour:', address)
+      return NextResponse.json({ 
+        address: null, 
+        coordinates: null,
+        error: 'Adresse non trouvée' 
+      })
+    }
+
+    const result = data[0]
+    console.log('✅ [API GEOCODE] Résultat trouvé:', result.display_name)
+
+    // Extraire ville et canton
+    const city = result.address?.city || result.address?.town || ''
+    const canton = result.address?.state || ''
+
+    return NextResponse.json({
+      address: result.display_name,
+      coordinates: {
+        lat: parseFloat(result.lat),
+        lng: parseFloat(result.lon)
+      },
+      city: city,
+      canton: canton,
+      display_name: result.display_name,
+      address_details: result.address
+    })
+
+  } catch (error) {
+    console.error('❌ [API GEOCODE] Erreur géocodage:', error)
+    return NextResponse.json({ 
+      error: 'Erreur lors du géocodage',
+      coordinates: null 
+    }, { status: 500 })
+  }
+}

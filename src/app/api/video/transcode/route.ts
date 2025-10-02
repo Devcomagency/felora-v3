@@ -1,16 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { Livepeer } from 'livepeer'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 
-// Initialiser le client Livepeer
-const livepeer = new Livepeer({
-  apiKey: process.env.LIVEPEER_API_KEY || '',
-})
-
 /**
  * POST /api/video/transcode
- * Déclenche le transcodage d'une vidéo via Livepeer
+ * Déclenche le transcodage d'une vidéo via Livepeer API REST
  *
  * Body: { fileUrl: string, fileName: string }
  * Returns: { assetId: string, status: string, playbackUrl: string }
@@ -37,63 +31,69 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    const apiKey = process.env.LIVEPEER_API_KEY
+
+    if (!apiKey) {
+      return NextResponse.json(
+        { error: 'LIVEPEER_API_KEY non configurée' },
+        { status: 500 }
+      )
+    }
+
     console.log('🎬 Démarrage transcodage Livepeer:', {
       fileName,
       fileUrl: fileUrl.substring(0, 50) + '...',
       userId: session.user.id
     })
 
-    // 3. Créer l'asset Livepeer (upload + transcodage)
-    const asset = await livepeer.asset.create({
-      name: fileName,
-      url: fileUrl,
-      // Options de transcodage
-      storage: {
-        ipfs: false, // On n'utilise pas IPFS pour l'instant
+    // 3. Appel API REST Livepeer pour créer l'asset
+    const livepeerResponse = await fetch('https://livepeer.studio/api/asset/request-upload', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
       },
-      playbackPolicy: {
-        type: 'public', // Vidéos publiques (ajuster si besoin authentification)
-      },
-      // Profils de qualité (HLS adaptatif)
-      profiles: [
-        {
-          name: '480p',
-          bitrate: 1000000, // 1 Mbps
-          fps: 30,
-          width: 854,
-          height: 480,
-        },
-        {
-          name: '720p',
-          bitrate: 2500000, // 2.5 Mbps
-          fps: 30,
-          width: 1280,
-          height: 720,
-        },
-        {
-          name: '1080p',
-          bitrate: 5000000, // 5 Mbps
-          fps: 30,
-          width: 1920,
-          height: 1080,
-        },
-      ],
+      body: JSON.stringify({
+        name: fileName,
+        url: fileUrl,
+      })
     })
 
-    console.log('✅ Asset Livepeer créé:', asset.id)
+    if (!livepeerResponse.ok) {
+      const errorText = await livepeerResponse.text()
+      console.error('❌ Erreur Livepeer API:', livepeerResponse.status, errorText)
+
+      return NextResponse.json(
+        {
+          error: 'Erreur API Livepeer',
+          details: errorText,
+          status: livepeerResponse.status
+        },
+        { status: 500 }
+      )
+    }
+
+    const asset = await livepeerResponse.json()
+
+    console.log('✅ Asset Livepeer créé:', {
+      id: asset.asset?.id,
+      uploadUrl: asset.url ? 'URL présente' : 'Pas d\'URL',
+      tusEndpoint: asset.tusEndpoint ? 'Endpoint présent' : 'Pas d\'endpoint'
+    })
 
     // 4. Retourner les infos de l'asset
     return NextResponse.json({
       success: true,
       asset: {
-        id: asset.id,
-        status: asset.status?.phase || 'processing',
-        playbackId: asset.playbackId,
-        playbackUrl: asset.playbackId
-          ? `https://lvpr.tv/?v=${asset.playbackId}`
+        id: asset.asset?.id || asset.id,
+        status: asset.asset?.status?.phase || 'uploading',
+        playbackId: asset.asset?.playbackId,
+        playbackUrl: asset.asset?.playbackId
+          ? `https://lvpr.tv/?v=${asset.asset.playbackId}`
           : null,
-        downloadUrl: asset.downloadUrl,
-        createdAt: asset.createdAt,
+        uploadUrl: asset.url,
+        tusEndpoint: asset.tusEndpoint,
+        createdAt: asset.asset?.createdAt || new Date().toISOString(),
       }
     })
 
@@ -102,7 +102,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         error: 'Erreur lors du transcodage',
-        details: error.message
+        details: error.message,
+        stack: error.stack
       },
       { status: 500 }
     )
@@ -133,8 +134,36 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Récupérer l'asset Livepeer
-    const asset = await livepeer.asset.get(assetId)
+    const apiKey = process.env.LIVEPEER_API_KEY
+
+    if (!apiKey) {
+      return NextResponse.json(
+        { error: 'LIVEPEER_API_KEY non configurée' },
+        { status: 500 }
+      )
+    }
+
+    // Récupérer l'asset via API REST
+    const livepeerResponse = await fetch(`https://livepeer.studio/api/asset/${assetId}`, {
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+      }
+    })
+
+    if (!livepeerResponse.ok) {
+      const errorText = await livepeerResponse.text()
+      console.error('❌ Erreur récupération asset:', livepeerResponse.status, errorText)
+
+      return NextResponse.json(
+        {
+          error: 'Erreur API Livepeer',
+          details: errorText
+        },
+        { status: 500 }
+      )
+    }
+
+    const asset = await livepeerResponse.json()
 
     return NextResponse.json({
       success: true,
