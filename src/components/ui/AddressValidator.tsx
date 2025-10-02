@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { CheckCircle, AlertTriangle, XCircle, Info } from 'lucide-react'
+import { CheckCircle, AlertTriangle, XCircle } from 'lucide-react'
 
 interface AddressValidation {
   quality: 'excellent' | 'good' | 'warning' | 'error'
@@ -40,27 +40,9 @@ export default function AddressValidator({ address, coordinates, className = '' 
     setLoading(true)
     
     try {
-      // Validation côté client d'abord
+      // Validation côté client
       const clientValidation = validateAddressClient(addr, coords)
-      
-      // Ensuite validation côté serveur si possible
-      try {
-        const response = await fetch('/api/geocode/validate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ address: addr, coordinates: coords })
-        })
-        
-        if (response.ok) {
-          const serverValidation = await response.json()
-          setValidation(serverValidation)
-        } else {
-          setValidation(clientValidation)
-        }
-      } catch (error) {
-        console.warn('Erreur validation serveur, utilisation validation client:', error)
-        setValidation(clientValidation)
-      }
+      setValidation(clientValidation)
     } catch (error) {
       console.error('Erreur validation:', error)
       setValidation({

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { Search, MapPin, X, Navigation } from 'lucide-react'
+import AddressHistory from './AddressHistory'
 
 interface SwissAddress {
   score: number
@@ -190,6 +191,83 @@ export default function AddressAutocomplete({
     setIsOpen(false)
     setSelectedIndex(-1)
     inputRef.current?.blur()
+    
+    // Sauvegarder dans l'historique
+    saveToHistory(address.address, coordinates)
+  }
+
+  const handleHistorySelect = (address: string, coordinates?: { lat: number; lng: number }) => {
+    onChange(address, coordinates)
+    onCoordinatesChange?.(coordinates)
+    setIsOpen(false)
+    inputRef.current?.blur()
+    
+    // Sauvegarder dans l'historique (mise à jour du compteur)
+    saveToHistory(address, coordinates)
+  }
+
+  const extractCantonFromAddress = (address: string): string | null => {
+    const cantonMap: Record<string, string> = {
+      'genève': 'GE', 'geneva': 'GE',
+      'vaud': 'VD', 'lausanne': 'VD',
+      'zurich': 'ZH', 'zürich': 'ZH',
+      'berne': 'BE', 'bern': 'BE',
+      'bâle': 'BS', 'basel': 'BS',
+      'lucerne': 'LU', 'luzern': 'LU',
+      'tessin': 'TI', 'ticino': 'TI',
+      'saint-gall': 'SG', 'st. gallen': 'SG',
+      'valais': 'VS', 'wallis': 'VS',
+      'fribourg': 'FR', 'freiburg': 'FR',
+      'neuchâtel': 'NE', 'neuenburg': 'NE'
+    }
+    
+    const addressLower = address.toLowerCase()
+    for (const [key, code] of Object.entries(cantonMap)) {
+      if (addressLower.includes(key)) {
+        return code
+      }
+    }
+    
+    // Essayer d'extraire le code canton des parenthèses
+    const match = address.match(/\(([A-Z]{2})\)/)
+    if (match) {
+      return match[1]
+    }
+    
+    return null
+  }
+
+  const saveToHistory = (address: string, coordinates?: { lat: number; lng: number }) => {
+    try {
+      const storageKey = 'felora_address_history'
+      const existing = localStorage.getItem(storageKey)
+      let history = existing ? JSON.parse(existing) : []
+      
+      const existingIndex = history.findIndex((item: any) => item.address === address)
+      
+      if (existingIndex >= 0) {
+        history[existingIndex].usedCount = (history[existingIndex].usedCount || 0) + 1
+        history[existingIndex].timestamp = Date.now()
+      } else {
+        history.unshift({
+          id: Date.now().toString(),
+          address,
+          coordinates,
+          timestamp: Date.now(),
+          usedCount: 1
+        })
+      }
+      
+      // Trier par fréquence et garder seulement les 10 derniers
+      history.sort((a: any, b: any) => {
+        if (a.usedCount !== b.usedCount) return b.usedCount - a.usedCount
+        return b.timestamp - a.timestamp
+      })
+      
+      localStorage.setItem(storageKey, JSON.stringify(history.slice(0, 10)))
+    } catch (error) {
+      console.error('Erreur sauvegarde historique:', error)
+    }
   }
 
   const clearValue = () => {
@@ -220,6 +298,20 @@ export default function AddressAutocomplete({
           if (data.address) {
             onChange(data.address, { lat: latitude, lng: longitude })
             onCoordinatesChange?.({ lat: latitude, lng: longitude })
+            
+            // Extraire la ville de l'adresse pour mise à jour automatique
+            const addressParts = data.address.split(', ')
+            if (addressParts.length >= 2) {
+              const cityPart = addressParts[addressParts.length - 1]
+              const cityName = cityPart.replace(/^\d+\s+/, '').replace(/\s*\([^)]*\)/, '')
+              if (cityName) {
+                // Déclencher un événement personnalisé pour mettre à jour la ville
+                const event = new CustomEvent('addressCityDetected', { 
+                  detail: { city: cityName, canton: extractCantonFromAddress(data.address) }
+                })
+                window.dispatchEvent(event)
+              }
+            }
           } else {
             // Fallback si pas d'adresse trouvée
             onChange(`Position GPS: ${latitude.toFixed(6)}, ${longitude.toFixed(6)}`, { lat: latitude, lng: longitude })
@@ -275,6 +367,12 @@ export default function AddressAutocomplete({
           <span>{isLocating ? 'Détection...' : 'Détecter ma position'}</span>
         </button>
       </div>
+
+      {/* Historique des adresses */}
+      <AddressHistory
+        onSelect={handleHistorySelect}
+        className="mb-3"
+      />
       
       <div className="relative">
         <div className="absolute left-3 top-1/2 transform -translate-y-1/2">

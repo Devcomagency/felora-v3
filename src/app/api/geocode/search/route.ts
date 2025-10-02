@@ -1,174 +1,170 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 
-type Provider = 'mapbox' | 'nominatim' | 'google'
-
-const MAPBOX_TOKEN = process.env.MAPBOX_TOKEN || process.env.NEXT_PUBLIC_MAPBOX_TOKEN
-const GOOGLE_KEY = process.env.GOOGLE_PLACES_KEY || process.env.NEXT_PUBLIC_GOOGLE_PLACES_KEY
-
-function chooseProvider(): Provider {
-  if (MAPBOX_TOKEN) return 'mapbox'
-  if (GOOGLE_KEY) return 'google'
-  return 'nominatim'
-}
-
-export async function GET(req: Request) {
-  // 🚨 DEPRECATION WARNING
-  console.warn('🚨 DEPRECATED: /api/geocode/* will be removed. Use /api/geo/* instead.')
-  
+export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
-  const q = (searchParams.get('q') || '').trim()
-  const limit = Math.min(parseInt(searchParams.get('limit') || '10', 10) || 10, 15)
-  const region = (searchParams.get('region') || '').trim() // canton name
-  const city = (searchParams.get('city') || '').trim()
+  const query = searchParams.get('q')
+  const limit = parseInt(searchParams.get('limit') || '10')
+  const region = searchParams.get('region')
+  const city = searchParams.get('city')
 
-  if (q.length < 2) {
+  if (!query || query.length < 2) {
     return NextResponse.json({ hits: [] })
   }
 
-  const provider = (searchParams.get('provider') as Provider) || chooseProvider()
-
   try {
-    if (provider === 'mapbox' && MAPBOX_TOKEN) {
-      // Biais simple: concaténer la région/ville à la requête
-      const query = [q, city || region].filter(Boolean).join(', ')
-      const url = new URL(`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json`)
-      url.searchParams.set('country', 'ch')
-      url.searchParams.set('limit', String(limit))
-      url.searchParams.set('language', 'fr')
-      // Accepter les adresses complètes pour le dashboard
-      url.searchParams.set('types', 'address,place,locality,region')
-      url.searchParams.set('access_token', MAPBOX_TOKEN)
+    // Utiliser l'API officielle suisse pour la recherche
+    const searchUrl = new URL('https://api3.geo.admin.ch/rest/services/api/SearchServer')
+    searchUrl.searchParams.set('searchText', query)
+    searchUrl.searchParams.set('type', 'locations')
+    searchUrl.searchParams.set('sr', '2056') // Système de coordonnées suisse
+    searchUrl.searchParams.set('limit', limit.toString())
 
-      const r = await fetch(url.toString())
-      if (!r.ok) throw new Error(`Mapbox error ${r.status}`)
-      const data = await r.json()
-
-      const hitsRaw = (data.features || []).map((f: any) => ({
-        score: Math.round((f.relevance || 0) * 100),
-        identifier: `mapbox:${f.id}`,
-        countryCode: (f.context || []).find((c: any) => c.id?.startsWith('country'))?.short_code?.toUpperCase() || 'CH',
-        addressId: f.id,
-        buildingId: f.properties?.mapbox_id || f.id,
-        name: f.text_fr || f.text,
-        address: f.place_name_fr || f.place_name || f.text,
-        latitude: f.center?.[1] || f.geometry?.coordinates?.[1] || 0,
-        longitude: f.center?.[0] || f.geometry?.coordinates?.[0] || 0,
-        type: f.place_type?.[0] || 'place'
-      }))
-      // Dédupliquer et garder adresses + villes/localités
-      const seen = new Set<string>()
-      const hits = hitsRaw
-        .filter((h:any) => ['address','place','locality','region'].includes(h.type))
-        .filter((h:any) => {
-          const key = String(h.address || h.name || '').toLowerCase()
-          if (!key) return false
-          if (seen.has(key)) return false
-          seen.add(key)
-          return true
-        })
-        .map(h => ({
-          ...h,
-          address: h.address || h.name || h.place_name_fr || h.place_name
-        }))
-
-      return NextResponse.json({ hits })
-    }
-
-    if (provider === 'google' && GOOGLE_KEY) {
-      // Use Geocoding API with CH component filter
-      const url = new URL('https://maps.googleapis.com/maps/api/geocode/json')
-      const address = [q, city || region].filter(Boolean).join(', ')
-      url.searchParams.set('address', address)
-      const comps = ['country:CH']
-      if (region) comps.push(`administrative_area:${region}`)
-      url.searchParams.set('components', comps.join('|'))
-      url.searchParams.set('language', 'fr')
-      url.searchParams.set('key', GOOGLE_KEY)
-
-      const r = await fetch(url.toString())
-      if (!r.ok) throw new Error(`Google error ${r.status}`)
-      const data = await r.json()
-
-      const hitsRaw = (data.results || []).slice(0, limit).map((res: any) => {
-        const comps = res.address_components || []
-        const locality = comps.find((c:any)=> (c.types||[]).includes('locality'))?.long_name
-        const admin2 = comps.find((c:any)=> (c.types||[]).includes('administrative_area_level_2'))?.long_name
-        const name = locality || admin2 || (res.formatted_address || '').split(',')[0]
-        return {
-          score: 90,
-          identifier: `google:${res.place_id}`,
-          countryCode: comps.find((c: any) => c.types?.includes('country'))?.short_name || 'CH',
-          addressId: res.place_id,
-          buildingId: res.place_id,
-          name,
-          address: name,
-          latitude: res.geometry?.location?.lat || 0,
-          longitude: res.geometry?.location?.lng || 0
-        }
-      })
-      // Dédupliquer par nom
-      const seen = new Set<string>()
-      const hits = hitsRaw.filter((h:any)=>{
-        const key = String(h.name||'').toLowerCase()
-        if (!key) return false
-        if (seen.has(key)) return false
-        seen.add(key)
-        return true
-      })
-
-      return NextResponse.json({ hits })
-    }
-
-    // Fallback: Nominatim (OpenStreetMap)
-    const url = new URL('https://nominatim.openstreetmap.org/search')
-    url.searchParams.set('format', 'jsonv2')
-    url.searchParams.set('addressdetails', '1')
-    url.searchParams.set('limit', String(limit))
-    url.searchParams.set('countrycodes', 'ch')
-    url.searchParams.set('accept-language', 'fr')
-    const nq = [q, city || region].filter(Boolean).join(', ')
-    url.searchParams.set('q', nq)
-
-    const r = await fetch(url.toString(), {
+    const response = await fetch(searchUrl.toString(), {
       headers: {
-        // Nominatim usage policy: send valid UA
-        'User-Agent': 'felora-v2/1.0 (contact@felora.app)'
+        'User-Agent': 'FELORA/1.0 (contact@felora.com)'
       }
     })
-    if (!r.ok) throw new Error(`Nominatim error ${r.status}`)
-    const data = await r.json()
 
-    // Filtrer uniquement les villes/localités et retourner le nom court
-    const allowedTypes = new Set(['city','town','village','hamlet','locality','municipality'])
-    const hitsRaw = (data || [])
-      .filter((item:any)=> allowedTypes.has(String(item.type||'').toLowerCase()))
-      .map((item: any) => {
-        const name = (item.display_name || '').split(',')[0]
-        return {
-          score: Math.round(((item.importance || 0.5) / 1.0) * 100),
-          identifier: `osm:${item.place_id}`,
-          countryCode: (item.address?.country_code || 'ch').toUpperCase(),
-          addressId: String(item.osm_id || item.place_id || ''),
-          buildingId: String(item.osm_id || item.place_id || ''),
-          name,
-          address: name,
-          latitude: parseFloat(item.lat),
-          longitude: parseFloat(item.lon),
-          type: item.type
-        }
-      })
-    const seen = new Set<string>()
-    const hits = hitsRaw.filter((h:any)=>{
-      const key = String(h.name||'').toLowerCase()
-      if (!key) return false
-      if (seen.has(key)) return false
-      seen.add(key)
-      return true
+    if (!response.ok) {
+      throw new Error('Erreur API suisse')
+    }
+
+    const data = await response.json()
+    
+    if (!data.results || !Array.isArray(data.results)) {
+      return NextResponse.json({ hits: [] })
+    }
+
+    // Transformer les résultats
+    const hits = data.results.map((result: any) => {
+      const attrs = result.attrs || {}
+      
+      // Nettoyer le label HTML
+      const cleanLabel = attrs.label?.replace(/<[^>]*>/g, '') || ''
+      
+      // Extraire les coordonnées (conversion de LV95 vers WGS84)
+      const x = attrs.x || attrs.lon || 0
+      const y = attrs.y || attrs.lat || 0
+      
+      // Conversion approximative LV95 vers WGS84
+      const lat = attrs.lat || (y - 200000) / 111320 + 46.5
+      const lng = attrs.lon || (x - 2600000) / 111320 + 7.5
+
+      return {
+        score: result.weight || 0,
+        identifier: result.id?.toString() || '',
+        countryCode: 'CH',
+        addressId: attrs.featureId || '',
+        buildingId: '',
+        address: cleanLabel,
+        latitude: lat,
+        longitude: lng,
+        detail: attrs.detail || '',
+        origin: attrs.origin || ''
+      }
     })
 
-    return NextResponse.json({ hits })
-  } catch (err: any) {
-    console.error('Geocode search error', err)
-    return NextResponse.json({ hits: [], error: 'geocode_failed' }, { status: 500 })
+    // Filtrage supplémentaire si région ou ville spécifiée
+    let filteredHits = hits
+    
+    if (region) {
+      const regionLower = region.toLowerCase()
+      filteredHits = filteredHits.filter((hit: any) => 
+        hit.address.toLowerCase().includes(regionLower) ||
+        hit.detail.toLowerCase().includes(regionLower)
+      )
+    }
+    
+    if (city) {
+      const cityLower = city.toLowerCase()
+      filteredHits = filteredHits.filter((hit: any) => 
+        hit.address.toLowerCase().includes(cityLower) ||
+        hit.detail.toLowerCase().includes(cityLower)
+      )
+    }
+
+    // Prioriser les résultats par type (communes > lieux > autres)
+    filteredHits.sort((a: any, b: any) => {
+      const aScore = getPriorityScore(a)
+      const bScore = getPriorityScore(b)
+      if (aScore !== bScore) return bScore - aScore
+      return (b.score || 0) - (a.score || 0)
+    })
+
+    return NextResponse.json({ hits: filteredHits.slice(0, limit) })
+
+  } catch (error) {
+    console.error('Erreur recherche géocodage:', error)
+    
+    // Fallback avec résultats mockés pour les villes suisses communes
+    const mockResults = getMockResults(query, region, city)
+    return NextResponse.json({ hits: mockResults })
   }
+}
+
+function getPriorityScore(hit: any): number {
+  const origin = hit.origin?.toLowerCase() || ''
+  const detail = hit.detail?.toLowerCase() || ''
+  
+  // Priorité élevée pour les communes et villes
+  if (origin === 'gg25' || detail.includes('ge') || detail.includes('vd') || detail.includes('zh')) {
+    return 100
+  }
+  
+  // Priorité moyenne pour les lieux nommés
+  if (origin === 'gazetteer') {
+    return 50
+  }
+  
+  // Priorité faible pour les arrêts de bus, etc.
+  return 10
+}
+
+function getMockResults(query: string, region?: string | null, city?: string | null) {
+  const queryLower = query.toLowerCase()
+  
+  // Base de données de villes suisses communes
+  const swissCities = [
+    { name: 'Onex', canton: 'GE', lat: 46.1854, lng: 6.0995 },
+    { name: 'Genève', canton: 'GE', lat: 46.2044, lng: 6.1432 },
+    { name: 'Lausanne', canton: 'VD', lat: 46.5197, lng: 6.6323 },
+    { name: 'Zurich', canton: 'ZH', lat: 47.3769, lng: 8.5417 },
+    { name: 'Berne', canton: 'BE', lat: 46.9481, lng: 7.4474 },
+    { name: 'Bâle', canton: 'BS', lat: 47.5596, lng: 7.5886 },
+    { name: 'Lucerne', canton: 'LU', lat: 47.0502, lng: 8.3093 },
+    { name: 'Lugano', canton: 'TI', lat: 46.0037, lng: 8.9511 },
+    { name: 'Sion', canton: 'VS', lat: 46.2294, lng: 7.3594 },
+    { name: 'Fribourg', canton: 'FR', lat: 46.8061, lng: 7.1612 },
+    { name: 'Neuchâtel', canton: 'NE', lat: 46.9924, lng: 6.9319 },
+    { name: 'Saint-Gall', canton: 'SG', lat: 47.4237, lng: 9.3748 }
+  ]
+  
+  // Recherche dans les villes suisses
+  const matches = swissCities.filter(city => 
+    city.name.toLowerCase().includes(queryLower)
+  )
+  
+  // Filtrage par région si spécifié
+  let filteredMatches = matches
+  if (region) {
+    const regionLower = region.toLowerCase()
+    filteredMatches = matches.filter(city => 
+      city.canton.toLowerCase().includes(regionLower) ||
+      city.name.toLowerCase().includes(regionLower)
+    )
+  }
+  
+  // Conversion en format de réponse
+  return filteredMatches.map((city, index) => ({
+    score: 100 - index * 5, // Score décroissant
+    identifier: `mock_${city.name.toLowerCase()}`,
+    countryCode: 'CH',
+    addressId: '',
+    buildingId: '',
+    address: `${city.name} (${city.canton})`,
+    latitude: city.lat,
+    longitude: city.lng,
+    detail: `${city.name.toLowerCase()} ${city.canton.toLowerCase()}`,
+    origin: 'mock'
+  }))
 }

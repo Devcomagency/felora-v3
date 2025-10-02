@@ -111,10 +111,18 @@ export default function CameraScreenTest({ onClose, onCapture }: CameraScreenPro
         const stream = await navigator.mediaDevices.getUserMedia({
           video: {
             facingMode: isFrontCamera ? 'user' : 'environment',
-            width: { ideal: 1080 },
-            height: { ideal: 1920 }
+            width: { ideal: 4096 },  // 4K width
+            height: { ideal: 2160 }, // 4K height
+            frameRate: { ideal: 60 }, // 60fps si disponible
+            aspectRatio: { ideal: 9/16 }
           },
-          audio: true
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true,
+            sampleRate: { ideal: 48000 }, // Qualité audio maximale
+            channelCount: { ideal: 2 } // Stéréo si disponible
+          }
         })
         
         if (videoRef.current) {
@@ -731,18 +739,20 @@ export default function CameraScreenTest({ onClose, onCapture }: CameraScreenPro
         </div>
       )}
 
-      {/* Preview caméra - Plein écran portrait sans zoom */}
-      <div className="absolute inset-0 bg-black">
-        <video
-          ref={videoRef}
-          className="w-full h-full object-contain"
-          autoPlay
-          playsInline
-          muted
-        />
+      {/* Preview caméra - Portrait forcé 9:16 qualité maximale */}
+      <div className="absolute inset-0 bg-black flex items-center justify-center">
+        <div className="relative h-full w-auto" style={{ aspectRatio: '9/16' }}>
+          <video
+            ref={videoRef}
+            className="w-full h-full object-contain"
+            autoPlay
+            playsInline
+            muted
+          />
 
-        {/* Overlay gradient premium */}
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
+          {/* Overlay gradient premium */}
+          <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
+        </div>
       </div>
 
       {/* Boutons en bas à droite - NOUVEAU POSITIONNEMENT */}

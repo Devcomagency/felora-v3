@@ -6,6 +6,7 @@ import { User, Image, Eye, Heart, Clock, Settings as SettingsIcon, CheckCircle2,
 import * as Dialog from '@radix-ui/react-dialog'
 import AddressAutocomplete from '../ui/AddressAutocomplete'
 import LocationPreviewMap from '../ui/LocationPreviewMap'
+import AddressValidator from '../ui/AddressValidator'
 // import ModernMediaManager from './ModernMediaManager'
 
 const CANTON_MAP: Record<string, string> = {
@@ -221,6 +222,25 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
   useEffect(() => {
     savedSnapshotRef.current = profileData
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Écouter les événements de détection de ville depuis la géolocalisation
+  useEffect(() => {
+    const handleAddressCityDetected = (event: any) => {
+      const { city, canton } = event.detail
+      if (city) {
+        updateProfileData('city', city)
+      }
+      if (canton) {
+        updateProfileData('canton', canton)
+      }
+    }
+
+    window.addEventListener('addressCityDetected', handleAddressCityDetected)
+    
+    return () => {
+      window.removeEventListener('addressCityDetected', handleAddressCityDetected)
+    }
   }, [])
 
   // React to ?tab=... changes (e.g., Agenda from footer)
@@ -1422,6 +1442,15 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                       }
                     }}
                   />
+                  
+                  {/* Validateur d'adresse */}
+                  {profileData.address && (
+                    <AddressValidator
+                      address={profileData.address}
+                      coordinates={profileData.coordinates}
+                    />
+                  )}
+                  
                   {!profileData.address || !profileData.coordinates ? (
                     <div className="mt-2 text-[11px] text-red-400">Adresse et coordonnées GPS requis</div>
                   ) : (
