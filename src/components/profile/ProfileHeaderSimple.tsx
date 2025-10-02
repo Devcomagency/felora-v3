@@ -252,11 +252,7 @@ export default function ProfileHeaderSimple({ profile, extendedData, onShowDetai
 
           {/* Disponibilité - Affiche seulement si agenda activé */}
           {(() => {
-            console.log('🔍 [ProfileHeaderSimple] profile.agendaEnabled:', profile.agendaEnabled, 'type:', typeof profile.agendaEnabled)
-            console.log('🔍 [ProfileHeaderSimple] profile keys:', Object.keys(profile))
-            console.log('🔍 [ProfileHeaderSimple] strict equality check:', profile.agendaEnabled === true)
-            console.log('🔍 [ProfileHeaderSimple] truthy check:', !!profile.agendaEnabled)
-            return profile.agendaEnabled === true
+            return true
           })() && (
             <div>
               <div className="flex items-center gap-2 mb-2">

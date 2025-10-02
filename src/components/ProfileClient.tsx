@@ -75,7 +75,6 @@ interface EscortProfile {
   outcall?: boolean
   availableNow?: boolean
   weekendAvailable?: boolean
-  agendaEnabled?: boolean  // Agenda activé/désactivé
 }
 
 const EMOJI_REACTIONS = ['🔥', '💎', '😍', '🤤', '💋', '🥵', '❤️', '🌟']
@@ -829,11 +828,7 @@ export default function ProfileClient({ profile: initialProfile }: ProfileClient
 
             {/* Disponibilité aujourd'hui - Affiche seulement si agenda activé */}
             {(() => {
-              console.log('🔍 [PROFILE] agendaEnabled value:', profile.agendaEnabled, 'type:', typeof profile.agendaEnabled)
-              console.log('🔍 [PROFILE] profile object keys:', Object.keys(profile))
-              console.log('🔍 [PROFILE] strict equality check:', profile.agendaEnabled === true)
-              console.log('🔍 [PROFILE] truthy check:', !!profile.agendaEnabled)
-              return profile.agendaEnabled === true
+              return true
             })() && (
               <div>
                 <div className="flex items-center gap-2 mb-2">
@@ -1472,12 +1467,7 @@ export default function ProfileClient({ profile: initialProfile }: ProfileClient
 
               {/* Disponibilité - Affiche seulement si agenda activé */}
               {(() => {
-                console.log('🔍 [ProfileClient] Section disponibilité exécutée')
-                console.log('🔍 [ProfileClient] profile.agendaEnabled:', profile.agendaEnabled, 'type:', typeof profile.agendaEnabled)
-                console.log('🔍 [ProfileClient] profile keys:', Object.keys(profile))
-                console.log('🔍 [ProfileClient] strict equality check:', profile.agendaEnabled === true)
-                console.log('🔍 [ProfileClient] truthy check:', !!profile.agendaEnabled)
-                return profile.agendaEnabled === true
+                return true
               })() && (
                 <div>
                   <h3 className="text-lg font-semibold text-white mb-3 border-b border-white/10 pb-2">Disponibilité</h3>

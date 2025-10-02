@@ -62,7 +62,6 @@ export interface UnifiedProfileData {
     incall: boolean
     availableNow: boolean
     weekendAvailable: boolean
-    agendaEnabled?: boolean // Agenda activé/désactivé
   }
 
   // Clientèle

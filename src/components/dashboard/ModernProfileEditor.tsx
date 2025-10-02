@@ -181,7 +181,6 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
   const [kycVerified, setKycVerified] = useState(false)
   const [kycStatus, setKycStatus] = useState<'NONE' | 'PENDING' | 'APPROVED' | 'REJECTED'>('NONE')
   const [hasEscortProfile, setHasEscortProfile] = useState<boolean | null>(null)
-  const [agendaEnabled, setAgendaEnabled] = useState(false)
   const [updatingStatus, setUpdatingStatus] = useState(false)
   const [errors, setErrors] = useState<Record<string, string | null>>({})
   const savedSnapshotRef = useRef<Partial<ProfileData>>({})
@@ -424,14 +423,6 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
           console.error('[DASHBOARD] Error parsing agenda:', error)
         }
 
-        // Initialiser agendaEnabled depuis l'API
-        if (typeof p.agendaEnabled === 'boolean') {
-          console.log('[DASHBOARD] Setting agendaEnabled from API:', p.agendaEnabled)
-          setAgendaEnabled(p.agendaEnabled)
-        } else {
-          console.log('[DASHBOARD] agendaEnabled not found in API, using default: true')
-          setAgendaEnabled(true) // Valeur par défaut
-        }
       } catch {}
     })()
     return () => { cancelled = true }
@@ -519,7 +510,6 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
         const packed = mapDays.map((d, idx) => ({ weekday: idx, ...weekly[d as keyof typeof weekly] }))
         const body = {
           timeSlots: JSON.stringify({ weekly: packed, pause: pauseEnabled ? { start: pauseStart, end: pauseEnd } : null, absences }),
-          agendaEnabled
         }
         await fetch('/api/profile/unified/me', {
           method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(body)
@@ -527,7 +517,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
       } catch {}
     }, 700)
     return () => clearTimeout(timer)
-  }, [agendaOnly, weekly, pauseEnabled, pauseStart, pauseEnd, absences, agendaEnabled])
+  }, [agendaOnly, weekly, pauseEnabled, pauseStart, pauseEnd, absences])
 
   // If agendaOnly, render only the Agenda section (after state is initialized)
   if (agendaOnly) {
@@ -538,50 +528,49 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
           <div className="space-y-6">
             <div>
               <label className="inline-flex items-center gap-2 text-sm text-white/90">
-                <input type="checkbox" checked={agendaEnabled} onChange={(e)=> setAgendaEnabled(e.target.checked)} /> Activer l'agenda
               </label>
             </div>
-            <div className={agendaEnabled ? '' : 'opacity-50'}>
+            <div>
               <div className="text-sm text-white/90 font-medium mb-2">Heures de présence (hebdo)</div>
               <div className="space-y-2">
                 {Object.entries(weekly).map(([day, slot]) => (
                   <div key={day} className="flex items-center gap-2">
                     <div className="w-28 text-white/90">{day}</div>
-                    <label className="inline-flex items-center gap-2"><input type="checkbox" checked={slot.enabled} disabled={!agendaEnabled} onChange={(e)=> setWeekly(prev => ({ ...prev, [day]: { ...slot, enabled: e.target.checked } }))} /> <span className="text-sm text-white/80">{slot.enabled ? '✅' : '❌'}</span></label>
-                    <input type="time" value={slot.start} disabled={!agendaEnabled} onChange={(e)=> setWeekly(prev => ({ ...prev, [day]: { ...slot, start: e.target.value } }))} className="px-2 py-1 rounded bg-white/5 border border-white/10 text-white text-sm"/>
-                    <span className="text-white/60">—</span>
-                    <input type="time" value={slot.end} disabled={!agendaEnabled} onChange={(e)=> setWeekly(prev => ({ ...prev, [day]: { ...slot, end: e.target.value } }))} className="px-2 py-1 rounded bg-white/5 border border-white/10 text-white text-sm"/>
+                    <label className="inline-flex items-center gap-2"><input type="checkbox" checked={slot.enabled} onChange={(e)=> setWeekly(prev => ({ ...prev, [day]: { ...slot, enabled: e.target.checked } }))} /> <span className="text-sm text-white/80">{slot.enabled ? '✅' : '❌'}</span></label>
+                    <input type="time" value={slot.start} onChange={(e)=> setWeekly(prev => ({ ...prev, [day]: { ...slot, start: e.target.value } }))} className="px-2 py-1 rounded bg-white/5 border border-white/10 text-white text-sm"/>
+                    <span className="text-white/60">-</span>
+                    <input type="time" value={slot.end} onChange={(e)=> setWeekly(prev => ({ ...prev, [day]: { ...slot, end: e.target.value } }))} className="px-2 py-1 rounded bg-white/5 border border-white/10 text-white text-sm"/>
                   </div>
                 ))}
               </div>
             </div>
-            <div className={`space-y-2 ${agendaEnabled ? '' : 'opacity-50'}`}>
+            <div className="space-y-2">
               <label className="inline-flex items-center gap-2 text-sm text-white/90">
-                <input type="checkbox" checked={pauseEnabled} disabled={!agendaEnabled} onChange={(e)=> setPauseEnabled(e.target.checked)} /> Mettre mon compte en pause
+                <input type="checkbox" checked={pauseEnabled} onChange={(e)=> setPauseEnabled(e.target.checked)} /> Mettre mon compte en pause
               </label>
               {pauseEnabled && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-xs text-white/70 mb-1">Début de pause</label>
-                    <input type="datetime-local" value={pauseStart} disabled={!agendaEnabled} onChange={(e)=> setPauseStart(e.target.value)} className="w-full px-2 py-2 rounded bg-white/5 border border-white/10 text-white text-sm"/>
+                    <input type="datetime-local" value={pauseStart} onChange={(e)=> setPauseStart(e.target.value)} className="w-full px-2 py-2 rounded bg-white/5 border border-white/10 text-white text-sm"/>
                   </div>
                   <div>
                     <label className="block text-xs text-white/70 mb-1">Retour</label>
-                    <input type="datetime-local" value={pauseEnd} disabled={!agendaEnabled} onChange={(e)=> setPauseEnd(e.target.value)} className="w-full px-2 py-2 rounded bg-white/5 border border-white/10 text-white text-sm"/>
+                    <input type="datetime-local" value={pauseEnd} onChange={(e)=> setPauseEnd(e.target.value)} className="w-full px-2 py-2 rounded bg-white/5 border border-white/10 text-white text-sm"/>
                   </div>
                 </div>
               )}
             </div>
-            <div className={`space-y-2 ${agendaEnabled ? '' : 'opacity-50'}`}>
+            <div className="space-y-2">
               <div className="text-sm text-white/90 font-medium">Jours d'absence exceptionnels</div>
-              <button disabled={!agendaEnabled} onClick={()=> setAbsences(prev => [...prev, { id: Math.random().toString(36).slice(2), start: new Date().toISOString().slice(0,10), end: new Date().toISOString().slice(0,10) }])} className={`px-3 py-2 rounded-lg border w-fit ${agendaEnabled ? 'bg-white/5 hover:bg-white/10 text-white border-white/10' : 'bg-white/5 text-white/40 border-white/10 cursor-not-allowed'}`}>Ajouter une absence</button>
+              <button onClick={()=> setAbsences(prev => [...prev, { id: Math.random().toString(36).slice(2), start: new Date().toISOString().slice(0,10), end: new Date().toISOString().slice(0,10) }])} className="px-3 py-2 rounded-lg border w-fit bg-white/5 hover:bg-white/10 text-white border-white/10">Ajouter une absence</button>
               <div className="space-y-2">
                 {absences.map((a) => (
                   <div key={a.id} className="flex items-center gap-2">
-                    <input type="date" value={a.start} disabled={!agendaEnabled} onChange={(e)=> setAbsences(prev => prev.map(x => x.id===a.id ? { ...x, start: e.target.value } : x))} className="px-2 py-1 rounded bg-white/5 border border-white/10 text-white text-sm"/>
+                    <input type="date" value={a.start} onChange={(e)=> setAbsences(prev => prev.map(x => x.id===a.id ? { ...x, start: e.target.value } : x))} className="px-2 py-1 rounded bg-white/5 border border-white/10 text-white text-sm"/>
                     <span className="text-white/60">→</span>
-                    <input type="date" value={a.end} disabled={!agendaEnabled} onChange={(e)=> setAbsences(prev => prev.map(x => x.id===a.id ? { ...x, end: e.target.value } : x))} className="px-2 py-1 rounded bg-white/5 border border-white/10 text-white text-sm"/>
-                    <button disabled={!agendaEnabled} onClick={()=> setAbsences(prev => prev.filter(x => x.id!==a.id))} className={`${agendaEnabled ? 'text-white/70 hover:text-white' : 'text-white/40 cursor-not-allowed'}`}>×</button>
+                    <input type="date" value={a.end} onChange={(e)=> setAbsences(prev => prev.map(x => x.id===a.id ? { ...x, end: e.target.value } : x))} className="px-2 py-1 rounded bg-white/5 border border-white/10 text-white text-sm"/>
+                    <button onClick={()=> setAbsences(prev => prev.filter(x => x.id!==a.id))} className="text-white/70 hover:text-white">×</button>
                   </div>
                 ))}
               </div>
@@ -601,16 +590,10 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
     const mediasOk = mandatoryMedia.filter(m => !!m.preview).length === 6
     checks.push({ key: 'medias', label: '6 médias requis', ok: mediasOk, targetTab: 'media' })
     checks.push({ key: 'stageName', label: 'Pseudo', ok: !!profileData.stageName, targetTab: 'basic' })
-    checks.push({ key: 'category', label: 'Catégorie', ok: (profileData.serviceType||[]).length>0, targetTab: 'basic' })
     checks.push({ key: 'age', label: 'Âge', ok: profileData.age !== undefined && profileData.age > 0, targetTab: 'basic' })
     checks.push({ key: 'description', label: 'Description (≥ 200 car.)', ok: (profileData.description||'').trim().length >= 200, targetTab: 'basic' })
-    checks.push({ key: 'languages', label: 'Langues (≥1)', ok: (profileData.languages||[]).length >= 1, targetTab: 'basic' })
-    checks.push({ key: 'canton', label: 'Canton', ok: !!profileData.canton, targetTab: 'basic' })
-    checks.push({ key: 'city', label: 'Ville principale', ok: !!profileData.city, targetTab: 'basic' })
-    checks.push({ key: 'address', label: 'Adresse complète', ok: !!profileData.address, targetTab: 'basic' })
-    checks.push({ key: 'rates', label: 'Au moins un tarif', ok: !!(profileData.prices?.oneHour && profileData.prices.oneHour !== null || profileData.prices?.fifteenMin && profileData.prices.fifteenMin !== null || profileData.prices?.thirtyMin && profileData.prices.thirtyMin !== null || profileData.prices?.twoHours && profileData.prices.twoHours !== null || profileData.prices?.halfDay && profileData.prices.halfDay !== null || profileData.prices?.fullDay && profileData.prices.fullDay !== null || profileData.prices?.overnight && profileData.prices.overnight !== null), targetTab: 'pricing' })
     return checks
-  }, [mandatoryMedia, profileData.stageName, profileData.serviceType, profileData.age, profileData.description, profileData.languages, profileData.canton, profileData.city, profileData.address, profileData.prices])
+  }, [mandatoryMedia, profileData.stageName, profileData.age, profileData.description])
 
   const completionPct = useMemo(() => {
     const total = requiredChecks.length
@@ -647,7 +630,6 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
   const doSave = async (payload: any, silent = false, retryCount = 0): Promise<boolean> => {
     const maxRetries = 3
     console.log('🚀 [DEBUG] doSave appelée avec payload:', payload)
-    console.log('🔍 [DEBUG] agendaEnabled dans doSave:', payload.agendaEnabled)
     try {
       console.log('🌐 [DEBUG] Envoi requête à /api/profile/unified/me')
       const res = await fetch('/api/profile/unified/me', {
@@ -690,7 +672,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
   // Auto-save quand l'agenda change
   useEffect(() => {
     triggerAutoSave()
-  }, [weekly, pauseEnabled, pauseStart, pauseEnd, absences, agendaEnabled])
+  }, [weekly, pauseEnabled, pauseStart, pauseEnd, absences])
 
   const triggerAutoSave = () => {
     if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current)
@@ -764,8 +746,6 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
         }
       }
       payload.timeSlots = scheduleToJson()
-      payload.agendaEnabled = agendaEnabled
-      console.log('🔄 [AUTOSAVE] agendaEnabled ajouté au payload:', agendaEnabled)
 
       // Inclure les médias dans l'autosave
       const galleryMedia = mandatoryMedia.filter(m => m.preview && m.id).map((m, idx) => ({
@@ -793,7 +773,6 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
       const safeMediaCount = galleryMedia.filter(m => m.url && !m.url.startsWith('data:')).length
       console.log('[DASHBOARD] Auto-saving agenda + safe media:', { timeSlots: payload.timeSlots, safeMediaCount })
       console.log('📦 [AUTOSAVE] Payload complet avant doSave:', payload)
-      console.log('🔍 [AUTOSAVE] agendaEnabled dans payload:', payload.agendaEnabled)
       await doSave(payload, true)
     }, 700)
   }
@@ -801,7 +780,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
   useEffect(() => {
     triggerAutoSave()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [profileData.stageName, profileData.age, profileData.description, profileData.address, profileData.coordinates, profileData.city, profileData.canton, profileData.phone, profileData.phoneVisibility, profileData.incall, profileData.outcall, profileData.languages, profileData.serviceType, profileData.specialties, profileData.prices?.fifteenMin, profileData.prices?.thirtyMin, profileData.prices?.oneHour, profileData.prices?.twoHours, profileData.prices?.halfDay, profileData.prices?.fullDay, profileData.prices?.overnight, profileData.height, profileData.bodyType, profileData.breastType, profileData.hairColor, profileData.eyeColor, profileData.ethnicity, profileData.breastSize, profileData.pubicHair, profileData.smoker, profileData.tattoos, profileData.piercings, profileData.acceptsCouples, profileData.acceptsWomen, profileData.acceptsHandicapped, profileData.acceptsSeniors, weekly, pauseEnabled, pauseStart, pauseEnd, absences, agendaEnabled])
+  }, [profileData.stageName, profileData.age, profileData.description, profileData.address, profileData.coordinates, profileData.city, profileData.canton, profileData.phone, profileData.phoneVisibility, profileData.incall, profileData.outcall, profileData.languages, profileData.serviceType, profileData.specialties, profileData.prices?.fifteenMin, profileData.prices?.thirtyMin, profileData.prices?.oneHour, profileData.prices?.twoHours, profileData.prices?.halfDay, profileData.prices?.fullDay, profileData.prices?.overnight, profileData.height, profileData.bodyType, profileData.breastType, profileData.hairColor, profileData.eyeColor, profileData.ethnicity, profileData.breastSize, profileData.pubicHair, profileData.smoker, profileData.tattoos, profileData.piercings, profileData.acceptsCouples, profileData.acceptsWomen, profileData.acceptsHandicapped, profileData.acceptsSeniors, weekly, pauseEnabled, pauseStart, pauseEnd, absences])
 
   const manualSave = async () => {
     try {
@@ -836,7 +815,6 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
       if (profileData.specialties && profileData.specialties.length > 0) payload.specialties = safeStringify(profileData.specialties)
       if (profileData.serviceType && profileData.serviceType.length > 0) payload.category = profileData.serviceType[0]
       payload.timeSlots = scheduleToJson()
-      payload.agendaEnabled = agendaEnabled
       // Physique - Format unifié avec objet physical
       if (profileData.height !== undefined || profileData.bodyType !== undefined || profileData.hairColor !== undefined || 
           profileData.eyeColor !== undefined || profileData.ethnicity !== undefined || profileData.breastSize !== undefined ||
@@ -2009,21 +1987,9 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
         <div className="bg-gray-800/30 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-3 sm:p-6">
           <h3 className="text-lg sm:text-xl font-bold text-white mb-3 sm:mb-4">Agenda</h3>
           <div className="space-y-4 sm:space-y-6">
-            {/* Toggle Agenda */}
-            <div className="bg-gray-700/30 rounded-xl p-3 sm:p-4">
-              <label className="inline-flex items-center gap-3 text-sm sm:text-base text-white/90 cursor-pointer">
-                <input 
-                  type="checkbox" 
-                  checked={agendaEnabled} 
-                  onChange={(e)=> setAgendaEnabled(e.target.checked)} 
-                  className="w-4 h-4 text-purple-500 bg-gray-700 border-gray-600 rounded focus:ring-purple-500"
-                /> 
-                <span className="font-medium">Activer l'agenda</span>
-              </label>
-            </div>
 
             {/* Horaires hebdomadaires */}
-            <div className={`transition-opacity duration-200 ${agendaEnabled ? '' : 'opacity-50'}`}>
+            <div className="transition-opacity duration-200">
               <div className="bg-gray-700/20 rounded-xl p-3 sm:p-4">
                 <h4 className="text-sm sm:text-base text-white/90 font-medium mb-3 sm:mb-4 flex items-center gap-2">
                   📅 Heures de présence
@@ -2042,7 +2008,6 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                             <input 
                               type="checkbox" 
                               checked={slot.enabled} 
-                              disabled={!agendaEnabled} 
                               onChange={(e)=> setWeekly(prev => ({ ...prev, [day]: { ...slot, enabled: e.target.checked } }))} 
                               className="w-4 h-4 text-purple-500 bg-gray-700 border-gray-600 rounded focus:ring-purple-500"
                             /> 
@@ -2056,7 +2021,6 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                               <input 
                                 type="time" 
                                 value={slot.start} 
-                                disabled={!agendaEnabled} 
                                 onChange={(e)=> setWeekly(prev => ({ ...prev, [day]: { ...slot, start: e.target.value } }))} 
                                 className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                               />
@@ -2066,7 +2030,6 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                               <input 
                                 type="time" 
                                 value={slot.end} 
-                                disabled={!agendaEnabled} 
                                 onChange={(e)=> setWeekly(prev => ({ ...prev, [day]: { ...slot, end: e.target.value } }))} 
                                 className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                               />
@@ -2082,7 +2045,6 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                           <input 
                             type="checkbox" 
                             checked={slot.enabled} 
-                            disabled={!agendaEnabled} 
                             onChange={(e)=> setWeekly(prev => ({ ...prev, [day]: { ...slot, enabled: e.target.checked } }))} 
                             className="w-4 h-4 text-purple-500 bg-gray-700 border-gray-600 rounded focus:ring-purple-500"
                           /> 
@@ -2091,7 +2053,6 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                         <input 
                           type="time" 
                           value={slot.start} 
-                          disabled={!agendaEnabled} 
                           onChange={(e)=> setWeekly(prev => ({ ...prev, [day]: { ...slot, start: e.target.value } }))} 
                           className="px-3 py-1 rounded bg-white/5 border border-white/10 text-white text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                         />
@@ -2099,7 +2060,6 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                         <input 
                           type="time" 
                           value={slot.end} 
-                          disabled={!agendaEnabled} 
                           onChange={(e)=> setWeekly(prev => ({ ...prev, [day]: { ...slot, end: e.target.value } }))} 
                           className="px-3 py-1 rounded bg-white/5 border border-white/10 text-white text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                         />
@@ -2111,13 +2071,12 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
             </div>
 
             {/* Pause du compte */}
-            <div className={`transition-opacity duration-200 ${agendaEnabled ? '' : 'opacity-50'}`}>
+            <div className="transition-opacity duration-200">
               <div className="bg-gray-700/20 rounded-xl p-3 sm:p-4">
                 <label className="inline-flex items-center gap-3 text-sm sm:text-base text-white/90 cursor-pointer mb-3">
                   <input 
                     type="checkbox" 
                     checked={pauseEnabled} 
-                    disabled={!agendaEnabled} 
                     onChange={(e)=> setPauseEnabled(e.target.checked)} 
                     className="w-4 h-4 text-purple-500 bg-gray-700 border-gray-600 rounded focus:ring-purple-500"
                   /> 
@@ -2131,7 +2090,6 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                       <input 
                         type="datetime-local" 
                         value={pauseStart} 
-                        disabled={!agendaEnabled} 
                         onChange={(e)=> setPauseStart(e.target.value)} 
                         className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                       />
@@ -2141,7 +2099,6 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                       <input 
                         type="datetime-local" 
                         value={pauseEnd} 
-                        disabled={!agendaEnabled} 
                         onChange={(e)=> setPauseEnd(e.target.value)} 
                         className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                       />
@@ -2152,16 +2109,15 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
             </div>
 
             {/* Absences exceptionnelles */}
-            <div className={`transition-opacity duration-200 ${agendaEnabled ? '' : 'opacity-50'}`}>
+            <div className="transition-opacity duration-200">
               <div className="bg-gray-700/20 rounded-xl p-3 sm:p-4">
                 <div className="flex items-center justify-between mb-3 sm:mb-4">
                   <h4 className="text-sm sm:text-base text-white/90 font-medium flex items-center gap-2">
                     🚫 Absences exceptionnelles
                   </h4>
                   <button 
-                    disabled={!agendaEnabled} 
                     onClick={()=> setAbsences(prev => [...prev, { id: Math.random().toString(36).slice(2), start: new Date().toISOString().slice(0,10), end: new Date().toISOString().slice(0,10) }])} 
-                    className={`px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${agendaEnabled ? 'bg-purple-500/20 hover:bg-purple-500/30 text-purple-200 border-purple-500/30' : 'bg-white/5 text-white/40 border-white/10 cursor-not-allowed'}`}
+                    className="px-3 py-2 rounded-lg border text-sm font-medium transition-colors bg-purple-500/20 hover:bg-purple-500/30 text-purple-200 border-purple-500/30"
                   >
                     + Ajouter
                   </button>
@@ -2177,7 +2133,6 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                             <input 
                               type="date" 
                               value={a.start} 
-                              disabled={!agendaEnabled} 
                               onChange={(e)=> setAbsences(prev => prev.map(x => x.id===a.id ? { ...x, start: e.target.value } : x))} 
                               className="w-full px-3 py-2 rounded bg-white/5 border border-white/10 text-white text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                             />
@@ -2188,16 +2143,14 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                             <input 
                               type="date" 
                               value={a.end} 
-                              disabled={!agendaEnabled} 
                               onChange={(e)=> setAbsences(prev => prev.map(x => x.id===a.id ? { ...x, end: e.target.value } : x))} 
                               className="w-full px-3 py-2 rounded bg-white/5 border border-white/10 text-white text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                             />
                           </div>
                         </div>
                         <button 
-                          disabled={!agendaEnabled} 
                           onClick={()=> setAbsences(prev => prev.filter(x => x.id!==a.id))} 
-                          className={`p-2 rounded-lg transition-colors ${agendaEnabled ? 'text-red-400 hover:text-red-300 hover:bg-red-500/10' : 'text-white/40 cursor-not-allowed'}`}
+                          className="p-2 rounded-lg transition-colors text-red-400 hover:text-red-300 hover:bg-red-500/10"
                         >
                           <X size={16}/>
                         </button>

@@ -133,7 +133,7 @@ export async function GET(
           ageVerified: true,
 
           // Agenda/Disponibilité
-          agendaEnabled: false,
+          agendaEnabled: true,
 
           // Verification et badges
           isVerifiedBadge: true,
@@ -334,21 +334,14 @@ export async function POST(
 
     console.log('🔄 [API UNIFIED POST] Called with ID:', id)
     console.log('🔄 [API UNIFIED POST] Session found:', !!session)
-    console.log('🔄 [API UNIFIED POST] Session user ID:', session?.user?.id)
-    console.log('🔄 [API UNIFIED POST] ID === "me":', id === 'me')
-    console.log('🔄 [API UNIFIED POST] ID === session.user.id:', id === session?.user?.id)
 
     // Seul le mode dashboard permet la sauvegarde
-    // Autoriser si id === 'me' OU si l'utilisateur connecté modifie son propre profil
-    if (id !== 'me' && id !== session?.user?.id) {
-      console.log('🔄 [API UNIFIED POST] Access denied: ID is neither "me" nor user ID')
+    if (id !== 'me') {
       return NextResponse.json({
         error: 'forbidden',
         message: 'Seul le mode dashboard permet la sauvegarde'
       }, { status: 403 })
     }
-    
-    console.log('🔄 [API UNIFIED POST] Access granted, continuing...')
 
     if (!session?.user?.id) {
       return NextResponse.json({
@@ -624,11 +617,6 @@ function transformUpdateData(body: any): Record<string, any> {
   if (body.originDetails !== undefined) data.originDetails = body.originDetails
   if (body.rateStructure !== undefined) data.rateStructure = body.rateStructure
   if (body.ageVerified !== undefined) data.ageVerified = body.ageVerified
-  if (body.agendaEnabled !== undefined) {
-    console.log('🔄 [API UNIFIED] agendaEnabled reçu:', body.agendaEnabled, 'type:', typeof body.agendaEnabled)
-    data.agendaEnabled = body.agendaEnabled
-    console.log('🔄 [API UNIFIED] agendaEnabled ajouté à data:', data.agendaEnabled)
-  }
   if (body.minimumDuration !== undefined) data.minimumDuration = body.minimumDuration
 
   return data
@@ -943,11 +931,11 @@ function transformProfileData(rawProfile: any, mode: 'dashboard' | 'public') {
       incall: !!rawProfile.incall,
       availableNow: !!rawProfile.availableNow,
       weekendAvailable: !!rawProfile.weekendAvailable,
-      agendaEnabled: rawProfile.agendaEnabled !== undefined ? !!rawProfile.agendaEnabled : false // Par défaut false
+      agendaEnabled: rawProfile.agendaEnabled !== undefined ? !!rawProfile.agendaEnabled : true // Par défaut true
     },
     
     // Agenda activé (pour compatibilité avec l'API publique)
-    agendaEnabled: rawProfile.agendaEnabled !== undefined ? !!rawProfile.agendaEnabled : false,
+    agendaEnabled: rawProfile.agendaEnabled !== undefined ? !!rawProfile.agendaEnabled : true,
 
     // Clientèle
     clientele: {

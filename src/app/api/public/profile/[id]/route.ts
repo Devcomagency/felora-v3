@@ -71,7 +71,7 @@ export async function GET(
         acceptsSeniors: true,
         acceptsWomen: true,
         // Agenda
-        agendaEnabled: false,
+        agendaEnabled: true,
         // Stats (à implémenter plus tard)
         // likes: true,
         // views: true,
@@ -349,15 +349,13 @@ export async function GET(
       })(),
       // Données agenda brutes pour la modal horaires
       scheduleData: normalizedSchedule,
-      agendaEnabled: !!escort.agendaEnabled,
+      agendaEnabled: true,
       age,
       updatedAt: escort.updatedAt
     }
 
     console.log('🚨🚨🚨 [API PUBLIC PROFILE] RETURNING realTimeAvailability:', profile.realTimeAvailability)
     console.log('🚨🚨🚨 [API PUBLIC PROFILE] RETURNING scheduleData:', profile.scheduleData)
-    console.log('🚨🚨🚨 [API PUBLIC PROFILE] escort.agendaEnabled from DB:', escort.agendaEnabled, 'type:', typeof escort.agendaEnabled)
-    console.log('🚨🚨🚨 [API PUBLIC PROFILE] profile.agendaEnabled:', profile.agendaEnabled, 'type:', typeof profile.agendaEnabled)
 
     return NextResponse.json(profile)
 

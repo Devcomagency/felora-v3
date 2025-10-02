@@ -92,7 +92,6 @@ interface EscortProfile {
     phoneDisplayType: string
     phone?: string
   }
-  agendaEnabled?: boolean
 }
 
 // Loading skeleton
@@ -255,7 +254,7 @@ export default function EscortProfilePage() {
           realTimeAvailability: data.realTimeAvailability,
           scheduleData: data.scheduleData,
           // Agenda activé
-          agendaEnabled: data.agendaEnabled,
+          agendaEnabled: true,
           // Contact intelligent - fetch séparé
           contact: undefined
         }
@@ -605,7 +604,6 @@ export default function EscortProfilePage() {
   if (error || !profile) return <ErrorFallback />
 
   // Debug log
-  console.log('🔍 [PROFILE PAGE] profile.agendaEnabled:', profile.agendaEnabled, 'type:', typeof profile.agendaEnabled)
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -673,7 +671,7 @@ export default function EscortProfilePage() {
                 scheduleData={profile.scheduleData}
                 description={profile.description}
                 mediaCount={Array.isArray(feedMedia) ? feedMedia.length : 0}
-                agendaEnabled={profile.agendaEnabled}
+                agendaEnabled={true}
               />
 
               <ActionsBar

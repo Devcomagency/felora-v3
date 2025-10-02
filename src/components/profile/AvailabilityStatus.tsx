@@ -60,11 +60,10 @@ export function AvailabilityBadge({ status, className = '' }: { status: Availabi
 /**
  * Version détaillée pour la modal "Voir plus"
  */
-export function AvailabilityDetailed({ status, className = '', scheduleData, agendaEnabled = false }: {
+export function AvailabilityDetailed({ status, className = '', scheduleData }: {
   status: AvailabilityStatusType;
   className?: string;
   scheduleData?: ScheduleData | null;
-  agendaEnabled?: boolean;
 }) {
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false)
   const display = formatAvailabilityDisplay(status)
@@ -72,13 +71,6 @@ export function AvailabilityDetailed({ status, className = '', scheduleData, age
   // Debug logs
   console.log('[AvailabilityDetailed] Status:', status)
   console.log('[AvailabilityDetailed] ScheduleData:', scheduleData)
-  console.log('[AvailabilityDetailed] agendaEnabled:', agendaEnabled)
-
-  // Ne pas afficher si l'agenda n'est pas activé
-  if (!agendaEnabled) {
-    console.log('[AvailabilityDetailed] Agenda not enabled, hiding component')
-    return null
-  }
 
   return (
     <>

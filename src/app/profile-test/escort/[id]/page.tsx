@@ -930,11 +930,7 @@ export default function EscortProfileTestPage() {
 
                 {/* Disponibilité - Plus compact - Affiche seulement si agenda activé */}
                 {(() => {
-                  console.log('🔍 [PAGE] profile.agendaEnabled:', profile.agendaEnabled)
-                  console.log('🔍 [PAGE] profile keys:', Object.keys(profile))
-                  console.log('🔍 [PAGE] strict equality check:', profile.agendaEnabled === true)
-                  console.log('🔍 [PAGE] truthy check:', !!profile.agendaEnabled)
-                  return profile.agendaEnabled === true
+                  return true
                 })() && (
                   <div>
                     <div className="flex items-center gap-2 mb-2">

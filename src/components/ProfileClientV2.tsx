@@ -71,7 +71,6 @@ function ProfileHeader({
   stats,
   availability,
   description,
-  agendaEnabled = false
 }: {
   name: string
   city?: string
@@ -83,7 +82,6 @@ function ProfileHeader({
   stats?: { likes?: number; followers?: number; views?: number }
   availability?: { available?: boolean; incall?: boolean; outcall?: boolean }
   description?: string
-  agendaEnabled?: boolean
 }) {
   return (
     <div className="px-4 pt-4 pb-6">
@@ -160,12 +158,7 @@ function ProfileHeader({
           {/* Disponibilité - Affiche seulement si agenda activé */}
           {(() => {
             console.log('🔍 [ProfileClientV2] Debug disponibilité:')
-            console.log('  - agendaEnabled:', agendaEnabled, 'type:', typeof agendaEnabled)
-            console.log('  - availability:', availability)
-            console.log('  - agendaEnabled && availability:', agendaEnabled && availability)
-            console.log('  - strict equality agendaEnabled === true:', agendaEnabled === true)
-            console.log('  - truthy agendaEnabled:', !!agendaEnabled)
-            return agendaEnabled && availability
+            return availability
           })() && (
             <div className="flex items-center gap-3">
               <div className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
