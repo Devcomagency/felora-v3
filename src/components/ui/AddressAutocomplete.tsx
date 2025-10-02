@@ -257,6 +257,9 @@ export default function AddressAutocomplete({
         if (data.coordinates && data.coordinates.lat && data.coordinates.lng) {
           console.log('✅ [DASHBOARD] Géocodage réussi:', data.coordinates)
           
+          // 🎯 METTRE À JOUR LES COORDONNÉES DANS LE PROFIL
+          onCoordinatesChange?.(data.coordinates)
+          
           // Émettre l'événement avec les coordonnées trouvées
           const mapUpdateEvent = new CustomEvent('addressChanged', {
             detail: {
