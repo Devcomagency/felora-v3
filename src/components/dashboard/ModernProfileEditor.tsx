@@ -1451,21 +1451,33 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                     />
                   )}
                   
-                  {!profileData.address || !profileData.coordinates ? (
-                    <div className="mt-2 text-[11px] text-red-400">Adresse et coordonnées GPS requis</div>
-                  ) : (
+                  {/* 🎯 PRÉVISUALISATION AUTOMATIQUE - S'AFFICHE DÈS QU'ON A ADRESSE + COORDONNÉES */}
+                  {profileData.address && profileData.coordinates ? (
                     <div className="mt-4 space-y-3">
                       {/* Coordonnées GPS */}
                       <div className="text-xs text-green-400">
                         📍 Coordonnées GPS: {profileData.coordinates.lat.toFixed(6)}, {profileData.coordinates.lng.toFixed(6)}
                       </div>
                       
-                      {/* Mini-carte de prévisualisation */}
+                      {/* Mini-carte de prévisualisation - TOUJOURS VISIBLE */}
                       <LocationPreviewMap
                         coordinates={profileData.coordinates}
                         address={profileData.address}
                         privacy={profileData.addressPrivacy}
                       />
+                    </div>
+                  ) : profileData.address ? (
+                    <div className="mt-4 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 border-2 border-yellow-500/30 border-t-yellow-500 rounded-full animate-spin"></div>
+                        <span className="text-xs text-yellow-400">
+                          Recherche des coordonnées GPS...
+                        </span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="mt-2 text-[11px] text-red-400">
+                      Adresse et coordonnées GPS requis
                     </div>
                   )}
 

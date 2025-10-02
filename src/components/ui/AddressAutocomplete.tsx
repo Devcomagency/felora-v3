@@ -184,7 +184,24 @@ export default function AddressAutocomplete({
   }
 
   const handleSelectAddress = (address: SwissAddress) => {
-    const coordinates = { lat: address.latitude, lng: address.longitude }
+    // 🎯 S'assurer qu'on a toujours des coordonnées valides
+    const coordinates = { 
+      lat: address.latitude || 0, 
+      lng: address.longitude || 0 
+    }
+    
+    // Si les coordonnées sont invalides, essayer de géocoder l'adresse
+    if (coordinates.lat === 0 && coordinates.lng === 0) {
+      console.warn('⚠️ Coordonnées manquantes pour:', address.address)
+      // Fallback: utiliser les coordonnées de la ville si disponible
+      const cityCoords = getCityCoordinatesFromAddress(address.address)
+      if (cityCoords) {
+        coordinates.lat = cityCoords.lat
+        coordinates.lng = cityCoords.lng
+        console.log('📍 Utilisation coordonnées de ville:', cityCoords)
+      }
+    }
+    
     onChange(address.address, coordinates)
     onCoordinatesChange?.(coordinates)
     onAddressSelect?.(address)
@@ -232,6 +249,36 @@ export default function AddressAutocomplete({
     const match = address.match(/\(([A-Z]{2})\)/)
     if (match) {
       return match[1]
+    }
+    
+    return null
+  }
+
+  const getCityCoordinatesFromAddress = (address: string): { lat: number; lng: number } | null => {
+    const cityCoords: Record<string, { lat: number; lng: number }> = {
+      'onex': { lat: 46.1854, lng: 6.0995 },
+      'genève': { lat: 46.2044, lng: 6.1432 },
+      'geneva': { lat: 46.2044, lng: 6.1432 },
+      'lausanne': { lat: 46.5197, lng: 6.6323 },
+      'zurich': { lat: 47.3769, lng: 8.5417 },
+      'zürich': { lat: 47.3769, lng: 8.5417 },
+      'berne': { lat: 46.9481, lng: 7.4474 },
+      'bern': { lat: 46.9481, lng: 7.4474 },
+      'bâle': { lat: 47.5596, lng: 7.5886 },
+      'basel': { lat: 47.5596, lng: 7.5886 },
+      'lucerne': { lat: 47.0502, lng: 8.3093 },
+      'luzern': { lat: 47.0502, lng: 8.3093 },
+      'lugano': { lat: 46.0037, lng: 8.9511 },
+      'sion': { lat: 46.2294, lng: 7.3594 },
+      'fribourg': { lat: 46.8061, lng: 7.1612 },
+      'neuchâtel': { lat: 46.9924, lng: 6.9319 }
+    }
+    
+    const addressLower = address.toLowerCase()
+    for (const [city, coords] of Object.entries(cityCoords)) {
+      if (addressLower.includes(city)) {
+        return coords
+      }
     }
     
     return null
