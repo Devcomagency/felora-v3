@@ -430,8 +430,8 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
 
 
   const tabs = [
-    { key: 'media', label: 'Médias', icon: Image, description: 'Photos et vidéos' },
-    { key: 'basic', label: 'Informations de base', icon: User, description: 'Profil général' },
+    { key: 'media', label: 'Médias', icon: Image, description: 'Photos et vidéos (obligatoire)' },
+    { key: 'basic', label: 'Informations de base', icon: User, description: 'Profil général (obligatoire)' },
     { key: 'appearance', label: 'Apparence physique', icon: Eye, description: 'Caractéristiques physiques' },
     { key: 'services', label: 'Clientèle & Services', icon: Heart, description: 'Groupes + tags' },
     { key: 'pricing', label: 'Tarifs & Paiements', icon: Clock, description: 'Prix et horaires' },
@@ -1008,7 +1008,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
       <div className="bg-gray-800/30 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6">
         {activeTab === 'media' && (
           <div>
-            <h3 className="text-xl font-bold text-white">Médias obligatoires</h3>
+            <h3 className="text-xl font-bold text-white">Médias (6 requis)</h3>
             <div className="text-xs text-orange-300 mt-1">⚠️ 6 médias requis pour activer le profil</div>
             <div className="text-xs text-purple-300 mb-5">Astuce : les profils avec vidéo sont 3× plus vus.</div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
@@ -1201,7 +1201,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
 
         {activeTab === 'basic' && (
           <div>
-            <h3 className="text-xl font-bold text-white mb-6">Informations de base</h3>
+            <h3 className="text-xl font-bold text-white mb-6">Informations de base (obligatoire)</h3>
             <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
