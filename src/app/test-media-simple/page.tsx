@@ -11,8 +11,8 @@ import {
   User
 } from 'lucide-react'
 
-// Lazy loading du composant caméra pour de meilleures performances
-const CameraScreenTest = dynamic(() => import('@/components/camera/CameraScreenTest'), {
+// Lazy loading du composant caméra PRO (capture native + webapp)
+const CameraCapturePro = dynamic(() => import('@/components/camera/CameraCapturePro'), {
   loading: () => (
     <div className="fixed inset-0 bg-black flex items-center justify-center z-50">
       <div className="text-white text-center">
@@ -384,9 +384,10 @@ export default function TestMediaSimplePage() {
             </div>
           )}
 
-      {/* Écran caméra avec lazy loading */}
+      {/* Écran caméra PRO avec capture native + webapp */}
       {showCamera && (
-        <CameraScreenTest
+        <CameraCapturePro
+          mode="video"
           onClose={() => setShowCamera(false)}
           onCapture={handleVideoCapture}
         />
