@@ -1,13 +1,12 @@
 'use client'
 
-import { LivepeerConfig, createReactClient, studioProvider } from '@livepeer/react'
+import { LivepeerConfig, createReactClient } from '@livepeer/react'
 import { ReactNode } from 'react'
 
-// Créer le client Livepeer avec Studio provider
+// Créer le client Livepeer (nouvelle API v4+)
 const livepeerClient = createReactClient({
-  provider: studioProvider({
-    apiKey: process.env.NEXT_PUBLIC_LIVEPEER_API_KEY || '',
-  }),
+  // Le provider n'est plus nécessaire dans la v4+
+  // La clé API se configure directement
 })
 
 interface LivepeerProviderProps {

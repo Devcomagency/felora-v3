@@ -204,10 +204,15 @@ export default function MapTest() {
   // 🎯 RÉCUPÉRER LE PROFIL ESCORT CONNECTÉ
   useEffect(() => {
     const fetchCurrentUserProfile = async () => {
+      console.log('🔍 [CARTE] Tentative de récupération du profil escort...')
       try {
         const response = await fetch('/api/me/escort-profile')
+        console.log('🔍 [CARTE] Réponse API:', response.status, response.ok)
+        
         if (response.ok) {
           const profile = await response.json()
+          console.log('🔍 [CARTE] Données profil reçues:', profile)
+          
           if (profile && profile.latitude && profile.longitude) {
             const escortData: EscortData = {
               id: profile.id,
@@ -221,11 +226,15 @@ export default function MapTest() {
               isActive: profile.status === 'ACTIVE'
             }
             setCurrentUserProfile(escortData)
-            console.log('👤 Profil escort connecté chargé:', escortData)
+            console.log('✅ [CARTE] Profil escort connecté chargé:', escortData)
+          } else {
+            console.log('⚠️ [CARTE] Profil sans coordonnées:', profile)
           }
+        } else {
+          console.log('❌ [CARTE] Erreur API profil:', response.status, response.statusText)
         }
       } catch (error) {
-        console.log('ℹ️ Pas de profil escort connecté ou erreur:', error)
+        console.log('❌ [CARTE] Erreur récupération profil:', error)
       }
     }
     
@@ -235,38 +244,54 @@ export default function MapTest() {
   // 🎯 ÉCOUTER LES ÉVÉNEMENTS D'ADRESSE CHANGÉE POUR SYNCHRONISER LA CARTE
   useEffect(() => {
     const handleAddressChanged = (event: any) => {
+      console.log('📡 [CARTE] Événement addressChanged reçu:', event.detail)
       const { coordinates, address } = event.detail
+      
       if (coordinates && coordinates.lat && coordinates.lng) {
-        console.log('🗺️ Mise à jour de la carte depuis le dashboard:', coordinates)
+        console.log('🗺️ [CARTE] Mise à jour de la carte depuis le dashboard:', coordinates)
         
         // Mettre à jour la vue de la carte
-        setViewState(prev => ({
-          ...prev,
-          latitude: coordinates.lat,
-          longitude: coordinates.lng,
-          zoom: Math.max(prev.zoom, 15) // Zoom plus proche pour une adresse spécifique
-        }))
+        setViewState(prev => {
+          const newViewState = {
+            ...prev,
+            latitude: coordinates.lat,
+            longitude: coordinates.lng,
+            zoom: Math.max(prev.zoom, 15) // Zoom plus proche pour une adresse spécifique
+          }
+          console.log('🗺️ [CARTE] Nouveau viewState:', newViewState)
+          return newViewState
+        })
         
         // 🎯 METTRE À JOUR LE PROFIL ESCORT CONNECTÉ
         if (currentUserProfile) {
-          setCurrentUserProfile(prev => prev ? {
-            ...prev,
-            lat: coordinates.lat,
-            lng: coordinates.lng
-          } : null)
-          console.log('👤 Profil escort mis à jour avec nouvelles coordonnées:', coordinates)
+          setCurrentUserProfile(prev => {
+            const updatedProfile = prev ? {
+              ...prev,
+              lat: coordinates.lat,
+              lng: coordinates.lng
+            } : null
+            console.log('👤 [CARTE] Profil escort mis à jour:', updatedProfile)
+            return updatedProfile
+          })
+        } else {
+          console.log('⚠️ [CARTE] Pas de profil escort connecté à mettre à jour')
         }
         
         // Mettre à jour l'URL pour refléter la nouvelle position
         const newCenter = `${coordinates.lat},${coordinates.lng}`
         const newUrl = `/map?center=${newCenter}&zoom=15`
+        console.log('🔗 [CARTE] Mise à jour URL:', newUrl)
         router.push(newUrl, { scroll: false })
+      } else {
+        console.log('⚠️ [CARTE] Coordonnées invalides dans l\'événement:', coordinates)
       }
     }
 
+    console.log('🎧 [CARTE] Ajout du listener addressChanged')
     window.addEventListener('addressChanged', handleAddressChanged)
     
     return () => {
+      console.log('🎧 [CARTE] Suppression du listener addressChanged')
       window.removeEventListener('addressChanged', handleAddressChanged)
     }
   }, [router, currentUserProfile])

@@ -5,7 +5,7 @@ import { SessionProvider } from 'next-auth/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AuthProvider } from '../contexts/AuthContext'
 import { NotificationProvider } from '@/components/providers/NotificationProvider'
-import LivepeerProvider from '@/components/providers/LivepeerProvider'
+// import LivepeerProvider from '@/components/providers/LivepeerProvider' // Désactivé temporairement
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => new QueryClient({
@@ -20,13 +20,11 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   return (
     <SessionProvider>
       <QueryClientProvider client={queryClient}>
-        <LivepeerProvider>
-          <AuthProvider>
-            <NotificationProvider>
-              {children}
-            </NotificationProvider>
-          </AuthProvider>
-        </LivepeerProvider>
+        <AuthProvider>
+          <NotificationProvider>
+            {children}
+          </NotificationProvider>
+        </AuthProvider>
       </QueryClientProvider>
     </SessionProvider>
   )

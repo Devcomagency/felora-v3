@@ -221,6 +221,7 @@ export default function AddressAutocomplete({
         canton: extractCantonFromAddress(address.address)
       }
     })
+    console.log('📤 [DASHBOARD] Émission événement addressChanged:', mapUpdateEvent.detail)
     window.dispatchEvent(mapUpdateEvent)
   }
 
@@ -380,6 +381,7 @@ export default function AddressAutocomplete({
                 canton: extractCantonFromAddress(data.address)
               }
             })
+            console.log('📤 [DASHBOARD] Émission événement addressChanged (géolocalisation):', mapUpdateEvent.detail)
             window.dispatchEvent(mapUpdateEvent)
           } else {
             // Fallback si pas d'adresse trouvée
