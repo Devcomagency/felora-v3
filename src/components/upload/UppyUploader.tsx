@@ -19,6 +19,7 @@ export default function UppyUploader({
   endpoint = '/api/upload/tus'
 }: UppyUploaderProps) {
   const uppyRef = useRef<Uppy | null>(null)
+  const dashboardRef = useRef<Dashboard | null>(null)
 
   useEffect(() => {
     // Créer l'instance Uppy
@@ -28,28 +29,7 @@ export default function UppyUploader({
         allowedFileTypes,
         maxNumberOfFiles: 10
       },
-      autoProceed: false,
-      locale: {
-        strings: {
-          dropPasteFiles: 'Glissez vos fichiers ici ou %{browse}',
-          browse: 'parcourir',
-          uploadComplete: 'Upload terminé!',
-          uploadFailed: 'Échec de l\'upload',
-          uploadPaused: 'Upload en pause',
-          resumeUpload: 'Reprendre',
-          pauseUpload: 'Pause',
-          retryUpload: 'Réessayer',
-          cancelUpload: 'Annuler',
-          xFilesSelected: {
-            0: '%{smart_count} fichier sélectionné',
-            1: '%{smart_count} fichiers sélectionnés'
-          },
-          uploadingXFiles: {
-            0: 'Upload de %{smart_count} fichier',
-            1: 'Upload de %{smart_count} fichiers'
-          }
-        }
-      }
+      autoProceed: false
     })
 
     // Ajouter le plugin tus pour upload robuste
@@ -66,14 +46,16 @@ export default function UppyUploader({
     // Events
     uppy.on('complete', (result) => {
       console.log('✅ Upload complet:', result)
-      if (onComplete) {
+      if (onComplete && result.successful) {
         onComplete(result.successful)
       }
     })
 
     uppy.on('upload-progress', (file, progress) => {
-      const percentage = Math.round((progress.bytesUploaded / progress.bytesTotal) * 100)
-      console.log(`📊 ${file?.name}: ${percentage}%`)
+      if (progress.bytesTotal) {
+        const percentage = Math.round((progress.bytesUploaded / progress.bytesTotal) * 100)
+        console.log(`📊 ${file?.name}: ${percentage}%`)
+      }
     })
 
     uppy.on('upload-error', (file, error) => {
@@ -83,12 +65,17 @@ export default function UppyUploader({
     uppyRef.current = uppy
 
     return () => {
-      uppy.close()
+      if (dashboardRef.current) {
+        // @ts-ignore - Dashboard cleanup
+        dashboardRef.current.uninstall?.()
+      }
+      // @ts-ignore - Uppy close method
+      uppy.close?.()
     }
   }, [maxFileSize, allowedFileTypes, endpoint, onComplete])
 
   useEffect(() => {
-    if (uppyRef.current) {
+    if (uppyRef.current && !dashboardRef.current) {
       const dashboard = new Dashboard(uppyRef.current, {
         target: '#uppy-dashboard',
         inline: true,
@@ -97,6 +84,7 @@ export default function UppyUploader({
         height: 450,
         note: 'Vidéos et images uniquement, max 500MB par fichier'
       })
+      dashboardRef.current = dashboard
     }
   }, [uppyRef.current])
 

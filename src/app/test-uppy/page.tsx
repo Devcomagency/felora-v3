@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import UppyUploader from '@/components/upload/UppyUploader'
+import SimpleUploader from '@/components/upload/SimpleUploader'
 import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 
@@ -10,7 +10,7 @@ export default function TestUppyPage() {
 
   const handleComplete = (files: any[]) => {
     console.log('✅ Fichiers uploadés:', files)
-    setUploadedFiles(files)
+    setUploadedFiles(prev => [...prev, ...files])
   }
 
   return (
@@ -33,9 +33,9 @@ export default function TestUppyPage() {
         </p>
       </div>
 
-      {/* Uppy Dashboard */}
+      {/* Simple Uploader */}
       <div className="max-w-4xl mx-auto mb-8">
-        <UppyUploader
+        <SimpleUploader
           onComplete={handleComplete}
           maxFileSize={500 * 1024 * 1024}
           allowedFileTypes={['video/*', 'image/*']}
