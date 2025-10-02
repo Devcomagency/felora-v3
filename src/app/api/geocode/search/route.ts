@@ -1,17 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url)
-  const query = searchParams.get('q')
-  const limit = parseInt(searchParams.get('limit') || '10')
-  const region = searchParams.get('region')
-  const city = searchParams.get('city')
-
-  if (!query || query.length < 1) {
-    return NextResponse.json({ hits: [] })
-  }
-
   try {
+    const { searchParams } = new URL(req.url)
+    const query = searchParams.get('q')
+    const limit = parseInt(searchParams.get('limit') || '10')
+    const region = searchParams.get('region')
+    const city = searchParams.get('city')
+
+    if (!query || query.length < 1) {
+      return NextResponse.json({ hits: [] })
+    }
+
     // 🚀 SOLUTION PREMIUM : Recherche intelligente multi-sources
     
     // 1. Recherche avec contexte (ville + canton)
@@ -44,9 +44,8 @@ export async function GET(req: NextRequest) {
   } catch (error) {
     console.error('Erreur recherche géocodage premium:', error)
     
-    // Fallback intelligent
-    const fallbackResults = getIntelligentFallback(query, city, region)
-    return NextResponse.json({ hits: fallbackResults.slice(0, limit) })
+    // Fallback simple
+    return NextResponse.json({ hits: [] })
   }
 }
 

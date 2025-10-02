@@ -3,11 +3,7 @@
 import { useEffect, useRef } from 'react'
 import Uppy from '@uppy/core'
 import Tus from '@uppy/tus'
-import { Dashboard } from '@uppy/react'
-
-// Styles Uppy
-import '@uppy/core/dist/style.min.css'
-import '@uppy/dashboard/dist/style.min.css'
+import Dashboard from '@uppy/dashboard'
 
 interface UppyUploaderProps {
   onComplete?: (files: any[]) => void
@@ -91,23 +87,22 @@ export default function UppyUploader({
     }
   }, [maxFileSize, allowedFileTypes, endpoint, onComplete])
 
+  useEffect(() => {
+    if (uppyRef.current) {
+      const dashboard = new Dashboard(uppyRef.current, {
+        target: '#uppy-dashboard',
+        inline: true,
+        proudlyDisplayPoweredByUppy: false,
+        theme: 'dark',
+        height: 450,
+        note: 'Vidéos et images uniquement, max 500MB par fichier'
+      })
+    }
+  }, [uppyRef.current])
+
   return (
     <div className="uppy-wrapper">
-      {uppyRef.current && (
-        <Dashboard
-          uppy={uppyRef.current}
-          proudlyDisplayPoweredByUppy={false}
-          theme="dark"
-          height={450}
-          note="Vidéos et images uniquement, max 500MB par fichier"
-          locale={{
-            strings: {
-              dropPasteFiles: '📹 Glissez vos vidéos/photos ici ou %{browse}',
-              browse: 'cliquez pour parcourir'
-            }
-          }}
-        />
-      )}
+      <div id="uppy-dashboard"></div>
 
       <style jsx global>{`
         .uppy-Dashboard {
