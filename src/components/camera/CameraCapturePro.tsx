@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useRef } from 'react'
-import { Camera, Video, Upload, X } from 'lucide-react'
+import { useState, useRef, useEffect } from 'react'
+import { Camera, Video, Upload, X, Smartphone } from 'lucide-react'
 
 interface CameraProProps {
   onCapture?: (file: File) => void
@@ -11,7 +11,23 @@ interface CameraProProps {
 
 export default function CameraCapturePro({ onCapture, onClose, mode = 'video' }: CameraProProps) {
   const [captureMethod, setCaptureMethod] = useState<'native' | 'webapp' | null>(null)
+  const [isMobile, setIsMobile] = useState(false)
   const nativeInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    // Détecter si on est sur mobile
+    const checkMobile = () => {
+      const ua = navigator.userAgent.toLowerCase()
+      const mobile = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(ua)
+      setIsMobile(mobile)
+
+      // Si mobile, proposer directement la caméra native
+      if (mobile) {
+        console.log('📱 Mobile détecté, proposition caméra native')
+      }
+    }
+    checkMobile()
+  }, [])
 
   // Méthode 1 : Capture Native (meilleure qualité)
   const handleNativeCapture = () => {
@@ -71,12 +87,23 @@ export default function CameraCapturePro({ onCapture, onClose, mode = 'video' }:
                 </span>
               </div>
               <p className="text-sm text-gray-400">
-                Utilise l'app Caméra de votre téléphone. Meilleure qualité (4K, HDR, stabilisation).
+                {isMobile
+                  ? "Ouvre l'app Caméra de votre téléphone. Meilleure qualité (4K, HDR, stabilisation)."
+                  : "Sur mobile : ouvre l'app Caméra. Sur desktop : permet de sélectionner un fichier."
+                }
               </p>
               <div className="mt-2 flex flex-wrap gap-2">
-                <span className="text-xs px-2 py-1 rounded-full bg-white/5 text-white/70">4K/8K</span>
-                <span className="text-xs px-2 py-1 rounded-full bg-white/5 text-white/70">HDR</span>
-                <span className="text-xs px-2 py-1 rounded-full bg-white/5 text-white/70">Stabilisation</span>
+                {isMobile ? (
+                  <>
+                    <span className="text-xs px-2 py-1 rounded-full bg-white/5 text-white/70 flex items-center gap-1">
+                      <Smartphone size={12} /> Mobile
+                    </span>
+                    <span className="text-xs px-2 py-1 rounded-full bg-white/5 text-white/70">4K/8K</span>
+                    <span className="text-xs px-2 py-1 rounded-full bg-white/5 text-white/70">HDR</span>
+                  </>
+                ) : (
+                  <span className="text-xs px-2 py-1 rounded-full bg-yellow-500/20 text-yellow-300">💻 Desktop: sélection fichier</span>
+                )}
               </div>
             </div>
           </div>
