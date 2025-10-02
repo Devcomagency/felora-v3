@@ -287,12 +287,30 @@ export default function MapTest() {
       }
     }
 
-    console.log('🎧 [CARTE] Ajout du listener addressChanged')
+    // 🎯 ÉCOUTER LES ÉVÉNEMENTS STORAGE POUR COMMUNICATION ENTRE ONGLETS
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === 'felora_address_update' && event.newValue) {
+        try {
+          const eventData = JSON.parse(event.newValue)
+          console.log('📡 [CARTE] Événement storage reçu (entre onglets):', eventData)
+          
+          // Traiter comme un événement addressChanged
+          const fakeEvent = { detail: eventData }
+          handleAddressChanged(fakeEvent)
+        } catch (error) {
+          console.log('❌ [CARTE] Erreur parsing storage event:', error)
+        }
+      }
+    }
+
+    console.log('🎧 [CARTE] Ajout des listeners addressChanged et storage')
     window.addEventListener('addressChanged', handleAddressChanged)
+    window.addEventListener('storage', handleStorageChange)
     
     return () => {
-      console.log('🎧 [CARTE] Suppression du listener addressChanged')
+      console.log('🎧 [CARTE] Suppression des listeners')
       window.removeEventListener('addressChanged', handleAddressChanged)
+      window.removeEventListener('storage', handleStorageChange)
     }
   }, [router, currentUserProfile])
   const [search, setSearch] = useState('')

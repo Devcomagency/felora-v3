@@ -220,16 +220,22 @@ export default function AddressAutocomplete({
     saveToHistory(address.address, coordinates)
     
     // 🎯 ÉMISSION D'ÉVÉNEMENT POUR SYNCHRONISER LA CARTE
-    const mapUpdateEvent = new CustomEvent('addressChanged', {
-      detail: {
-        address: address.address,
-        coordinates: coordinates,
-        city: address.address.split(', ')[1] || '',
-        canton: extractCantonFromAddress(address.address)
-      }
-    })
-    console.log('📤 [DASHBOARD] Émission événement addressChanged:', mapUpdateEvent.detail)
+    const eventData = {
+      address: address.address,
+      coordinates: coordinates,
+      city: address.address.split(', ')[1] || '',
+      canton: extractCantonFromAddress(address.address),
+      timestamp: Date.now()
+    }
+    
+    // Événement local
+    const mapUpdateEvent = new CustomEvent('addressChanged', { detail: eventData })
+    console.log('📤 [DASHBOARD] Émission événement addressChanged:', eventData)
     window.dispatchEvent(mapUpdateEvent)
+    
+    // Communication entre onglets via localStorage
+    localStorage.setItem('felora_address_update', JSON.stringify(eventData))
+    localStorage.removeItem('felora_address_update') // Déclencher l'événement storage
   }
 
   const handleHistorySelect = (address: string, coordinates?: { lat: number; lng: number }) => {
@@ -261,16 +267,22 @@ export default function AddressAutocomplete({
           onCoordinatesChange?.(data.coordinates)
           
           // Émettre l'événement avec les coordonnées trouvées
-          const mapUpdateEvent = new CustomEvent('addressChanged', {
-            detail: {
-              address: address,
-              coordinates: data.coordinates,
-              city: data.city || '',
-              canton: data.canton || ''
-            }
-          })
-          console.log('📤 [DASHBOARD] Émission événement addressChanged (géocodage):', mapUpdateEvent.detail)
+          const eventData = {
+            address: address,
+            coordinates: data.coordinates,
+            city: data.city || '',
+            canton: data.canton || '',
+            timestamp: Date.now()
+          }
+          
+          // Événement local
+          const mapUpdateEvent = new CustomEvent('addressChanged', { detail: eventData })
+          console.log('📤 [DASHBOARD] Émission événement addressChanged (géocodage):', eventData)
           window.dispatchEvent(mapUpdateEvent)
+          
+          // Communication entre onglets via localStorage
+          localStorage.setItem('felora_address_update', JSON.stringify(eventData))
+          localStorage.removeItem('felora_address_update') // Déclencher l'événement storage
           
           return data.coordinates
         }
