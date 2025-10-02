@@ -4,6 +4,13 @@ import { useState, useEffect, useRef } from 'react'
 import { Search, MapPin, X, Navigation } from 'lucide-react'
 import AddressHistory from './AddressHistory'
 
+// Étendre l'interface Window pour le timeout de géocodage
+declare global {
+  interface Window {
+    geocodeTimeout?: NodeJS.Timeout
+  }
+}
+
 interface SwissAddress {
   score: number
   identifier: string
@@ -235,6 +242,42 @@ export default function AddressAutocomplete({
     saveToHistory(address, coordinates)
   }
 
+  // 🎯 FONCTION POUR GÉOCODER UNE ADRESSE TAPÉE
+  const geocodeAddress = async (address: string) => {
+    try {
+      console.log('🔍 [DASHBOARD] Géocodage de l\'adresse tapée:', address)
+      const response = await fetch('/api/geocode/reverse', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ address })
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        if (data.coordinates && data.coordinates.lat && data.coordinates.lng) {
+          console.log('✅ [DASHBOARD] Géocodage réussi:', data.coordinates)
+          
+          // Émettre l'événement avec les coordonnées trouvées
+          const mapUpdateEvent = new CustomEvent('addressChanged', {
+            detail: {
+              address: address,
+              coordinates: data.coordinates,
+              city: data.city || '',
+              canton: data.canton || ''
+            }
+          })
+          console.log('📤 [DASHBOARD] Émission événement addressChanged (géocodage):', mapUpdateEvent.detail)
+          window.dispatchEvent(mapUpdateEvent)
+          
+          return data.coordinates
+        }
+      }
+    } catch (error) {
+      console.log('❌ [DASHBOARD] Erreur géocodage:', error)
+    }
+    return null
+  }
+
   const extractCantonFromAddress = (address: string): string | null => {
     const cantonMap: Record<string, string> = {
       'genève': 'GE', 'geneva': 'GE',
@@ -455,8 +498,41 @@ export default function AddressAutocomplete({
           type="text"
           value={value}
           onChange={(e) => {
-            onChange(e.target.value, undefined)
-            if (e.target.value === '') onCoordinatesChange?.(null)
+            const newAddress = e.target.value
+            onChange(newAddress, undefined)
+            if (newAddress === '') {
+              onCoordinatesChange?.(null)
+            } else {
+              // 🎯 ÉMISSION D'ÉVÉNEMENT POUR SAISIE DIRECTE
+              console.log('📤 [DASHBOARD] Saisie directe d\'adresse:', newAddress)
+              
+              // Si l'adresse contient des coordonnées GPS, les extraire
+              const gpsMatch = newAddress.match(/(\d+\.?\d*),\s*(\d+\.?\d*)/)
+              if (gpsMatch) {
+                const coordinates = {
+                  lat: parseFloat(gpsMatch[1]),
+                  lng: parseFloat(gpsMatch[2])
+                }
+                const mapUpdateEvent = new CustomEvent('addressChanged', {
+                  detail: {
+                    address: newAddress,
+                    coordinates: coordinates,
+                    city: '',
+                    canton: ''
+                  }
+                })
+                console.log('📤 [DASHBOARD] Émission événement addressChanged (saisie directe GPS):', mapUpdateEvent.detail)
+                window.dispatchEvent(mapUpdateEvent)
+              } else {
+                // Géocoder l'adresse avec un délai pour éviter trop d'appels API
+                clearTimeout(window.geocodeTimeout)
+                window.geocodeTimeout = setTimeout(() => {
+                  if (newAddress.length > 10) { // Seulement pour les adresses suffisamment longues
+                    geocodeAddress(newAddress)
+                  }
+                }, 1000) // Délai de 1 seconde
+              }
+            }
           }}
           onKeyDown={handleKeyDown}
           onFocus={() => {
