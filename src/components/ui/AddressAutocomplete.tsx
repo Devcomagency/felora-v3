@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { Search, MapPin, X } from 'lucide-react'
+import { Search, MapPin, X, Navigation } from 'lucide-react'
 
 interface SwissAddress {
   score: number
@@ -42,6 +42,7 @@ export default function AddressAutocomplete({
   const [suggestions, setSuggestions] = useState<SwissAddress[]>([])
   const [loading, setLoading] = useState(false)
   const [selectedIndex, setSelectedIndex] = useState(-1)
+  const [isLocating, setIsLocating] = useState(false)
   
   const inputRef = useRef<HTMLInputElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -199,8 +200,82 @@ export default function AddressAutocomplete({
     inputRef.current?.focus()
   }
 
+  const handleAutoLocation = async () => {
+    if (!navigator.geolocation) {
+      alert('La géolocalisation n\'est pas supportée par ce navigateur')
+      return
+    }
+
+    setIsLocating(true)
+    
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords
+        
+        try {
+          // Reverse geocoding pour obtenir l'adresse
+          const response = await fetch(`/api/geocode/reverse?lat=${latitude}&lng=${longitude}`)
+          const data = await response.json()
+          
+          if (data.address) {
+            onChange(data.address, { lat: latitude, lng: longitude })
+            onCoordinatesChange?.({ lat: latitude, lng: longitude })
+          } else {
+            // Fallback si pas d'adresse trouvée
+            onChange(`Position GPS: ${latitude.toFixed(6)}, ${longitude.toFixed(6)}`, { lat: latitude, lng: longitude })
+            onCoordinatesChange?.({ lat: latitude, lng: longitude })
+          }
+        } catch (error) {
+          console.error('Erreur reverse geocoding:', error)
+          // Utiliser les coordonnées même si on n'a pas l'adresse
+          onChange(`Position GPS: ${latitude.toFixed(6)}, ${longitude.toFixed(6)}`, { lat: latitude, lng: longitude })
+          onCoordinatesChange?.({ lat: latitude, lng: longitude })
+        }
+        
+        setIsLocating(false)
+      },
+      (error) => {
+        let errorMessage = 'Impossible de récupérer votre position'
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage = 'Accès à la géolocalisation refusé'
+            break
+          case error.POSITION_UNAVAILABLE:
+            errorMessage = 'Position non disponible'
+            break
+          case error.TIMEOUT:
+            errorMessage = 'Délai de géolocalisation dépassé'
+            break
+        }
+        alert(errorMessage)
+        setIsLocating(false)
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 60000
+      }
+    )
+  }
+
   return (
     <div ref={containerRef} className={`relative ${className}`}>
+      {/* Bouton de géolocalisation */}
+      <div className="flex gap-2 mb-3">
+        <button
+          onClick={handleAutoLocation}
+          disabled={isLocating}
+          className="flex items-center gap-2 px-3 py-2 bg-blue-500/20 border border-blue-500/30 rounded-lg text-blue-400 hover:bg-blue-500/30 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isLocating ? (
+            <div className="w-4 h-4 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
+          ) : (
+            <Navigation size={14} />
+          )}
+          <span>{isLocating ? 'Détection...' : 'Détecter ma position'}</span>
+        </button>
+      </div>
+      
       <div className="relative">
         <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
           <Search size={18} className="text-gray-400" />

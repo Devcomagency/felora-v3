@@ -2,9 +2,10 @@
 
 import { useState, useRef, useEffect, useMemo } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { User, Image, Eye, Heart, Clock, Settings as SettingsIcon, CheckCircle2, AlertTriangle, ShieldCheck, Pause, Calendar, Save, X, BadgeCheck, Search, Loader2, Star } from 'lucide-react'
+import { User, Image, Eye, Heart, Clock, Settings as SettingsIcon, CheckCircle2, AlertTriangle, ShieldCheck, Pause, Calendar, Save, X, BadgeCheck, Search, Loader2, Star, MapPin } from 'lucide-react'
 import * as Dialog from '@radix-ui/react-dialog'
 import AddressAutocomplete from '../ui/AddressAutocomplete'
+import LocationPreviewMap from '../ui/LocationPreviewMap'
 // import ModernMediaManager from './ModernMediaManager'
 
 const CANTON_MAP: Record<string, string> = {
@@ -1296,15 +1297,33 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                 </div>
               </div>
 
-              {/* Localisation (obligatoire) */}
-              <div className="rounded-2xl p-4 border border-pink-500/30 bg-pink-500/5">
-                <div className="flex items-center justify-between mb-2">
-                  <label className="block text-sm font-semibold text-white">Localisation</label>
-                  <span className="inline-flex items-center text-[11px] px-2 py-0.5 rounded-full bg-pink-500/20 text-pink-200 border border-pink-500/30">Obligatoire</span>
+              {/* Localisation - Design Moderne */}
+              <div className="bg-gradient-to-br from-purple-500/10 via-blue-500/5 to-transparent border border-purple-500/20 rounded-2xl p-6">
+                {/* Header avec icône */}
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500/20 to-blue-500/20 rounded-2xl flex items-center justify-center">
+                    <MapPin className="text-purple-400" size={24} />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-xl font-bold text-white">Localisation</h3>
+                    <p className="text-sm text-gray-400">
+                      Définissez votre position pour apparaître sur la carte
+                    </p>
+                  </div>
+                  <span className="inline-flex items-center text-[11px] px-3 py-1 rounded-full bg-purple-500/20 text-purple-200 border border-purple-500/30">
+                    Obligatoire
+                  </span>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs text-gray-300 mb-1">Canton <span className="text-red-400">*</span></label>
+                
+                {/* Contenu avec étapes */}
+                <div className="space-y-6">
+                  {/* Étape 1: Canton */}
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-3 text-sm font-medium text-gray-300">
+                      <span className="w-6 h-6 bg-purple-500/20 rounded-full flex items-center justify-center text-xs text-purple-400 font-bold">1</span>
+                      Canton
+                      <span className="text-red-400">*</span>
+                    </label>
                     <select
                       value={profileData.canton || ''}
                       onChange={(e) => {
@@ -1316,7 +1335,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                           updateProfileData('city', '')
                         }
                       }}
-                      className={`w-full px-3 py-2 bg-gray-700/50 border rounded-lg text-white text-sm focus:border-purple-500 focus:outline-none ${!profileData.canton ? 'border-red-500/50' : 'border-gray-600/50'}`}
+                      className={`w-full px-4 py-3 bg-gray-800/50 border rounded-xl text-white text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500/50 transition-all ${!profileData.canton ? 'border-red-500/50' : 'border-gray-600/50'}`}
                       aria-invalid={!profileData.canton}
                     >
                       <option value="">Sélectionner</option>
@@ -1331,8 +1350,13 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                       <div className="text-[11px] text-red-400 mt-1">Champ requis</div>
                     )}
                   </div>
-                  <div>
-                    <label className="block text-xs text-gray-300 mb-1">Ville principale <span className="text-red-400">*</span></label>
+                  {/* Étape 2: Ville */}
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-3 text-sm font-medium text-gray-300">
+                      <span className="w-6 h-6 bg-purple-500/20 rounded-full flex items-center justify-center text-xs text-purple-400 font-bold">2</span>
+                      Ville principale
+                      <span className="text-red-400">*</span>
+                    </label>
                     <input
                       list="city-list"
                       type="text"
@@ -1347,7 +1371,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                         }
                       }}
                       placeholder="ex: Genève"
-                      className={`w-full px-3 py-2 bg-gray-700/50 border rounded-lg text-white text-sm focus:border-purple-500 focus:outline-none ${!profileData.city ? 'border-red-500/50' : 'border-gray-600/50'}`}
+                      className={`w-full px-4 py-3 bg-gray-800/50 border rounded-xl text-white text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500/50 transition-all ${!profileData.city ? 'border-red-500/50' : 'border-gray-600/50'}`}
                       aria-invalid={!profileData.city}
                     />
                     {!profileData.city && (
@@ -1363,12 +1387,15 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                     </datalist>
                   </div>
                 </div>
-                <div className="mt-3">
-                  <label className="block text-xs text-gray-400 mb-1">
-                    Adresse complète (avec autocomplétion GPS suisse)
-                    <span className="text-red-400 ml-1">*</span>
-                    <span className="ml-2 text-[11px] text-gray-400">Obligatoire pour l'affichage sur la carte</span>
-                  </label>
+                  {/* Étape 3: Adresse complète */}
+                  <div className="space-y-3">
+                    <label className="flex items-center gap-3 text-sm font-medium text-gray-300">
+                      <span className="w-6 h-6 bg-purple-500/20 rounded-full flex items-center justify-center text-xs text-purple-400 font-bold">3</span>
+                      Adresse complète avec géolocalisation
+                      <span className="text-red-400">*</span>
+                    </label>
+                    <div className="space-y-2">
+                      <p className="text-xs text-gray-400">Obligatoire pour l'affichage sur la carte</p>
                   <AddressAutocomplete
                     value={profileData.address || ''}
                     onChange={(address, coordinates) => {
@@ -1398,8 +1425,18 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                   {!profileData.address || !profileData.coordinates ? (
                     <div className="mt-2 text-[11px] text-red-400">Adresse et coordonnées GPS requis</div>
                   ) : (
-                    <div className="mt-2 text-xs text-green-400">
-                      📍 Coordonnées GPS: {profileData.coordinates.lat.toFixed(6)}, {profileData.coordinates.lng.toFixed(6)}
+                    <div className="mt-4 space-y-3">
+                      {/* Coordonnées GPS */}
+                      <div className="text-xs text-green-400">
+                        📍 Coordonnées GPS: {profileData.coordinates.lat.toFixed(6)}, {profileData.coordinates.lng.toFixed(6)}
+                      </div>
+                      
+                      {/* Mini-carte de prévisualisation */}
+                      <LocationPreviewMap
+                        coordinates={profileData.coordinates}
+                        address={profileData.address}
+                        privacy={profileData.addressPrivacy}
+                      />
                     </div>
                   )}
 
@@ -1441,6 +1478,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                       </div>
                     </div>
                   )}
+                  </div>
                 </div>
               </div>
 
