@@ -162,15 +162,15 @@ export default function AddressHistory({
                 )}
               </div>
 
-              {/* Contenu */}
+              {/* Contenu - MOBILE-FIRST */}
               <button
                 onClick={() => handleSelect(item)}
                 className="flex-1 text-left min-w-0"
               >
-                <div className="text-xs text-white truncate">
+                <div className="text-xs sm:text-sm text-white leading-relaxed break-words">
                   {item.address}
                 </div>
-                <div className="text-[10px] text-gray-400">
+                <div className="text-[10px] text-gray-400 mt-1">
                   Utilisée {item.usedCount}x • {formatTimestamp(item.timestamp)}
                 </div>
               </button>

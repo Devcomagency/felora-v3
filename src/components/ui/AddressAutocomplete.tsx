@@ -414,35 +414,96 @@ export default function AddressAutocomplete({
       </div>
 
       {isOpen && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-gray-900 border border-gray-700/50 rounded-xl shadow-2xl z-50 max-h-80 overflow-y-auto">
+        <div className="absolute top-full left-0 right-0 mt-1 bg-gray-900 border border-gray-700/50 rounded-xl shadow-2xl z-50 max-h-96 overflow-y-auto">
           {suggestions.length > 0 ? (
             <div className="py-2">
               {suggestions.map((suggestion, index) => (
                 <button
                   key={suggestion.identifier}
                   onClick={() => handleSelectAddress(suggestion)}
-                  className={`w-full px-4 py-3 text-left flex items-center space-x-3 hover:bg-gray-800/50 transition-colors ${
+                  className={`w-full px-3 sm:px-4 py-3 sm:py-4 text-left hover:bg-gray-800/50 transition-colors ${
                     selectedIndex === index ? 'bg-purple-500/20 border-l-2 border-l-purple-500' : ''
                   }`}
                 >
-                  <MapPin size={16} className="text-gray-400 flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <div className="text-white font-medium truncate">
-                      {suggestion.address}
+                  {/* 🎯 DESIGN MOBILE-FIRST PREMIUM */}
+                  <div className="flex items-start gap-3">
+                    {/* Icône */}
+                    <div className="flex-shrink-0 mt-0.5">
+                      <div className="w-8 h-8 bg-purple-500/20 rounded-lg flex items-center justify-center">
+                        <MapPin size={14} className="text-purple-400" />
+                      </div>
                     </div>
-                    {((suggestion?.score || 0) > 0) && (
-                      <div className="text-xs text-gray-400 mt-1">Score: {suggestion.score}%</div>
-                    )}
-                  </div>
-                  <div className="text-xs text-purple-400 font-medium">
-                    {suggestion.countryCode}
+                    
+                    {/* Contenu principal */}
+                    <div className="flex-1 min-w-0">
+                      {/* Adresse complète - MOBILE-FIRST */}
+                      <div className="text-white font-medium text-sm sm:text-base leading-relaxed break-words">
+                        {suggestion.address}
+                      </div>
+                      
+                      {/* Informations supplémentaires */}
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 mt-2">
+                        {/* Score de qualité */}
+                        {((suggestion?.score || 0) > 0) && (
+                          <div className="flex items-center gap-1">
+                            <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                            <span className="text-xs text-gray-400">
+                              Qualité: {suggestion.score}%
+                            </span>
+                          </div>
+                        )}
+                        
+                        {/* Type d'adresse */}
+                        {suggestion.type && (
+                          <div className="flex items-center gap-1">
+                            <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                            <span className="text-xs text-gray-400 capitalize">
+                              {suggestion.type === 'street' ? 'Rue' : 
+                               suggestion.type === 'building' ? 'Bâtiment' :
+                               suggestion.type === 'city' ? 'Ville' : 'Lieu'}
+                            </span>
+                          </div>
+                        )}
+                        
+                        {/* Source */}
+                        {suggestion.origin && (
+                          <div className="flex items-center gap-1">
+                            <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
+                            <span className="text-xs text-gray-400">
+                              {suggestion.origin === 'smart_db' ? 'Base premium' :
+                               suggestion.origin === 'swiss_api' ? 'API suisse' :
+                               suggestion.origin === 'nominatim' ? 'OpenStreetMap' : 'Source'}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    {/* Badge pays */}
+                    <div className="flex-shrink-0">
+                      <div className="px-2 py-1 bg-gray-700/50 rounded-full">
+                        <span className="text-xs text-gray-300 font-medium">
+                          {suggestion.countryCode}
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </button>
               ))}
             </div>
           ) : (
-            <div className="py-6 px-4 text-center text-gray-400">
-              {loading ? 'Recherche en cours...' : 'Aucune adresse trouvée'}
+            <div className="py-8 px-4 text-center">
+              <div className="w-12 h-12 bg-gray-800/50 rounded-full flex items-center justify-center mx-auto mb-3">
+                <Search size={20} className="text-gray-400" />
+              </div>
+              <div className="text-gray-400 text-sm">
+                {loading ? 'Recherche en cours...' : 'Aucune adresse trouvée'}
+              </div>
+              {!loading && (
+                <div className="text-xs text-gray-500 mt-2">
+                  Essayez avec une adresse plus spécifique
+                </div>
+              )}
             </div>
           )}
         </div>
