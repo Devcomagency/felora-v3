@@ -215,7 +215,7 @@ export default function MapTest() {
           
           if (profile && profile.latitude && profile.longitude) {
             const escortData: EscortData = {
-              id: profile.id,
+              id: profile.escortId, // Utiliser escortId au lieu de id
               name: profile.stageName || 'Mon Profil',
               lat: profile.latitude,
               lng: profile.longitude,
@@ -334,18 +334,33 @@ export default function MapTest() {
       services: escort.services || [],
       languages: escort.languages || [],
       verified: escort.isVerifiedBadge || false,
-      isActive: escort.isActive || true
+      isActive: escort.isActive || true,
+      isCurrentUser: false // Marquer comme profil d'un autre utilisateur
     }))
 
-    // 🎯 INCLURE LE PROFIL ESCORT CONNECTÉ S'IL EXISTE
+    // 🎯 GÉRER LE PROFIL ESCORT CONNECTÉ
     if (currentUserProfile) {
-      // Vérifier si le profil connecté n'est pas déjà dans la liste
-      const isAlreadyIncluded = apiEscorts.some(escort => escort.id === currentUserProfile.id)
-      if (!isAlreadyIncluded) {
-        apiEscorts.unshift(currentUserProfile) // Ajouter au début pour le mettre en évidence
+      // Vérifier si le profil connecté est déjà dans la liste de l'API
+      const existingIndex = apiEscorts.findIndex(escort => escort.id === currentUserProfile.id)
+      
+      if (existingIndex >= 0) {
+        // Remplacer le profil existant par celui du profil connecté (avec coordonnées à jour)
+        apiEscorts[existingIndex] = {
+          ...currentUserProfile,
+          isCurrentUser: true // Marquer comme profil connecté
+        }
+        console.log('🔄 [CARTE] Profil connecté remplacé dans la liste API')
+      } else {
+        // Ajouter le profil connecté s'il n'est pas dans la liste
+        apiEscorts.unshift({
+          ...currentUserProfile,
+          isCurrentUser: true // Marquer comme profil connecté
+        })
+        console.log('➕ [CARTE] Profil connecté ajouté à la liste')
       }
     }
 
+    console.log('📊 [CARTE] Total profils affichés:', apiEscorts.length)
     return apiEscorts
   }, [data, currentUserProfile])
 
