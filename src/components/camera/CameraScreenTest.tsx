@@ -109,10 +109,9 @@ export default function CameraScreenTest({ onClose, onCapture }: CameraScreenPro
         }
 
         const stream = await navigator.mediaDevices.getUserMedia({
-          video: { 
+          video: {
             facingMode: isFrontCamera ? 'user' : 'environment',
-            width: { ideal: 1080 },
-            height: { ideal: 1920 }
+            aspectRatio: { ideal: 9/16 }
           },
           audio: true
         })
@@ -733,10 +732,10 @@ export default function CameraScreenTest({ onClose, onCapture }: CameraScreenPro
 
       {/* Preview caméra 9:16 avec arrondis - Plein écran */}
       <div className="flex-1 relative p-4">
-        <div className="relative w-full h-full max-w-sm mx-auto rounded-2xl overflow-hidden shadow-2xl" style={{ aspectRatio: '9/16' }}>
+        <div className="relative w-full h-full max-w-sm mx-auto rounded-2xl overflow-hidden shadow-2xl bg-black" style={{ aspectRatio: '9/16' }}>
           <video
             ref={videoRef}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-contain"
             autoPlay
             playsInline
             muted

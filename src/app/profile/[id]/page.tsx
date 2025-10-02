@@ -92,6 +92,7 @@ interface EscortProfile {
     phoneDisplayType: string
     phone?: string
   }
+  agendaEnabled?: boolean
 }
 
 // Loading skeleton
@@ -253,6 +254,8 @@ export default function EscortProfilePage() {
           // Disponibilité temps réel de l'API
           realTimeAvailability: data.realTimeAvailability,
           scheduleData: data.scheduleData,
+          // Agenda activé
+          agendaEnabled: data.agendaEnabled,
           // Contact intelligent - fetch séparé
           contact: undefined
         }
@@ -567,7 +570,7 @@ export default function EscortProfilePage() {
     })
 
     return {
-      languages: (profile.languages || []).filter(lang => lang.trim() !== ''),
+      languages: profile.languages || {},
       services: (profile.services || []).filter(service => service !== 'escorte'),
       practices: profile.practices || [],
       paymentMethods: ['Espèces', 'Virement', 'PayPal', 'Cartes de crédit'], // Méthodes de paiement standard pour la Suisse
@@ -600,6 +603,9 @@ export default function EscortProfilePage() {
   if (loading) return <ProfileSkeleton />
   if (notFound) return <ErrorFallback />
   if (error || !profile) return <ErrorFallback />
+
+  // Debug log
+  console.log('🔍 [PROFILE PAGE] profile.agendaEnabled:', profile.agendaEnabled, 'type:', typeof profile.agendaEnabled)
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -667,6 +673,7 @@ export default function EscortProfilePage() {
                 scheduleData={profile.scheduleData}
                 description={profile.description}
                 mediaCount={Array.isArray(feedMedia) ? feedMedia.length : 0}
+                agendaEnabled={profile.agendaEnabled}
               />
 
               <ActionsBar

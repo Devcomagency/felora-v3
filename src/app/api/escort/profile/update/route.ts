@@ -29,6 +29,7 @@ export async function POST(req: NextRequest) {
 
     body = await req.json().catch(() => ({}))
     console.log('🔍 [API PROFILE UPDATE] Request body keys:', Object.keys(body))
+    console.log('🔍 [API PROFILE UPDATE] Full request body:', JSON.stringify(body, null, 2))
     const Schema = z.object({
       // Basics
       stageName: z.string().max(100).optional(),
@@ -161,7 +162,25 @@ export async function POST(req: NextRequest) {
     
     // Helper functions according to patch pack
     function toCsv(v: any) {
-      return Array.isArray(v) ? v.map((x:string)=>String(x).trim()).filter(Boolean).join(', ') : (typeof v === 'string' ? v.trim() : '')
+      if (Array.isArray(v)) {
+        return v.map((x:string)=>String(x).trim()).filter(Boolean).join(', ')
+      }
+      
+      if (typeof v === 'string') {
+        // Essayer de parser comme JSON d'abord
+        try {
+          const parsed = JSON.parse(v)
+          if (Array.isArray(parsed)) {
+            return parsed.map((x:string)=>String(x).trim()).filter(Boolean).join(', ')
+          }
+        } catch (e) {
+          // Si ce n'est pas du JSON valide, traiter comme CSV
+          return v.trim()
+        }
+        return v.trim()
+      }
+      
+      return ''
     }
 
     // Fonction de tri automatique des services par catégorie
@@ -294,8 +313,15 @@ export async function POST(req: NextRequest) {
     }
     // Practices supprimé - remplacé par amenities uniquement
     if (typeof input.paymentMethods !== 'undefined') { // Méthodes de paiement
+      console.log('🔄 [API UPDATE] paymentMethods reçues:', input.paymentMethods, typeof input.paymentMethods)
       const csv = toCsv(input.paymentMethods)
-      if (csv) dataToSave.paymentMethods = csv
+      console.log('🔄 [API UPDATE] paymentMethods CSV:', csv)
+      if (csv) {
+        dataToSave.paymentMethods = csv
+        console.log('✅ [API UPDATE] paymentMethods sauvegardées:', csv)
+      } else {
+        console.log('❌ [API UPDATE] paymentMethods CSV vide, non sauvegardé')
+      }
     }
     if (typeof input.amenities !== 'undefined') { // Équipements du lieu
       console.log('🔄 [API UPDATE] Amenities reçues:', input.amenities, typeof input.amenities)
@@ -309,8 +335,15 @@ export async function POST(req: NextRequest) {
       }
     }
     if (typeof input.acceptedCurrencies !== 'undefined') { // Devises acceptées
+      console.log('🔄 [API UPDATE] acceptedCurrencies reçues:', input.acceptedCurrencies, typeof input.acceptedCurrencies)
       const csv = toCsv(input.acceptedCurrencies)
-      if (csv) dataToSave.acceptedCurrencies = csv
+      console.log('🔄 [API UPDATE] acceptedCurrencies CSV:', csv)
+      if (csv) {
+        dataToSave.acceptedCurrencies = csv
+        console.log('✅ [API UPDATE] acceptedCurrencies sauvegardées:', csv)
+      } else {
+        console.log('❌ [API UPDATE] acceptedCurrencies CSV vide, non sauvegardé')
+      }
     }
     
     // Add other fields to dataToSave
@@ -463,6 +496,10 @@ export async function POST(req: NextRequest) {
 
     // Persist unified update
     console.log('🔍 [API PROFILE UPDATE] About to update profile for userId:', userId)
+    // Log final avant sauvegarde
+    console.log('🔍 [API PROFILE UPDATE] Final dataToSave:', dataToSave)
+    console.log('🔍 [API PROFILE UPDATE] Keys in dataToSave:', Object.keys(dataToSave))
+    
     await prisma.escortProfile.update({
       where: { userId },
       data: dataToSave,

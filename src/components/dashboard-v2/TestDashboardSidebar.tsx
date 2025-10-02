@@ -55,11 +55,6 @@ export default function TestDashboardSidebar({ userType = 'escort' }: TestDashbo
       path: '/dashboard-test/escort/messages'
     },
     {
-      name: 'Statistiques',
-      icon: <BarChart3 size={20} />,
-      path: '/dashboard-test/escort/stats'
-    },
-    {
       name: 'Portefeuille',
       icon: <Wallet size={20} />,
       path: '/dashboard-test/escort/wallet'
@@ -87,11 +82,6 @@ export default function TestDashboardSidebar({ userType = 'escort' }: TestDashbo
       name: 'Messages',
       icon: <MessageCircle size={20} />,
       path: '/dashboard-test/club/messages'
-    },
-    {
-      name: 'Statistiques',
-      icon: <BarChart3 size={20} />,
-      path: '/dashboard-test/club/stats'
     },
     {
       name: 'Portefeuille',

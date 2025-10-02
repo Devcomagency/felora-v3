@@ -250,23 +250,31 @@ export default function ProfileHeaderSimple({ profile, extendedData, onShowDetai
             </div>
           </div>
 
-          {/* Disponibilité */}
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <div className={`w-3 h-3 rounded-full ${profile.online ? 'bg-green-500' : 'bg-red-500'}`} />
-              <h4 className="font-semibold text-sm">
-                {profile.online ? 'Disponible maintenant' : 'Indisponible'} - {extendedData.location.city}
-              </h4>
-            </div>
-            
-            {profile.online && (
-              <div className="flex gap-2 flex-wrap mb-2 items-center">
-                <div className="px-3 py-1.5 bg-green-500/20 rounded-lg text-xs font-medium border border-green-500/40 text-green-300">
-                  10h-21h
-                </div>
+          {/* Disponibilité - Affiche seulement si agenda activé */}
+          {(() => {
+            console.log('🔍 [ProfileHeaderSimple] profile.agendaEnabled:', profile.agendaEnabled, 'type:', typeof profile.agendaEnabled)
+            console.log('🔍 [ProfileHeaderSimple] profile keys:', Object.keys(profile))
+            console.log('🔍 [ProfileHeaderSimple] strict equality check:', profile.agendaEnabled === true)
+            console.log('🔍 [ProfileHeaderSimple] truthy check:', !!profile.agendaEnabled)
+            return profile.agendaEnabled === true
+          })() && (
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <div className={`w-3 h-3 rounded-full ${profile.online ? 'bg-green-500' : 'bg-red-500'}`} />
+                <h4 className="font-semibold text-sm">
+                  {profile.online ? 'Disponible maintenant' : 'Indisponible'} - {extendedData.location.city}
+                </h4>
               </div>
-            )}
-          </div>
+              
+              {profile.online && (
+                <div className="flex gap-2 flex-wrap mb-2 items-center">
+                  <div className="px-3 py-1.5 bg-green-500/20 rounded-lg text-xs font-medium border border-green-500/40 text-green-300">
+                    10h-21h
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Tags services */}
           <div className="flex flex-wrap gap-1.5">

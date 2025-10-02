@@ -4,7 +4,7 @@ import { CheckCircle, Globe, Star } from 'lucide-react'
 
 interface ServicesSectionProps {
   services?: string[]
-  languages?: string[]
+  languages?: string[] | Record<string, number> // Support des deux formats
   rates?: {
     rate1H?: number
     rate2H?: number
@@ -154,14 +154,14 @@ export default function ServicesSection({ services, languages, rates }: Services
       )}
 
       {/* Languages */}
-      {languages && languages.length > 0 && (
+      {languages && (Array.isArray(languages) ? languages.length > 0 : Object.keys(languages).length > 0) && (
         <div className="bg-black/40 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
           <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
             <Globe size={20} className="text-felora-plasma" />
             Langues
           </h3>
           <div className="flex flex-wrap gap-3">
-            {languages.map((language, index) => (
+            {(Array.isArray(languages) ? languages : Object.keys(languages)).map((language, index) => (
               <div
                 key={index}
                 className="flex items-center gap-2 px-4 py-2 rounded-full bg-felora-plasma/20 border border-felora-plasma/30"

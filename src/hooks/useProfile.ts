@@ -12,7 +12,7 @@ interface Profile {
   media: Array<{ id: string; type: 'IMAGE'|'VIDEO'; url: string; thumb?: string }>
   stats?: { likes?: number; views?: number; rating?: number }
   services?: string[]
-  languages?: string[]
+  languages?: Record<string, number> // { "Français": 5, "Anglais": 3, ... }
   rates?: { rate1H?: number; rate2H?: number; overnight?: number; currency?: string }
   updatedAt: string
 }

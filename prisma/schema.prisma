@@ -269,6 +269,10 @@ model EscortProfile {
 
   // Validation âge
   ageVerified         Boolean      @default(false) // Âge certifié
+
+  // Agenda/Disponibilité
+  agendaEnabled       Boolean      @default(true)  // Activer l'agenda
+
   user                User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("escort_profiles")

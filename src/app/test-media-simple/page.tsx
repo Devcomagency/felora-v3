@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, useCallback, memo } from 'react'
 import dynamic from 'next/dynamic'
 import { useSession } from 'next-auth/react'
-import {
+import { 
   Plus,
   ChevronLeft,
   Home,
@@ -73,7 +73,7 @@ export default function TestMediaSimplePage() {
   const { data: session, status } = useSession()
 
   // États essentiels seulement
-  const [showCamera, setShowCamera] = useState(false)
+  const [showCamera, setShowCamera] = useState(true) // Ouvrir la caméra directement
   const [isLoading, setIsLoading] = useState(false)
   const [recentMedia, setRecentMedia] = useState<MediaFile[]>([])
   const [message, setMessage] = useState<string | null>(null)
@@ -288,43 +288,45 @@ export default function TestMediaSimplePage() {
                       </div>
                     )}
 
-      {/* Page principale */}
-      <div className={`pt-14 flex flex-col items-center justify-center px-4 ${
-        isEscortOrClub ? 'min-h-[calc(100vh-56px-80px)] pb-20' : 'min-h-[calc(100vh-56px)]'
-      }`}>
-        <div className="text-center">
-          {/* Bouton + avec animation de chargement */}
-          <div 
-            className={`w-32 h-32 mx-auto mb-6 rounded-full bg-gradient-to-r from-[#FF6B9D] to-[#B794F6] flex items-center justify-center shadow-2xl hover:scale-105 transition-all duration-200 cursor-pointer ${
-              isLoading ? 'animate-pulse scale-95' : ''
-            }`}
-            onClick={() => {
-              if (!isLoading) {
-                setShowCamera(true)
-              }
-            }}
-          >
-            <Plus className={`w-16 h-16 text-white transition-transform duration-200 ${isLoading ? 'animate-spin' : ''}`} />
-              </div>
+      {/* Page principale - Masquée quand la caméra est ouverte */}
+      {!showCamera && (
+        <div className={`pt-14 flex flex-col items-center justify-center px-4 ${
+          isEscortOrClub ? 'min-h-[calc(100vh-56px-80px)] pb-20' : 'min-h-[calc(100vh-56px)]'
+        }`}>
+          <div className="text-center">
+            {/* Bouton + avec animation de chargement */}
+            <div
+              className={`w-32 h-32 mx-auto mb-6 rounded-full bg-gradient-to-r from-[#FF6B9D] to-[#B794F6] flex items-center justify-center shadow-2xl hover:scale-105 transition-all duration-200 cursor-pointer ${
+                isLoading ? 'animate-pulse scale-95' : ''
+              }`}
+              onClick={() => {
+                if (!isLoading) {
+                  setShowCamera(true)
+                }
+              }}
+            >
+              <Plus className={`w-16 h-16 text-white transition-transform duration-200 ${isLoading ? 'animate-spin' : ''}`} />
+          </div>
 
-          <p className="text-white/80 text-lg font-medium">
-            {isLoading ? 'Chargement...' : 'Créer du contenu'}
-          </p>
-          <p className="text-white/60 text-sm mt-2">
-            {isLoading ? 'Veuillez patienter' : 'Appuyez pour commencer'}
-          </p>
-              </div>
+            <p className="text-white/80 text-lg font-medium">
+              {isLoading ? 'Chargement...' : 'Créer du contenu'}
+            </p>
+            <p className="text-white/60 text-sm mt-2">
+              {isLoading ? 'Veuillez patienter' : 'Appuyez pour commencer'}
+            </p>
+          </div>
 
-        {/* Galerie des médias récents */}
-        <MediaGallery 
-          media={recentMedia} 
-          onSelect={handleMediaSelect}
-        />
-                      </div>
+          {/* Galerie des médias récents */}
+          <MediaGallery
+            media={recentMedia}
+            onSelect={handleMediaSelect}
+          />
+        </div>
+      )}
 
       {/* Bouton + flottant en bas à gauche - TOUJOURS VISIBLE */}
       {isEscortOrClub && (
-        <button
+                      <button
           onClick={() => setShowCamera(true)}
           className="fixed bottom-24 left-4 w-16 h-16 rounded-full bg-gradient-to-r from-[#FF6B9D] to-[#B794F6] flex items-center justify-center shadow-2xl hover:scale-105 transition-all duration-200"
           style={{
@@ -335,7 +337,7 @@ export default function TestMediaSimplePage() {
           disabled={isLoading}
         >
           <Plus className={`w-10 h-10 text-white ${isLoading ? 'animate-spin' : ''}`} />
-        </button>
+                      </button>
       )}
 
       {/* Footer avec navigation pour escortes/clubs connectés */}
@@ -343,22 +345,22 @@ export default function TestMediaSimplePage() {
         <div className="fixed bottom-0 left-0 right-0 h-20 bg-black/80 backdrop-blur-md border-t border-white/10 z-40">
           <div className="flex items-center justify-center h-full px-4">
             {/* Bouton Home */}
-            <button
+                    <button
               onClick={() => window.location.href = '/'}
               className="flex flex-col items-center justify-center min-w-16 h-16 p-2 hover:bg-white/10 rounded-xl transition-colors"
             >
               <Home className="w-6 h-6 text-white/70" />
               <span className="text-xs text-white/70 mt-1">Accueil</span>
-            </button>
+                    </button>
 
             {/* Bouton Search */}
-            <button
+                      <button
               onClick={() => window.location.href = '/search'}
               className="flex flex-col items-center justify-center min-w-16 h-16 p-2 hover:bg-white/10 rounded-xl transition-colors"
-            >
+                      >
               <Search className="w-6 h-6 text-white/70" />
               <span className="text-xs text-white/70 mt-1">Recherche</span>
-            </button>
+                      </button>
 
 
             {/* Bouton Profile */}
@@ -378,9 +380,9 @@ export default function TestMediaSimplePage() {
 
             {/* Spacer pour équilibrer */}
             <div className="min-w-16" />
-          </div>
-        </div>
-      )}
+              </div>
+            </div>
+          )}
 
       {/* Écran caméra avec lazy loading */}
       {showCamera && (

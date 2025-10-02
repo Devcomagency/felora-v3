@@ -23,7 +23,7 @@ export interface UnifiedProfileData {
   coordinates?: { lat: number; lng: number } // Dashboard uniquement
 
   // Langues et services
-  languages: string[]
+  languages: Record<string, number> // { "Français": 5, "Anglais": 3, ... }
   services: string[]
 
   // Services détaillés supprimés (pour éviter doublons avec services principal)
@@ -62,6 +62,7 @@ export interface UnifiedProfileData {
     incall: boolean
     availableNow: boolean
     weekendAvailable: boolean
+    agendaEnabled?: boolean // Agenda activé/désactivé
   }
 
   // Clientèle

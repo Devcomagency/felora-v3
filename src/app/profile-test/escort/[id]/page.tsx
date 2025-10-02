@@ -182,6 +182,7 @@ function ErrorFallback() {
 }
 
 export default function EscortProfileTestPage() {
+  console.log('🔍 [PAGE] EscortProfileTestPage component rendered')
   const { data: session } = useSession()
   const [profile, setProfile] = useState<EscortProfile | null>(null)
   const [loading, setLoading] = useState(true)
@@ -927,47 +928,55 @@ export default function EscortProfileTestPage() {
                   </div>
                 </div>
 
-                {/* Disponibilité - Plus compact */}
-                <div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="w-4 h-4 rounded-full bg-gradient-to-r from-green-500 to-emerald-600 flex items-center justify-center">
-                      <svg className="w-2 h-2 text-white" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
-                      </svg>
+                {/* Disponibilité - Plus compact - Affiche seulement si agenda activé */}
+                {(() => {
+                  console.log('🔍 [PAGE] profile.agendaEnabled:', profile.agendaEnabled)
+                  console.log('🔍 [PAGE] profile keys:', Object.keys(profile))
+                  console.log('🔍 [PAGE] strict equality check:', profile.agendaEnabled === true)
+                  console.log('🔍 [PAGE] truthy check:', !!profile.agendaEnabled)
+                  return profile.agendaEnabled === true
+                })() && (
+                  <div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-4 h-4 rounded-full bg-gradient-to-r from-green-500 to-emerald-600 flex items-center justify-center">
+                        <svg className="w-2 h-2 text-white" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
+                        </svg>
+                      </div>
+                      <h3 className="text-xs font-semibold text-white">Disponibilité</h3>
                     </div>
-                    <h3 className="text-xs font-semibold text-white">Disponibilité</h3>
-                  </div>
-                  <div className="space-y-2">
-                    <div 
-                      className={`p-2 rounded-lg border text-xs font-medium ${
-                        profile.availability?.available 
-                          ? 'border-green-400/30 text-green-200' 
-                          : 'border-red-400/30 text-red-200'
-                      }`}
-                      style={{
-                        background: profile.availability?.available 
-                          ? 'linear-gradient(135deg, rgba(34,197,94,0.1) 0%, rgba(16,185,129,0.1) 100%)'
-                          : 'linear-gradient(135deg, rgba(239,68,68,0.1) 0%, rgba(220,38,127,0.1) 100%)',
-                        backdropFilter: 'blur(10px)'
-                      }}
-                    >
-                      {profile.availability?.available ? '🟢 Disponible maintenant' : '🔴 Non disponible'}
-                    </div>
-                    <div 
-                      className="p-2 rounded-lg border border-white/20 text-white"
-                      style={{
-                        background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.1) 100%)',
-                        backdropFilter: 'blur(10px)'
-                      }}
-                    >
-                      <div className="text-xs font-medium">
-                        {profile.availability?.incall && profile.availability?.outcall ? 'Se déplace et reçoit' :
-                         profile.availability?.incall ? 'Reçoit uniquement' :
-                         profile.availability?.outcall ? 'Se déplace uniquement' : 'Non spécifié'}
+                    <div className="space-y-2">
+                      <div 
+                        className={`p-2 rounded-lg border text-xs font-medium ${
+                          profile.availability?.available 
+                            ? 'border-green-400/30 text-green-200' 
+                            : 'border-red-400/30 text-red-200'
+                        }`}
+                        style={{
+                          background: profile.availability?.available 
+                            ? 'linear-gradient(135deg, rgba(34,197,94,0.1) 0%, rgba(16,185,129,0.1) 100%)'
+                            : 'linear-gradient(135deg, rgba(239,68,68,0.1) 0%, rgba(220,38,127,0.1) 100%)',
+                          backdropFilter: 'blur(10px)'
+                        }}
+                      >
+                        {profile.availability?.available ? '🟢 Disponible maintenant' : '🔴 Non disponible'}
+                      </div>
+                      <div 
+                        className="p-2 rounded-lg border border-white/20 text-white"
+                        style={{
+                          background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.1) 100%)',
+                          backdropFilter: 'blur(10px)'
+                        }}
+                      >
+                        <div className="text-xs font-medium">
+                          {profile.availability?.incall && profile.availability?.outcall ? 'Se déplace et reçoit' :
+                           profile.availability?.incall ? 'Reçoit uniquement' :
+                           profile.availability?.outcall ? 'Se déplace uniquement' : 'Non spécifié'}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
+                )}
 
                 {/* Section Avis moderne */}
                 <div className="-mx-4 -mb-4">

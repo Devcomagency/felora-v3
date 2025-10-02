@@ -132,6 +132,9 @@ export async function GET(
           // Validation
           ageVerified: true,
 
+          // Agenda/Disponibilité
+          agendaEnabled: false,
+
           // Verification et badges
           isVerifiedBadge: true,
           profileCompleted: true,
@@ -331,14 +334,21 @@ export async function POST(
 
     console.log('🔄 [API UNIFIED POST] Called with ID:', id)
     console.log('🔄 [API UNIFIED POST] Session found:', !!session)
+    console.log('🔄 [API UNIFIED POST] Session user ID:', session?.user?.id)
+    console.log('🔄 [API UNIFIED POST] ID === "me":', id === 'me')
+    console.log('🔄 [API UNIFIED POST] ID === session.user.id:', id === session?.user?.id)
 
     // Seul le mode dashboard permet la sauvegarde
-    if (id !== 'me') {
+    // Autoriser si id === 'me' OU si l'utilisateur connecté modifie son propre profil
+    if (id !== 'me' && id !== session?.user?.id) {
+      console.log('🔄 [API UNIFIED POST] Access denied: ID is neither "me" nor user ID')
       return NextResponse.json({
         error: 'forbidden',
         message: 'Seul le mode dashboard permet la sauvegarde'
       }, { status: 403 })
     }
+    
+    console.log('🔄 [API UNIFIED POST] Access granted, continuing...')
 
     if (!session?.user?.id) {
       return NextResponse.json({
@@ -474,11 +484,23 @@ function transformUpdateData(body: any): Record<string, any> {
   // Adresse
   if (body.address !== undefined) data.workingArea = body.address
 
-  // Arrays → CSV
+  // Languages with star ratings → CSV format
   if (body.languages !== undefined) {
-    data.languages = Array.isArray(body.languages) 
-      ? body.languages.join(', ') 
-      : body.languages
+    console.log('🔄 [API UNIFIED] Languages received:', body.languages)
+    if (typeof body.languages === 'object' && !Array.isArray(body.languages)) {
+      // Nouveau format: { "Français": 5, "Anglais": 3, ... }
+      const languageEntries = Object.entries(body.languages as Record<string, number>)
+        .filter(([_, rating]) => rating > 0) // Seulement les langues avec des étoiles
+        .map(([lang, rating]) => `${lang}:${rating}⭐`)
+      data.languages = languageEntries.join(', ')
+      console.log('🔄 [API UNIFIED] Languages processed:', data.languages)
+    } else {
+      // Ancien format: array ou string
+      data.languages = Array.isArray(body.languages) 
+        ? body.languages.join(', ') 
+        : body.languages
+      console.log('🔄 [API UNIFIED] Languages (old format):', data.languages)
+    }
   }
 
   if (body.services !== undefined) {
@@ -492,19 +514,23 @@ function transformUpdateData(body: any): Record<string, any> {
 
   // Nouvelles options
   if (body.paymentMethods !== undefined) {
-    data.paymentMethods = Array.isArray(body.paymentMethods) 
-      ? body.paymentMethods.join(', ') 
-      : body.paymentMethods
+    console.log('🔄 [API UNIFIED POST] paymentMethods brut:', body.paymentMethods, typeof body.paymentMethods)
+    const parsedPaymentMethods = parseStringArray(body.paymentMethods)
+    console.log('🔄 [API UNIFIED POST] paymentMethods parsé:', parsedPaymentMethods)
+    data.paymentMethods = parsedPaymentMethods.length > 0 ? parsedPaymentMethods.join(', ') : ''
   }
 
   if (body.amenities !== undefined) {
-    // Déduplication des amenities pour éviter les doublons
-    const uniqueAmenities = Array.isArray(body.amenities)
-      ? [...new Set(body.amenities)].filter(item => typeof item === 'string' && item && item.trim() !== '')
-      : body.amenities
-    data.venueOptions = Array.isArray(uniqueAmenities)
-      ? uniqueAmenities.join(', ')
-      : uniqueAmenities
+    console.log('🔄 [API UNIFIED POST] amenities brut:', body.amenities, typeof body.amenities)
+    const parsedAmenities = parseStringArray(body.amenities)
+    console.log('🔄 [API UNIFIED POST] amenities parsé:', parsedAmenities)
+
+    // SAUVEGARDER TOUTES LES AMENITIES (services et options) - pas de filtrage
+    // Le frontend envoie un mélange de srv: et opt:, on garde tout pour compatibilité
+    const filteredAmenities = parsedAmenities.filter(item => item && item.trim() !== '')
+
+    console.log('🔄 [API UNIFIED POST] amenities filtrées:', filteredAmenities)
+    data.venueOptions = filteredAmenities.length > 0 ? filteredAmenities.join(', ') : ''
   }
 
   // Spécialités → practices (filtrées pour ne garder que les services, pas les équipements)
@@ -524,9 +550,10 @@ function transformUpdateData(body: any): Record<string, any> {
   }
 
   if (body.acceptedCurrencies !== undefined) {
-    data.acceptedCurrencies = Array.isArray(body.acceptedCurrencies) 
-      ? body.acceptedCurrencies.join(', ') 
-      : body.acceptedCurrencies
+    console.log('🔄 [API UNIFIED POST] acceptedCurrencies brut:', body.acceptedCurrencies, typeof body.acceptedCurrencies)
+    const parsedCurrencies = parseStringArray(body.acceptedCurrencies)
+    console.log('🔄 [API UNIFIED POST] acceptedCurrencies parsé:', parsedCurrencies)
+    data.acceptedCurrencies = parsedCurrencies.length > 0 ? parsedCurrencies.join(', ') : ''
   }
 
   // Tarifs
@@ -597,6 +624,11 @@ function transformUpdateData(body: any): Record<string, any> {
   if (body.originDetails !== undefined) data.originDetails = body.originDetails
   if (body.rateStructure !== undefined) data.rateStructure = body.rateStructure
   if (body.ageVerified !== undefined) data.ageVerified = body.ageVerified
+  if (body.agendaEnabled !== undefined) {
+    console.log('🔄 [API UNIFIED] agendaEnabled reçu:', body.agendaEnabled, 'type:', typeof body.agendaEnabled)
+    data.agendaEnabled = body.agendaEnabled
+    console.log('🔄 [API UNIFIED] agendaEnabled ajouté à data:', data.agendaEnabled)
+  }
   if (body.minimumDuration !== undefined) data.minimumDuration = body.minimumDuration
 
   return data
@@ -659,39 +691,95 @@ function transformProfileData(rawProfile: any, mode: 'dashboard' | 'public') {
     }
   })()
 
-  // Parse des langues (logique centralisée) - RETOURNE TOUJOURS UN ARRAY
+  // Parse des langues avec étoiles (logique centralisée) - RETOURNE UN OBJET { langue: rating }
   const languages = (() => {
     try {
       const raw = String(rawProfile.languages || '')
-      if (!raw) return []
+      console.log('🔄 [API UNIFIED] Raw languages from DB:', raw)
+      if (!raw) return {}
+      
+      // Nouveau format avec étoiles: "Français:5⭐, Anglais:3⭐"
+      if (raw.includes('⭐')) {
+        const languageEntries = raw.split(',').map((x: string) => x.trim()).filter(Boolean)
+        const result: Record<string, number> = {}
+        
+        languageEntries.forEach(entry => {
+          const match = entry.match(/^(.+):(\d+)⭐$/)
+          if (match) {
+            const [, lang, rating] = match
+            result[lang] = parseInt(rating, 10)
+          }
+        })
+        console.log('🔄 [API UNIFIED] Languages parsed (stars format):', result)
+        return result
+      }
+      
+      // Ancien format: array ou CSV simple
       if (raw.trim().startsWith('[')) {
         const L = JSON.parse(raw)
-        return Array.isArray(L) ? L : []
+        const result: Record<string, number> = {}
+        if (Array.isArray(L)) {
+          L.forEach(lang => {
+            result[lang] = 5 // Par défaut 5 étoiles pour les langues existantes
+          })
+        }
+        console.log('🔄 [API UNIFIED] Languages parsed (array format):', result)
+        return result
       }
-      // Convertir CSV en array avec mapping des codes courts
+      
+      // Format corrompu détecté - nettoyage spécial
+      if (raw.includes('{') && raw.includes('}')) {
+        console.log('🔄 [API UNIFIED] Corrupted format detected, attempting cleanup...')
+        try {
+          // Essayer de parser comme JSON d'abord
+          const parsed = JSON.parse(raw)
+          if (typeof parsed === 'object' && !Array.isArray(parsed)) {
+            const result: Record<string, number> = {}
+            Object.entries(parsed).forEach(([key, value]) => {
+              // Nettoyer les clés qui contiennent des guillemets et caractères spéciaux
+              let cleanKey = key.replace(/^["']|["']$/g, '').replace(/\\"/g, '"')
+              
+              // Supprimer les clés qui sont des objets JSON stringifiés
+              if (cleanKey.includes('{') || cleanKey.includes('}') || cleanKey.includes('\\')) {
+                console.log('🔄 [API UNIFIED] Skipping corrupted key:', cleanKey)
+                return
+              }
+              
+              // Nettoyer les clés qui contiennent des guillemets supplémentaires
+              cleanKey = cleanKey.replace(/^["']|["']$/g, '')
+              
+              if (typeof value === 'number' && cleanKey.length > 0) {
+                result[cleanKey] = value
+              }
+            })
+            console.log('🔄 [API UNIFIED] Languages parsed (corrupted JSON cleanup):', result)
+            return result
+          }
+        } catch (e) {
+          console.log('🔄 [API UNIFIED] JSON parse failed, trying CSV cleanup...')
+        }
+      }
+      
+      // CSV simple avec nettoyage
       const csvArray = raw.split(',').map((x: string) => x.trim()).filter(Boolean)
-      return csvArray.map(lang => {
-        // Garder les codes courts pour cohérence avec le frontend
-        switch(lang.toLowerCase()) {
-          case 'français':
-          case 'francais':
-          case 'french': return 'fr'
-          case 'anglais':
-          case 'english': return 'en'
-          case 'allemand':
-          case 'german':
-          case 'deutsch': return 'de'
-          case 'italien':
-          case 'italian':
-          case 'italiano': return 'it'
-          case 'espagnol':
-          case 'spanish':
-          case 'español': return 'es'
-          default: return lang
+      const result: Record<string, number> = {}
+      csvArray.forEach(entry => {
+        // Essayer de parser "langue:rating" ou juste "langue"
+        const colonMatch = entry.match(/^(.+):(\d+)$/)
+        if (colonMatch) {
+          const [, lang, rating] = colonMatch
+          result[lang] = parseInt(rating, 10)
+        } else {
+          // Nettoyer les guillemets et caractères spéciaux
+          const cleanLang = entry.replace(/^["']|["']$/g, '').replace(/\\"/g, '"')
+          result[cleanLang] = 5 // Par défaut 5 étoiles
         }
       })
-    } catch {
-      return []
+      console.log('🔄 [API UNIFIED] Languages parsed (CSV cleanup):', result)
+      return result
+    } catch (e) {
+      console.log('🔄 [API UNIFIED] Languages parse error:', e, 'returning empty object')
+      return {}
     }
   })()
 
@@ -729,11 +817,23 @@ function transformProfileData(rawProfile: any, mode: 'dashboard' | 'public') {
 
   // Parse des nouvelles options (avec fallback si champs manquants)
   const paymentMethods = parseStringArray((rawProfile as any).paymentMethods)
+
   console.log('🔄 [API UNIFIED] venueOptions brut:', (rawProfile as any).venueOptions, typeof (rawProfile as any).venueOptions)
-  const rawAmenities = parseStringArray((rawProfile as any).venueOptions) // Note: venueOptions en BDD → amenities en interface
-  // Déduplication des amenities depuis la BDD pour nettoyer les doublons existants
-  const amenities = [...new Set(rawAmenities)].filter(item => item && item.trim() !== '')
-  console.log('🔄 [API UNIFIED] amenities dédupliquées:', amenities.length, 'éléments (', rawAmenities.length, 'avant déduplication)')
+
+  // Parsing spécial pour venueOptions qui contient un mélange srv: et opt:
+  const rawVenueOptions = parseStringArray((rawProfile as any).venueOptions)
+  console.log('🔄 [API UNIFIED] venueOptions parsées:', rawVenueOptions)
+
+  // Séparer les vraies amenities (opt:) des services (srv:)
+  const amenities = rawVenueOptions
+    .filter(item => item && item.trim() !== '' && item.startsWith('opt:'))
+    .map(item => item.replace(/^opt:/, '').trim())
+    .filter(item => item !== '')
+
+  // Déduplication des amenities
+  const uniqueAmenities = [...new Set(amenities)]
+  console.log('🔄 [API UNIFIED] amenities filtrées:', uniqueAmenities.length, 'éléments')
+
   const acceptedCurrencies = parseStringArray((rawProfile as any).acceptedCurrencies)
 
   // Services détaillés supprimés (pour éviter doublons)
@@ -759,7 +859,7 @@ function transformProfileData(rawProfile: any, mode: 'dashboard' | 'public') {
 
     // Nouvelles options (déplacées au niveau du profil pour cohérence)
     paymentMethods,
-    amenities,
+    amenities: uniqueAmenities,
     acceptedCurrencies,
 
     // Médias
@@ -842,8 +942,12 @@ function transformProfileData(rawProfile: any, mode: 'dashboard' | 'public') {
       outcall: !!rawProfile.outcall,
       incall: !!rawProfile.incall,
       availableNow: !!rawProfile.availableNow,
-      weekendAvailable: !!rawProfile.weekendAvailable
+      weekendAvailable: !!rawProfile.weekendAvailable,
+      agendaEnabled: rawProfile.agendaEnabled !== undefined ? !!rawProfile.agendaEnabled : false // Par défaut false
     },
+    
+    // Agenda activé (pour compatibilité avec l'API publique)
+    agendaEnabled: rawProfile.agendaEnabled !== undefined ? !!rawProfile.agendaEnabled : false,
 
     // Clientèle
     clientele: {
@@ -899,6 +1003,9 @@ function transformProfileData(rawProfile: any, mode: 'dashboard' | 'public') {
 
       // Validation
       ageVerified: !!rawProfile.ageVerified,
+
+      // Agenda
+      agendaEnabled: !!rawProfile.agendaEnabled,
 
       // Verification et complétion
       isVerifiedBadge: !!rawProfile.isVerifiedBadge,

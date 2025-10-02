@@ -70,6 +70,8 @@ export async function GET(
         acceptsHandicapped: true,
         acceptsSeniors: true,
         acceptsWomen: true,
+        // Agenda
+        agendaEnabled: false,
         // Stats (à implémenter plus tard)
         // likes: true,
         // views: true,
@@ -81,13 +83,48 @@ export async function GET(
       return NextResponse.json({ error: 'profile_not_found' }, { status: 404 })
     }
 
-    // Parser les données JSON
+    // Parser les données JSON - Format unifié avec étoiles
     const languages = (() => {
       try {
-        const L = JSON.parse(String(escort.languages || '[]'))
-        return Array.isArray(L) ? L : []
+        const raw = String(escort.languages || '')
+        if (!raw) return {}
+        
+        // Nouveau format avec étoiles: "Français:5⭐, Anglais:3⭐"
+        if (raw.includes('⭐')) {
+          const languageEntries = raw.split(',').map((x: string) => x.trim()).filter(Boolean)
+          const result: Record<string, number> = {}
+          
+          languageEntries.forEach(entry => {
+            const match = entry.match(/^(.+):(\d+)⭐$/)
+            if (match) {
+              const [, lang, rating] = match
+              result[lang] = parseInt(rating, 10)
+            }
+          })
+          return result
+        }
+        
+        // Ancien format: array ou CSV simple
+        if (raw.trim().startsWith('[')) {
+          const L = JSON.parse(raw)
+          const result: Record<string, number> = {}
+          if (Array.isArray(L)) {
+            L.forEach(lang => {
+              result[lang] = 5 // Par défaut 5 étoiles pour les langues existantes
+            })
+          }
+          return result
+        }
+        
+        // CSV simple
+        const csvArray = raw.split(',').map((x: string) => x.trim()).filter(Boolean)
+        const result: Record<string, number> = {}
+        csvArray.forEach(lang => {
+          result[lang] = 5 // Par défaut 5 étoiles pour les langues existantes
+        })
+        return result
       } catch {
-        return []
+        return {}
       }
     })()
 
@@ -312,12 +349,15 @@ export async function GET(
       })(),
       // Données agenda brutes pour la modal horaires
       scheduleData: normalizedSchedule,
+      agendaEnabled: !!escort.agendaEnabled,
       age,
       updatedAt: escort.updatedAt
     }
 
     console.log('🚨🚨🚨 [API PUBLIC PROFILE] RETURNING realTimeAvailability:', profile.realTimeAvailability)
     console.log('🚨🚨🚨 [API PUBLIC PROFILE] RETURNING scheduleData:', profile.scheduleData)
+    console.log('🚨🚨🚨 [API PUBLIC PROFILE] escort.agendaEnabled from DB:', escort.agendaEnabled, 'type:', typeof escort.agendaEnabled)
+    console.log('🚨🚨🚨 [API PUBLIC PROFILE] profile.agendaEnabled:', profile.agendaEnabled, 'type:', typeof profile.agendaEnabled)
 
     return NextResponse.json(profile)
 

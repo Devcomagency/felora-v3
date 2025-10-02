@@ -75,6 +75,7 @@ interface EscortProfile {
   outcall?: boolean
   availableNow?: boolean
   weekendAvailable?: boolean
+  agendaEnabled?: boolean  // Agenda activé/désactivé
 }
 
 const EMOJI_REACTIONS = ['🔥', '💎', '😍', '🤤', '💋', '🥵', '❤️', '🌟']
@@ -826,35 +827,43 @@ export default function ProfileClient({ profile: initialProfile }: ProfileClient
             </div>
 
 
-            {/* Disponibilité aujourd'hui */}
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <div className={`w-3 h-3 rounded-full ${profile.online ? 'bg-green-500' : 'bg-red-500'}`} />
-                <h4 className="font-semibold text-sm">
-                  {profile.online ? 'Disponible maintenant' : 'Indisponible'} - {extendedProfileData.location.city}
-                </h4>
-              </div>
-              
-              {profile.online && (
-                <div className="flex gap-2 flex-wrap mb-2 items-center">
-                  <div className="px-3 py-1.5 bg-green-500/20 rounded-lg text-xs font-medium border border-green-500/40 text-green-300">
-                    10h-21h
-                  </div>
+            {/* Disponibilité aujourd'hui - Affiche seulement si agenda activé */}
+            {(() => {
+              console.log('🔍 [PROFILE] agendaEnabled value:', profile.agendaEnabled, 'type:', typeof profile.agendaEnabled)
+              console.log('🔍 [PROFILE] profile object keys:', Object.keys(profile))
+              console.log('🔍 [PROFILE] strict equality check:', profile.agendaEnabled === true)
+              console.log('🔍 [PROFILE] truthy check:', !!profile.agendaEnabled)
+              return profile.agendaEnabled === true
+            })() && (
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <div className={`w-3 h-3 rounded-full ${profile.online ? 'bg-green-500' : 'bg-red-500'}`} />
+                  <h4 className="font-semibold text-sm">
+                    {profile.online ? 'Disponible maintenant' : 'Indisponible'} - {extendedProfileData.location.city}
+                  </h4>
                 </div>
-              )}
-              
-              <div className="text-xs text-gray-400">
-                {extendedProfileData.location.district} • 
-                {extendedProfileData.location.incall && extendedProfileData.location.outcall 
-                  ? 'Se déplace et reçoit' 
-                  : extendedProfileData.location.incall 
-                    ? 'Reçoit uniquement'
-                    : extendedProfileData.location.outcall
-                      ? 'Se déplace uniquement'
-                      : 'Modalités à définir'
-                }
+
+                {profile.online && (
+                  <div className="flex gap-2 flex-wrap mb-2 items-center">
+                    <div className="px-3 py-1.5 bg-green-500/20 rounded-lg text-xs font-medium border border-green-500/40 text-green-300">
+                      10h-21h
+                    </div>
+                  </div>
+                )}
+
+                <div className="text-xs text-gray-400">
+                  {extendedProfileData.location.district} •
+                  {extendedProfileData.location.incall && extendedProfileData.location.outcall
+                    ? 'Se déplace et reçoit'
+                    : extendedProfileData.location.incall
+                      ? 'Reçoit uniquement'
+                      : extendedProfileData.location.outcall
+                        ? 'Se déplace uniquement'
+                        : 'Modalités à définir'
+                  }
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Tags services */}
             <div className="flex flex-wrap gap-1.5">
@@ -1383,7 +1392,7 @@ export default function ProfileClient({ profile: initialProfile }: ProfileClient
               <div>
                 <h3 className="text-lg font-semibold text-white mb-3 border-b border-white/10 pb-2">Langues</h3>
                 <div className="flex flex-wrap gap-2">
-                  {extendedProfileData.languages.map((lang, index) => (
+                  {Object.keys(extendedProfileData.languages || {}).map((lang, index) => (
                     <span key={index} className="px-3 py-1 bg-blue-500/20 text-blue-300 rounded-full text-sm">
                       {lang}
                     </span>
@@ -1461,33 +1470,42 @@ export default function ProfileClient({ profile: initialProfile }: ProfileClient
                 </div>
               )}
 
-              {/* Disponibilité */}
-              <div>
-                <h3 className="text-lg font-semibold text-white mb-3 border-b border-white/10 pb-2">Disponibilité</h3>
-                <div className="space-y-2 text-sm">
-                  <div>
-                    <span className="text-gray-400">Cette semaine :</span>
-                    <span className="text-white ml-2">{extendedProfileData.availability.thisWeek}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className={`w-2 h-2 rounded-full ${profile.online ? 'bg-green-500' : 'bg-red-500'}`} />
-                    <span className="text-white">
-                      {profile.online ? 'Disponible maintenant' : 'Indisponible actuellement'}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-gray-400">Modalités :</span>
-                    <span className="text-white ml-2">
-                      {extendedProfileData.location.incall && extendedProfileData.location.outcall 
-                        ? 'Se déplace et reçoit' 
-                        : extendedProfileData.location.incall 
-                          ? 'Reçoit uniquement'
-                          : 'Se déplace uniquement'
-                      }
-                    </span>
+              {/* Disponibilité - Affiche seulement si agenda activé */}
+              {(() => {
+                console.log('🔍 [ProfileClient] Section disponibilité exécutée')
+                console.log('🔍 [ProfileClient] profile.agendaEnabled:', profile.agendaEnabled, 'type:', typeof profile.agendaEnabled)
+                console.log('🔍 [ProfileClient] profile keys:', Object.keys(profile))
+                console.log('🔍 [ProfileClient] strict equality check:', profile.agendaEnabled === true)
+                console.log('🔍 [ProfileClient] truthy check:', !!profile.agendaEnabled)
+                return profile.agendaEnabled === true
+              })() && (
+                <div>
+                  <h3 className="text-lg font-semibold text-white mb-3 border-b border-white/10 pb-2">Disponibilité</h3>
+                  <div className="space-y-2 text-sm">
+                    <div>
+                      <span className="text-gray-400">Cette semaine :</span>
+                      <span className="text-white ml-2">{extendedProfileData.availability.thisWeek}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className={`w-2 h-2 rounded-full ${profile.online ? 'bg-green-500' : 'bg-red-500'}`} />
+                      <span className="text-white">
+                        {profile.online ? 'Disponible maintenant' : 'Indisponible actuellement'}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-gray-400">Modalités :</span>
+                      <span className="text-white ml-2">
+                        {extendedProfileData.location.incall && extendedProfileData.location.outcall 
+                          ? 'Se déplace et reçoit' 
+                          : extendedProfileData.location.incall 
+                            ? 'Reçoit uniquement'
+                            : 'Se déplace uniquement'
+                        }
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
 
               {/* Stats */}
               <div>

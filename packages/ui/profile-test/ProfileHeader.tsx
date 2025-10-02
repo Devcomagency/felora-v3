@@ -43,6 +43,7 @@ interface ProfileHeaderProps {
   showAgendaPill?: boolean
   onAgendaClick?: () => void
   agendaIsOpenNow?: boolean
+  agendaEnabled?: boolean
 }
 
 export default function ProfileHeader({
@@ -65,7 +66,8 @@ export default function ProfileHeader({
   description,
   showAgendaPill,
   onAgendaClick,
-  agendaIsOpenNow
+  agendaIsOpenNow,
+  agendaEnabled = false
 }: ProfileHeaderProps) {
   // Animation des viewers retirée
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false)
@@ -204,8 +206,8 @@ export default function ProfileHeader({
           </div>
         )}
 
-        {/* Statut de disponibilité temps réel + bouton Agenda */}
-        {(realTimeAvailability || availability || showAgendaPill) && (
+        {/* Statut de disponibilité temps réel + bouton Agenda - Affiche seulement si agenda activé */}
+        {agendaEnabled && (realTimeAvailability || availability || showAgendaPill) && (
           <div>
             {realTimeAvailability ? (
               <div className="flex items-center gap-2">

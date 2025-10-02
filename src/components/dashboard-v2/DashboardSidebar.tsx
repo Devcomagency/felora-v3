@@ -63,11 +63,6 @@ export default function DashboardSidebar() {
       path: '/escort/messages'
     },
     {
-      name: 'Statistiques',
-      icon: <BarChart3 size={20} />,
-      path: '/escort/stats'
-    },
-    {
       name: 'Portefeuille',
       icon: <Wallet size={20} />,
       path: '/escort/wallet'
@@ -95,11 +90,6 @@ export default function DashboardSidebar() {
       name: 'Mes Escorts',
       icon: <Users size={20} />,
       path: '/club/escorts'
-    },
-    {
-      name: 'Statistiques',
-      icon: <BarChart3 size={20} />,
-      path: '/club/stats'
     },
     {
       name: 'Paramètres',
