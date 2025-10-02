@@ -531,7 +531,10 @@ export default function AddressAutocomplete({
                 clearTimeout(window.geocodeTimeout)
                 window.geocodeTimeout = setTimeout(() => {
                   if (newAddress.length > 10) { // Seulement pour les adresses suffisamment longues
+                    console.log('⏰ [DASHBOARD] Déclenchement géocodage automatique pour:', newAddress)
                     geocodeAddress(newAddress)
+                  } else {
+                    console.log('⚠️ [DASHBOARD] Adresse trop courte pour géocodage:', newAddress.length, 'caractères')
                   }
                 }, 1000) // Délai de 1 seconde
               }
