@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { ArrowLeft, Video, Loader2, CheckCircle2 } from 'lucide-react'
 import Link from 'next/link'
-import SimpleUploader from '@/components/upload/SimpleUploader'
+import DirectUploader from '@/components/upload/DirectUploader'
 import HLSVideoPlayer from '@/components/video/HLSVideoPlayer'
 
 interface TranscodedVideo {
@@ -113,7 +113,7 @@ export default function TestHLSPage() {
           <Video size={24} />
           1. Uploader une vidéo
         </h2>
-        <SimpleUploader
+        <DirectUploader
           onComplete={handleUploadComplete}
           maxFileSize={500 * 1024 * 1024}
           allowedFileTypes={['video/*']}
