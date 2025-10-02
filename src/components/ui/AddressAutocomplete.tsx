@@ -235,7 +235,7 @@ export default function AddressAutocomplete({
     
     // Communication entre onglets via localStorage
     localStorage.setItem('felora_address_update', JSON.stringify(eventData))
-    localStorage.removeItem('felora_address_update') // Déclencher l'événement storage
+    // Ne pas supprimer immédiatement, laisser la carte traiter l'événement
   }
 
   const handleHistorySelect = (address: string, coordinates?: { lat: number; lng: number }) => {
@@ -282,7 +282,7 @@ export default function AddressAutocomplete({
           
           // Communication entre onglets via localStorage
           localStorage.setItem('felora_address_update', JSON.stringify(eventData))
-          localStorage.removeItem('felora_address_update') // Déclencher l'événement storage
+          // Ne pas supprimer immédiatement, laisser la carte traiter l'événement
           
           return data.coordinates
         }
@@ -496,16 +496,41 @@ export default function AddressAutocomplete({
           <span>{isLocating ? 'Détection...' : 'Détecter ma position'}</span>
         </button>
         
-        {/* 🧪 BOUTON DE TEST POUR FORCER LE GÉOCODAGE */}
-        <button
-          onClick={() => {
-            console.log('🧪 [TEST] Forçage géocodage test...')
-            geocodeAddress('Rue De-MONTHOUX 1 1201 Genève')
-          }}
-          className="flex items-center gap-2 px-3 py-2 bg-green-500/20 border border-green-500/30 rounded-lg text-green-400 hover:bg-green-500/30 transition-colors text-sm"
-        >
-          <span>🧪 Test Géocodage</span>
-        </button>
+              {/* 🧪 BOUTON DE TEST POUR FORCER LE GÉOCODAGE */}
+              <button
+                onClick={() => {
+                  console.log('🧪 [TEST] Forçage géocodage test...')
+                  geocodeAddress('Rue De-MONTHOUX 1 1201 Genève')
+                }}
+                className="flex items-center gap-2 px-3 py-2 bg-green-500/20 border border-green-500/30 rounded-lg text-green-400 hover:bg-green-500/30 transition-colors text-sm"
+              >
+                <span>🧪 Test Géocodage</span>
+              </button>
+              
+              {/* 🧪 BOUTON DE TEST POUR LA COMMUNICATION ENTRE ONGLETS */}
+              <button
+                onClick={() => {
+                  console.log('🧪 [TEST] Test communication entre onglets...')
+                  const testData = {
+                    address: 'Rue du Rhône 1 1204 Genève',
+                    coordinates: { lat: 46.2044, lng: 6.1432 },
+                    city: 'Genève',
+                    canton: 'GE',
+                    timestamp: Date.now()
+                  }
+                  
+                  // Événement local
+                  const mapUpdateEvent = new CustomEvent('addressChanged', { detail: testData })
+                  window.dispatchEvent(mapUpdateEvent)
+                  
+                  // Communication entre onglets via localStorage
+                  localStorage.setItem('felora_address_update', JSON.stringify(testData))
+                  console.log('📤 [TEST] Événement test envoyé:', testData)
+                }}
+                className="flex items-center gap-2 px-3 py-2 bg-purple-500/20 border border-purple-500/30 rounded-lg text-purple-400 hover:bg-purple-500/30 transition-colors text-sm"
+              >
+                <span>🧪 Test Sync</span>
+              </button>
       </div>
 
       {/* Historique des adresses */}

@@ -297,8 +297,13 @@ export default function MapTest() {
           // Traiter comme un événement addressChanged
           const fakeEvent = { detail: eventData }
           handleAddressChanged(fakeEvent)
+          
+          // Nettoyer le localStorage après traitement
+          localStorage.removeItem('felora_address_update')
+          console.log('🧹 [CARTE] localStorage nettoyé après traitement')
         } catch (error) {
           console.log('❌ [CARTE] Erreur parsing storage event:', error)
+          localStorage.removeItem('felora_address_update')
         }
       }
     }
