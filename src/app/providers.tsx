@@ -5,6 +5,7 @@ import { SessionProvider } from 'next-auth/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AuthProvider } from '../contexts/AuthContext'
 import { NotificationProvider } from '@/components/providers/NotificationProvider'
+import LivepeerProvider from '@/components/providers/LivepeerProvider'
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => new QueryClient({

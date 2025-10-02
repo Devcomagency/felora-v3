@@ -15,6 +15,9 @@ interface UploadedFile {
   name: string
   size: number
   url?: string
+  assetId?: string // Livepeer asset ID après transcodage
+  playbackId?: string // Livepeer playback ID
+  status?: 'uploading' | 'transcoding' | 'ready' | 'failed'
 }
 
 interface FileUpload {
@@ -106,28 +109,87 @@ export default function SimpleUploader({
           return updated
         })
       },
-      onSuccess: () => {
+      onSuccess: async () => {
         console.log('✅ Upload réussi:', fileUpload.file.name)
-        setUploads(prev => {
-          const updated = new Map(prev)
-          const upload = updated.get(fileId)
-          if (upload) {
-            upload.status = 'completed'
-            upload.progress = 100
-            updated.set(fileId, upload)
-          }
-          return updated
-        })
 
-        // Vérifier si tous les uploads sont terminés
-        const allCompleted = Array.from(uploads.values()).every(
-          u => u.status === 'completed' || u.status === 'error'
-        )
-        if (allCompleted && onComplete) {
-          const completedFiles = Array.from(uploads.values())
-            .filter(u => u.status === 'completed')
-            .map(u => ({ name: u.file.name, size: u.file.size }))
-          onComplete(completedFiles)
+        // Déclencher le transcodage si vidéo
+        if (fileUpload.file.type.startsWith('video/')) {
+          console.log('🎬 Déclenchement transcodage Livepeer...')
+
+          try {
+            const response = await fetch('/api/video/transcode', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                fileUrl: upload.url, // URL du fichier uploadé
+                fileName: fileUpload.file.name
+              })
+            })
+
+            if (response.ok) {
+              const data = await response.json()
+              console.log('✅ Transcodage démarré:', data.asset.id)
+
+              setUploads(prev => {
+                const updated = new Map(prev)
+                const upload = updated.get(fileId)
+                if (upload) {
+                  upload.status = 'completed'
+                  upload.progress = 100
+                  updated.set(fileId, upload)
+                }
+                return updated
+              })
+
+              // Appeler onComplete avec les infos Livepeer
+              if (onComplete) {
+                onComplete([{
+                  name: fileUpload.file.name,
+                  size: fileUpload.file.size,
+                  url: upload.url || undefined,
+                  assetId: data.asset.id,
+                  playbackId: data.asset.playbackId,
+                  status: 'transcoding'
+                }])
+              }
+            } else {
+              throw new Error('Erreur API transcodage')
+            }
+          } catch (error) {
+            console.error('❌ Erreur transcodage:', error)
+            // Continuer malgré l'erreur de transcodage
+            setUploads(prev => {
+              const updated = new Map(prev)
+              const upload = updated.get(fileId)
+              if (upload) {
+                upload.status = 'completed'
+                upload.progress = 100
+                updated.set(fileId, upload)
+              }
+              return updated
+            })
+          }
+        } else {
+          // Image, pas de transcodage
+          setUploads(prev => {
+            const updated = new Map(prev)
+            const upload = updated.get(fileId)
+            if (upload) {
+              upload.status = 'completed'
+              upload.progress = 100
+              updated.set(fileId, upload)
+            }
+            return updated
+          })
+
+          if (onComplete) {
+            onComplete([{
+              name: fileUpload.file.name,
+              size: fileUpload.file.size,
+              url: upload.url || undefined,
+              status: 'ready'
+            }])
+          }
         }
       }
     })

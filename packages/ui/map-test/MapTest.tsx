@@ -197,11 +197,45 @@ export default function MapTest() {
     longitude: number
     escorts: EscortData[]
   } | null>(null)
+  
+  // 🎯 ÉTAT POUR LE PROFIL ESCORT CONNECTÉ
+  const [currentUserProfile, setCurrentUserProfile] = useState<EscortData | null>(null)
+
+  // 🎯 RÉCUPÉRER LE PROFIL ESCORT CONNECTÉ
+  useEffect(() => {
+    const fetchCurrentUserProfile = async () => {
+      try {
+        const response = await fetch('/api/me/escort-profile')
+        if (response.ok) {
+          const profile = await response.json()
+          if (profile && profile.latitude && profile.longitude) {
+            const escortData: EscortData = {
+              id: profile.id,
+              name: profile.stageName || 'Mon Profil',
+              lat: profile.latitude,
+              lng: profile.longitude,
+              city: profile.city || '',
+              services: profile.services || [],
+              languages: profile.languages || {},
+              verified: profile.isVerifiedBadge || false,
+              isActive: profile.status === 'ACTIVE'
+            }
+            setCurrentUserProfile(escortData)
+            console.log('👤 Profil escort connecté chargé:', escortData)
+          }
+        }
+      } catch (error) {
+        console.log('ℹ️ Pas de profil escort connecté ou erreur:', error)
+      }
+    }
+    
+    fetchCurrentUserProfile()
+  }, [])
 
   // 🎯 ÉCOUTER LES ÉVÉNEMENTS D'ADRESSE CHANGÉE POUR SYNCHRONISER LA CARTE
   useEffect(() => {
     const handleAddressChanged = (event: any) => {
-      const { coordinates } = event.detail
+      const { coordinates, address } = event.detail
       if (coordinates && coordinates.lat && coordinates.lng) {
         console.log('🗺️ Mise à jour de la carte depuis le dashboard:', coordinates)
         
@@ -212,6 +246,16 @@ export default function MapTest() {
           longitude: coordinates.lng,
           zoom: Math.max(prev.zoom, 15) // Zoom plus proche pour une adresse spécifique
         }))
+        
+        // 🎯 METTRE À JOUR LE PROFIL ESCORT CONNECTÉ
+        if (currentUserProfile) {
+          setCurrentUserProfile(prev => prev ? {
+            ...prev,
+            lat: coordinates.lat,
+            lng: coordinates.lng
+          } : null)
+          console.log('👤 Profil escort mis à jour avec nouvelles coordonnées:', coordinates)
+        }
         
         // Mettre à jour l'URL pour refléter la nouvelle position
         const newCenter = `${coordinates.lat},${coordinates.lng}`
@@ -225,7 +269,7 @@ export default function MapTest() {
     return () => {
       window.removeEventListener('addressChanged', handleAddressChanged)
     }
-  }, [router])
+  }, [router, currentUserProfile])
   const [search, setSearch] = useState('')
   const [selectedServices, setSelectedServices] = useState<string[]>([])
   const [userLocation, setUserLocation] = useState<{latitude: number, longitude: number} | null>(null)
@@ -253,11 +297,9 @@ export default function MapTest() {
     }
   )
 
-  // Transform real API data to match expected format
+  // Transform real API data to match expected format + include current user profile
   const allEscorts = useMemo(() => {
-    if (!data || !data.items || !Array.isArray(data.items)) return []
-
-    return data.items.map((escort: any) => ({
+    const apiEscorts = (data?.items || []).map((escort: any) => ({
       id: escort.id,
       name: escort.stageName || 'Escort',
       lat: escort.latitude || 46.8182, // Default to Switzerland center
@@ -269,7 +311,18 @@ export default function MapTest() {
       verified: escort.isVerifiedBadge || false,
       isActive: escort.isActive || true
     }))
-  }, [data])
+
+    // 🎯 INCLURE LE PROFIL ESCORT CONNECTÉ S'IL EXISTE
+    if (currentUserProfile) {
+      // Vérifier si le profil connecté n'est pas déjà dans la liste
+      const isAlreadyIncluded = apiEscorts.some(escort => escort.id === currentUserProfile.id)
+      if (!isAlreadyIncluded) {
+        apiEscorts.unshift(currentUserProfile) // Ajouter au début pour le mettre en évidence
+      }
+    }
+
+    return apiEscorts
+  }, [data, currentUserProfile])
 
   // Filter escorts
   const filteredEscorts = useMemo(() => {
