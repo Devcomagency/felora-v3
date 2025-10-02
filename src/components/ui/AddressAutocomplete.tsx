@@ -550,16 +550,16 @@ export default function AddressAutocomplete({
                 console.log('📤 [DASHBOARD] Émission événement addressChanged (saisie directe GPS):', mapUpdateEvent.detail)
                 window.dispatchEvent(mapUpdateEvent)
               } else {
-                // Géocoder l'adresse avec un délai pour éviter trop d'appels API
-                clearTimeout(window.geocodeTimeout)
-                window.geocodeTimeout = setTimeout(() => {
-                  if (newAddress.length > 10) { // Seulement pour les adresses suffisamment longues
-                    console.log('⏰ [DASHBOARD] Déclenchement géocodage automatique pour:', newAddress)
-                    geocodeAddress(newAddress)
-                  } else {
-                    console.log('⚠️ [DASHBOARD] Adresse trop courte pour géocodage:', newAddress.length, 'caractères')
-                  }
-                }, 1000) // Délai de 1 seconde
+        // Géocoder l'adresse avec un délai pour éviter trop d'appels API
+        clearTimeout(window.geocodeTimeout)
+        window.geocodeTimeout = setTimeout(() => {
+          if (newAddress.length > 10 && newAddress.length < 200) { // Seulement pour les adresses suffisamment longues mais pas trop
+            console.log('⏰ [DASHBOARD] Déclenchement géocodage automatique pour:', newAddress)
+            geocodeAddress(newAddress)
+          } else {
+            console.log('⚠️ [DASHBOARD] Adresse trop courte ou trop longue pour géocodage:', newAddress.length, 'caractères')
+          }
+        }, 1000) // Délai de 1 seconde
               }
             }
           }}
