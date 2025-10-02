@@ -483,6 +483,17 @@ export default function AddressAutocomplete({
           )}
           <span>{isLocating ? 'Détection...' : 'Détecter ma position'}</span>
         </button>
+        
+        {/* 🧪 BOUTON DE TEST POUR FORCER LE GÉOCODAGE */}
+        <button
+          onClick={() => {
+            console.log('🧪 [TEST] Forçage géocodage test...')
+            geocodeAddress('Rue De-MONTHOUX 1 1201 Genève')
+          }}
+          className="flex items-center gap-2 px-3 py-2 bg-green-500/20 border border-green-500/30 rounded-lg text-green-400 hover:bg-green-500/30 transition-colors text-sm"
+        >
+          <span>🧪 Test Géocodage</span>
+        </button>
       </div>
 
       {/* Historique des adresses */}
