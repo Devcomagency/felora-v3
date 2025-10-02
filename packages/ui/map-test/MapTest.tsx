@@ -215,7 +215,7 @@ export default function MapTest() {
           
           if (profile && profile.latitude && profile.longitude) {
             const escortData: EscortData = {
-              id: profile.escortId, // Utiliser escortId au lieu de id
+              id: profile.escortId || 'FIXED_ID', // FORCER LE RECHARGEMENT DU CACHE
               name: profile.stageName || 'Mon Profil',
               lat: profile.latitude,
               lng: profile.longitude,
