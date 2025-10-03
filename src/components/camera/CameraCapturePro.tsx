@@ -15,16 +15,16 @@ export default function CameraCapturePro({ onCapture, onClose, mode = 'video' }:
   const nativeInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    // Détecter si on est sur mobile
+    // Détecter si on est sur mobile et ouvrir directement la caméra native
     const checkMobile = () => {
       const ua = navigator.userAgent.toLowerCase()
       const mobile = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(ua)
       setIsMobile(mobile)
 
-      // Si mobile, proposer directement la caméra native
-      if (mobile) {
-        console.log('📱 Mobile détecté, proposition caméra native')
-      }
+      // Ouvrir automatiquement la caméra native
+      setTimeout(() => {
+        nativeInputRef.current?.click()
+      }, 100)
     }
     checkMobile()
   }, [])
