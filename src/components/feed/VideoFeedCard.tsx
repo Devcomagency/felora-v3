@@ -9,6 +9,7 @@ import { useVideoIntersection } from '../../hooks/useVideoIntersection'
 import { useFeedStore } from '../../stores/feedStore'
 import useReactions from '@/hooks/useReactions'
 import { stableMediaId } from '@/lib/reactions/stableMediaId'
+import ResponsiveVideoContainer, { useScreenCharacteristics } from './ResponsiveVideoContainer'
 
 // Types pour le feed
 interface MediaAuthor {
@@ -106,7 +107,7 @@ function PlayPauseAnimation({
 
   return (
     <motion.div
-      className="absolute left-1/2 top-1/2 flex h-16 w-16 items-center justify-center rounded-full bg-black/40 backdrop-blur-sm text-white z-20"
+      className="absolute left-1/2 top-1/2 flex h-10 w-10 items-center justify-center rounded-full bg-black/50 backdrop-blur-sm text-white z-20"
       initial={{
         scale: 0,
         opacity: 0,
@@ -114,9 +115,9 @@ function PlayPauseAnimation({
       }}
       animate={{
         opacity: [0, 1, 0],
-        scale: [1, 1.3, 0],
+        scale: [1, 1.2, 0],
       }}
-      transition={{ duration: 0.6 }}
+      transition={{ duration: 0.5 }}
       onAnimationComplete={onComplete}
     >
       {icon}
@@ -140,6 +141,7 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
   // Hooks
   const { handleIntersectingChange, togglePlayPause, currentVideo, isMute } = useVideoIntersection()
   const { toggleMute } = useFeedStore()
+  const screenCharacteristics = useScreenCharacteristics()
 
   // Build a stable mediaId and a stable guest user id
   const mediaId = stableMediaId({ rawId: item.id, profileId: item.author.id, url: item.url })
@@ -265,19 +267,33 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
       threshold={0.5}
       onChange={onIntersectingChange}
       style={{
-        height: '100dvh',
         scrollSnapStop: 'always',
         scrollSnapAlign: 'start',
       }}
-      className="relative w-full overflow-hidden bg-black"
+      className="relative w-full bg-black"
     >
+      <ResponsiveVideoContainer
+        aspectRatio="9:16"
+        maxHeight="100vh"
+        minHeight="100vh"
+        className="bg-black"
+      >
       {/* Vidéo Background */}
       <div className="absolute inset-0">
         {shouldShowVideo ? (
           <video
             aria-label="Lire/Pause média"
             ref={videoRef}
-            className="w-full h-full object-cover cursor-pointer"
+            className="w-full h-full cursor-pointer"
+            style={{
+              objectFit: 'cover',
+              objectPosition: 'center center',
+              // Optimisation pour éviter les déformations
+              minWidth: '100%',
+              minHeight: '100%',
+              maxWidth: 'none',
+              maxHeight: 'none'
+            }}
             loop
             muted
             playsInline
@@ -289,10 +305,16 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
           </video>
         ) : (
           <div 
-            className="w-full h-full bg-cover bg-center cursor-pointer"
+            className="w-full h-full cursor-pointer"
             style={{ 
               backgroundImage: `url(${item.url})`,
-              backgroundColor: '#1a1a1a'
+              backgroundColor: '#1a1a1a',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center center',
+              backgroundRepeat: 'no-repeat',
+              // Optimisation pour éviter les déformations
+              minWidth: '100%',
+              minHeight: '100%'
             }}
             onClick={handleVideoClick}
           />
@@ -311,13 +333,13 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
       
       <PlayPauseAnimation
         show={showPlayIcon}
-        icon={<Play className="w-8 h-8" />}
+        icon={<Play className="w-5 h-5" />}
         onComplete={() => setShowPlayIcon(false)}
       />
       
       <PlayPauseAnimation
         show={showPauseIcon}
-        icon={<Pause className="w-8 h-8" />}
+        icon={<Pause className="w-5 h-5" />}
         onComplete={() => setShowPauseIcon(false)}
       />
 
@@ -349,14 +371,14 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
         <div className="flex-1 flex flex-col justify-end p-6 pb-32">
           <div className="space-y-4 pointer-events-auto">
             {/* Author Info */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <div>
-                <h2 className="text-2xl font-bold text-white drop-shadow-lg">
+                <h2 className="text-lg font-semibold text-white drop-shadow-lg">
                   {item.author.name}
                 </h2>
               </div>
-              <Crown className="w-6 h-6 text-[#FF6B9D] drop-shadow" />
-              <Diamond className="w-5 h-5 text-[#4FD1C7] drop-shadow" />
+              <Crown className="w-4 h-4 text-[#FF6B9D] drop-shadow" />
+              <Diamond className="w-3.5 h-3.5 text-[#4FD1C7] drop-shadow" />
             </div>
 
             {/* Type de média */}
@@ -503,6 +525,7 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
           </div>
         </div>
       </div>
+      </ResponsiveVideoContainer>
     </InView>
   )
 }

@@ -116,11 +116,21 @@ export default function ClientFeedPage({ initialItems, initialCursor }: ClientFe
   return (
     <main 
       ref={containerRef}
-      className="h-dvh snap-y snap-mandatory overflow-y-scroll bg-black"
+      className="feed-container h-screen snap-y snap-mandatory overflow-y-scroll bg-black"
       style={{
         scrollbarWidth: 'none',
         msOverflowStyle: 'none',
+        // Gestion complète des safe areas
+        paddingLeft: 'env(safe-area-inset-left, 0px)',
+        paddingRight: 'env(safe-area-inset-right, 0px)',
+        paddingTop: 'env(safe-area-inset-top, 0px)',
         paddingBottom: 'calc(64px + env(safe-area-inset-bottom, 0px))',
+        // Fallback pour les navigateurs qui ne supportent pas dvh
+        height: '100vh',
+        minHeight: '100vh',
+        // Optimisation du scroll snap
+        scrollSnapType: 'y mandatory',
+        scrollBehavior: 'smooth'
       }}
     >
       <style jsx>{`
@@ -133,7 +143,7 @@ export default function ClientFeedPage({ initialItems, initialCursor }: ClientFe
         const mediaId = stableMediaId({ rawId: item.id, profileId: item.author.id, url: item.url })
         const initialTotal = initialTotals[mediaId]
         return (
-          <section key={item.id} className="snap-start">
+          <section key={item.id} className="feed-item snap-start">
             <VideoFeedCard item={item} initialTotal={initialTotal} />
           </section>
         )

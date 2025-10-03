@@ -4,6 +4,11 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
 
+// Configuration pour augmenter la limite de body size (vidéos)
+export const runtime = 'nodejs'
+export const maxDuration = 60 // 60 secondes max pour l'upload
+export const dynamic = 'force-dynamic'
+
 // API pour upload média vers le profil utilisateur (avec R2)
 export async function POST(request: NextRequest) {
   try {
