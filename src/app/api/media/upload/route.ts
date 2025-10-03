@@ -2,22 +2,20 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { writeFile, mkdir } from 'fs/promises'
-import { join } from 'path'
-import { existsSync } from 'fs'
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
 
-// API pour upload média vers le profil utilisateur
+// API pour upload média vers le profil utilisateur (avec R2)
 export async function POST(request: NextRequest) {
   try {
     console.log('🎬 Début upload média...')
     const session = await getServerSession(authOptions)
-    
-    console.log('👤 Session:', { 
-      userId: session?.user?.id, 
+
+    console.log('👤 Session:', {
+      userId: session?.user?.id,
       email: session?.user?.email,
-      role: session?.user?.role 
+      role: session?.user?.role
     })
-    
+
     if (!session?.user?.id) {
       console.log('❌ Pas de session utilisateur')
       return NextResponse.json({ success: false, error: 'Non authentifié' }, { status: 401 })
@@ -28,47 +26,90 @@ export async function POST(request: NextRequest) {
     const type = formData.get('type') as string || 'IMAGE'
     const pos = formData.get('pos') as string || '0'
     const description = formData.get('description') as string || ''
+    const visibility = formData.get('visibility') as string || 'public'
+    const location = formData.get('location') as string || ''
+    const price = formData.get('price') as string || ''
 
     if (!mediaFile) {
       return NextResponse.json({ success: false, error: 'Aucun fichier fourni' }, { status: 400 })
     }
 
-    // Créer le dossier uploads s'il n'existe pas
-    const uploadsDir = join(process.cwd(), 'uploads', 'profiles', session.user.id)
-    if (!existsSync(uploadsDir)) {
-      await mkdir(uploadsDir, { recursive: true })
-    }
+    console.log('📦 Fichier reçu:', {
+      name: mediaFile.name,
+      type: mediaFile.type,
+      size: mediaFile.size,
+      visibility,
+      location,
+      price
+    })
+
+    // Configuration S3/R2
+    const s3Client = new S3Client({
+      region: 'auto',
+      endpoint: process.env.CLOUDFLARE_R2_ENDPOINT,
+      credentials: {
+        accessKeyId: process.env.CLOUDFLARE_R2_ACCESS_KEY || '',
+        secretAccessKey: process.env.CLOUDFLARE_R2_SECRET_KEY || '',
+      },
+    })
 
     // Générer un nom de fichier unique
-    const fileExtension = mediaFile.type.includes('video') ? 'mp4' : 'jpg'
-    const fileName = `${type.toLowerCase()}_${pos}_${Date.now()}.${fileExtension}`
-    const filePath = join(uploadsDir, fileName)
+    const timestamp = Date.now()
+    const randomString = Math.random().toString(36).substring(2, 15)
+    const fileExtension = mediaFile.type.includes('video') ? 'mp4' : (mediaFile.type.includes('image') ? 'jpg' : 'bin')
+    const sanitizedFileName = `${type.toLowerCase()}_${pos}_${timestamp}-${randomString}.${fileExtension}`
+    const key = `profiles/${session.user.id}/${sanitizedFileName}`
 
-    // Sauvegarder le fichier
+    console.log('📤 Upload vers R2:', key)
+
+    // Upload vers R2
     const bytes = await mediaFile.arrayBuffer()
     const buffer = Buffer.from(bytes)
-    await writeFile(filePath, buffer)
 
-    // URL relative pour le serveur
-    const mediaUrl = `/uploads/profiles/${session.user.id}/${fileName}`
+    await s3Client.send(new PutObjectCommand({
+      Bucket: process.env.CLOUDFLARE_R2_BUCKET,
+      Key: key,
+      Body: buffer,
+      ContentType: mediaFile.type,
+    }))
+
+    // URL publique du fichier
+    const publicUrl = `${process.env.CLOUDFLARE_R2_PUBLIC_URL}/${key}`
+
+    console.log('✅ Fichier uploadé sur R2:', publicUrl)
 
     // Déterminer le type de profil (escort ou club)
     let ownerType = 'ESCORT'
     let ownerId = session.user.id
+    let profileId = session.user.id
+
+    // Vérifier si c'est un escort avec un profil
+    const escortProfile = await prisma.escort_profiles.findUnique({
+      where: { userId: session.user.id }
+    })
 
     // Vérifier si c'est un club
     const clubProfile = await prisma.clubProfileV2.findUnique({
       where: { userId: session.user.id }
     })
 
-    console.log('🏢 Profil club:', clubProfile ? { id: clubProfile.id, handle: clubProfile.handle } : 'Non trouvé')
+    console.log('🔍 Profils trouvés:', {
+      escort: escortProfile ? { id: escortProfile.id } : null,
+      club: clubProfile ? { id: clubProfile.id, handle: clubProfile.handle } : null
+    })
 
     if (clubProfile) {
       ownerType = 'CLUB'
       ownerId = clubProfile.id
+      profileId = clubProfile.id
       console.log('✅ Utilisateur identifié comme club:', ownerId)
-    } else {
+    } else if (escortProfile) {
+      ownerType = 'ESCORT'
+      ownerId = escortProfile.id
+      profileId = escortProfile.id
       console.log('✅ Utilisateur identifié comme escort:', ownerId)
+    } else {
+      console.log('⚠️ Aucun profil escort/club trouvé, utilisation userId')
     }
 
     // Sauvegarder en base de données
@@ -77,24 +118,34 @@ export async function POST(request: NextRequest) {
         ownerType: ownerType as any,
         ownerId: ownerId,
         type: type as any,
-        url: mediaUrl,
+        url: publicUrl,
         description: description || null,
         pos: parseInt(pos),
         createdAt: new Date()
       }
     })
 
-    // Déterminer l'URL de redirection
-    let redirectUrl = '/profile'
+    console.log('💾 Média sauvegardé en base:', {
+      id: media.id,
+      ownerType,
+      ownerId,
+      url: publicUrl
+    })
+
+    // Déterminer l'URL de redirection CORRECTE
+    let redirectUrl = `/profile/${session.user.id}` // Par défaut vers le profil user
+
     if (clubProfile) {
       redirectUrl = `/profile-test/club/${clubProfile.handle}`
+    } else if (escortProfile) {
+      redirectUrl = `/profile/${escortProfile.id}` // Profil escort
     }
 
     console.log('🎉 Média sauvegardé avec succès:', {
       id: media.id,
       ownerType,
       ownerId,
-      url: mediaUrl,
+      url: publicUrl,
       description: description || 'Aucune description',
       redirectUrl
     })
@@ -104,26 +155,28 @@ export async function POST(request: NextRequest) {
       message: 'Média ajouté au profil',
       media: {
         id: media.id,
-        url: mediaUrl,
+        url: publicUrl,
         type: media.type,
         pos: media.pos
       },
       redirectUrl: redirectUrl,
-      userType: ownerType
+      userType: ownerType,
+      profileId: profileId
     })
 
-  } catch (error) {
-    console.error('Erreur upload média:', error)
+  } catch (error: any) {
+    console.error('❌ Erreur upload média:', error)
     return NextResponse.json({
       success: false,
-      error: 'Erreur lors de l\'upload'
+      error: 'Erreur lors de l\'upload',
+      details: error.message
     }, { status: 500 })
   }
 }
 
 export async function GET() {
-  return Response.json({ 
-    success: true, 
+  return Response.json({
+    success: true,
     medias: []
   })
 }

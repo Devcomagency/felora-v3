@@ -187,7 +187,6 @@ export default function MapTest() {
       }
     }
     
-    console.log('🗺️ [CARTE] ViewState initial:', { latitude, longitude, zoom })
     return { latitude, longitude, zoom }
   }, [searchParams])
 

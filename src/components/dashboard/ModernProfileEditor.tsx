@@ -710,7 +710,6 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
       if (profileData.outcall !== undefined) payload.outcall = !!profileData.outcall
       if (profileData.coordinates) { 
         payload.coordinates = profileData.coordinates
-        console.log('🎯 [AUTOSAVE] Coordonnées ajoutées au payload:', profileData.coordinates)
       }
       if (profileData.addressPrivacy) payload.addressPrivacy = profileData.addressPrivacy
       if (profileData.languages && Object.keys(profileData.languages).length > 0) payload.languages = safeStringify(profileData.languages)
@@ -822,7 +821,6 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
       if (profileData.outcall !== undefined) payload.outcall = !!profileData.outcall
       if (profileData.coordinates) { 
         payload.coordinates = profileData.coordinates
-        console.log('🎯 [AUTOSAVE] Coordonnées ajoutées au payload:', profileData.coordinates)
       }
       if (profileData.addressPrivacy) payload.addressPrivacy = profileData.addressPrivacy
       if (profileData.languages && Object.keys(profileData.languages).length > 0) payload.languages = safeStringify(profileData.languages)
@@ -1431,10 +1429,8 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                       }
                     }}
                     onCoordinatesChange={(coordinates) => {
-                      console.log('🎯 [DASHBOARD] Coordonnées reçues:', coordinates)
                       if (coordinates) {
                         updateProfileData('coordinates', coordinates)
-                        console.log('🎯 [DASHBOARD] updateProfileData appelé avec coordinates:', coordinates)
                       }
                     }}
                     placeholder="Tapez votre adresse suisse..."

@@ -472,13 +472,11 @@ function transformUpdateData(body: any): Record<string, any> {
   if (body.coordinates?.lat && body.coordinates?.lng) {
     data.latitude = body.coordinates.lat
     data.longitude = body.coordinates.lng
-    console.log('🔄 [API UNIFIED] Coordonnées sauvegardées:', body.coordinates)
   }
 
   // Adresse - sauvegarder dans le bon champ
   if (body.address !== undefined) {
     data.workingArea = body.address
-    console.log('🔄 [API UNIFIED] Adresse sauvegardée:', body.address)
   }
 
   // Languages with star ratings → CSV format
