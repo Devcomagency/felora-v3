@@ -1319,42 +1319,81 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                       setTimeout(()=> setSaveMsg(null), 4000)
                       return
                     }
-                    if (fileToUpload.size > 4 * 1024 * 1024) {
-                      setSaveMsg({ type:'error', text: 'Vidéo trop volumineuse après compression (limite 4MB).' })
+                    if (fileToUpload.size > 500 * 1024 * 1024) {
+                      setSaveMsg({ type:'error', text: 'Fichier trop volumineux (limite 500MB).' })
                       setTimeout(()=> setSaveMsg(null), 4000)
                       return
                     }
                   }
                   const preview = URL.createObjectURL(fileToUpload)
-                  // Upload immédiatement
+                  // Upload direct vers R2 (contourne limite Vercel 4.5MB)
                   try {
                     setMandatoryMedia(prev => { const next=[...prev]; next[idx] = { ...(next[idx]||{}), uploading: true }; return next })
-                    const fd = new FormData()
-                    fd.append('file', fileToUpload)
-                    // API persistante des slots obligatoires
+
                     const zeroBasedSlot = Math.max(0, Math.min(5, (slot.n || (idx+1)) - 1))
-                    fd.append('slot', String(zeroBasedSlot))
-                    fd.append('isPrivate', 'false')
-                    const res = await fetch('/api/escort/media/upload', { method: 'POST', body: fd, credentials: 'include' })
-                    const data = await res.json().catch(() => ({}))
-                    if (!res.ok || !data?.success) {
-                      throw new Error(data?.error || 'Upload échoué')
+
+                    // 1. Obtenir presigned URL
+                    const presignedRes = await fetch('/api/escort/media/presigned-upload', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        fileName: fileToUpload.name,
+                        fileType: fileToUpload.type,
+                        fileSize: fileToUpload.size,
+                        slot: zeroBasedSlot
+                      })
+                    })
+
+                    if (!presignedRes.ok) {
+                      const error = await presignedRes.json()
+                      throw new Error(error.error || 'Erreur génération URL')
                     }
+
+                    const { presignedUrl, publicUrl } = await presignedRes.json()
+
+                    // 2. Upload direct vers R2
+                    const uploadRes = await fetch(presignedUrl, {
+                      method: 'PUT',
+                      body: fileToUpload,
+                      headers: { 'Content-Type': fileToUpload.type }
+                    })
+
+                    if (!uploadRes.ok) {
+                      throw new Error('Erreur upload R2')
+                    }
+
+                    // 3. Confirmer et sauvegarder métadonnées
+                    const confirmRes = await fetch('/api/escort/media/confirm-upload', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        publicUrl,
+                        slot: zeroBasedSlot,
+                        isPrivate: false,
+                        fileType: fileToUpload.type
+                      })
+                    })
+
+                    if (!confirmRes.ok) {
+                      const error = await confirmRes.json()
+                      throw new Error(error.error || 'Erreur confirmation')
+                    }
+
+                    const data = await confirmRes.json()
+
                     setMandatoryMedia(prev => {
                       const next = [...prev]
-                      // cleanup old preview if exists
                       if (next[idx]?.preview) {
                         try { URL.revokeObjectURL(next[idx]!.preview as string) } catch {}
                       }
-                      // Utiliser l'URL serveur pour préserver l'aperçu après refresh
-                      const serverUrl = data?.url || preview
+                      const serverUrl = data?.url || publicUrl
                       const returnedSlot = typeof data?.slot === 'number' ? data.slot : zeroBasedSlot
                       const returnedId = (Array.isArray(data?.slots) && data.slots[returnedSlot]?.id) ? String(data.slots[returnedSlot].id) : undefined
                       const id = data?.legacyMediaId ? String(data.legacyMediaId) : (returnedId || `slot-${returnedSlot}`)
                       next[idx] = { file, preview: serverUrl, id, uploading: false }
                       return next
                     })
-                    setSaveMsg({ type: 'success', text: 'Média uploadé' })
+                    setSaveMsg({ type: 'success', text: 'Média uploadé ✅' })
                     setTimeout(() => setSaveMsg(null), 2500)
                   } catch (e: any) {
                     setSaveMsg({ type: 'error', text: e?.message || 'Échec de l\'upload' })

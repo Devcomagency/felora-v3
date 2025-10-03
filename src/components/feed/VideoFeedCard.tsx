@@ -145,7 +145,8 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
 
   // Build a stable mediaId and a stable guest user id
   const mediaId = stableMediaId({ rawId: item.id, profileId: item.author.id, url: item.url })
-  const authorHandleSlug = (item.author.handle || '').replace(/^@/, '') || 'escort'
+  // Utiliser l'ID réel du profil au lieu du slug généré
+  const profileId = item.author.id
   // Robust check: only treat as video if URL looks like a video
   const isVideoUrl = typeof item.url === 'string' && /(\.mp4|\.webm|\.mov)(\?.*)?$/i.test(item.url)
   const shouldShowVideo = item.type === 'VIDEO' && isVideoUrl
@@ -397,7 +398,7 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
           {/* Avatar */}
           <div className="relative">
             <Link 
-              href={`/profile-test/escort/${authorHandleSlug}`} 
+              href={`/profile-test/escort/${profileId}`} 
               aria-label={`Voir le profil de ${item.author.name}`}
               onClick={(e) => e.stopPropagation()}
               className="block"
