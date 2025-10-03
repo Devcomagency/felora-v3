@@ -15,6 +15,7 @@ import MediaFeedWithGallery from '../../../../packages/ui/profile-test/MediaFeed
 import { AboutSection, RatesSection, AvailabilitySection, PhysicalDetailsSection } from '../../../../packages/ui/profile-test/Sections'
 import { CommentsSection } from '../../../components/comments/CommentsSection'
 import { AvailabilityStatus as AvailabilityStatusType, ScheduleData } from '@/lib/availability-calculator'
+import { updateMediaWithErrorHandling, deleteMediaWithErrorHandling } from '@/lib/mediaManagement'
 
 interface EscortProfile {
   id: string
@@ -729,6 +730,22 @@ export default function EscortProfilePage() {
                 onLike={handleMediaLike}
                 onSave={handleMediaSave}
                 onReactionChange={calculateTotalReactions}
+                onUpdateMedia={async (mediaUrl: string, updates: any) => {
+                  const result = await updateMediaWithErrorHandling(mediaUrl, updates)
+                  if (!result.success) {
+                    throw new Error(result.error)
+                  }
+                  // Recharger le profil après la mise à jour
+                  window.location.reload()
+                }}
+                onDeleteMedia={async (mediaUrl: string, index: number) => {
+                  const result = await deleteMediaWithErrorHandling(mediaUrl, index)
+                  if (!result.success) {
+                    throw new Error(result.error)
+                  }
+                  // Recharger le profil après la suppression
+                  window.location.reload()
+                }}
               />
             </>
           )

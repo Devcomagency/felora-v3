@@ -4,10 +4,12 @@ import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowLeft, Heart, Play, Crown, Smile, Share, MoreVertical, Flag, Edit, Trash2, Bookmark, Flame } from 'lucide-react'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 import useReactions, { ReactionType } from '../../../src/hooks/useReactions'
 import { useMediaInteractions } from '../../../src/hooks/useProfileInteractions'
 import ReactionBar from '../../../src/components/reactions/ReactionBar'
 import { stableMediaId } from '@/lib/reactions/stableMediaId'
+import MediaManagementModal from '../../../src/components/MediaManagementModal'
 
 interface MediaItem {
   id?: string
@@ -36,6 +38,7 @@ interface MediaFeedWithGalleryProps {
   viewerIsOwner?: boolean
   onDeleteMedia?: (mediaUrl: string, index: number) => void
   onEditMedia?: (mediaUrl: string, index: number) => void
+  onUpdateMedia?: (mediaUrl: string, updates: Partial<MediaItem>) => Promise<void>
   hideTabsHeader?: boolean
 }
 
@@ -55,14 +58,16 @@ interface MediaPlayerProps extends MediaItem {
   viewerIsOwner?: boolean
   onDeleteMedia?: (mediaUrl: string, index: number) => void
   onEditMedia?: (mediaUrl: string, index: number) => void
+  onUpdateMedia?: (mediaUrl: string, updates: Partial<MediaItem>) => Promise<void>
 }
 
-function MediaPlayer({ id, type, url, thumb, poster, index, isActive, profileId, userId, onLike, onSave, onFullscreen, isPrivate, onReactionChange, refreshTrigger, optimisticDelta = 0, viewerIsOwner = false, onDeleteMedia, onEditMedia }: MediaPlayerProps) {
+function MediaPlayer({ id, type, url, thumb, poster, index, isActive, profileId, userId, onLike, onSave, onFullscreen, isPrivate, onReactionChange, refreshTrigger, optimisticDelta = 0, viewerIsOwner = false, onDeleteMedia, onEditMedia, onUpdateMedia, visibility, price }: MediaPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const [isPlaying, setIsPlaying] = useState(false)
   const [error, setError] = useState(false)
   const [guestId, setGuestId] = useState<string | null>(null)
   const [showMediaMenu, setShowMediaMenu] = useState(false)
+  const [showManagementModal, setShowManagementModal] = useState(false)
   useEffect(() => {
     try {
       const key = 'felora-user-id'
@@ -169,66 +174,7 @@ function MediaPlayer({ id, type, url, thumb, poster, index, isActive, profileId,
         {/* Debug: afficher l'état de viewerIsOwner */}
         {console.log('🔧 [MEDIA PLAYER] viewerIsOwner:', viewerIsOwner, 'URL:', url)}
         
-        {/* Menu de gestion des médias (propriétaire uniquement) */}
-        {viewerIsOwner && (
-          <div className="absolute top-2 right-2 z-20">
-            <div className="relative">
-              <button
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  setShowMediaMenu(!showMediaMenu)
-                }}
-                className="w-6 h-6 rounded-full bg-black/50 backdrop-blur-sm text-white hover:bg-black/70 transition-colors flex items-center justify-center border border-white/20"
-                aria-label="Options du média"
-              >
-                <MoreVertical size={14} />
-              </button>
-              
-              {/* Menu déroulant */}
-              {showMediaMenu && (
-                <>
-                  <div
-                    className="fixed inset-0 z-10"
-                    onClick={() => setShowMediaMenu(false)}
-                  />
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95, y: -10 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                    className="absolute right-0 top-8 w-40 bg-black/90 backdrop-blur-md rounded-lg border border-white/10 shadow-xl z-20"
-                  >
-                    <div className="py-2">
-                      <button
-                        onClick={() => {
-                          onEditMedia?.(url, index)
-                          setShowMediaMenu(false)
-                        }}
-                        className="w-full px-3 py-2 text-left text-white hover:bg-white/10 flex items-center gap-2 text-sm"
-                      >
-                        <Edit size={14} />
-                        <span>Modifier</span>
-                      </button>
-                      
-                      <button
-                        onClick={() => {
-                          if (confirm('Êtes-vous sûr de vouloir supprimer ce média ?')) {
-                            onDeleteMedia?.(url, index)
-                          }
-                          setShowMediaMenu(false)
-                        }}
-                        className="w-full px-3 py-2 text-left text-red-400 hover:bg-red-500/20 flex items-center gap-2 text-sm"
-                      >
-                        <Trash2 size={14} />
-                        <span>Supprimer</span>
-                      </button>
-                    </div>
-                  </motion.div>
-                </>
-              )}
-            </div>
-          </div>
-        )}
+
       </div>
     )
   }
@@ -264,66 +210,7 @@ function MediaPlayer({ id, type, url, thumb, poster, index, isActive, profileId,
         </div>
       </div>
 
-      {/* Menu de gestion des médias (propriétaire uniquement) */}
-      {viewerIsOwner && (
-        <div className="absolute top-2 right-2 z-20">
-          <div className="relative">
-            <button
-              onClick={(e) => {
-                e.preventDefault()
-                e.stopPropagation()
-                setShowMediaMenu(!showMediaMenu)
-              }}
-              className="w-6 h-6 rounded-full bg-black/50 backdrop-blur-sm text-white hover:bg-black/70 transition-colors flex items-center justify-center border border-white/20"
-              aria-label="Options du média"
-            >
-              <MoreVertical size={14} />
-            </button>
-            
-            {/* Menu déroulant */}
-            {showMediaMenu && (
-              <>
-                <div
-                  className="fixed inset-0 z-10"
-                  onClick={() => setShowMediaMenu(false)}
-                />
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.95, y: -10 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                  className="absolute right-0 top-8 w-40 bg-black/90 backdrop-blur-md rounded-lg border border-white/10 shadow-xl z-20"
-                >
-                  <div className="py-2">
-                    <button
-                      onClick={() => {
-                        onEditMedia?.(url, index)
-                        setShowMediaMenu(false)
-                      }}
-                      className="w-full px-3 py-2 text-left text-white hover:bg-white/10 flex items-center gap-2 text-sm"
-                    >
-                      <Edit size={14} />
-                      <span>Modifier</span>
-                    </button>
-                    
-                    <button
-                      onClick={() => {
-                        if (confirm('Êtes-vous sûr de vouloir supprimer ce média ?')) {
-                          onDeleteMedia?.(url, index)
-                        }
-                        setShowMediaMenu(false)
-                      }}
-                      className="w-full px-3 py-2 text-left text-red-400 hover:bg-red-500/20 flex items-center gap-2 text-sm"
-                    >
-                      <Trash2 size={14} />
-                      <span>Supprimer</span>
-                    </button>
-                  </div>
-                </motion.div>
-              </>
-            )}
-          </div>
-        </div>
-      )}
+
     </div>
   )
 }
@@ -341,8 +228,10 @@ export default function MediaFeedWithGallery({
   viewerIsOwner = false,
   onDeleteMedia,
   onEditMedia,
+  onUpdateMedia,
   hideTabsHeader = false
 }: MediaFeedWithGalleryProps) {
+  const router = useRouter()
   
   const [activeTab, setActiveTab] = useState<'public' | 'premium' | 'private'>('public')
   const [fullscreenMedia, setFullscreenMedia] = useState<string | null>(null)
@@ -358,6 +247,7 @@ export default function MediaFeedWithGallery({
   const fullscreenRef = useRef<HTMLDivElement>(null)
   const { isGalleryUnlocked, handleUnlockContent, handleUnlockGallery } = useMediaInteractions()
   const [unlockTarget, setUnlockTarget] = useState<{ id: string; url: string } | null>(null)
+  const [showFullscreenManagementModal, setShowFullscreenManagementModal] = useState(false)
 
   // Catégorisation par visibility (PUBLIC, PREMIUM, PRIVATE)
   const publicContent = useMemo(() => media.filter(m => (m.visibility || 'PUBLIC') === 'PUBLIC'), [media])
@@ -558,6 +448,9 @@ export default function MediaFeedWithGallery({
                     viewerIsOwner={viewerIsOwner}
                     onDeleteMedia={onDeleteMedia}
                     onEditMedia={onEditMedia}
+                    onUpdateMedia={onUpdateMedia}
+                    visibility={content.visibility}
+                    price={content.price}
                   />
                 </div>
               </div>
@@ -594,6 +487,9 @@ export default function MediaFeedWithGallery({
                       viewerIsOwner={viewerIsOwner}
                       onDeleteMedia={onDeleteMedia}
                       onEditMedia={onEditMedia}
+                      onUpdateMedia={onUpdateMedia}
+                      visibility={content.visibility}
+                      price={content.price}
                     />
                     {!isOwner && (
                       <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm">
@@ -639,6 +535,9 @@ export default function MediaFeedWithGallery({
                     viewerIsOwner={viewerIsOwner}
                     onDeleteMedia={onDeleteMedia}
                     onEditMedia={onEditMedia}
+                    onUpdateMedia={onUpdateMedia}
+                    visibility={content.visibility}
+                    price={content.price}
                   />
                 </div>
               </div>
@@ -700,6 +599,57 @@ export default function MediaFeedWithGallery({
                   >
                     <MoreVertical size={20} />
                   </motion.button>
+                  
+                  {/* Menu déroulant fullscreen */}
+                  <AnimatePresence>
+                    {showMenu && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                        className="absolute right-0 mt-2 min-w-[180px] bg-black/90 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden z-50"
+                      >
+                        <div className="py-2 text-sm text-white/90">
+                          {viewerIsOwner && (
+                            <button
+                              onClick={() => {
+                                setShowFullscreenManagementModal(true)
+                                setShowMenu(false)
+                              }}
+                              className="w-full flex items-center gap-2 px-3 py-2 hover:bg-white/10 text-left"
+                            >
+                              <Edit size={16} /> Gérer le média
+                            </button>
+                          )}
+                          <button
+                            onClick={() => {
+                              if (navigator.share) {
+                                navigator.share({ 
+                                  title: profileName || 'Media', 
+                                  url: fullscreenMedia || window.location.href 
+                                }).catch(() => {})
+                              } else {
+                                navigator.clipboard.writeText(fullscreenMedia || window.location.href)
+                              }
+                              setShowMenu(false)
+                            }}
+                            className="w-full flex items-center gap-2 px-3 py-2 hover:bg-white/10 text-left"
+                          >
+                            <Share size={16} /> Partager
+                          </button>
+                          <button
+                            onClick={() => {
+                              router.push(`/report?type=media&id=${fullscreenMedia}`)
+                              setShowMenu(false)
+                            }}
+                            className="w-full flex items-center gap-2 px-3 py-2 hover:bg-white/10 text-left text-red-300"
+                          >
+                            <Flag size={16} /> Signaler
+                          </button>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               </div>
             </div>
@@ -897,6 +847,24 @@ export default function MediaFeedWithGallery({
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Modal de gestion des médias (fullscreen) */}
+      <MediaManagementModal
+        isOpen={showFullscreenManagementModal}
+        onClose={() => setShowFullscreenManagementModal(false)}
+        media={fullscreenMedia ? {
+          id: mixedContent[fullscreenIndex]?.id,
+          type: mixedContent[fullscreenIndex]?.type || 'image',
+          url: fullscreenMedia,
+          thumb: mixedContent[fullscreenIndex]?.thumb,
+          poster: mixedContent[fullscreenIndex]?.poster,
+          visibility: mixedContent[fullscreenIndex]?.visibility || 'PUBLIC',
+          price: mixedContent[fullscreenIndex]?.price
+        } : null}
+        mediaIndex={fullscreenIndex}
+        onUpdateMedia={onUpdateMedia || (async () => {})}
+        onDeleteMedia={onDeleteMedia || (async () => {})}
+      />
     </>
   )
 }
