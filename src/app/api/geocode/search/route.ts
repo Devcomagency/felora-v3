@@ -177,13 +177,13 @@ function searchSmartDatabase(query: string, city?: string | null, region?: strin
 }
 
 function deduplicateResults(results: any[]) {
-  const seen = new Set<string>()
+      const seen = new Set<string>()
   return results.filter(result => {
     const key = `${result.address}_${result.latitude.toFixed(4)}_${result.longitude.toFixed(4)}`
-    if (seen.has(key)) return false
-    seen.add(key)
-    return true
-  })
+        if (seen.has(key)) return false
+        seen.add(key)
+        return true
+      })
 }
 
 function scoreAndRankResults(results: any[], query: string, city?: string | null, region?: string | null) {

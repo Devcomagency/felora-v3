@@ -42,15 +42,23 @@ export default function DirectUploader({
   useEffect(() => {
     if (externalFile) {
       console.log('📹 Upload automatique du fichier capturé:', externalFile.name)
-      const newUploads = new Map(uploads)
+
       const fileId = `${externalFile.name}-${Date.now()}`
-      newUploads.set(fileId, {
-        file: externalFile,
-        progress: 0,
-        status: 'pending'
+
+      setUploads(prev => {
+        const newUploads = new Map(prev)
+        newUploads.set(fileId, {
+          file: externalFile,
+          progress: 0,
+          status: 'pending'
+        })
+        return newUploads
       })
-      setUploads(newUploads)
-      uploadFile(fileId, externalFile, newUploads)
+
+      // Attendre que l'état soit mis à jour avant d'uploader
+      setTimeout(() => {
+        uploadFile(fileId, externalFile, new Map([[fileId, { file: externalFile, progress: 0, status: 'pending' }]]))
+      }, 0)
     }
   }, [externalFile])
 

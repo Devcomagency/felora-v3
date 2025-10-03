@@ -165,15 +165,18 @@ export default function MapTest() {
     const centerParam = searchParams.get('center')
     const zoomParam = searchParams.get('zoom')
     
+    // Vue large par défaut sur la Suisse (Genève, Lausanne, Zurich)
     let latitude = 46.8182 // Switzerland center
     let longitude = 8.2275
-    let zoom = 8
+    let zoom = 7 // Vue large de la Suisse
     
+    // Si un centre est spécifié dans l'URL (pour les mises à jour depuis le dashboard)
     if (centerParam) {
       const [lat, lng] = centerParam.split(',').map(Number)
       if (!isNaN(lat) && !isNaN(lng)) {
         latitude = lat
         longitude = lng
+        zoom = 15 // Zoom proche pour une adresse spécifique
       }
     }
     
@@ -184,6 +187,7 @@ export default function MapTest() {
       }
     }
     
+    console.log('🗺️ [CARTE] ViewState initial:', { latitude, longitude, zoom })
     return { latitude, longitude, zoom }
   }, [searchParams])
 
@@ -227,15 +231,6 @@ export default function MapTest() {
             }
             setCurrentUserProfile(escortData)
             console.log('✅ [CARTE] Profil escort connecté chargé:', escortData)
-            
-            // 🎯 CENTRER LA CARTE SUR LE PROFIL ESCORT AU CHARGEMENT
-            setViewState(prev => ({
-              ...prev,
-              latitude: profile.latitude,
-              longitude: profile.longitude,
-              zoom: Math.max(prev.zoom, 12) // Zoom adapté pour voir la ville
-            }))
-            console.log('🗺️ [CARTE] Carte centrée sur le profil escort:', { lat: profile.latitude, lng: profile.longitude })
           } else {
             console.log('⚠️ [CARTE] Profil sans coordonnées:', profile)
           }

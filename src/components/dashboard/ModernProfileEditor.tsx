@@ -1424,6 +1424,12 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                         updateProfileData('coordinates', coordinates)
                       }
                     }}
+                    onCoordinatesChange={(coordinates) => {
+                      console.log('🎯 [DASHBOARD] Coordonnées reçues:', coordinates)
+                      if (coordinates) {
+                        updateProfileData('coordinates', coordinates)
+                      }
+                    }}
                     placeholder="Tapez votre adresse suisse..."
                     cantonCode={profileData.canton || undefined}
                     cantonName={profileData.canton ? CANTON_MAP[profileData.canton] : undefined}
