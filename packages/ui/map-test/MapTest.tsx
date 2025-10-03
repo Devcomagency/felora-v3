@@ -227,6 +227,15 @@ export default function MapTest() {
             }
             setCurrentUserProfile(escortData)
             console.log('✅ [CARTE] Profil escort connecté chargé:', escortData)
+            
+            // 🎯 CENTRER LA CARTE SUR LE PROFIL ESCORT AU CHARGEMENT
+            setViewState(prev => ({
+              ...prev,
+              latitude: profile.latitude,
+              longitude: profile.longitude,
+              zoom: Math.max(prev.zoom, 12) // Zoom adapté pour voir la ville
+            }))
+            console.log('🗺️ [CARTE] Carte centrée sur le profil escort:', { lat: profile.latitude, lng: profile.longitude })
           } else {
             console.log('⚠️ [CARTE] Profil sans coordonnées:', profile)
           }

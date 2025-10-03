@@ -1,10 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { ArrowLeft, Video, Loader2, CheckCircle2 } from 'lucide-react'
+import { ArrowLeft, Video, Loader2, CheckCircle2, Camera } from 'lucide-react'
 import Link from 'next/link'
 import DirectUploader from '@/components/upload/DirectUploader'
 import HLSVideoPlayer from '@/components/video/HLSVideoPlayer'
+import CameraCapturePro from '@/components/camera/CameraCapturePro'
 
 interface TranscodedVideo {
   name: string
@@ -16,6 +17,15 @@ interface TranscodedVideo {
 export default function TestHLSPage() {
   const [videos, setVideos] = useState<TranscodedVideo[]>([])
   const [isPolling, setIsPolling] = useState(false)
+  const [showCamera, setShowCamera] = useState(false)
+  const [capturedFile, setCapturedFile] = useState<File | null>(null)
+
+  const handleCameraCapture = (file: File) => {
+    console.log('📹 Vidéo capturée:', file.name)
+    setCapturedFile(file)
+    setShowCamera(false)
+    // Le fichier sera uploadé automatiquement via DirectUploader
+  }
 
   const handleUploadComplete = (files: any[]) => {
     console.log('📤 Fichiers uploadés:', files)
@@ -36,6 +46,9 @@ export default function TestHLSPage() {
     newVideos.forEach(video => {
       pollTranscodeStatus(video.assetId)
     })
+
+    // Reset le fichier capturé
+    setCapturedFile(null)
   }
 
   const pollTranscodeStatus = async (assetId: string) => {
@@ -89,6 +102,15 @@ export default function TestHLSPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white p-6">
+      {/* Caméra Modal */}
+      {showCamera && (
+        <CameraCapturePro
+          mode="video"
+          onCapture={handleCameraCapture}
+          onClose={() => setShowCamera(false)}
+        />
+      )}
+
       {/* Header */}
       <div className="max-w-6xl mx-auto mb-8">
         <Link
@@ -100,24 +122,58 @@ export default function TestHLSPage() {
         </Link>
 
         <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-400 via-pink-500 to-cyan-400 bg-clip-text text-transparent mb-2">
-          Test Pipeline Complet : Upload → Transcodage → HLS
+          📹 Capture & Upload - Pipeline Complet
         </h1>
         <p className="text-gray-400">
-          Upload une vidéo → Livepeer transcoder → Lecture HLS adaptative
+          Caméra → Prévisualisation → Upload → HLS (tout sur une page !)
         </p>
       </div>
 
-      {/* Uploader */}
+      {/* Bouton Caméra + Uploader */}
       <div className="max-w-6xl mx-auto mb-12">
         <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
           <Video size={24} />
-          1. Uploader une vidéo
+          1. Capturer ou uploader une vidéo
         </h2>
+
+        {/* Bouton Caméra */}
+        <button
+          onClick={() => setShowCamera(true)}
+          className="w-full mb-4 p-6 rounded-2xl bg-gradient-to-br from-purple-600/20 to-pink-600/20 border-2 border-purple-500/30 hover:border-purple-500/60 transition-all duration-200 group"
+        >
+          <div className="flex items-center gap-4">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+              <Camera size={32} className="text-white" />
+            </div>
+            <div className="flex-1 text-left">
+              <h3 className="text-xl font-bold mb-1">📱 Ouvrir la Caméra</h3>
+              <p className="text-sm text-gray-400">
+                Capture une vidéo en haute qualité avec ta caméra
+              </p>
+            </div>
+          </div>
+        </button>
+
+        {/* Uploader */}
         <DirectUploader
           onComplete={handleUploadComplete}
           maxFileSize={500 * 1024 * 1024}
           allowedFileTypes={['video/*']}
+          externalFile={capturedFile}
         />
+
+        {/* Preview du fichier capturé */}
+        {capturedFile && (
+          <div className="mt-4 p-4 rounded-xl bg-green-500/10 border border-green-500/30">
+            <div className="flex items-center gap-3">
+              <CheckCircle2 className="text-green-400" size={24} />
+              <div>
+                <div className="font-medium text-green-400">Vidéo capturée !</div>
+                <div className="text-sm text-gray-400">{capturedFile.name}</div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Liste des vidéos en transcodage */}

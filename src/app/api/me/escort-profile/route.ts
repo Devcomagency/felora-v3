@@ -28,6 +28,12 @@ export async function GET() {
       return NextResponse.json({ hasEscortProfile: false })
     }
     
+    console.log('🔍 [API ME/ESCORT-PROFILE] Coordonnées actuelles:', { 
+      latitude: escort.latitude, 
+      longitude: escort.longitude,
+      city: escort.city 
+    })
+    
     return NextResponse.json({
       hasEscortProfile: true,
       escortId: escort.id,

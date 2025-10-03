@@ -1,12 +1,13 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Upload, CheckCircle2, XCircle, Loader2 } from 'lucide-react'
 
 interface DirectUploaderProps {
   onComplete?: (files: UploadedFile[]) => void
   maxFileSize?: number
   allowedFileTypes?: string[]
+  externalFile?: File | null // Fichier venant de la caméra
 }
 
 interface UploadedFile {
@@ -31,10 +32,27 @@ interface FileUploadState {
 export default function DirectUploader({
   onComplete,
   maxFileSize = 500 * 1024 * 1024,
-  allowedFileTypes = ['video/*', 'image/*']
+  allowedFileTypes = ['video/*', 'image/*'],
+  externalFile
 }: DirectUploaderProps) {
   const [uploads, setUploads] = useState<Map<string, FileUploadState>>(new Map())
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Upload automatique du fichier externe (depuis caméra)
+  useEffect(() => {
+    if (externalFile) {
+      console.log('📹 Upload automatique du fichier capturé:', externalFile.name)
+      const newUploads = new Map(uploads)
+      const fileId = `${externalFile.name}-${Date.now()}`
+      newUploads.set(fileId, {
+        file: externalFile,
+        progress: 0,
+        status: 'pending'
+      })
+      setUploads(newUploads)
+      uploadFile(fileId, externalFile, newUploads)
+    }
+  }, [externalFile])
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
