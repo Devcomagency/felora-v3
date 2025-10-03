@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useCallback, useEffect } from 'react'
-import { Heart, Crown, Diamond, Flame, VolumeX, Volume2, Play, Pause, BadgeCheck } from 'lucide-react'
+import { Heart, Crown, Diamond, Flame, VolumeX, Volume2, Play, Pause, BadgeCheck, MoreVertical, Trash2, Eye, EyeOff, Crown as PremiumIcon, Edit3, Download, AlertTriangle } from 'lucide-react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { InView } from 'react-intersection-observer'
@@ -10,6 +10,7 @@ import { useFeedStore } from '../../stores/feedStore'
 import useReactions from '@/hooks/useReactions'
 import { stableMediaId } from '@/lib/reactions/stableMediaId'
 import ResponsiveVideoContainer, { useScreenCharacteristics } from './ResponsiveVideoContainer'
+import { useSession } from 'next-auth/react'
 
 // Types pour le feed
 interface MediaAuthor {
@@ -137,16 +138,29 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
   const [radialOpen, setRadialOpen] = useState(false)
   const [explosionEmojis, setExplosionEmojis] = useState<{id: number; emoji: string}[]>([])
   const pillRef = useRef<HTMLDivElement>(null)
+  
+  // États pour le menu de gestion
+  const [showMediaMenu, setShowMediaMenu] = useState(false)
+  const [isManaging, setIsManaging] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   // Hooks
   const { handleIntersectingChange, togglePlayPause, currentVideo, isMute } = useVideoIntersection()
   const { toggleMute } = useFeedStore()
   const screenCharacteristics = useScreenCharacteristics()
+  const { data: session } = useSession()
 
   // Build a stable mediaId and a stable guest user id
   const mediaId = stableMediaId({ rawId: item.id, profileId: item.author.id, url: item.url })
   // Utiliser l'ID réel du profil au lieu du slug généré
   const profileId = item.author.id
+  
+  // Debug: vérifier que l'ID du profil est correct
+  console.log('🔗 [VIDEO FEED CARD] Profile ID:', profileId, 'Author:', item.author.name)
+  
+  // Vérifier si l'utilisateur est le propriétaire du média
+  const isOwner = session?.user?.id === item.author.id
+  
   // Robust check: only treat as video if URL looks like a video
   const isVideoUrl = typeof item.url === 'string' && /(\.mp4|\.webm|\.mov)(\?.*)?$/i.test(item.url)
   const shouldShowVideo = item.type === 'VIDEO' && isVideoUrl
@@ -261,6 +275,57 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
     toggleReaction('LIKE')
   }, [toggleReaction])
 
+  // Fonctions de gestion des médias
+  const handleMediaAction = useCallback(async (action: string) => {
+    if (!isOwner) return
+    
+    setIsManaging(true)
+    try {
+      const response = await fetch(`/api/media/${item.id}/manage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action })
+      })
+      
+      if (response.ok) {
+        const result = await response.json()
+        console.log('✅ [MEDIA MANAGEMENT] Action réussie:', action, result)
+        
+        // Rafraîchir la page ou mettre à jour l'état local
+        if (action === 'delete') {
+          // Le média sera supprimé, on peut fermer le menu
+          setShowMediaMenu(false)
+          setShowDeleteConfirm(false)
+        }
+      } else {
+        console.error('❌ [MEDIA MANAGEMENT] Erreur:', response.status)
+        alert('Erreur lors de la gestion du média')
+      }
+    } catch (error) {
+      console.error('❌ [MEDIA MANAGEMENT] Erreur:', error)
+      alert('Erreur de connexion')
+    } finally {
+      setIsManaging(false)
+    }
+  }, [isOwner, item.id])
+
+  const handleDelete = useCallback(() => {
+    if (confirm('Êtes-vous sûr de vouloir supprimer ce média ? Cette action est irréversible.')) {
+      handleMediaAction('delete')
+    }
+  }, [handleMediaAction])
+
+  const handleVisibilityChange = useCallback((visibility: 'PUBLIC' | 'PRIVATE' | 'PREMIUM') => {
+    handleMediaAction(`visibility:${visibility}`)
+  }, [handleMediaAction])
+
+  const handleDownload = useCallback(() => {
+    const link = document.createElement('a')
+    link.href = item.url
+    link.download = `media-${item.id}.${item.type === 'VIDEO' ? 'mp4' : 'jpg'}`
+    link.click()
+  }, [item.url, item.id, item.type])
+
   // Variables dupliquées supprimées - déjà déclarées ligne 148
 
   return (
@@ -323,6 +388,122 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
         
         {/* Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 pointer-events-none" />
+        
+        {/* Menu de gestion des médias (propriétaire uniquement) */}
+        {isOwner && (
+          <div className="absolute top-4 right-4 z-20">
+            <div className="relative">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setShowMediaMenu(!showMediaMenu)
+                }}
+                className="w-8 h-8 rounded-full bg-black/50 backdrop-blur-sm text-white hover:bg-black/70 transition-colors flex items-center justify-center"
+                aria-label="Options du média"
+              >
+                <MoreVertical size={16} />
+              </button>
+              
+              {/* Menu déroulant */}
+              {showMediaMenu && (
+                <>
+                  <div
+                    className="fixed inset-0 z-10"
+                    onClick={() => setShowMediaMenu(false)}
+                  />
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                    className="absolute right-0 top-10 w-48 bg-black/90 backdrop-blur-md rounded-lg border border-white/10 shadow-xl z-20"
+                  >
+                    <div className="py-2">
+                      {/* Changer la visibilité */}
+                      <div className="px-3 py-2 text-xs text-white/60 border-b border-white/10">
+                        Visibilité
+                      </div>
+                      
+                      <button
+                        onClick={() => {
+                          handleVisibilityChange('PUBLIC')
+                          setShowMediaMenu(false)
+                        }}
+                        className="w-full px-4 py-2 text-left text-white hover:bg-white/10 flex items-center gap-3"
+                      >
+                        <Eye size={16} />
+                        <span>Public</span>
+                      </button>
+                      
+                      <button
+                        onClick={() => {
+                          handleVisibilityChange('PRIVATE')
+                          setShowMediaMenu(false)
+                        }}
+                        className="w-full px-4 py-2 text-left text-white hover:bg-white/10 flex items-center gap-3"
+                      >
+                        <EyeOff size={16} />
+                        <span>Privé</span>
+                      </button>
+                      
+                      <button
+                        onClick={() => {
+                          handleVisibilityChange('PREMIUM')
+                          setShowMediaMenu(false)
+                        }}
+                        className="w-full px-4 py-2 text-left text-white hover:bg-white/10 flex items-center gap-3"
+                      >
+                        <PremiumIcon size={16} />
+                        <span>Premium</span>
+                      </button>
+                      
+                      <div className="px-3 py-2 text-xs text-white/60 border-b border-white/10">
+                        Actions
+                      </div>
+                      
+                      <button
+                        onClick={() => {
+                          handleDownload()
+                          setShowMediaMenu(false)
+                        }}
+                        className="w-full px-4 py-2 text-left text-white hover:bg-white/10 flex items-center gap-3"
+                      >
+                        <Download size={16} />
+                        <span>Télécharger</span>
+                      </button>
+                      
+                      <button
+                        onClick={() => {
+                          // TODO: Implémenter l'édition
+                          alert('Fonction d\'édition à venir')
+                          setShowMediaMenu(false)
+                        }}
+                        className="w-full px-4 py-2 text-left text-white hover:bg-white/10 flex items-center gap-3"
+                      >
+                        <Edit3 size={16} />
+                        <span>Modifier</span>
+                      </button>
+                      
+                      <div className="px-3 py-2 text-xs text-white/60 border-b border-white/10">
+                        Danger
+                      </div>
+                      
+                      <button
+                        onClick={() => {
+                          handleDelete()
+                          setShowMediaMenu(false)
+                        }}
+                        className="w-full px-4 py-2 text-left text-red-400 hover:bg-red-500/20 flex items-center gap-3"
+                      >
+                        <Trash2 size={16} />
+                        <span>Supprimer</span>
+                      </button>
+                    </div>
+                  </motion.div>
+                </>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Animations */}
