@@ -51,6 +51,8 @@ export async function updateMedia(mediaUrl: string, updates: MediaUpdateData): P
  * Supprime un média
  */
 export async function deleteMedia(mediaUrl: string, mediaIndex: number): Promise<void> {
+  console.log('🔧 [DELETE MEDIA] Fonction appelée avec:', { mediaUrl, mediaIndex })
+  
   try {
     const response = await fetch('/api/media/delete', {
       method: 'DELETE',
@@ -61,6 +63,8 @@ export async function deleteMedia(mediaUrl: string, mediaIndex: number): Promise
         mediaUrl
       })
     })
+    
+    console.log('🔧 [DELETE MEDIA] Réponse reçue:', response.status, response.statusText)
 
     if (!response.ok) {
       const errorData = await response.json()

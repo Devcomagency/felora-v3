@@ -3,7 +3,7 @@
 import { useState, useCallback, memo } from 'react'
 import dynamic from 'next/dynamic'
 import { useSession } from 'next-auth/react'
-import { Plus, ChevronLeft, Home, Search, User, Camera, Video } from 'lucide-react'
+import { Plus, ChevronLeft, Home, Search, User } from 'lucide-react'
 
 // Lazy loading des composants
 const CameraCapturePro = dynamic(() => import('@/components/camera/CameraCapturePro'), {
@@ -37,8 +37,7 @@ interface CapturedMedia {
 export default function TestMediaSimplePage() {
   const { data: session } = useSession()
 
-  const [showModeSelector, setShowModeSelector] = useState(true) // Sélecteur photo/vidéo
-  const [showCamera, setShowCamera] = useState(false)
+  const [showCamera, setShowCamera] = useState(true) // Ouvrir directement la caméra
   const [cameraMode, setCameraMode] = useState<'photo' | 'video'>('video')
   const [showPublishEditor, setShowPublishEditor] = useState(false)
   const [capturedMedia, setCapturedMedia] = useState<CapturedMedia | null>(null)
@@ -67,7 +66,6 @@ export default function TestMediaSimplePage() {
     })
 
     setShowCamera(false)
-    setShowModeSelector(false)
     setShowPublishEditor(true)
   }, [])
 
@@ -211,67 +209,43 @@ export default function TestMediaSimplePage() {
         </div>
       )}
 
-      {/* Sélecteur de mode photo/vidéo */}
-      {showModeSelector && !showCamera && !showPublishEditor && (
-        <div className="pt-14 flex flex-col items-center justify-center min-h-screen px-4">
-          <div className="text-center max-w-md w-full">
-            <h2 className="text-2xl font-bold text-white mb-8">Que souhaitez-vous créer ?</h2>
-
-            <div className="space-y-4">
-              {/* Bouton Vidéo */}
-              <button
-                onClick={() => {
-                  setCameraMode('video')
-                  setShowModeSelector(false)
-                  setShowCamera(true)
-                }}
-                className="w-full p-6 rounded-2xl bg-gradient-to-br from-purple-600/20 to-pink-600/20 border border-purple-500/30 hover:border-purple-500/50 transition-all duration-200 group"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
-                    <Video className="text-white" size={32} />
-                  </div>
-                  <div className="flex-1 text-left">
-                    <h3 className="text-xl font-bold text-white mb-1">Vidéo</h3>
-                    <p className="text-sm text-gray-400">Capturer une vidéo</p>
-                  </div>
-                </div>
-              </button>
-
-              {/* Bouton Photo */}
-              <button
-                onClick={() => {
-                  setCameraMode('photo')
-                  setShowModeSelector(false)
-                  setShowCamera(true)
-                }}
-                className="w-full p-6 rounded-2xl bg-gradient-to-br from-blue-600/20 to-cyan-600/20 border border-blue-500/30 hover:border-blue-500/50 transition-all duration-200 group"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center flex-shrink-0">
-                    <Camera className="text-white" size={32} />
-                  </div>
-                  <div className="flex-1 text-left">
-                    <h3 className="text-xl font-bold text-white mb-1">Photo</h3>
-                    <p className="text-sm text-gray-400">Prendre une photo</p>
-                  </div>
-                </div>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Écran caméra */}
+      {/* Écran caméra avec toggle intégré */}
       {showCamera && (
-        <CameraCapturePro
-          mode={cameraMode}
-          onClose={() => {
-            setShowCamera(false)
-            setShowModeSelector(true)
-          }}
-          onCapture={handleCameraCapture}
-        />
+        <div className="fixed inset-0 z-50 bg-black">
+          {/* Toggle Photo/Video en haut */}
+          <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-[60] flex gap-2 bg-black/60 backdrop-blur-md rounded-full p-1">
+            <button
+              onClick={() => setCameraMode('video')}
+              className={`px-6 py-2 rounded-full font-medium transition-all ${
+                cameraMode === 'video'
+                  ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white'
+                  : 'text-white/60 hover:text-white'
+              }`}
+            >
+              🎥 Vidéo
+            </button>
+            <button
+              onClick={() => setCameraMode('photo')}
+              className={`px-6 py-2 rounded-full font-medium transition-all ${
+                cameraMode === 'photo'
+                  ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white'
+                  : 'text-white/60 hover:text-white'
+              }`}
+            >
+              📷 Photo
+            </button>
+          </div>
+
+          {/* Composant caméra */}
+          <CameraCapturePro
+            mode={cameraMode}
+            onClose={() => {
+              setShowCamera(false)
+              window.history.back()
+            }}
+            onCapture={handleCameraCapture}
+          />
+        </div>
       )}
 
       {/* Éditeur de publication */}
