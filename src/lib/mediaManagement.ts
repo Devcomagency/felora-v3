@@ -20,15 +20,14 @@ export interface MediaItem {
  */
 export async function updateMedia(mediaUrl: string, updates: MediaUpdateData): Promise<void> {
   try {
-    // Pour l'instant, on utilise l'API de mise à jour du statut
-    const response = await fetch('/api/escort/media/update-status', {
+    const response = await fetch('/api/media/update', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        mediaUrl, // Utiliser l'URL comme identifiant temporaire
-        isPrivate: updates.visibility === 'PRIVATE',
+        mediaUrl,
+        visibility: updates.visibility,
         price: updates.price
       })
     })
@@ -53,15 +52,13 @@ export async function updateMedia(mediaUrl: string, updates: MediaUpdateData): P
  */
 export async function deleteMedia(mediaUrl: string, mediaIndex: number): Promise<void> {
   try {
-    // Utiliser l'API de suppression existante
-    const response = await fetch('/api/escort/media/delete', {
+    const response = await fetch('/api/media/delete', {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        mediaUrl, // Utiliser l'URL comme identifiant
-        type: 'gallery' // Supposer que c'est de la galerie
+        mediaUrl
       })
     })
 

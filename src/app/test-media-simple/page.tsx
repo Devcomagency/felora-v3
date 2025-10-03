@@ -3,7 +3,7 @@
 import { useState, useCallback, memo } from 'react'
 import dynamic from 'next/dynamic'
 import { useSession } from 'next-auth/react'
-import { Plus, ChevronLeft, Home, Search, User } from 'lucide-react'
+import { Plus, ChevronLeft, Home, Search, User, Camera, Video } from 'lucide-react'
 
 // Lazy loading des composants
 const CameraCapturePro = dynamic(() => import('@/components/camera/CameraCapturePro'), {
@@ -37,7 +37,9 @@ interface CapturedMedia {
 export default function TestMediaSimplePage() {
   const { data: session } = useSession()
 
+  const [showModeSelector, setShowModeSelector] = useState(true) // Sélecteur photo/vidéo
   const [showCamera, setShowCamera] = useState(false)
+  const [cameraMode, setCameraMode] = useState<'photo' | 'video'>('video')
   const [showPublishEditor, setShowPublishEditor] = useState(false)
   const [capturedMedia, setCapturedMedia] = useState<CapturedMedia | null>(null)
   const [isPublishing, setIsPublishing] = useState(false)
@@ -65,6 +67,7 @@ export default function TestMediaSimplePage() {
     })
 
     setShowCamera(false)
+    setShowModeSelector(false)
     setShowPublishEditor(true)
   }, [])
 
@@ -152,11 +155,9 @@ export default function TestMediaSimplePage() {
       if (result.success) {
         setMessage(`${data.file.type.startsWith('video/') ? 'Vidéo' : 'Photo'} publiée avec succès !`)
 
-        // Rediriger vers le profil après 2 secondes
-        setTimeout(() => {
-          const redirectUrl = result.redirectUrl || (result.userType === 'CLUB' ? '/profile-test/club' : '/profile')
-          window.location.href = redirectUrl
-        }, 2000)
+        // Rediriger directement vers le profil
+        const redirectUrl = result.redirectUrl || (result.userType === 'CLUB' ? '/profile-test/club' : '/profile')
+        window.location.href = redirectUrl
       } else {
         throw new Error(result.error || 'Erreur inconnue')
       }
@@ -210,65 +211,53 @@ export default function TestMediaSimplePage() {
         </div>
       )}
 
-      {/* Page principale */}
-      {!showCamera && !showPublishEditor && (
+      {/* Sélecteur de mode photo/vidéo */}
+      {showModeSelector && !showCamera && !showPublishEditor && (
         <div className="pt-14 flex flex-col items-center justify-center min-h-screen px-4">
-          <div className="text-center">
-            <div
-              className="w-32 h-32 mx-auto mb-6 rounded-full bg-gradient-to-r from-[#FF6B9D] to-[#B794F6] flex items-center justify-center shadow-2xl hover:scale-105 transition-all duration-200 cursor-pointer"
-              onClick={() => setShowCamera(true)}
-            >
-              <Plus className="w-16 h-16 text-white" />
+          <div className="text-center max-w-md w-full">
+            <h2 className="text-2xl font-bold text-white mb-8">Que souhaitez-vous créer ?</h2>
+
+            <div className="space-y-4">
+              {/* Bouton Vidéo */}
+              <button
+                onClick={() => {
+                  setCameraMode('video')
+                  setShowModeSelector(false)
+                  setShowCamera(true)
+                }}
+                className="w-full p-6 rounded-2xl bg-gradient-to-br from-purple-600/20 to-pink-600/20 border border-purple-500/30 hover:border-purple-500/50 transition-all duration-200 group"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
+                    <Video className="text-white" size={32} />
+                  </div>
+                  <div className="flex-1 text-left">
+                    <h3 className="text-xl font-bold text-white mb-1">Vidéo</h3>
+                    <p className="text-sm text-gray-400">Capturer une vidéo</p>
+                  </div>
+                </div>
+              </button>
+
+              {/* Bouton Photo */}
+              <button
+                onClick={() => {
+                  setCameraMode('photo')
+                  setShowModeSelector(false)
+                  setShowCamera(true)
+                }}
+                className="w-full p-6 rounded-2xl bg-gradient-to-br from-blue-600/20 to-cyan-600/20 border border-blue-500/30 hover:border-blue-500/50 transition-all duration-200 group"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center flex-shrink-0">
+                    <Camera className="text-white" size={32} />
+                  </div>
+                  <div className="flex-1 text-left">
+                    <h3 className="text-xl font-bold text-white mb-1">Photo</h3>
+                    <p className="text-sm text-gray-400">Prendre une photo</p>
+                  </div>
+                </div>
+              </button>
             </div>
-
-            <p className="text-white/80 text-lg font-medium">Créer du contenu</p>
-            <p className="text-white/60 text-sm mt-2">Appuyez pour commencer</p>
-          </div>
-        </div>
-      )}
-
-      {/* Bouton flottant */}
-      {isEscortOrClub && !showCamera && !showPublishEditor && (
-        <button
-          onClick={() => setShowCamera(true)}
-          className="fixed bottom-24 left-4 w-16 h-16 rounded-full bg-gradient-to-r from-[#FF6B9D] to-[#B794F6] flex items-center justify-center shadow-2xl hover:scale-105 transition-all duration-200 z-50"
-        >
-          <Plus className="w-10 h-10 text-white" />
-        </button>
-      )}
-
-      {/* Footer navigation */}
-      {isEscortOrClub && !showCamera && !showPublishEditor && (
-        <div className="fixed bottom-0 left-0 right-0 h-20 bg-black/80 backdrop-blur-md border-t border-white/10 z-40">
-          <div className="flex items-center justify-center h-full px-4 gap-4">
-            <button
-              onClick={() => window.location.href = '/'}
-              className="flex flex-col items-center justify-center min-w-16 h-16 p-2 hover:bg-white/10 rounded-xl transition-colors"
-            >
-              <Home className="w-6 h-6 text-white/70" />
-              <span className="text-xs text-white/70 mt-1">Accueil</span>
-            </button>
-
-            <button
-              onClick={() => window.location.href = '/search'}
-              className="flex flex-col items-center justify-center min-w-16 h-16 p-2 hover:bg-white/10 rounded-xl transition-colors"
-            >
-              <Search className="w-6 h-6 text-white/70" />
-              <span className="text-xs text-white/70 mt-1">Recherche</span>
-            </button>
-
-            <button
-              onClick={() => {
-                const profileUrl = (session?.user as any)?.clubProfile || session?.user?.email?.includes('club')
-                  ? '/club/profile'
-                  : '/profile'
-                window.location.href = profileUrl
-              }}
-              className="flex flex-col items-center justify-center min-w-16 h-16 p-2 hover:bg-white/10 rounded-xl transition-colors"
-            >
-              <User className="w-6 h-6 text-white/70" />
-              <span className="text-xs text-white/70 mt-1">Profil</span>
-            </button>
           </div>
         </div>
       )}
@@ -276,8 +265,11 @@ export default function TestMediaSimplePage() {
       {/* Écran caméra */}
       {showCamera && (
         <CameraCapturePro
-          mode="video"
-          onClose={() => setShowCamera(false)}
+          mode={cameraMode}
+          onClose={() => {
+            setShowCamera(false)
+            setShowModeSelector(true)
+          }}
           onCapture={handleCameraCapture}
         />
       )}

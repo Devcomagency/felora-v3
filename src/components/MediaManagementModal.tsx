@@ -75,6 +75,7 @@ export default function MediaManagementModal({
   const [isLoading, setIsLoading] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
 
   // Initialiser les valeurs quand le modal s'ouvre
   React.useEffect(() => {
@@ -82,12 +83,20 @@ export default function MediaManagementModal({
       setSelectedVisibility(media.visibility || 'PUBLIC')
       setCustomPrice(media.price?.toString() || '')
       setError(null)
+      setSuccess(null)
       setShowDeleteConfirm(false)
     }
   }, [isOpen, media])
 
   const handleSave = async () => {
     if (!media) return
+
+    console.log('🔧 [MODAL] Tentative de mise à jour:', {
+      mediaUrl: media.url,
+      visibility: selectedVisibility,
+      customPrice,
+      media
+    })
 
     setIsLoading(true)
     setError(null)
@@ -111,7 +120,10 @@ export default function MediaManagementModal({
       }
 
       await onUpdateMedia(media.url, updates)
-      onClose()
+      setSuccess('Média mis à jour avec succès !')
+      setTimeout(() => {
+        onClose()
+      }, 1500)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Une erreur est survenue')
     } finally {
@@ -122,13 +134,23 @@ export default function MediaManagementModal({
   const handleDelete = async () => {
     if (!media) return
 
+    console.log('🔧 [MODAL] Tentative de suppression:', {
+      mediaUrl: media.url,
+      mediaIndex,
+      media
+    })
+
     setIsLoading(true)
     setError(null)
 
     try {
       await onDeleteMedia(media.url, mediaIndex)
-      onClose()
+      setSuccess('Média supprimé avec succès !')
+      setTimeout(() => {
+        onClose()
+      }, 1500)
     } catch (err) {
+      console.error('🔧 [MODAL] Erreur suppression:', err)
       setError(err instanceof Error ? err.message : 'Erreur lors de la suppression')
     } finally {
       setIsLoading(false)
@@ -140,6 +162,7 @@ export default function MediaManagementModal({
   return (
     <AnimatePresence>
       <motion.div
+        key="media-management-modal"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
@@ -150,23 +173,23 @@ export default function MediaManagementModal({
           initial={{ opacity: 0, scale: 0.9, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.9, y: 20 }}
-          className="bg-gray-900/95 backdrop-blur-md border border-white/10 rounded-2xl w-full max-w-md p-6"
+          className="bg-gray-900/95 backdrop-blur-md border border-white/10 rounded-xl w-full max-w-sm p-4"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-white">Gérer le média</h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-bold text-white">Gérer le média</h2>
             <button
               onClick={onClose}
-              className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 transition-colors flex items-center justify-center"
+              className="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 transition-colors flex items-center justify-center"
             >
-              <X size={16} className="text-white" />
+              <X size={14} className="text-white" />
             </button>
           </div>
 
-          {/* Aperçu du média */}
-          <div className="mb-6">
-            <div className="relative aspect-square rounded-xl overflow-hidden bg-black">
+          {/* Aperçu du média - plus petit */}
+          <div className="mb-4">
+            <div className="relative aspect-square rounded-lg overflow-hidden bg-black">
               {media.type === 'video' ? (
                 <video
                   src={media.url}
@@ -182,7 +205,7 @@ export default function MediaManagementModal({
                   className="w-full h-full object-cover"
                 />
               )}
-              <div className="absolute top-2 right-2">
+              <div className="absolute top-1 right-1">
                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                   media.visibility === 'PUBLIC' ? 'bg-green-500/20 text-green-400' :
                   media.visibility === 'PRIVATE' ? 'bg-gray-500/20 text-gray-400' :
@@ -196,9 +219,9 @@ export default function MediaManagementModal({
           </div>
 
           {/* Options de visibilité */}
-          <div className="mb-6">
-            <h3 className="text-white font-semibold mb-3">Visibilité</h3>
-            <div className="space-y-2">
+          <div className="mb-4">
+            <h3 className="text-white font-semibold mb-2 text-sm">Visibilité</h3>
+            <div className="space-y-1">
               {VISIBILITY_OPTIONS.map((option) => {
                 const Icon = option.icon
                 const isSelected = selectedVisibility === option.value
@@ -207,24 +230,24 @@ export default function MediaManagementModal({
                   <button
                     key={option.value}
                     onClick={() => setSelectedVisibility(option.value)}
-                    className={`w-full p-3 rounded-xl border transition-all ${
+                    className={`w-full p-2 rounded-lg border transition-all ${
                       isSelected
                         ? `${option.bgColor} ${option.borderColor} border-2`
                         : 'bg-white/5 border-white/10 hover:bg-white/10'
                     }`}
                   >
-                    <div className="flex items-center gap-3">
-                      <Icon size={20} className={isSelected ? option.color : 'text-white/60'} />
+                    <div className="flex items-center gap-2">
+                      <Icon size={16} className={isSelected ? option.color : 'text-white/60'} />
                       <div className="flex-1 text-left">
-                        <div className={`font-medium ${isSelected ? option.color : 'text-white'}`}>
+                        <div className={`font-medium text-sm ${isSelected ? option.color : 'text-white'}`}>
                           {option.label}
                         </div>
-                        <div className="text-sm text-white/60">
+                        <div className="text-xs text-white/60">
                           {option.description}
                         </div>
                       </div>
                       {isSelected && (
-                        <Check size={16} className={option.color} />
+                        <Check size={14} className={option.color} />
                       )}
                     </div>
                   </button>
@@ -235,12 +258,12 @@ export default function MediaManagementModal({
 
           {/* Prix pour le contenu premium */}
           {selectedVisibility === 'PREMIUM' && (
-            <div className="mb-6">
-              <label className="block text-white font-semibold mb-2">
+            <div className="mb-4">
+              <label className="block text-white font-semibold mb-2 text-sm">
                 Prix (CHF)
               </label>
               <div className="relative">
-                <DollarSign size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60" />
+                <DollarSign size={14} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60" />
                 <input
                   type="number"
                   value={customPrice}
@@ -248,7 +271,7 @@ export default function MediaManagementModal({
                   placeholder="0.00"
                   min="1"
                   step="0.50"
-                  className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-white/30 focus:bg-white/10"
+                  className="w-full pl-8 pr-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/40 focus:outline-none focus:border-white/30 focus:bg-white/10 text-sm"
                 />
               </div>
               <p className="text-xs text-white/60 mt-1">
@@ -267,15 +290,25 @@ export default function MediaManagementModal({
             </div>
           )}
 
+          {/* Message de succès */}
+          {success && (
+            <div className="mb-4 p-3 bg-green-500/20 border border-green-500/30 rounded-xl">
+              <div className="flex items-center gap-2">
+                <Check size={16} className="text-green-400" />
+                <span className="text-green-400 text-sm">{success}</span>
+              </div>
+            </div>
+          )}
+
           {/* Actions */}
-          <div className="flex gap-3">
+          <div className="flex gap-2">
             {/* Bouton de suppression */}
             <button
               onClick={() => setShowDeleteConfirm(true)}
               disabled={isLoading}
-              className="flex-1 px-4 py-3 bg-red-500/20 border border-red-500/30 text-red-400 rounded-xl font-medium hover:bg-red-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 px-3 py-2 bg-red-500/20 border border-red-500/30 text-red-400 rounded-lg font-medium hover:bg-red-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
             >
-              <Trash2 size={16} className="inline mr-2" />
+              <Trash2 size={14} className="inline mr-1" />
               Supprimer
             </button>
 
@@ -283,12 +316,12 @@ export default function MediaManagementModal({
             <button
               onClick={handleSave}
               disabled={isLoading}
-              className="flex-1 px-4 py-3 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-xl font-medium hover:from-pink-600 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 px-3 py-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-lg font-medium hover:from-pink-600 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm"
             >
               {isLoading ? (
-                <Loader size={16} className="inline mr-2 animate-spin" />
+                <Loader size={14} className="inline mr-1 animate-spin" />
               ) : (
-                <Check size={16} className="inline mr-2" />
+                <Check size={14} className="inline mr-1" />
               )}
               Sauvegarder
             </button>
@@ -300,6 +333,7 @@ export default function MediaManagementModal({
       <AnimatePresence>
         {showDeleteConfirm && (
           <motion.div
+            key="delete-confirmation-modal"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}

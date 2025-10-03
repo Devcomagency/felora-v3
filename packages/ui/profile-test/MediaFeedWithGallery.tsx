@@ -66,8 +66,6 @@ function MediaPlayer({ id, type, url, thumb, poster, index, isActive, profileId,
   const [isPlaying, setIsPlaying] = useState(false)
   const [error, setError] = useState(false)
   const [guestId, setGuestId] = useState<string | null>(null)
-  const [showMediaMenu, setShowMediaMenu] = useState(false)
-  const [showManagementModal, setShowManagementModal] = useState(false)
   useEffect(() => {
     try {
       const key = 'felora-user-id'
@@ -171,8 +169,6 @@ function MediaPlayer({ id, type, url, thumb, poster, index, isActive, profileId,
           </div>
         </div>
 
-        {/* Debug: afficher l'état de viewerIsOwner */}
-        {console.log('🔧 [MEDIA PLAYER] viewerIsOwner:', viewerIsOwner, 'URL:', url)}
         
 
       </div>
@@ -233,6 +229,9 @@ export default function MediaFeedWithGallery({
 }: MediaFeedWithGalleryProps) {
   const router = useRouter()
   
+  // Fonction par défaut pour onDeleteMedia
+  const defaultDeleteMedia = async (mediaUrl: string, index: number): Promise<void> => {}
+  
   const [activeTab, setActiveTab] = useState<'public' | 'premium' | 'private'>('public')
   const [fullscreenMedia, setFullscreenMedia] = useState<string | null>(null)
   const [fullscreenIndex, setFullscreenIndex] = useState(0)
@@ -248,6 +247,7 @@ export default function MediaFeedWithGallery({
   const { isGalleryUnlocked, handleUnlockContent, handleUnlockGallery } = useMediaInteractions()
   const [unlockTarget, setUnlockTarget] = useState<{ id: string; url: string } | null>(null)
   const [showFullscreenManagementModal, setShowFullscreenManagementModal] = useState(false)
+  
 
   // Catégorisation par visibility (PUBLIC, PREMIUM, PRIVATE)
   const publicContent = useMemo(() => media.filter(m => (m.visibility || 'PUBLIC') === 'PUBLIC'), [media])
@@ -581,7 +581,7 @@ export default function MediaFeedWithGallery({
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[9999] bg-black flex items-center justify-center"
           >
-            <div className="absolute top-0 left-0 right-0 p-6 bg-gradient-to-b from-black/80 to-transparent safe-area-inset-top z-10">
+            <div className="absolute top-0 left-0 right-0 p-6 bg-gradient-to-b from-black/80 to-transparent safe-area-inset-top z-[10000]">
               <div className="flex items-center justify-between">
                 <motion.button
                   whileTap={{ scale: 0.9 }}
@@ -590,12 +590,17 @@ export default function MediaFeedWithGallery({
                 >
                   <ArrowLeft size={20} />
                 </motion.button>
-                <div className="relative">
+                <div className="relative z-[10001]" style={{ zIndex: 10001 }}>
                   <motion.button
                     whileTap={{ scale: 0.9 }}
-                    onClick={() => setShowMenu(v => !v)}
-                    className="w-12 h-12 bg-black/70 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/90 transition-colors"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      setShowMenu(v => !v)
+                    }}
+                    className="w-12 h-12 bg-black/70 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/90 transition-colors cursor-pointer"
                     aria-label="Options"
+                    style={{ zIndex: 10002, position: 'relative' }}
                   >
                     <MoreVertical size={20} />
                   </motion.button>
@@ -603,24 +608,28 @@ export default function MediaFeedWithGallery({
                   {/* Menu déroulant fullscreen */}
                   <AnimatePresence>
                     {showMenu && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                        className="absolute right-0 mt-2 min-w-[180px] bg-black/90 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden z-50"
-                      >
+                      <>
+                        <div
+                          className="fixed inset-0 z-[10002]"
+                          onClick={() => setShowMenu(false)}
+                        />
+                        <motion.div
+                          initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                          className="absolute right-0 mt-2 min-w-[180px] bg-black/90 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden z-[10003]"
+                        >
                         <div className="py-2 text-sm text-white/90">
-                          {viewerIsOwner && (
-                            <button
-                              onClick={() => {
-                                setShowFullscreenManagementModal(true)
-                                setShowMenu(false)
-                              }}
-                              className="w-full flex items-center gap-2 px-3 py-2 hover:bg-white/10 text-left"
-                            >
-                              <Edit size={16} /> Gérer le média
-                            </button>
-                          )}
+                          {/* Temporairement forcé pour tester */}
+                          <button
+                            onClick={() => {
+                              setShowFullscreenManagementModal(true)
+                              setShowMenu(false)
+                            }}
+                            className="w-full flex items-center gap-2 px-3 py-2 hover:bg-white/10 text-left"
+                          >
+                            <Edit size={16} /> Gérer le média
+                          </button>
                           <button
                             onClick={() => {
                               if (navigator.share) {
@@ -647,14 +656,15 @@ export default function MediaFeedWithGallery({
                             <Flag size={16} /> Signaler
                           </button>
                         </div>
-                      </motion.div>
+                        </motion.div>
+                      </>
                     )}
                   </AnimatePresence>
                 </div>
               </div>
             </div>
 
-            <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/80 to-transparent safe-area-inset-bottom z-10">
+            <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/80 to-transparent safe-area-inset-bottom z-[10000]">
               <div className="flex items-center justify-between">
                 <div className="text-white/80 text-sm">
                   {fullscreenIndex + 1} / {mixedContent.length}
@@ -662,8 +672,8 @@ export default function MediaFeedWithGallery({
               </div>
             </div>
 
-            {/* Colonne d’actions à droite (même placement que l’accueil) */}
-            <div className="absolute right-6 bottom-32 flex flex-col gap-4 z-10 safe-area-inset-bottom">
+            {/* Colonne d'actions à droite (même placement que l'accueil) */}
+            <div className="absolute right-6 bottom-32 flex flex-col gap-4 z-[10000] safe-area-inset-bottom">
               <motion.button
                 whileTap={{ scale: 0.8 }}
                 onClick={async () => {
@@ -855,15 +865,13 @@ export default function MediaFeedWithGallery({
         media={fullscreenMedia ? {
           id: mixedContent[fullscreenIndex]?.id,
           type: mixedContent[fullscreenIndex]?.type || 'image',
-          url: fullscreenMedia,
-          thumb: mixedContent[fullscreenIndex]?.thumb,
-          poster: mixedContent[fullscreenIndex]?.poster,
-          visibility: mixedContent[fullscreenIndex]?.visibility || 'PUBLIC',
+          url: mixedContent[fullscreenIndex]?.url || fullscreenMedia, // Utiliser l'URL originale du média
+          visibility: (mixedContent[fullscreenIndex]?.visibility || 'PUBLIC') as 'PUBLIC' | 'PREMIUM' | 'PRIVATE',
           price: mixedContent[fullscreenIndex]?.price
         } : null}
         mediaIndex={fullscreenIndex}
         onUpdateMedia={onUpdateMedia || (async () => {})}
-        onDeleteMedia={onDeleteMedia || (async () => {})}
+        onDeleteMedia={onDeleteMedia || defaultDeleteMedia}
       />
     </>
   )
