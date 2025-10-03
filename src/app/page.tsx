@@ -22,59 +22,56 @@ interface MediaItem {
 }
 
 export default async function HomePage() {
-  // Données mock directes pour éviter les erreurs de service
-  const items: MediaItem[] = [
-    {
-      id: 'feed-1',
-      type: 'IMAGE',
-      url: 'https://picsum.photos/400/600?random=1',
-      thumb: 'https://picsum.photos/400/600?random=1',
-      visibility: 'PUBLIC',
-      author: {
-        id: 'sofia-elite-1',
-        handle: '@sofia_elite',
-        name: 'Sofia Elite',
-        avatar: 'https://picsum.photos/100/100?random=10'
-      },
-      likeCount: 1247,
-      reactCount: 89,
-      createdAt: new Date(Date.now() - 3600000).toISOString()
-    },
-    {
-      id: 'feed-2',
-      type: 'IMAGE',
-      url: 'https://picsum.photos/400/600?random=2',
-      thumb: 'https://picsum.photos/400/600?random=2',
-      visibility: 'PUBLIC',
-      author: {
-        id: 'bella-dreams-2',
-        handle: '@bella_dreams',
-        name: 'Bella Dreams',
-        avatar: 'https://picsum.photos/100/100?random=20'
-      },
-      likeCount: 892,
-      reactCount: 124,
-      createdAt: new Date(Date.now() - 7200000).toISOString()
-    },
-    {
-      id: 'feed-3',
-      type: 'IMAGE',
-      url: 'https://picsum.photos/400/600?random=3',
-      thumb: 'https://picsum.photos/400/600?random=3',
-      visibility: 'PUBLIC',
-      author: {
-        id: 'v-diamond-3',
-        handle: '@v_diamond',
-        name: 'V Diamond',
-        avatar: 'https://picsum.photos/100/100?random=30'
-      },
-      likeCount: 2156,
-      reactCount: 267,
-      createdAt: new Date(Date.now() - 10800000).toISOString()
-    }
-  ]
+  let items: MediaItem[] = []
+  let nextCursor: string | null = null
   
-  const nextCursor = 'initial-cursor'
+  try {
+    // Appeler l'API pour récupérer les médias publics
+    const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000'
+    const response = await fetch(`${baseUrl}/api/feed/public?limit=10`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      // Désactiver le cache pour avoir des données fraîches
+      cache: 'no-store'
+    })
+
+    if (response.ok) {
+      const data = await response.json()
+      items = data.items || []
+      nextCursor = data.nextCursor || null
+      console.log('📱 [HOME PAGE] Médias récupérés:', items.length, 'items')
+    } else {
+      console.error('❌ [HOME PAGE] Erreur API feed:', response.status)
+    }
+  } catch (error) {
+    console.error('❌ [HOME PAGE] Erreur récupération feed:', error)
+  }
+
+  // Fallback avec des données mock si l'API échoue
+  if (items.length === 0) {
+    console.log('⚠️ [HOME PAGE] Utilisation des données mock en fallback')
+    items = [
+      {
+        id: 'fallback-1',
+        type: 'IMAGE',
+        url: 'https://picsum.photos/400/600?random=1',
+        thumb: 'https://picsum.photos/400/600?random=1',
+        visibility: 'PUBLIC',
+        author: {
+          id: 'fallback-user-1',
+          handle: '@felora_demo',
+          name: 'Felora Demo',
+          avatar: 'https://picsum.photos/100/100?random=10'
+        },
+        likeCount: 0,
+        reactCount: 0,
+        createdAt: new Date().toISOString()
+      }
+    ]
+    nextCursor = null
+  }
 
   return (
     <Suspense fallback={<div>Loading...</div>}>

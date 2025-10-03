@@ -349,6 +349,11 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
         const j = await r.json()
         if (!r.ok || !j?.profile || cancelled) return
         const p = j.profile
+        console.log('🔄 [PHYSICAL DEBUG] Données reçues de l\'API unified:', {
+          physical: p.physical,
+          hasPhysical: !!p.physical,
+          physicalKeys: p.physical ? Object.keys(p.physical) : 'undefined'
+        })
         const processedPrices = {
           fifteenMin: p.rates?.fifteenMin !== null && p.rates?.fifteenMin !== undefined && p.rates?.fifteenMin > 0 ? p.rates.fifteenMin : null,
           thirtyMin: p.rates?.thirtyMin !== null && p.rates?.thirtyMin !== undefined && p.rates?.thirtyMin > 0 ? p.rates.thirtyMin : null,
@@ -375,22 +380,62 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
           addressPrivacy: p.addressPrivacy || 'precise',
           phone: p.user?.phone || '',
           phoneVisibility: p.phoneVisibility || 'hidden',
-          height: p.physical?.height || undefined,
-          bodyType: p.physical?.bodyType || '',
-          hairColor: p.physical?.hairColor || '',
+          height: (() => {
+            const height = p.physical?.height || undefined
+            console.log('🔄 [PHYSICAL DEBUG] Chargement height depuis API:', { raw: p.physical?.height, processed: height })
+            return height
+          })(),
+          bodyType: (() => {
+            const bodyType = p.physical?.bodyType || ''
+            console.log('🔄 [PHYSICAL DEBUG] Chargement bodyType depuis API:', { raw: p.physical?.bodyType, processed: bodyType })
+            return bodyType
+          })(),
+          hairColor: (() => {
+            const hairColor = p.physical?.hairColor || ''
+            console.log('🔄 [PHYSICAL DEBUG] Chargement hairColor depuis API:', { raw: p.physical?.hairColor, processed: hairColor })
+            return hairColor
+          })(),
           hairLength: '', // hairLength n'est pas encore disponible dans l'API unifiée
-          eyeColor: p.physical?.eyeColor || '',
-          ethnicity: p.physical?.ethnicity || '',
-          breastSize: p.physical?.bustSize || '',
+          eyeColor: (() => {
+            const eyeColor = p.physical?.eyeColor || ''
+            console.log('🔄 [PHYSICAL DEBUG] Chargement eyeColor depuis API:', { raw: p.physical?.eyeColor, processed: eyeColor })
+            return eyeColor
+          })(),
+          ethnicity: (() => {
+            const ethnicity = p.physical?.ethnicity || ''
+            console.log('🔄 [PHYSICAL DEBUG] Chargement ethnicity depuis API:', { raw: p.physical?.ethnicity, processed: ethnicity })
+            return ethnicity
+          })(),
+          breastSize: (() => {
+            const breastSize = p.physical?.bustSize || ''
+            console.log('🔄 [PHYSICAL DEBUG] Chargement breastSize depuis API (bustSize):', { raw: p.physical?.bustSize, processed: breastSize })
+            return breastSize
+          })(),
           breastType: p.physical?.breastType || undefined,
           pubicHair: p.physical?.pubicHair || undefined,
           smoker: p.physical?.smoker,
           tattoos: p.physical?.tattoos || false,
           piercings: p.physical?.piercings || false,
-          acceptsCouples: p.clientele?.acceptsCouples || false,
-          acceptsWomen: p.clientele?.acceptsWomen || false,
-          acceptsHandicapped: p.clientele?.acceptsHandicapped || false,
-          acceptsSeniors: p.clientele?.acceptsSeniors || false,
+          acceptsCouples: (() => {
+            const acceptsCouples = p.clientele?.acceptsCouples || false
+            console.log('🔄 [CLIENTELE DEBUG] Chargement acceptsCouples depuis API:', { raw: p.clientele?.acceptsCouples, processed: acceptsCouples })
+            return acceptsCouples
+          })(),
+          acceptsWomen: (() => {
+            const acceptsWomen = p.clientele?.acceptsWomen || false
+            console.log('🔄 [CLIENTELE DEBUG] Chargement acceptsWomen depuis API:', { raw: p.clientele?.acceptsWomen, processed: acceptsWomen })
+            return acceptsWomen
+          })(),
+          acceptsHandicapped: (() => {
+            const acceptsHandicapped = p.clientele?.acceptsHandicapped || false
+            console.log('🔄 [CLIENTELE DEBUG] Chargement acceptsHandicapped depuis API:', { raw: p.clientele?.acceptsHandicapped, processed: acceptsHandicapped })
+            return acceptsHandicapped
+          })(),
+          acceptsSeniors: (() => {
+            const acceptsSeniors = p.clientele?.acceptsSeniors || false
+            console.log('🔄 [CLIENTELE DEBUG] Chargement acceptsSeniors depuis API:', { raw: p.clientele?.acceptsSeniors, processed: acceptsSeniors })
+            return acceptsSeniors
+          })(),
           specialties: (p.specialties || []).concat(p.options?.amenities || []).map((item: string) =>
             item.startsWith('opt:') || item.startsWith('srv:') ? item : `opt:${item}`
           ),
@@ -401,9 +446,13 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
         try {
           // Utiliser les données brutes pour l'agenda car c'est spécifique au dashboard
           const rawTimeSlots = p.timeSlots // L'API unifiée en mode dashboard inclut ce champ
-          console.log('[DASHBOARD] Loading agenda from API:', rawTimeSlots)
+          console.log('🔄 [AGENDA DEBUG] Chargement agenda depuis API:', {
+            rawTimeSlots,
+            type: typeof rawTimeSlots,
+            isEmpty: rawTimeSlots === '' || rawTimeSlots === null || rawTimeSlots === undefined
+          })
           const sched = normalizeScheduleData(rawTimeSlots)
-          console.log('[DASHBOARD] Normalized schedule:', sched)
+          console.log('🔄 [AGENDA DEBUG] Schedule normalisé:', sched)
           
           if (sched?.weekly && Array.isArray(sched.weekly)) {
             const mapDays = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche']
@@ -461,10 +510,27 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
   ]
 
   const updateProfileData = (field: string, value: any) => {
-    setProfileData(prev => ({
-      ...prev,
-      [field]: value
-    }))
+    console.log(`🔄 [PHYSICAL DEBUG] updateProfileData appelé:`, { field, value, type: typeof value })
+    setProfileData(prev => {
+      const newData = {
+        ...prev,
+        [field]: value
+      }
+      console.log(`📝 [PHYSICAL DEBUG] Nouveau profileData après update:`, {
+        field,
+        oldValue: prev[field as keyof ProfileData],
+        newValue: value,
+        physicalFields: {
+          bodyType: newData.bodyType,
+          hairColor: newData.hairColor,
+          eyeColor: newData.eyeColor,
+          ethnicity: newData.ethnicity,
+          breastSize: newData.breastSize,
+          height: newData.height
+        }
+      })
+      return newData
+    })
   }
 
   const updateNestedProfileData = (parent: string, field: string, value: any) => {
@@ -637,7 +703,20 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
     const mapDays = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche']
     const packed = mapDays.map((d, idx) => ({ weekday: idx, ...weekly[d as keyof typeof weekly] }))
     const result = { weekly: packed, pause: pauseEnabled ? { start: pauseStart, end: pauseEnd } : null, absences }
-    console.log('[DASHBOARD] Converting schedule to JSON:', result)
+    console.log('🔄 [AGENDA DEBUG] Conversion schedule vers JSON:', result)
+    
+    // Vérifier si l'agenda a des données valides
+    const hasValidData = packed.some(day => day.enabled) || 
+                        (pauseEnabled && pauseStart && pauseEnd) || 
+                        (absences && absences.length > 0)
+    
+    console.log('🔄 [AGENDA DEBUG] Agenda a des données valides:', hasValidData)
+    
+    if (!hasValidData) {
+      console.log('⚠️ [AGENDA DEBUG] Aucune donnée valide dans l\'agenda, retourne null')
+      return null
+    }
+    
     return JSON.stringify(result)
   }
 
@@ -651,6 +730,11 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
   const doSave = async (payload: any, silent = false, retryCount = 0): Promise<boolean> => {
     const maxRetries = 3
     console.log('🚀 [DEBUG] doSave appelée avec payload:', payload)
+    console.log('🔍 [PHYSICAL DEBUG] Payload physical dans doSave:', {
+      hasPhysical: !!payload.physical,
+      physical: payload.physical,
+      physicalKeys: payload.physical ? Object.keys(payload.physical) : 'undefined'
+    })
     try {
       console.log('🌐 [DEBUG] Envoi requête à /api/profile/unified/me')
       const res = await fetch('/api/profile/unified/me', {
@@ -698,6 +782,19 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
   const triggerAutoSave = () => {
     if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current)
     autoSaveTimer.current = setTimeout(async () => {
+      console.log('🔄 [PHYSICAL DEBUG] triggerAutoSave appelé - État des champs physiques:', {
+        height: profileData.height,
+        bodyType: profileData.bodyType,
+        hairColor: profileData.hairColor,
+        eyeColor: profileData.eyeColor,
+        ethnicity: profileData.ethnicity,
+        breastSize: profileData.breastSize,
+        tattoos: profileData.tattoos,
+        piercings: profileData.piercings,
+        breastType: profileData.breastType,
+        pubicHair: profileData.pubicHair,
+        smoker: profileData.smoker
+      })
       const payload: any = {}
       if (profileData.age !== undefined) payload.age = profileData.age as number
       if (profileData.address !== undefined) payload.address = profileData.address
@@ -740,35 +837,141 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
         overnight: profileData.prices?.overnight
       }
       // Physique - Format unifié avec objet physical
-      if (profileData.height !== undefined || profileData.bodyType !== undefined || profileData.hairColor !== undefined || 
-          profileData.eyeColor !== undefined || profileData.ethnicity !== undefined || profileData.breastSize !== undefined ||
-          profileData.tattoos !== undefined || profileData.piercings !== undefined || profileData.breastType !== undefined ||
-          profileData.pubicHair !== undefined || typeof profileData.smoker === 'boolean') {
+      console.log('🔍 [PHYSICAL DEBUG] Vérification des champs physiques pour autosave:', {
+        height: profileData.height,
+        bodyType: profileData.bodyType,
+        hairColor: profileData.hairColor,
+        eyeColor: profileData.eyeColor,
+        ethnicity: profileData.ethnicity,
+        breastSize: profileData.breastSize,
+        tattoos: profileData.tattoos,
+        piercings: profileData.piercings,
+        breastType: profileData.breastType,
+        pubicHair: profileData.pubicHair,
+        smoker: profileData.smoker,
+        smokerType: typeof profileData.smoker
+      })
+      
+      const hasPhysicalData = profileData.height !== undefined || 
+          (profileData.bodyType !== undefined && profileData.bodyType !== '') || 
+          (profileData.hairColor !== undefined && profileData.hairColor !== '') || 
+          (profileData.eyeColor !== undefined && profileData.eyeColor !== '') || 
+          (profileData.ethnicity !== undefined && profileData.ethnicity !== '') || 
+          (profileData.breastSize !== undefined && profileData.breastSize !== '') ||
+          profileData.tattoos !== undefined || profileData.piercings !== undefined || 
+          profileData.breastType !== undefined || profileData.pubicHair !== undefined || 
+          typeof profileData.smoker === 'boolean'
+      
+      console.log('🔍 [PHYSICAL DEBUG] hasPhysicalData:', hasPhysicalData)
+      
+      if (hasPhysicalData) {
         payload.physical = {}
-        if (profileData.height !== undefined) payload.physical.height = profileData.height
-        if (profileData.bodyType !== undefined) payload.physical.bodyType = profileData.bodyType
-        if (profileData.hairColor !== undefined) payload.physical.hairColor = profileData.hairColor
-        if (profileData.eyeColor !== undefined) payload.physical.eyeColor = profileData.eyeColor
-        if (profileData.ethnicity !== undefined) payload.physical.ethnicity = profileData.ethnicity
-        if (profileData.breastSize !== undefined) payload.physical.bustSize = profileData.breastSize
-        if (profileData.tattoos !== undefined) payload.physical.tattoos = profileData.tattoos
-        if (profileData.piercings !== undefined) payload.physical.piercings = profileData.piercings
-        if (profileData.breastType !== undefined) payload.physical.breastType = profileData.breastType
-        if (profileData.pubicHair !== undefined) payload.physical.pubicHair = profileData.pubicHair
-        if (typeof profileData.smoker === 'boolean') payload.physical.smoker = profileData.smoker
+        console.log('📦 [PHYSICAL DEBUG] Création de l\'objet physical pour autosave')
+        
+        if (profileData.height !== undefined) {
+          payload.physical.height = profileData.height
+          console.log('📦 [PHYSICAL DEBUG] Ajout height:', profileData.height)
+        }
+        if (profileData.bodyType !== undefined && profileData.bodyType !== '') {
+          payload.physical.bodyType = profileData.bodyType
+          console.log('📦 [PHYSICAL DEBUG] Ajout bodyType:', profileData.bodyType)
+        }
+        if (profileData.hairColor !== undefined && profileData.hairColor !== '') {
+          payload.physical.hairColor = profileData.hairColor
+          console.log('📦 [PHYSICAL DEBUG] Ajout hairColor:', profileData.hairColor)
+        }
+        if (profileData.eyeColor !== undefined && profileData.eyeColor !== '') {
+          payload.physical.eyeColor = profileData.eyeColor
+          console.log('📦 [PHYSICAL DEBUG] Ajout eyeColor:', profileData.eyeColor)
+        }
+        if (profileData.ethnicity !== undefined && profileData.ethnicity !== '') {
+          payload.physical.ethnicity = profileData.ethnicity
+          console.log('📦 [PHYSICAL DEBUG] Ajout ethnicity:', profileData.ethnicity)
+        }
+        if (profileData.breastSize !== undefined && profileData.breastSize !== '') {
+          payload.physical.bustSize = profileData.breastSize
+          console.log('📦 [PHYSICAL DEBUG] Ajout breastSize -> bustSize:', profileData.breastSize)
+        }
+        if (profileData.tattoos !== undefined) {
+          payload.physical.tattoos = profileData.tattoos
+          console.log('📦 [PHYSICAL DEBUG] Ajout tattoos:', profileData.tattoos)
+        }
+        if (profileData.piercings !== undefined) {
+          payload.physical.piercings = profileData.piercings
+          console.log('📦 [PHYSICAL DEBUG] Ajout piercings:', profileData.piercings)
+        }
+        if (profileData.breastType !== undefined) {
+          payload.physical.breastType = profileData.breastType
+          console.log('📦 [PHYSICAL DEBUG] Ajout breastType:', profileData.breastType)
+        }
+        if (profileData.pubicHair !== undefined) {
+          payload.physical.pubicHair = profileData.pubicHair
+          console.log('📦 [PHYSICAL DEBUG] Ajout pubicHair:', profileData.pubicHair)
+        }
+        if (typeof profileData.smoker === 'boolean') {
+          payload.physical.smoker = profileData.smoker
+          console.log('📦 [PHYSICAL DEBUG] Ajout smoker:', profileData.smoker)
+        }
+        
+        console.log('📦 [PHYSICAL DEBUG] Objet physical final pour autosave:', payload.physical)
+      } else {
+        console.log('⚠️ [PHYSICAL DEBUG] Aucune donnée physique détectée pour autosave')
       }
       if (profileData.phoneVisibility) payload.phoneVisibility = profileData.phoneVisibility
       
       // Clientèle
-      if (typeof profileData.acceptsCouples === 'boolean' || typeof profileData.acceptsWomen === 'boolean' || typeof profileData.acceptsHandicapped === 'boolean' || typeof profileData.acceptsSeniors === 'boolean') {
-        payload.clientele = {
-          acceptsCouples: profileData.acceptsCouples || false,
-          acceptsWomen: profileData.acceptsWomen || false,
-          acceptsHandicapped: profileData.acceptsHandicapped || false,
-          acceptsSeniors: profileData.acceptsSeniors || false
+      console.log('🔍 [CLIENTELE DEBUG] Vérification des champs clientèle pour autosave:', {
+        acceptsCouples: profileData.acceptsCouples,
+        acceptsWomen: profileData.acceptsWomen,
+        acceptsHandicapped: profileData.acceptsHandicapped,
+        acceptsSeniors: profileData.acceptsSeniors,
+        types: {
+          acceptsCouples: typeof profileData.acceptsCouples,
+          acceptsWomen: typeof profileData.acceptsWomen,
+          acceptsHandicapped: typeof profileData.acceptsHandicapped,
+          acceptsSeniors: typeof profileData.acceptsSeniors
         }
+      })
+      
+      const hasClienteleData = typeof profileData.acceptsCouples === 'boolean' || 
+                              typeof profileData.acceptsWomen === 'boolean' || 
+                              typeof profileData.acceptsHandicapped === 'boolean' || 
+                              typeof profileData.acceptsSeniors === 'boolean'
+      
+      console.log('🔍 [CLIENTELE DEBUG] hasClienteleData:', hasClienteleData)
+      
+      if (hasClienteleData) {
+        payload.clientele = {}
+        console.log('📦 [CLIENTELE DEBUG] Création de l\'objet clientele pour autosave')
+        
+        if (typeof profileData.acceptsCouples === 'boolean') {
+          payload.clientele.acceptsCouples = profileData.acceptsCouples
+          console.log('📦 [CLIENTELE DEBUG] Ajout acceptsCouples:', profileData.acceptsCouples)
+        }
+        if (typeof profileData.acceptsWomen === 'boolean') {
+          payload.clientele.acceptsWomen = profileData.acceptsWomen
+          console.log('📦 [CLIENTELE DEBUG] Ajout acceptsWomen:', profileData.acceptsWomen)
+        }
+        if (typeof profileData.acceptsHandicapped === 'boolean') {
+          payload.clientele.acceptsHandicapped = profileData.acceptsHandicapped
+          console.log('📦 [CLIENTELE DEBUG] Ajout acceptsHandicapped:', profileData.acceptsHandicapped)
+        }
+        if (typeof profileData.acceptsSeniors === 'boolean') {
+          payload.clientele.acceptsSeniors = profileData.acceptsSeniors
+          console.log('📦 [CLIENTELE DEBUG] Ajout acceptsSeniors:', profileData.acceptsSeniors)
+        }
+        
+        console.log('📦 [CLIENTELE DEBUG] Objet clientele final pour autosave:', payload.clientele)
+      } else {
+        console.log('⚠️ [CLIENTELE DEBUG] Aucune donnée clientèle détectée pour autosave')
       }
-      payload.timeSlots = scheduleToJson()
+      const timeSlotsJson = scheduleToJson()
+      if (timeSlotsJson !== null) {
+        payload.timeSlots = timeSlotsJson
+        console.log('🔄 [AGENDA DEBUG] Ajout timeSlots à l\'autosave:', timeSlotsJson)
+      } else {
+        console.log('⚠️ [AGENDA DEBUG] Pas de timeSlots valides, non inclus dans l\'autosave')
+      }
 
       // Inclure les médias dans l'autosave
       const galleryMedia = mandatoryMedia.filter(m => m.preview && m.id).map((m, idx) => ({
@@ -839,19 +1042,32 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
       if (allServices.length > 0) payload.services = safeStringify(allServices)
       if (profileData.specialties && profileData.specialties.length > 0) payload.specialties = safeStringify(profileData.specialties)
       if (profileData.serviceType && profileData.serviceType.length > 0) payload.category = profileData.serviceType[0]
-      payload.timeSlots = scheduleToJson()
+      const timeSlotsJsonManual = scheduleToJson()
+      if (timeSlotsJsonManual !== null) {
+        payload.timeSlots = timeSlotsJsonManual
+        console.log('🔄 [AGENDA DEBUG] Ajout timeSlots au manual save:', timeSlotsJsonManual)
+      } else {
+        console.log('⚠️ [AGENDA DEBUG] Pas de timeSlots valides pour manual save')
+      }
       // Physique - Format unifié avec objet physical
-      if (profileData.height !== undefined || profileData.bodyType !== undefined || profileData.hairColor !== undefined || 
-          profileData.eyeColor !== undefined || profileData.ethnicity !== undefined || profileData.breastSize !== undefined ||
-          profileData.tattoos !== undefined || profileData.piercings !== undefined || profileData.breastType !== undefined ||
-          profileData.pubicHair !== undefined || typeof profileData.smoker === 'boolean') {
+      const hasPhysicalDataManual = profileData.height !== undefined || 
+          (profileData.bodyType !== undefined && profileData.bodyType !== '') || 
+          (profileData.hairColor !== undefined && profileData.hairColor !== '') || 
+          (profileData.eyeColor !== undefined && profileData.eyeColor !== '') || 
+          (profileData.ethnicity !== undefined && profileData.ethnicity !== '') || 
+          (profileData.breastSize !== undefined && profileData.breastSize !== '') ||
+          profileData.tattoos !== undefined || profileData.piercings !== undefined || 
+          profileData.breastType !== undefined || profileData.pubicHair !== undefined || 
+          typeof profileData.smoker === 'boolean'
+      
+      if (hasPhysicalDataManual) {
         payload.physical = {}
         if (profileData.height !== undefined) payload.physical.height = profileData.height
-        if (profileData.bodyType !== undefined) payload.physical.bodyType = profileData.bodyType
-        if (profileData.hairColor !== undefined) payload.physical.hairColor = profileData.hairColor
-        if (profileData.eyeColor !== undefined) payload.physical.eyeColor = profileData.eyeColor
-        if (profileData.ethnicity !== undefined) payload.physical.ethnicity = profileData.ethnicity
-        if (profileData.breastSize !== undefined) payload.physical.bustSize = profileData.breastSize
+        if (profileData.bodyType !== undefined && profileData.bodyType !== '') payload.physical.bodyType = profileData.bodyType
+        if (profileData.hairColor !== undefined && profileData.hairColor !== '') payload.physical.hairColor = profileData.hairColor
+        if (profileData.eyeColor !== undefined && profileData.eyeColor !== '') payload.physical.eyeColor = profileData.eyeColor
+        if (profileData.ethnicity !== undefined && profileData.ethnicity !== '') payload.physical.ethnicity = profileData.ethnicity
+        if (profileData.breastSize !== undefined && profileData.breastSize !== '') payload.physical.bustSize = profileData.breastSize
         if (profileData.tattoos !== undefined) payload.physical.tattoos = profileData.tattoos
         if (profileData.piercings !== undefined) payload.physical.piercings = profileData.piercings
         if (profileData.breastType !== undefined) payload.physical.breastType = profileData.breastType
@@ -872,13 +1088,50 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
       if (profileData.phoneVisibility) payload.phoneVisibility = profileData.phoneVisibility
       
       // Clientèle
-      if (typeof profileData.acceptsCouples === 'boolean' || typeof profileData.acceptsWomen === 'boolean' || typeof profileData.acceptsHandicapped === 'boolean' || typeof profileData.acceptsSeniors === 'boolean') {
-        payload.clientele = {
-          acceptsCouples: profileData.acceptsCouples || false,
-          acceptsWomen: profileData.acceptsWomen || false,
-          acceptsHandicapped: profileData.acceptsHandicapped || false,
-          acceptsSeniors: profileData.acceptsSeniors || false
+      console.log('🔍 [CLIENTELE DEBUG] Vérification des champs clientèle pour autosave:', {
+        acceptsCouples: profileData.acceptsCouples,
+        acceptsWomen: profileData.acceptsWomen,
+        acceptsHandicapped: profileData.acceptsHandicapped,
+        acceptsSeniors: profileData.acceptsSeniors,
+        types: {
+          acceptsCouples: typeof profileData.acceptsCouples,
+          acceptsWomen: typeof profileData.acceptsWomen,
+          acceptsHandicapped: typeof profileData.acceptsHandicapped,
+          acceptsSeniors: typeof profileData.acceptsSeniors
         }
+      })
+      
+      const hasClienteleData = typeof profileData.acceptsCouples === 'boolean' || 
+                              typeof profileData.acceptsWomen === 'boolean' || 
+                              typeof profileData.acceptsHandicapped === 'boolean' || 
+                              typeof profileData.acceptsSeniors === 'boolean'
+      
+      console.log('🔍 [CLIENTELE DEBUG] hasClienteleData:', hasClienteleData)
+      
+      if (hasClienteleData) {
+        payload.clientele = {}
+        console.log('📦 [CLIENTELE DEBUG] Création de l\'objet clientele pour autosave')
+        
+        if (typeof profileData.acceptsCouples === 'boolean') {
+          payload.clientele.acceptsCouples = profileData.acceptsCouples
+          console.log('📦 [CLIENTELE DEBUG] Ajout acceptsCouples:', profileData.acceptsCouples)
+        }
+        if (typeof profileData.acceptsWomen === 'boolean') {
+          payload.clientele.acceptsWomen = profileData.acceptsWomen
+          console.log('📦 [CLIENTELE DEBUG] Ajout acceptsWomen:', profileData.acceptsWomen)
+        }
+        if (typeof profileData.acceptsHandicapped === 'boolean') {
+          payload.clientele.acceptsHandicapped = profileData.acceptsHandicapped
+          console.log('📦 [CLIENTELE DEBUG] Ajout acceptsHandicapped:', profileData.acceptsHandicapped)
+        }
+        if (typeof profileData.acceptsSeniors === 'boolean') {
+          payload.clientele.acceptsSeniors = profileData.acceptsSeniors
+          console.log('📦 [CLIENTELE DEBUG] Ajout acceptsSeniors:', profileData.acceptsSeniors)
+        }
+        
+        console.log('📦 [CLIENTELE DEBUG] Objet clientele final pour autosave:', payload.clientele)
+      } else {
+        console.log('⚠️ [CLIENTELE DEBUG] Aucune donnée clientèle détectée pour autosave')
       }
 
       // Inclure les médias dans la sauvegarde manuelle aussi

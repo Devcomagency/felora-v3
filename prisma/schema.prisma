@@ -865,6 +865,7 @@ enum CustomOrderPriority {
 
 enum MediaVisibility {
   PUBLIC
+  PREMIUM
   PRIVATE
   REQUESTABLE
 }

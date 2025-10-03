@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react'
 import { useRouter, useParams } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import { ArrowLeft, Heart, User, Eye } from 'lucide-react'
 import Image from 'next/image'
 
@@ -20,6 +21,11 @@ interface EscortProfile {
     url: string
     thumb?: string
     poster?: string
+    isPrivate?: boolean
+    price?: number
+    pos?: number
+    description?: string
+    visibility?: string
   }>
   verified?: boolean
   premium?: boolean
@@ -126,10 +132,12 @@ function ErrorFallback() {
 }
 
 export default function EscortProfilePage() {
+  const { data: session } = useSession()
   const [profile, setProfile] = useState<EscortProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
   const [notFound, setNotFound] = useState(false)
+  const [activeTab, setActiveTab] = useState<'public' | 'premium' | 'private'>('public')
   const router = useRouter()
 
   // Resolve params
@@ -155,7 +163,7 @@ export default function EscortProfilePage() {
         setError(false)
         setNotFound(false)
 
-        const response = await fetch(`/api/public/profile/${resolvedId}`, { signal: controller.signal })
+        const response = await fetch(`/api/profile/unified/${resolvedId}`, { signal: controller.signal })
 
         if (isCancelled) return
 
@@ -170,26 +178,29 @@ export default function EscortProfilePage() {
 
         const data = await response.json()
 
+        // L'API unified retourne { success, mode, profile }
+        const profileData = data.profile || data
+
         // Transform API data to match EscortProfile interface
         const transformedProfile: EscortProfile = {
-          id: data.id,
-          name: data.stageName || 'Escort',
-          stageName: data.stageName,
-          avatar: data.media?.[0]?.url,
-          city: data.city,
-          age: data.dateOfBirth ? new Date().getFullYear() - new Date(data.dateOfBirth).getFullYear() : undefined,
-          languages: data.languages || [],
-          services: data.services || [],
-          media: data.media || [],
-          verified: data.isVerifiedBadge,
+          id: profileData.id,
+          name: profileData.stageName || 'Escort',
+          stageName: profileData.stageName,
+          avatar: profileData.medias?.[0]?.url || profileData.profilePhoto,
+          city: profileData.city,
+          age: profileData.age,
+          languages: profileData.languages || [],
+          services: profileData.services || [],
+          media: profileData.medias || [],
+          verified: profileData.isVerifiedBadge,
           premium: false,
           online: false,
-          description: data.bio,
-          stats: data.stats || { likes: 0, views: 0, followers: 0 },
+          description: profileData.description,
+          stats: { likes: 0, views: 0, followers: 0 },
           rates: {
-            hour: data.rates?.rate1H,
-            twoHours: data.rates?.rate2H,
-            overnight: data.rates?.overnight
+            hour: profileData.rates?.oneHour,
+            twoHours: profileData.rates?.twoHours,
+            overnight: profileData.rates?.overnight
           },
           availability: {
             available: true,
@@ -336,33 +347,103 @@ export default function EscortProfilePage() {
         {/* Onglets */}
         <div className="mt-6">
           <div className="flex items-center border-b border-gray-200 dark:border-gray-700">
-            <div className="px-4 py-2 border-b-2 border-pink-500 text-pink-500 font-semibold">
-              Médias
-            </div>
+            <button
+              onClick={() => setActiveTab('public')}
+              className={`px-4 py-2 font-semibold transition-colors ${
+                activeTab === 'public'
+                  ? 'border-b-2 border-pink-500 text-pink-500'
+                  : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
+              }`}
+            >
+              Public
+            </button>
+            <button
+              onClick={() => setActiveTab('premium')}
+              className={`px-4 py-2 font-semibold transition-colors ${
+                activeTab === 'premium'
+                  ? 'border-b-2 border-pink-500 text-pink-500'
+                  : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
+              }`}
+            >
+              Premium 👑
+            </button>
+            {session?.user?.id === resolvedId && (
+              <button
+                onClick={() => setActiveTab('private')}
+                className={`px-4 py-2 font-semibold transition-colors ${
+                  activeTab === 'private'
+                    ? 'border-b-2 border-pink-500 text-pink-500'
+                    : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
+                }`}
+              >
+                Privé 🔒
+              </button>
+            )}
           </div>
 
-          {/* Grille des médias */}
+          {/* Grille des médias filtrés */}
           <div className="mt-4 grid place-items-center gap-x-3 gap-y-5 pb-4 xs:grid-cols-auto-fill-180 xs:place-items-stretch">
-            {profile.media && profile.media.length > 0 ? (
-              profile.media.map((item, index) => (
-                <div key={index} className="flex w-52 flex-col items-center xs:w-auto">
-                  <div className="relative flex h-[290px] w-52 items-center justify-center overflow-hidden rounded-md bg-black xs:h-[250px] xs:w-auto">
-                    {item.type === 'video' ? (
-                      <video src={item.url} className="w-full h-full object-cover" />
-                    ) : (
-                      <img src={item.url} alt="Media" className="w-full h-full object-cover" />
-                    )}
+            {profile.media && profile.media.filter(item => {
+              // Filtrer selon l'onglet actif et la visibilité
+              const visibility = item.visibility || 'PUBLIC'
+              if (activeTab === 'public') return visibility === 'PUBLIC'
+              if (activeTab === 'premium') return visibility === 'PREMIUM'
+              if (activeTab === 'private') return visibility === 'PRIVATE'
+              return false
+            }).length > 0 ? (
+              profile.media.filter(item => {
+                const visibility = item.visibility || 'PUBLIC'
+                if (activeTab === 'public') return visibility === 'PUBLIC'
+                if (activeTab === 'premium') return visibility === 'PREMIUM'
+                if (activeTab === 'private') return visibility === 'PRIVATE'
+                return false
+              }).map((item, index) => {
+                const isPremium = (item.visibility || 'PUBLIC') === 'PREMIUM'
+                const isOwner = session?.user?.id === resolvedId
 
-                    <div className="absolute bottom-0 left-0 flex w-full items-center p-2 py-3 text-sm text-white bg-black bg-opacity-50">
-                      <Heart size={18} className="mr-1" fill="white" />
-                      {Math.floor(Math.random() * 1000)}
+                return (
+                  <div key={index} className="flex w-52 flex-col items-center xs:w-auto">
+                    <div className="relative flex h-[290px] w-52 items-center justify-center overflow-hidden rounded-md bg-black xs:h-[250px] xs:w-auto">
+                      {item.type === 'video' ? (
+                        <video
+                          src={item.url}
+                          className={`w-full h-full object-cover ${isPremium && !isOwner ? 'blur-xl' : ''}`}
+                        />
+                      ) : (
+                        <img
+                          src={item.url}
+                          alt="Media"
+                          className={`w-full h-full object-cover ${isPremium && !isOwner ? 'blur-xl' : ''}`}
+                        />
+                      )}
+
+                      {/* Badge Premium avec prix */}
+                      {isPremium && !isOwner && (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 backdrop-blur-sm">
+                          <div className="text-white text-center">
+                            <div className="text-4xl mb-2">👑</div>
+                            <div className="text-lg font-bold">{item.price ? `${item.price} CHF` : 'Premium'}</div>
+                            <div className="text-sm opacity-80 mt-1">Contenu Premium</div>
+                            <button className="mt-3 px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full text-sm font-semibold hover:scale-105 transition-transform">
+                              Déverrouiller
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="absolute bottom-0 left-0 flex w-full items-center p-2 py-3 text-sm text-white bg-black bg-opacity-50">
+                        <Heart size={18} className="mr-1" fill="white" />
+                        {Math.floor(Math.random() * 1000)}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))
+                )
+              })
             ) : (
               <div className="col-span-full text-center py-8 text-gray-500">
-                Aucun média disponible
+                {activeTab === 'public' && 'Aucun média public'}
+                {activeTab === 'premium' && 'Aucun média premium'}
+                {activeTab === 'private' && 'Aucun média privé'}
               </div>
             )}
           </div>

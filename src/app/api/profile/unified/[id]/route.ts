@@ -164,6 +164,24 @@ export async function GET(
         return NextResponse.json({ error: 'profile_not_found' }, { status: 404 })
       }
 
+      console.log('🔄 [API UNIFIED GET] Données physiques lues depuis la DB:', {
+        height: profile.height,
+        bodyType: profile.bodyType,
+        hairColor: profile.hairColor,
+        eyeColor: profile.eyeColor,
+        ethnicity: profile.ethnicity,
+        bustSize: profile.bustSize,
+        tattoos: profile.tattoos,
+        piercings: profile.piercings
+      })
+
+      console.log('🔄 [API UNIFIED GET] Données clientèle lues depuis la DB:', {
+        acceptsCouples: profile.acceptsCouples,
+        acceptsWomen: profile.acceptsWomen,
+        acceptsHandicapped: profile.acceptsHandicapped,
+        acceptsSeniors: profile.acceptsSeniors
+      })
+
       return NextResponse.json({
         success: true,
         mode: 'dashboard',
@@ -246,6 +264,10 @@ export async function GET(
           status: true,
           updatedAt: true,
 
+          // Anciens champs médias (pour compatibilité)
+          galleryPhotos: true,
+          videos: true,
+
           // User data pour le téléphone si nécessaire
           user: {
             select: {
@@ -259,10 +281,31 @@ export async function GET(
         return NextResponse.json({ error: 'profile_not_found' }, { status: 404 })
       }
 
+      // Récupérer les médias depuis la table Media
+      const medias = await prisma.media.findMany({
+        where: {
+          ownerType: 'ESCORT',
+          ownerId: id
+        },
+        orderBy: {
+          pos: 'asc'
+        },
+        select: {
+          id: true,
+          type: true,
+          url: true,
+          description: true,
+          visibility: true,
+          price: true,
+          pos: true,
+          createdAt: true
+        }
+      })
+
       return NextResponse.json({
         success: true,
         mode: 'public',
-        profile: transformProfileData(profile, 'public')
+        profile: transformProfileData({ ...profile, mediasFromTable: medias }, 'public')
       })
     }
 
@@ -415,10 +458,18 @@ export async function POST(
     }
 
     // Mettre à jour le profil
+    console.log('🔄 [API UNIFIED POST] Données à sauvegarder dans la DB:', {
+      physical: transformedData.physical,
+      hasPhysical: !!transformedData.physical,
+      physicalKeys: transformedData.physical ? Object.keys(transformedData.physical) : 'undefined'
+    })
+    
     await prisma.escortProfile.update({
       where: { userId: session.user.id },
       data: transformedData
     })
+    
+    console.log('✅ [API UNIFIED POST] Données sauvegardées avec succès dans la DB')
 
     // Mettre à jour le téléphone dans la table User si fourni
     if (body.phone) {
@@ -563,17 +614,56 @@ function transformUpdateData(body: any): Record<string, any> {
   if (body.rates?.baseRate !== undefined) data.baseRate = body.rates.baseRate
 
   // Physique
-  if (body.physical?.height !== undefined) data.height = body.physical.height
-  if (body.physical?.bodyType !== undefined) data.bodyType = body.physical.bodyType
-  if (body.physical?.hairColor !== undefined) data.hairColor = body.physical.hairColor
-  if (body.physical?.eyeColor !== undefined) data.eyeColor = body.physical.eyeColor
-  if (body.physical?.ethnicity !== undefined) data.ethnicity = body.physical.ethnicity
-  if (body.physical?.bustSize !== undefined) data.bustSize = body.physical.bustSize
-  if (body.physical?.breastType !== undefined) data.breastType = body.physical.breastType
-  if (body.physical?.tattoos !== undefined) data.tattoos = String(body.physical.tattoos)
-  if (body.physical?.piercings !== undefined) data.piercings = String(body.physical.piercings)
-  if (body.physical?.pubicHair !== undefined) data.pubicHair = body.physical.pubicHair
-  if (body.physical?.smoker !== undefined) data.smoker = body.physical.smoker
+  console.log('🔍 [API UNIFIED POST] Traitement des données physiques:', {
+    hasPhysical: !!body.physical,
+    physical: body.physical,
+    physicalKeys: body.physical ? Object.keys(body.physical) : 'undefined'
+  })
+  
+  if (body.physical?.height !== undefined) {
+    data.height = body.physical.height
+    console.log('📦 [API UNIFIED POST] Ajout height:', body.physical.height)
+  }
+  if (body.physical?.bodyType !== undefined) {
+    data.bodyType = body.physical.bodyType
+    console.log('📦 [API UNIFIED POST] Ajout bodyType:', body.physical.bodyType)
+  }
+  if (body.physical?.hairColor !== undefined) {
+    data.hairColor = body.physical.hairColor
+    console.log('📦 [API UNIFIED POST] Ajout hairColor:', body.physical.hairColor)
+  }
+  if (body.physical?.eyeColor !== undefined) {
+    data.eyeColor = body.physical.eyeColor
+    console.log('📦 [API UNIFIED POST] Ajout eyeColor:', body.physical.eyeColor)
+  }
+  if (body.physical?.ethnicity !== undefined) {
+    data.ethnicity = body.physical.ethnicity
+    console.log('📦 [API UNIFIED POST] Ajout ethnicity:', body.physical.ethnicity)
+  }
+  if (body.physical?.bustSize !== undefined) {
+    data.bustSize = body.physical.bustSize
+    console.log('📦 [API UNIFIED POST] Ajout bustSize:', body.physical.bustSize)
+  }
+  if (body.physical?.breastType !== undefined) {
+    data.breastType = body.physical.breastType
+    console.log('📦 [API UNIFIED POST] Ajout breastType:', body.physical.breastType)
+  }
+  if (body.physical?.tattoos !== undefined) {
+    data.tattoos = String(body.physical.tattoos)
+    console.log('📦 [API UNIFIED POST] Ajout tattoos:', body.physical.tattoos)
+  }
+  if (body.physical?.piercings !== undefined) {
+    data.piercings = String(body.physical.piercings)
+    console.log('📦 [API UNIFIED POST] Ajout piercings:', body.physical.piercings)
+  }
+  if (body.physical?.pubicHair !== undefined) {
+    data.pubicHair = body.physical.pubicHair
+    console.log('📦 [API UNIFIED POST] Ajout pubicHair:', body.physical.pubicHair)
+  }
+  if (body.physical?.smoker !== undefined) {
+    data.smoker = body.physical.smoker
+    console.log('📦 [API UNIFIED POST] Ajout smoker:', body.physical.smoker)
+  }
 
   // Disponibilité
   if (body.availability?.outcall !== undefined) data.outcall = body.availability.outcall
@@ -582,20 +672,55 @@ function transformUpdateData(body: any): Record<string, any> {
   if (body.availability?.weekendAvailable !== undefined) data.weekendAvailable = body.availability.weekendAvailable
 
   // Clientèle
-  if (body.clientele?.acceptsCouples !== undefined) data.acceptsCouples = body.clientele.acceptsCouples
-  if (body.clientele?.acceptsWomen !== undefined) data.acceptsWomen = body.clientele.acceptsWomen
-  if (body.clientele?.acceptsHandicapped !== undefined) data.acceptsHandicapped = body.clientele.acceptsHandicapped
-  if (body.clientele?.acceptsSeniors !== undefined) data.acceptsSeniors = body.clientele.acceptsSeniors
+  console.log('🔍 [API UNIFIED POST] Traitement des données clientèle:', {
+    hasClientele: !!body.clientele,
+    clientele: body.clientele,
+    clienteleKeys: body.clientele ? Object.keys(body.clientele) : 'undefined'
+  })
+  
+  if (body.clientele?.acceptsCouples !== undefined) {
+    data.acceptsCouples = body.clientele.acceptsCouples
+    console.log('📦 [API UNIFIED POST] Ajout acceptsCouples:', body.clientele.acceptsCouples)
+  }
+  if (body.clientele?.acceptsWomen !== undefined) {
+    data.acceptsWomen = body.clientele.acceptsWomen
+    console.log('📦 [API UNIFIED POST] Ajout acceptsWomen:', body.clientele.acceptsWomen)
+  }
+  if (body.clientele?.acceptsHandicapped !== undefined) {
+    data.acceptsHandicapped = body.clientele.acceptsHandicapped
+    console.log('📦 [API UNIFIED POST] Ajout acceptsHandicapped:', body.clientele.acceptsHandicapped)
+  }
+  if (body.clientele?.acceptsSeniors !== undefined) {
+    data.acceptsSeniors = body.clientele.acceptsSeniors
+    console.log('📦 [API UNIFIED POST] Ajout acceptsSeniors:', body.clientele.acceptsSeniors)
+  }
 
   // Contact et visibilité
   if (body.phoneVisibility !== undefined) data.phoneVisibility = body.phoneVisibility
   if (body.phoneDisplayType !== undefined) data.phoneDisplayType = body.phoneDisplayType
 
   // Agenda
-  if (body.timeSlots !== undefined) {
-    data.timeSlots = typeof body.timeSlots === 'string' 
+  if (body.timeSlots !== undefined && body.timeSlots !== null && body.timeSlots !== '') {
+    const timeSlotsValue = typeof body.timeSlots === 'string' 
       ? body.timeSlots 
       : JSON.stringify(body.timeSlots)
+    
+    // Vérifier si les timeSlots contiennent des données valides
+    try {
+      const parsed = typeof timeSlotsValue === 'string' ? JSON.parse(timeSlotsValue) : timeSlotsValue
+      const hasValidData = parsed?.weekly?.some((day: any) => day?.enabled) || 
+                          parsed?.pause?.start || 
+                          (parsed?.absences && parsed.absences.length > 0)
+      
+      if (hasValidData) {
+        data.timeSlots = timeSlotsValue
+        console.log('📦 [API UNIFIED POST] Ajout timeSlots valides:', timeSlotsValue)
+      } else {
+        console.log('⚠️ [API UNIFIED POST] timeSlots vides, non sauvegardés')
+      }
+    } catch (error) {
+      console.log('⚠️ [API UNIFIED POST] Erreur parsing timeSlots:', error)
+    }
   }
 
   // Médias
@@ -859,11 +984,28 @@ function transformProfileData(rawProfile: any, mode: 'dashboard' | 'public') {
 
     // Médias au format moderne pour le gestionnaire
     medias: (() => {
+      // Priorité à la table Media si disponible
+      if (rawProfile.mediasFromTable && Array.isArray(rawProfile.mediasFromTable) && rawProfile.mediasFromTable.length > 0) {
+        return rawProfile.mediasFromTable.map((media: any) => ({
+          id: media.id,
+          url: media.url,
+          type: media.type,
+          description: media.description || '',
+          visibility: media.visibility || 'PUBLIC',
+          price: media.price || undefined,
+          pos: media.pos,
+          createdAt: media.createdAt,
+          views: 0,
+          earnings: 0
+        }))
+      }
+
+      // Fallback vers les anciens champs
       const gallery = parseStringArray(rawProfile.galleryPhotos)
       const videos = parseStringArray(rawProfile.videos)
-      
+
       const medias: any[] = []
-      
+
       // Transformer les photos de galerie
       gallery.forEach((item, index) => {
         if (typeof item === 'object' && item.url) {
@@ -879,7 +1021,7 @@ function transformProfileData(rawProfile: any, mode: 'dashboard' | 'public') {
           })
         }
       })
-      
+
       // Transformer les vidéos
       videos.forEach((item, index) => {
         if (typeof item === 'object' && item.url) {
@@ -895,7 +1037,7 @@ function transformProfileData(rawProfile: any, mode: 'dashboard' | 'public') {
           })
         }
       })
-      
+
       return medias as any[]
     })(),
 
@@ -913,19 +1055,40 @@ function transformProfileData(rawProfile: any, mode: 'dashboard' | 'public') {
     },
 
     // Physique
-    physical: {
-      height: rawProfile.height || undefined,
-      bodyType: rawProfile.bodyType || undefined,
-      hairColor: rawProfile.hairColor || undefined,
-      eyeColor: rawProfile.eyeColor || undefined,
-      ethnicity: rawProfile.ethnicity || undefined,
-      bustSize: rawProfile.bustSize || undefined,
-      breastType: rawProfile.breastType || undefined,
-      tattoos: rawProfile.tattoos === 'true' ? true : (rawProfile.tattoos === 'false' ? false : undefined),
-      piercings: rawProfile.piercings === 'true' ? true : (rawProfile.piercings === 'false' ? false : undefined),
-      pubicHair: rawProfile.pubicHair || undefined,
-      smoker: rawProfile.smoker || undefined
-    },
+    physical: (() => {
+      const physical = {
+        height: rawProfile.height || undefined,
+        bodyType: rawProfile.bodyType || undefined,
+        hairColor: rawProfile.hairColor || undefined,
+        eyeColor: rawProfile.eyeColor || undefined,
+        ethnicity: rawProfile.ethnicity || undefined,
+        bustSize: rawProfile.bustSize || undefined,
+        breastType: rawProfile.breastType || undefined,
+        tattoos: rawProfile.tattoos === 'true' ? true : (rawProfile.tattoos === 'false' ? false : undefined),
+        piercings: rawProfile.piercings === 'true' ? true : (rawProfile.piercings === 'false' ? false : undefined),
+        pubicHair: rawProfile.pubicHair || undefined,
+        smoker: rawProfile.smoker || undefined
+      }
+      
+      console.log('🔄 [API UNIFIED GET] Transformation des données physiques pour la réponse:', {
+        rawData: {
+          height: rawProfile.height,
+          bodyType: rawProfile.bodyType,
+          hairColor: rawProfile.hairColor,
+          eyeColor: rawProfile.eyeColor,
+          ethnicity: rawProfile.ethnicity,
+          bustSize: rawProfile.bustSize,
+          breastType: rawProfile.breastType,
+          tattoos: rawProfile.tattoos,
+          piercings: rawProfile.piercings,
+          pubicHair: rawProfile.pubicHair,
+          smoker: rawProfile.smoker
+        },
+        transformedPhysical: physical
+      })
+      
+      return physical
+    })(),
 
     // Services
     availability: {
@@ -940,12 +1103,26 @@ function transformProfileData(rawProfile: any, mode: 'dashboard' | 'public') {
     agendaEnabled: rawProfile.agendaEnabled !== undefined ? !!rawProfile.agendaEnabled : true,
 
     // Clientèle
-    clientele: {
-      acceptsCouples: !!rawProfile.acceptsCouples,
-      acceptsWomen: !!rawProfile.acceptsWomen,
-      acceptsHandicapped: !!rawProfile.acceptsHandicapped,
-      acceptsSeniors: !!rawProfile.acceptsSeniors
-    },
+    clientele: (() => {
+      const clientele = {
+        acceptsCouples: !!rawProfile.acceptsCouples,
+        acceptsWomen: !!rawProfile.acceptsWomen,
+        acceptsHandicapped: !!rawProfile.acceptsHandicapped,
+        acceptsSeniors: !!rawProfile.acceptsSeniors
+      }
+      
+      console.log('🔄 [API UNIFIED GET] Transformation des données clientèle pour la réponse:', {
+        rawData: {
+          acceptsCouples: rawProfile.acceptsCouples,
+          acceptsWomen: rawProfile.acceptsWomen,
+          acceptsHandicapped: rawProfile.acceptsHandicapped,
+          acceptsSeniors: rawProfile.acceptsSeniors
+        },
+        transformedClientele: clientele
+      })
+      
+      return clientele
+    })(),
 
 
     // Contact et visibilité (commun pour dashboard et public)

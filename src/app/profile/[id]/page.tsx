@@ -18,6 +18,7 @@ import { AvailabilityStatus as AvailabilityStatusType, ScheduleData } from '@/li
 
 interface EscortProfile {
   id: string
+  userId?: string // AJOUT: userId du propriétaire du profil (pour isOwner check)
   name: string
   handle?: string
   stageName?: string
@@ -211,6 +212,7 @@ export default function EscortProfilePage() {
         const normalizedMedia = Array.isArray(data.media)
           ? data.media.map((item: any) => ({
               ...item,
+              visibility: typeof item?.visibility === 'string' ? item.visibility.toUpperCase() : 'PUBLIC',
               isPrivate: Boolean(item?.isPrivate || (typeof item?.visibility === 'string' && item.visibility.toUpperCase() === 'PRIVATE')),
               price: typeof item?.price === 'number'
                 ? item.price
@@ -223,6 +225,7 @@ export default function EscortProfilePage() {
         // Transform API data to match EscortProfile interface
         const transformedProfile: EscortProfile = {
           id: data.id,
+          userId: data.userId, // AJOUT: userId pour isOwner check
           name: data.stageName || 'Escort',
           stageName: data.stageName,
           avatar: normalizedMedia?.[0]?.url,
@@ -393,6 +396,25 @@ export default function EscortProfilePage() {
     isProfileOwner: false,
     username: 'Client'
   })
+
+  // Vérifier si l'utilisateur connecté est le propriétaire du profil
+  const isOwner = useMemo(() => {
+    console.log('[DEBUG isOwner] session.user.id:', session?.user?.id)
+    console.log('[DEBUG isOwner] profile.id:', profile?.id)
+    console.log('[DEBUG isOwner] profile.userId:', (profile as any)?.userId)
+
+    if (!session?.user?.id || !profile?.id) return false
+
+    // Comparer avec profile.id et aussi avec profile.userId si disponible
+    const matchesProfileId = session.user.id === profile.id
+    const matchesUserId = session.user.id === (profile as any)?.userId
+
+    console.log('[DEBUG isOwner] matchesProfileId:', matchesProfileId)
+    console.log('[DEBUG isOwner] matchesUserId:', matchesUserId)
+    console.log('[DEBUG isOwner] Final result:', matchesProfileId || matchesUserId)
+
+    return matchesProfileId || matchesUserId
+  }, [session?.user?.id, profile?.id, (profile as any)?.userId])
 
   const handleShowDetails = useCallback(() => {
     setShowDetailModal(true)
@@ -703,7 +725,7 @@ export default function EscortProfilePage() {
                 })()}
                 profileId={profile.id}
                 profileName={profile.name}
-                privateEnabled
+                viewerIsOwner={isOwner}
                 onLike={handleMediaLike}
                 onSave={handleMediaSave}
                 onReactionChange={calculateTotalReactions}

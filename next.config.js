@@ -22,11 +22,13 @@ const nextConfig = {
     remotePatterns: [
       // Production storage - Cloudflare R2
       { protocol: 'https', hostname: '*.r2.cloudflarestorage.com', port: '', pathname: '/**' },
-      
+      { protocol: 'https', hostname: '*.r2.dev', port: '', pathname: '/**' },
+      { protocol: 'https', hostname: 'media.felora.ch', port: '', pathname: '/**' },
+
       // Fallback/legacy storage
       { protocol: 'https', hostname: '*.amazonaws.com', port: '', pathname: '/**' },
       { protocol: 'https', hostname: '*.supabase.co', port: '', pathname: '/**' },
-      
+
       // Production app domains
       { protocol: 'https', hostname: 'felora-v3.vercel.app', port: '', pathname: '/**' },
       { protocol: 'https', hostname: 'felora.ch', port: '', pathname: '/**' },
@@ -59,6 +61,8 @@ const nextConfig = {
 
       // Storage R2
       'https://*.r2.cloudflarestorage.com',
+      'https://*.r2.dev',
+      'https://media.felora.ch',
 
       // Maps & Location Services
       'https://api.mapbox.com',

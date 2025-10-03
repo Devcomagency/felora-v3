@@ -16,6 +16,9 @@ interface MediaItem {
   thumb?: string
   poster?: string
   isPrivate?: boolean
+  visibility?: string
+  price?: number
+  description?: string
   likes?: number
   comments?: number
 }
@@ -212,7 +215,7 @@ export default function MediaFeedWithGallery({
   hideTabsHeader = false
 }: MediaFeedWithGalleryProps) {
   
-  const [activeTab, setActiveTab] = useState<'posts' | 'private'>('posts')
+  const [activeTab, setActiveTab] = useState<'public' | 'premium' | 'private'>('public')
   const [fullscreenMedia, setFullscreenMedia] = useState<string | null>(null)
   const [fullscreenIndex, setFullscreenIndex] = useState(0)
   const [showReactions, setShowReactions] = useState(false)
@@ -227,17 +230,12 @@ export default function MediaFeedWithGallery({
   const { isGalleryUnlocked, handleUnlockContent, handleUnlockGallery } = useMediaInteractions()
   const [unlockTarget, setUnlockTarget] = useState<{ id: string; url: string } | null>(null)
 
-  // Catégorisation selon les règles Felora:
-  // - Obligatoires: positions 0, 1, 2, 3 (photo profil + 3 premières)
-  // - Publics: positions 4, 5, 6... (visibles à tous)
-  // - Privés: tous les médias marqués isPrivate (payants)
-  const obligatoryContent = useMemo(() => media.slice(0, 4), [media])
-  const publicContent = useMemo(() => media.slice(4).filter(m => !m.isPrivate), [media])
-  const privateContent = useMemo(() => media.filter(m => m.isPrivate), [media])
-  
-  // Pour l'onglet "Posts" on affiche obligatoires + publics
-  const visibleContent = useMemo(() => [...obligatoryContent, ...publicContent], [obligatoryContent, publicContent])
-  const mixedContent = useMemo(() => [...visibleContent, ...privateContent], [visibleContent, privateContent])
+  // Catégorisation par visibility (PUBLIC, PREMIUM, PRIVATE)
+  const publicContent = useMemo(() => media.filter(m => (m.visibility || 'PUBLIC') === 'PUBLIC'), [media])
+  const premiumContent = useMemo(() => media.filter(m => (m.visibility || 'PUBLIC') === 'PREMIUM'), [media])
+  const privateContent = useMemo(() => media.filter(m => (m.visibility || 'PUBLIC') === 'PRIVATE'), [media])
+
+  const mixedContent = useMemo(() => [...publicContent, ...premiumContent, ...privateContent], [publicContent, premiumContent, privateContent])
 
   const fullUserId = useMemo(() => userId ?? 'dev-guest', [userId])
 
@@ -366,39 +364,52 @@ export default function MediaFeedWithGallery({
       {!hideTabsHeader && (
         <div className="border-t border-white/10">
           <div className="flex px-4">
-            {(
-              [
-                { id: 'posts', label: 'Posts', count: visibleContent.length },
-                ...(privateEnabled 
-                  ? [{ id: 'private', label: 'Privé', count: privateContent.length }] as const 
-                  : []
-                )
-              ] as const
-            ).map((tab) => (
+            <button
+              onClick={() => setActiveTab('public')}
+              className={`flex-1 py-3 text-center transition-all ${
+                activeTab === 'public'
+                  ? 'border-b-2 border-white text-white'
+                  : 'text-gray-400'
+              }`}
+            >
+              <span className="text-sm font-medium">Public</span>
+              <span className="ml-1 text-xs">({publicContent.length})</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('premium')}
+              className={`flex-1 py-3 text-center transition-all ${
+                activeTab === 'premium'
+                  ? 'border-b-2 border-white text-white'
+                  : 'text-gray-400'
+              }`}
+            >
+              <span className="text-sm font-medium">Premium 👑</span>
+              <span className="ml-1 text-xs">({premiumContent.length})</span>
+            </button>
+            {viewerIsOwner && (
               <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => setActiveTab('private')}
                 className={`flex-1 py-3 text-center transition-all ${
-                  activeTab === tab.id 
-                    ? 'border-b-2 border-white text-white' 
+                  activeTab === 'private'
+                    ? 'border-b-2 border-white text-white'
                     : 'text-gray-400'
                 }`}
               >
-                <span className="text-sm font-medium">{tab.label}</span>
-                <span className="ml-1 text-xs">({tab.count})</span>
+                <span className="text-sm font-medium">Privé 🔒</span>
+                <span className="ml-1 text-xs">({privateContent.length})</span>
               </button>
-            ))}
+            )}
           </div>
         </div>
       )}
 
-      {activeTab === 'posts' && (
+      {activeTab === 'public' && (
         <div
           className={`${hideTabsHeader ? 'mt-0' : 'mt-2'} rounded-2xl backdrop-blur-md p-2 shadow-[0_6px_18px_rgba(0,0,0,0.25)]`}
           style={{ background: 'linear-gradient(135deg, rgba(46,16,101,0.22) 0%, rgba(88,28,135,0.16) 40%, rgba(236,72,153,0.10) 100%)', border: '1px solid rgba(168,85,247,0.22)' }}
         >
           <div className="grid grid-cols-3 gap-2">
-            {visibleContent.map((content, index) => (
+            {publicContent.map((content, index) => (
               <div key={index} className="p-[1px] rounded-none" style={{ background: 'linear-gradient(135deg, rgba(183,148,246,0.26), rgba(255,107,157,0.24), rgba(79,209,199,0.16))' }}>
                 <div
                   className="aspect-square relative cursor-pointer rounded-none overflow-hidden bg-black/60 backdrop-blur-sm border border-violet-300/20 hover:border-fuchsia-300/40 transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_6px_20px_rgba(168,85,247,0.18),0_2px_8px_rgba(255,107,157,0.12)] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
@@ -423,17 +434,17 @@ export default function MediaFeedWithGallery({
         </div>
       )}
 
-      {activeTab === 'private' && (
+      {activeTab === 'premium' && (
         <div className="p-2">
           <div className="grid grid-cols-3 gap-2">
-            {privateContent.map((content, index) => {
+            {premiumContent.map((content, index) => {
               const mediaId = stableMediaId({ rawId: content.id || null, profileId, url: content.url })
-              const locked = !isGalleryUnlocked
+              const isOwner = viewerIsOwner
               return (
-                <div key={`priv-${index}`} className="p-[1px] rounded-none" style={{ background: 'linear-gradient(135deg, rgba(183,148,246,0.26), rgba(255,107,157,0.24), rgba(79,209,199,0.16))' }}>
+                <div key={`premium-${index}`} className="p-[1px] rounded-none" style={{ background: 'linear-gradient(135deg, rgba(183,148,246,0.26), rgba(255,107,157,0.24), rgba(79,209,199,0.16))' }}>
                   <div
-                    className="aspect-square relative cursor-pointer rounded-none overflow-hidden bg-black/60 backdrop-blur-sm border border-violet-300/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
-                    onClick={() => locked ? setUnlockTarget({ id: mediaId, url: content.url }) : openFullscreen(content.url, index)}
+                    className="aspect-square relative cursor-pointer rounded-none overflow-hidden bg-black/60 backdrop-blur-sm border border-violet-300/20"
+                    onClick={() => isOwner ? openFullscreen(content.url, index) : setUnlockTarget({ id: mediaId, url: content.url })}
                   >
                     <MediaPlayer
                       {...content}
@@ -443,17 +454,57 @@ export default function MediaFeedWithGallery({
                       userId={userId}
                       onLike={undefined}
                       onSave={undefined}
-                      onFullscreen={locked ? undefined : () => openFullscreen(content.url, index)}
+                      onFullscreen={isOwner ? () => openFullscreen(content.url, index) : undefined}
                       onReactionChange={onReactionChange}
                       refreshTrigger={globalRefreshTrigger}
                       optimisticDelta={0}
-                      isPrivate={locked}
+                      isPrivate={!isOwner}
                     />
-                    {/* Overlay label removed as requested */}
+                    {!isOwner && (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm">
+                        <div className="text-4xl mb-2">👑</div>
+                        <div className="text-white text-sm font-bold">{content.price ? `${content.price} CHF` : 'Premium'}</div>
+                        <button className="mt-2 px-3 py-1 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full text-xs font-semibold text-white hover:scale-105 transition-transform">
+                          Déverrouiller
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               )
             })}
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'private' && (
+        <div
+          className={`${hideTabsHeader ? 'mt-0' : 'mt-2'} rounded-2xl backdrop-blur-md p-2 shadow-[0_6px_18px_rgba(0,0,0,0.25)]`}
+          style={{ background: 'linear-gradient(135deg, rgba(46,16,101,0.22) 0%, rgba(88,28,135,0.16) 40%, rgba(236,72,153,0.10) 100%)', border: '1px solid rgba(168,85,247,0.22)' }}
+        >
+          <div className="grid grid-cols-3 gap-2">
+            {privateContent.map((content, index) => (
+              <div key={`priv-${index}`} className="p-[1px] rounded-none" style={{ background: 'linear-gradient(135deg, rgba(183,148,246,0.26), rgba(255,107,157,0.24), rgba(79,209,199,0.16))' }}>
+                <div
+                  className="aspect-square relative cursor-pointer rounded-none overflow-hidden bg-black/60 backdrop-blur-sm border border-violet-300/20 hover:border-fuchsia-300/40 transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_6px_20px_rgba(168,85,247,0.18),0_2px_8px_rgba(255,107,157,0.12)] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
+                >
+                  <MediaPlayer
+                    {...content}
+                    index={index}
+                    isActive={false}
+                    profileId={profileId}
+                    userId={userId}
+                    onLike={onLike ? () => onLike(index) : undefined}
+                    onSave={onSave ? () => onSave(index) : undefined}
+                    onFullscreen={() => openFullscreen(content.url, index)}
+                    onReactionChange={onReactionChange}
+                    refreshTrigger={globalRefreshTrigger}
+                    optimisticDelta={optimistic[stableMediaId({ rawId: content.id || null, profileId, url: content.url })] || 0}
+                    isPrivate={false}
+                  />
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}

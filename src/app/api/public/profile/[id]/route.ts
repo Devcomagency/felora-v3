@@ -20,6 +20,7 @@ export async function GET(
       where: { id: profileId },
       select: {
         id: true,
+        userId: true,
         stageName: true,
         description: true,
         city: true,
@@ -203,13 +204,21 @@ export async function GET(
       .filter(slot => slot?.url) // Seulement les slots avec URL
       .map((slot, index) => {
         const detectedType = detectMediaType(slot.url)
+        // Déterminer la visibilité
+        const visibility = typeof slot.visibility === 'string'
+          ? slot.visibility.toUpperCase()
+          : slot.isPrivate
+            ? 'PRIVATE'
+            : 'PUBLIC'
+
         return {
           id: slot.id || `slot-${index}`,
           type: detectedType, // Utiliser la détection automatique
           url: slot.url,
           thumb: slot.thumb || undefined,
           pos: slot.slot || index,
-          isPrivate: Boolean(slot.isPrivate || (typeof slot.visibility === 'string' && slot.visibility.toUpperCase() === 'PRIVATE')),
+          visibility: visibility,
+          isPrivate: visibility === 'PRIVATE',
           price: typeof slot.price === 'number'
             ? slot.price
             : typeof slot.price === 'string' && slot.price.trim() !== ''
@@ -240,8 +249,9 @@ export async function GET(
         url: mediaItem.url,
         thumb: mediaItem.thumbUrl || undefined,
         pos: mediaItem.pos,
+        visibility: mediaItem.visibility || 'PUBLIC',
         isPrivate: mediaItem.visibility === 'PRIVATE',
-        price: undefined // Pas de prix pour les médias de la table Media pour l'instant
+        price: mediaItem.price || undefined
       }
     })
 
@@ -272,6 +282,7 @@ export async function GET(
 
     const profile = {
       id: escort.id,
+      userId: escort.userId,
       stageName: escort.stageName || '',
       bio: escort.description || undefined,
       city: escort.city || undefined,

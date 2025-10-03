@@ -41,67 +41,40 @@ export default function ClientFeedPage({ initialItems, initialCursor }: ClientFe
   const { setVideoContainerRef, isRestore } = useFeedStore()
 
   
-  // Chargement de plus d'items (génération infinie)
+  // Chargement de plus d'items (pagination infinie avec API)
   const loadMoreItems = useCallback(async () => {
-    if (isLoading) return
+    if (isLoading || !nextCursor) return
     
     setIsLoading(true)
     
     try {
-      // Simuler un délai réseau
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      console.log('📱 [CLIENT PAGE] Chargement de plus d\'items, cursor:', nextCursor)
       
-      // Générer du contenu infini
-      const timestamp = Date.now()
-      const infiniteItems: MediaItem[] = Array.from({ length: 3 }, (_, i) => {
-        const seed = timestamp + i
-        const isVideo = false
-        return {
-          id: `infinite-${seed}-${i}`,
-          type: 'IMAGE',
-          url: `https://picsum.photos/400/600?random=${seed}`,
-          thumb: `https://picsum.photos/400/600?random=${seed}`,
-          visibility: 'PUBLIC',
-          author: {
-            id: `user-${seed % 1000}`,
-            handle: `@infinite_${seed % 1000}`,
-            name: `Creator ${seed % 1000}`,
-            avatar: `https://picsum.photos/100/100?random=${seed + 2000}`
-          },
-          likeCount: (seed * 13) % 2000,
-          reactCount: (seed * 5) % 200,
-          createdAt: new Date(timestamp - (i * 3600000)).toISOString()
-        }
+      // Appeler l'API pour récupérer plus de médias
+      const response = await fetch(`/api/feed/public?cursor=${nextCursor}&limit=10`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        cache: 'no-store'
       })
-      setItems(prev => [...prev, ...infiniteItems])
-      setNextCursor(`infinite-cursor-${timestamp}`)
+
+      if (response.ok) {
+        const data = await response.json()
+        const newItems = data.items || []
+        const newCursor = data.nextCursor || null
+        
+        console.log('📱 [CLIENT PAGE] Nouveaux médias récupérés:', newItems.length, 'items')
+        
+        setItems(prev => [...prev, ...newItems])
+        setNextCursor(newCursor)
+      } else {
+        console.error('❌ [CLIENT PAGE] Erreur API feed:', response.status)
+        // Pas de fallback mock ici, on garde ce qu'on a
+      }
     } catch (error) {
-      console.error('Error loading more items:', error)
-      // Générer des items mock en fallback
-      const fallbackTime = Date.now()
-      const newMockItems: MediaItem[] = Array.from({ length: 3 }, (_, i) => {
-        const seed = fallbackTime + i
-        const isVideo = false
-        return {
-          id: `generated-${seed}-${i}`,
-          type: 'IMAGE',
-          url: `https://picsum.photos/400/600?random=${seed}`,
-          thumb: `https://picsum.photos/400/600?random=${seed}`,
-          visibility: 'PUBLIC',
-          author: {
-            id: `fallback-user-${seed % 1000}`,
-            handle: `@user_${seed % 1000}`,
-            name: `User ${seed % 1000}`,
-            avatar: `https://picsum.photos/100/100?random=${seed + 3000}`
-          },
-          likeCount: (seed * 11) % 1000,
-          reactCount: (seed * 3) % 100,
-          createdAt: new Date(fallbackTime - (i * 1800000)).toISOString()
-        }
-      })
-      
-      setItems(prev => [...prev, ...newMockItems])
-      setNextCursor(`fallback-cursor-${fallbackTime}`)
+      console.error('❌ [CLIENT PAGE] Erreur récupération feed:', error)
+      // Pas de fallback mock ici, on garde ce qu'on a
     } finally {
       setIsLoading(false)
     }
@@ -130,8 +103,8 @@ export default function ClientFeedPage({ initialItems, initialCursor }: ClientFe
     const handleScroll = () => {
       const { scrollTop, scrollHeight, clientHeight } = container
       
-      // Charger plus quand on approche de la fin (80% scrollé) - Scroll infini permanent
-      if (scrollTop + clientHeight >= scrollHeight * 0.8 && !isLoading) {
+      // Charger plus quand on approche de la fin (80% scrollé) - Scroll infini avec pagination
+      if (scrollTop + clientHeight >= scrollHeight * 0.8 && !isLoading && nextCursor) {
         loadMoreItems()
       }
     }
@@ -182,6 +155,15 @@ export default function ClientFeedPage({ initialItems, initialCursor }: ClientFe
           <div className="text-center">
             <div className="w-12 h-12 border-4 border-[#FF6B9D]/30 border-t-[#FF6B9D] rounded-full animate-spin mx-auto mb-4" />
             <p className="text-white/70 text-lg">Chargement du feed...</p>
+          </div>
+        </section>
+      )}
+
+      {/* Message si fin du feed */}
+      {items.length > 0 && !nextCursor && !isLoading && (
+        <section className="snap-start h-32 flex items-center justify-center">
+          <div className="text-center">
+            <p className="text-white/50 text-sm">Fin du feed - Plus de contenu à charger</p>
           </div>
         </section>
       )}

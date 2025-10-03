@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
     let profileId = session.user.id
 
     // Vérifier si c'est un escort avec un profil
-    const escortProfile = await prisma.escort_profiles.findUnique({
+    const escortProfile = await prisma.escortProfile.findUnique({
       where: { userId: session.user.id }
     })
 
@@ -112,6 +112,11 @@ export async function POST(request: NextRequest) {
       console.log('⚠️ Aucun profil escort/club trouvé, utilisation userId')
     }
 
+    // Mapper la visibilité vers l'enum Prisma
+    let visibilityEnum: 'PUBLIC' | 'PREMIUM' | 'PRIVATE' = 'PUBLIC'
+    if (visibility === 'premium') visibilityEnum = 'PREMIUM'
+    else if (visibility === 'private') visibilityEnum = 'PRIVATE'
+
     // Sauvegarder en base de données
     const media = await prisma.media.create({
       data: {
@@ -120,6 +125,8 @@ export async function POST(request: NextRequest) {
         type: type as any,
         url: publicUrl,
         description: description || null,
+        visibility: visibilityEnum,
+        price: visibility === 'premium' && price ? parseInt(price) : null,
         pos: parseInt(pos),
         createdAt: new Date()
       }
