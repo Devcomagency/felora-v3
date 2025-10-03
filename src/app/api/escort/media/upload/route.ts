@@ -104,9 +104,9 @@ export async function POST(request: NextRequest) {
     if (!file.type?.startsWith('image/') && !file.type?.startsWith('video/')) {
       return NextResponse.json({ success: false, error: 'Type de fichier non supporté (image/* ou video/*)' }, { status: 400 })
     }
-    // Limite Vercel : 4.5MB pour les uploads
-    if (file.size > 4 * 1024 * 1024) {
-      return NextResponse.json({ success: false, error: 'Fichier trop volumineux (>4MB). Veuillez compresser votre vidéo.' }, { status: 400 })
+    // Limite augmentée à 100MB (upload direct recommandé pour fichiers >10MB)
+    if (file.size > 100 * 1024 * 1024) {
+      return NextResponse.json({ success: false, error: 'Fichier trop volumineux (>100MB). Veuillez compresser votre vidéo.' }, { status: 400 })
     }
 
     const url = await uploadFileToStorage(file, 'profiles')

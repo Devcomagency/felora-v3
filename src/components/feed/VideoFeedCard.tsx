@@ -77,15 +77,15 @@ function HeartAnimation({
 
   return (
     <motion.div
-      className="pointer-events-none absolute text-6xl text-[#FF6B9D] z-20"
-      style={{ left: position.x - 30, top: position.y - 30 }}
+      className="pointer-events-none absolute text-4xl text-[#FF6B9D] z-20"
+      style={{ left: position.x - 20, top: position.y - 20 }}
       initial={{ scale: 0, opacity: 0 }}
       animate={{
         opacity: [0.8, 1, 0],
-        scale: [1, 1.5, 1],
-        rotate: [0, -15, 15, 0],
+        scale: [1, 1.3, 1],
+        rotate: [0, -10, 10, 0],
       }}
-      transition={{ duration: 0.8 }}
+      transition={{ duration: 0.6 }}
       onAnimationComplete={onComplete}
     >
       <Heart className="fill-current" />
@@ -350,15 +350,15 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
             key={item.id}
             initial={{ scale: 0, opacity: 1, x: 0, y: 0, rotate: 0 }}
             animate={{ 
-              scale: [0, 1.5, 0.8],
+              scale: [0, 1.2, 0.6],
               opacity: [1, 0.8, 0],
-              x: [0, (Math.random() - 0.5) * 400],
-              y: [0, (Math.random() - 0.5) * 400],
-              rotate: [0, (Math.random() - 0.5) * 720]
+              x: [0, (Math.random() - 0.5) * 300],
+              y: [0, (Math.random() - 0.5) * 300],
+              rotate: [0, (Math.random() - 0.5) * 360]
             }}
             exit={{ scale: 0, opacity: 0 }}
-            transition={{ duration: 2, ease: "easeOut", delay: index * 0.1 }}
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none text-5xl z-30"
+            transition={{ duration: 1.5, ease: "easeOut", delay: index * 0.1 }}
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none text-3xl z-30"
           >
             {item.emoji}
           </motion.div>
@@ -368,8 +368,8 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
       {/* Content Overlay */}
       <div className="relative z-10 flex h-full pointer-events-none">
         {/* Profile Info - Left */}
-        <div className="flex-1 flex flex-col justify-end p-6 pb-32">
-          <div className="space-y-4 pointer-events-auto">
+        <div className="flex-1 flex flex-col justify-end p-4 pb-24">
+          <div className="space-y-3 pointer-events-auto">
             {/* Author Info */}
             <div className="flex items-center gap-2">
               <div>
@@ -393,7 +393,7 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
         </div>
 
         {/* Actions - Right */}
-        <div className="flex flex-col items-center justify-center gap-6 p-6 pb-6 pointer-events-auto">
+        <div className="flex flex-col items-center justify-center gap-4 p-4 pb-4 pointer-events-auto">
           {/* Avatar */}
           <div className="relative">
             <Link 
@@ -402,7 +402,7 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
               onClick={(e) => e.stopPropagation()}
               className="block"
             >
-              <div className="w-16 h-16 rounded-full border-2 border-white overflow-hidden bg-gray-800/80 shadow-lg cursor-pointer">
+              <div className="w-12 h-12 rounded-full border-2 border-white overflow-hidden bg-gray-800/80 shadow-lg cursor-pointer">
                 <div 
                   className="w-full h-full bg-cover bg-center opacity-80"
                   style={{ backgroundImage: `url(${item.author.avatar || item.url})` }}
@@ -412,10 +412,10 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
             {/* Badge vérifié */}
             {(item.author.verified ?? true) && (
               <div
-                className="absolute -bottom-2 -right-2 w-7 h-7 rounded-full flex items-center justify-center bg-[#111827] border border-white/20 text-[#4FD1C7] shadow-lg"
+                className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center bg-[#111827] border border-white/20 text-[#4FD1C7] shadow-lg"
                 title="Profil vérifié"
               >
-                <BadgeCheck className="w-4 h-4" />
+                <BadgeCheck className="w-3 h-3" />
               </div>
             )}
           </div>
@@ -424,30 +424,30 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
           {item.type === 'VIDEO' && (
             <button
               onClick={toggleMute}
-              className="p-3 rounded-full bg-black/20 backdrop-blur-sm text-white hover:bg-black/30 transition-all duration-200 shadow-lg"
+              className="p-2 rounded-full bg-black/20 backdrop-blur-sm text-white hover:bg-black/30 transition-all duration-200 shadow-lg"
             >
-              {isMute ? <VolumeX className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
+              {isMute ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
             </button>
           )}
 
           {/* Like */}
-          <div className="relative flex flex-col items-center gap-2">
+          <div className="relative flex flex-col items-center gap-1">
             <button
               onClick={onLike}
-              className={`w-14 h-14 backdrop-blur-sm rounded-full flex items-center justify-center transition-colors ${
+              className={`w-10 h-10 backdrop-blur-sm rounded-full flex items-center justify-center transition-colors ${
                 userHasLiked 
                   ? 'bg-rose-500/20 text-rose-300 hover:bg-rose-500/30' 
                   : 'bg-black/70 text-white hover:bg-black/90'
               }`}
               aria-label={userHasLiked ? 'Retirer le like' : 'Aimer'}
             >
-              <Heart size={24} className={userHasLiked ? 'fill-current' : ''} />
+              <Heart size={18} className={userHasLiked ? 'fill-current' : ''} />
             </button>
             <span className="text-xs text-white/70">{totalDisplay}</span>
           </div>
 
           {/* Réactions */}
-          <div className="relative flex flex-col items-center gap-2">
+          <div className="relative flex flex-col items-center gap-1">
             {radialOpen && (
               <div
                 className="fixed inset-0 z-0"
@@ -456,7 +456,7 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
             )}
             <button
               onClick={() => { setShowReactions(v => !v); setRadialOpen(v => !v) }}
-              className={`relative z-10 w-14 h-14 backdrop-blur-sm rounded-full flex items-center justify-center transition-colors ${
+              className={`relative z-10 w-10 h-10 backdrop-blur-sm rounded-full flex items-center justify-center transition-colors ${
                 showReactions
                   ? 'bg-violet-500/20 text-violet-300 hover:bg-violet-500/30'
                   : 'bg-black/70 text-white hover:bg-black/90'
@@ -464,7 +464,7 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
               aria-haspopup="true"
               aria-expanded={radialOpen}
             >
-              <Flame size={24} className={showReactions ? '' : 'text-violet-300'} />
+              <Flame size={18} className={showReactions ? '' : 'text-violet-300'} />
             </button>
             
             {/* Menu radial */}
@@ -511,7 +511,7 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
                           onReact(emoji)
                           setRadialOpen(false)
                         }}
-                        className="w-11 h-11 rounded-full bg-black/70 border border-white/10 backdrop-blur-md flex items-center justify-center text-2xl hover:bg-black/80"
+                        className="w-9 h-9 rounded-full bg-black/70 border border-white/10 backdrop-blur-md flex items-center justify-center text-lg hover:bg-black/80"
                         aria-label={`Réagir ${emoji}`}
                         style={{ boxShadow: '0 4px 16px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06)' }}
                       >
