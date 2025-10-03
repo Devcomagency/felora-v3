@@ -86,39 +86,68 @@ export default function TestMediaSimplePage() {
       const existingMediaCount = mediaData.items?.length || 0
       const newPos = Math.max(2, existingMediaCount + 2)
 
-      // 2. Préparer le FormData
-      const formData = new FormData()
-      formData.append('media', data.file)
-      formData.append('type', data.file.type.startsWith('video/') ? 'VIDEO' : 'IMAGE')
-      formData.append('pos', newPos.toString())
-      formData.append('description', data.description || '')
-      formData.append('visibility', data.visibility)
-
-      if (data.location) {
-        formData.append('location', data.location)
-      }
-
-      if (data.visibility === 'premium' && data.price) {
-        formData.append('price', data.price.toString())
-      }
-
-      console.log('📤 Envoi vers /api/media/upload')
-
-      // 3. Upload
-      const response = await fetch('/api/media/upload', {
+      // 2. ÉTAPE 1: Obtenir presigned URL
+      console.log('🚀 Étape 1/3: Demande presigned URL...')
+      const presignedRes = await fetch('/api/media/presigned-url', {
         method: 'POST',
-        body: formData,
-        credentials: 'include'
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          fileName: data.file.name,
+          fileType: data.file.type,
+          fileSize: data.file.size
+        })
       })
 
-      if (!response.ok) {
-        const errorText = await response.text()
-        console.error('❌ Erreur upload:', errorText)
-        throw new Error(`Échec de l'upload: ${response.status}`)
+      if (!presignedRes.ok) {
+        const error = await presignedRes.json()
+        console.error('❌ Échec presigned URL:', error)
+        throw new Error(error.error || 'Échec presigned URL')
       }
 
-      const result = await response.json()
-      console.log('✅ Résultat upload:', result)
+      const { presignedUrl, publicUrl, key } = await presignedRes.json()
+      console.log('✅ Presigned URL obtenue:', key)
+
+      // 3. ÉTAPE 2: Upload direct vers R2
+      console.log('🚀 Étape 2/3: Upload direct vers R2...')
+      const uploadRes = await fetch(presignedUrl, {
+        method: 'PUT',
+        body: data.file,
+        headers: { 'Content-Type': data.file.type }
+      })
+
+      if (!uploadRes.ok) {
+        console.error('❌ Upload R2 échoué:', uploadRes.status)
+        throw new Error(`Upload R2 échoué: ${uploadRes.status}`)
+      }
+
+      console.log('✅ Upload R2 réussi')
+
+      // 4. ÉTAPE 3: Confirmer et sauvegarder métadonnées
+      console.log('🚀 Étape 3/3: Confirmation et métadonnées...')
+      const confirmRes = await fetch('/api/media/confirm-upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          publicUrl,
+          key,
+          type: data.file.type.startsWith('video/') ? 'VIDEO' : 'IMAGE',
+          visibility: data.visibility,
+          pos: newPos,
+          description: data.description || undefined,
+          price: data.visibility === 'premium' && data.price ? data.price : undefined
+        })
+      })
+
+      if (!confirmRes.ok) {
+        const error = await confirmRes.json()
+        console.error('❌ Échec confirmation:', error)
+        throw new Error(error.error || 'Échec confirmation')
+      }
+
+      const result = await confirmRes.json()
+      console.log('✅ Upload complet:', result.mediaId)
 
       if (result.success) {
         setMessage(`${data.file.type.startsWith('video/') ? 'Vidéo' : 'Photo'} publiée avec succès !`)

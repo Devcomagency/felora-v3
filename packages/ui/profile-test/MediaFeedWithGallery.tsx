@@ -166,6 +166,9 @@ function MediaPlayer({ id, type, url, thumb, poster, index, isActive, profileId,
           </div>
         </div>
 
+        {/* Debug: afficher l'état de viewerIsOwner */}
+        {console.log('🔧 [MEDIA PLAYER] viewerIsOwner:', viewerIsOwner, 'URL:', url)}
+        
         {/* Menu de gestion des médias (propriétaire uniquement) */}
         {viewerIsOwner && (
           <div className="absolute top-2 right-2 z-20">

@@ -680,6 +680,9 @@ export default function EscortProfileTestPage() {
             onFavoriteToggle={() => handleFavoriteToggle()}
           />
 
+          {/* Debug: afficher l'état de isOwner */}
+          {console.log('🔧 [PROFILE PAGE] isOwner:', isOwner, 'Profile ID:', profile.id)}
+          
           <MediaFeedWithGallery
             media={profile.media}
             profileId={profile.id}
