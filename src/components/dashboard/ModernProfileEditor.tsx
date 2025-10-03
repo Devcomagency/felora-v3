@@ -708,7 +708,10 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
       if (profileData.phone !== undefined) payload.phone = profileData.phone
       if (profileData.incall !== undefined) payload.incall = !!profileData.incall
       if (profileData.outcall !== undefined) payload.outcall = !!profileData.outcall
-      if (profileData.coordinates) { payload.latitude = profileData.coordinates.lat; payload.longitude = profileData.coordinates.lng }
+      if (profileData.coordinates) { 
+        payload.coordinates = profileData.coordinates
+        console.log('🎯 [AUTOSAVE] Coordonnées ajoutées au payload:', profileData.coordinates)
+      }
       if (profileData.addressPrivacy) payload.addressPrivacy = profileData.addressPrivacy
       if (profileData.languages && Object.keys(profileData.languages).length > 0) payload.languages = safeStringify(profileData.languages)
       // Combiner catégorie et services détaillés dans le champ services
@@ -817,7 +820,10 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
       if (profileData.phone !== undefined) payload.phone = profileData.phone
       if (profileData.incall !== undefined) payload.incall = !!profileData.incall
       if (profileData.outcall !== undefined) payload.outcall = !!profileData.outcall
-      if (profileData.coordinates) { payload.latitude = profileData.coordinates.lat; payload.longitude = profileData.coordinates.lng }
+      if (profileData.coordinates) { 
+        payload.coordinates = profileData.coordinates
+        console.log('🎯 [AUTOSAVE] Coordonnées ajoutées au payload:', profileData.coordinates)
+      }
       if (profileData.addressPrivacy) payload.addressPrivacy = profileData.addressPrivacy
       if (profileData.languages && Object.keys(profileData.languages).length > 0) payload.languages = safeStringify(profileData.languages)
       // Combiner catégorie et services détaillés dans le champ services
@@ -1428,6 +1434,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                       console.log('🎯 [DASHBOARD] Coordonnées reçues:', coordinates)
                       if (coordinates) {
                         updateProfileData('coordinates', coordinates)
+                        console.log('🎯 [DASHBOARD] updateProfileData appelé avec coordinates:', coordinates)
                       }
                     }}
                     placeholder="Tapez votre adresse suisse..."
