@@ -89,45 +89,85 @@ export default function MediaManager() {
           console.log(`🎥 Vidéo compressée: ${file.size} → ${processedFile.size} bytes`)
         }
         
-        const fd = new FormData()
-        fd.append('file', processedFile)
-        fd.append('type', processedFile.type.startsWith('video/') ? 'VIDEO' : 'IMAGE')
-        fd.append('visibility', active)
-        if (active === 'PUBLIC') fd.append('position', '7')
-        
-        console.log(`🚀 Envoi vers /api/media/upload...`)
-        console.log(`📤 Visibilité envoyée: ${active}`)
-        console.log(`📝 FormData:`, {
-          file: processedFile.name,
-          type: processedFile.type.startsWith('video/') ? 'VIDEO' : 'IMAGE',
-          visibility: active,
-          position: active === 'PUBLIC' ? '7' : undefined,
-          size: processedFile.size
+        // ÉTAPE 1: Obtenir presigned URL
+        console.log(`🚀 Étape 1/3: Demande presigned URL...`)
+        const presignedRes = await fetch('/api/media/presigned-url', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            fileName: processedFile.name,
+            fileType: processedFile.type,
+            fileSize: processedFile.size
+          })
         })
-        
-        setUploadProgress(prev => ({ ...prev, [fileId]: 0 }))
-        
-        const r = await fetch('/api/media/upload', { 
-          method:'POST', 
-          body: fd, 
-          credentials:'include' 
-        })
-        
-        console.log(`📥 Réponse: ${r.status} ${r.statusText}`)
-        
-        const d = await r.json().catch((e)=>{
-          console.log('❌ Erreur parse JSON:', e)
-          return {}
-        })
-        
-        console.log('📋 Données reçues:', d)
-        
-        if (!r.ok || !d?.mediaId) {
-          console.log('❌ Upload échoué:', d?.error || 'upload_failed')
-          throw new Error(d?.error || 'upload_failed')
+
+        if (!presignedRes.ok) {
+          const error = await presignedRes.json()
+          console.log('❌ Échec presigned URL:', error)
+          throw new Error(error.error || 'Échec presigned URL')
         }
-        
-        console.log('✅ Upload réussi:', d.mediaId)
+
+        const { presignedUrl, publicUrl, key } = await presignedRes.json()
+        console.log(`✅ Presigned URL obtenue: ${key}`)
+
+        // ÉTAPE 2: Upload direct vers R2 avec progress tracking
+        console.log(`🚀 Étape 2/3: Upload direct vers R2...`)
+        setUploadProgress(prev => ({ ...prev, [fileId]: 0 }))
+
+        await new Promise<void>((resolve, reject) => {
+          const xhr = new XMLHttpRequest()
+
+          xhr.upload.addEventListener('progress', (e) => {
+            if (e.lengthComputable) {
+              const percent = Math.round((e.loaded / e.total) * 100)
+              setUploadProgress(prev => ({ ...prev, [fileId]: percent }))
+            }
+          })
+
+          xhr.addEventListener('load', () => {
+            if (xhr.status === 200) {
+              console.log(`✅ Upload R2 réussi`)
+              resolve()
+            } else {
+              console.log(`❌ Upload R2 échoué: ${xhr.status}`)
+              reject(new Error(`Upload R2 échoué: ${xhr.status}`))
+            }
+          })
+
+          xhr.addEventListener('error', () => {
+            console.log('❌ Erreur réseau upload R2')
+            reject(new Error('Erreur réseau'))
+          })
+
+          xhr.open('PUT', presignedUrl)
+          xhr.setRequestHeader('Content-Type', processedFile.type)
+          xhr.send(processedFile)
+        })
+
+        // ÉTAPE 3: Confirmer et sauvegarder métadonnées
+        console.log(`🚀 Étape 3/3: Confirmation et métadonnées...`)
+        const confirmRes = await fetch('/api/media/confirm-upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            publicUrl,
+            key,
+            type: processedFile.type.startsWith('video/') ? 'VIDEO' : 'IMAGE',
+            visibility: active.toLowerCase(), // 'public' ou 'private' en minuscules
+            pos: active === 'PUBLIC' ? 7 : undefined
+          })
+        })
+
+        if (!confirmRes.ok) {
+          const error = await confirmRes.json()
+          console.log('❌ Échec confirmation:', error)
+          throw new Error(error.error || 'Échec confirmation')
+        }
+
+        const result = await confirmRes.json()
+        console.log('✅ Upload complet:', result.mediaId)
         toast.success('Média ajouté avec succès')
       } catch (e:any) {
         console.log('💥 Erreur upload complète:', e)

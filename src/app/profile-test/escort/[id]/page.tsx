@@ -538,6 +538,44 @@ export default function EscortProfileTestPage() {
     }
   }, [isFavorite, profile])
 
+  // Gestion des médias
+  const handleDeleteMedia = useCallback(async (mediaUrl: string, index: number) => {
+    try {
+      console.log('🗑️ [DELETE MEDIA] Suppression du média:', mediaUrl, 'Index:', index)
+      
+      // TODO: Appeler l'API pour supprimer le média
+      // const response = await fetch(`/api/media/${mediaId}/delete`, {
+      //   method: 'DELETE',
+      //   headers: { 'Content-Type': 'application/json' }
+      // })
+      
+      // if (response.ok) {
+      //   // Rafraîchir la liste des médias
+      //   setProfile(prev => ({
+      //     ...prev,
+      //     media: prev.media.filter((_, i) => i !== index)
+      //   }))
+      // }
+      
+      alert('Fonction de suppression à implémenter')
+    } catch (error) {
+      console.error('❌ [DELETE MEDIA] Erreur:', error)
+      alert('Erreur lors de la suppression du média')
+    }
+  }, [])
+
+  const handleEditMedia = useCallback(async (mediaUrl: string, index: number) => {
+    try {
+      console.log('✏️ [EDIT MEDIA] Édition du média:', mediaUrl, 'Index:', index)
+      
+      // TODO: Ouvrir un modal d'édition ou rediriger vers une page d'édition
+      alert('Fonction d\'édition à implémenter')
+    } catch (error) {
+      console.error('❌ [EDIT MEDIA] Erreur:', error)
+      alert('Erreur lors de l\'édition du média')
+    }
+  }, [])
+
   // Generate extended profile data from the real data - AVANT les conditions de render
   const extendedProfileData = useMemo(() => {
     if (!profile) return null
@@ -647,9 +685,12 @@ export default function EscortProfileTestPage() {
             profileId={profile.id}
             profileName={profile.name}
             privateEnabled
+            viewerIsOwner={isOwner}
             onLike={handleMediaLike}
             onSave={handleMediaSave}
             onReactionChange={calculateTotalReactions}
+            onDeleteMedia={handleDeleteMedia}
+            onEditMedia={handleEditMedia}
           />
 
           {/* Section informations de base retirée */}

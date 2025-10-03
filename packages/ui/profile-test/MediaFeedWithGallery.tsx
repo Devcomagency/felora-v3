@@ -52,13 +52,17 @@ interface MediaPlayerProps extends MediaItem {
   onReactionChange?: () => Promise<void> | void
   refreshTrigger?: number
   optimisticDelta?: number
+  viewerIsOwner?: boolean
+  onDeleteMedia?: (mediaUrl: string, index: number) => void
+  onEditMedia?: (mediaUrl: string, index: number) => void
 }
 
-function MediaPlayer({ id, type, url, thumb, poster, index, isActive, profileId, userId, onLike, onSave, onFullscreen, isPrivate, onReactionChange, refreshTrigger, optimisticDelta = 0 }: MediaPlayerProps) {
+function MediaPlayer({ id, type, url, thumb, poster, index, isActive, profileId, userId, onLike, onSave, onFullscreen, isPrivate, onReactionChange, refreshTrigger, optimisticDelta = 0, viewerIsOwner = false, onDeleteMedia, onEditMedia }: MediaPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const [isPlaying, setIsPlaying] = useState(false)
   const [error, setError] = useState(false)
   const [guestId, setGuestId] = useState<string | null>(null)
+  const [showMediaMenu, setShowMediaMenu] = useState(false)
   useEffect(() => {
     try {
       const key = 'felora-user-id'
@@ -161,6 +165,67 @@ function MediaPlayer({ id, type, url, thumb, poster, index, isActive, profileId,
             <span>{(stats?.total ?? 0) + (optimisticDelta || 0)}</span>
           </div>
         </div>
+
+        {/* Menu de gestion des médias (propriétaire uniquement) */}
+        {viewerIsOwner && (
+          <div className="absolute top-2 right-2 z-20">
+            <div className="relative">
+              <button
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  setShowMediaMenu(!showMediaMenu)
+                }}
+                className="w-6 h-6 rounded-full bg-black/50 backdrop-blur-sm text-white hover:bg-black/70 transition-colors flex items-center justify-center border border-white/20"
+                aria-label="Options du média"
+              >
+                <MoreVertical size={14} />
+              </button>
+              
+              {/* Menu déroulant */}
+              {showMediaMenu && (
+                <>
+                  <div
+                    className="fixed inset-0 z-10"
+                    onClick={() => setShowMediaMenu(false)}
+                  />
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                    className="absolute right-0 top-8 w-40 bg-black/90 backdrop-blur-md rounded-lg border border-white/10 shadow-xl z-20"
+                  >
+                    <div className="py-2">
+                      <button
+                        onClick={() => {
+                          onEditMedia?.(url, index)
+                          setShowMediaMenu(false)
+                        }}
+                        className="w-full px-3 py-2 text-left text-white hover:bg-white/10 flex items-center gap-2 text-sm"
+                      >
+                        <Edit size={14} />
+                        <span>Modifier</span>
+                      </button>
+                      
+                      <button
+                        onClick={() => {
+                          if (confirm('Êtes-vous sûr de vouloir supprimer ce média ?')) {
+                            onDeleteMedia?.(url, index)
+                          }
+                          setShowMediaMenu(false)
+                        }}
+                        className="w-full px-3 py-2 text-left text-red-400 hover:bg-red-500/20 flex items-center gap-2 text-sm"
+                      >
+                        <Trash2 size={14} />
+                        <span>Supprimer</span>
+                      </button>
+                    </div>
+                  </motion.div>
+                </>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     )
   }
@@ -195,6 +260,67 @@ function MediaPlayer({ id, type, url, thumb, poster, index, isActive, profileId,
           <span>{(stats?.total ?? 0) + (optimisticDelta || 0)}</span>
         </div>
       </div>
+
+      {/* Menu de gestion des médias (propriétaire uniquement) */}
+      {viewerIsOwner && (
+        <div className="absolute top-2 right-2 z-20">
+          <div className="relative">
+            <button
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                setShowMediaMenu(!showMediaMenu)
+              }}
+              className="w-6 h-6 rounded-full bg-black/50 backdrop-blur-sm text-white hover:bg-black/70 transition-colors flex items-center justify-center border border-white/20"
+              aria-label="Options du média"
+            >
+              <MoreVertical size={14} />
+            </button>
+            
+            {/* Menu déroulant */}
+            {showMediaMenu && (
+              <>
+                <div
+                  className="fixed inset-0 z-10"
+                  onClick={() => setShowMediaMenu(false)}
+                />
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                  className="absolute right-0 top-8 w-40 bg-black/90 backdrop-blur-md rounded-lg border border-white/10 shadow-xl z-20"
+                >
+                  <div className="py-2">
+                    <button
+                      onClick={() => {
+                        onEditMedia?.(url, index)
+                        setShowMediaMenu(false)
+                      }}
+                      className="w-full px-3 py-2 text-left text-white hover:bg-white/10 flex items-center gap-2 text-sm"
+                    >
+                      <Edit size={14} />
+                      <span>Modifier</span>
+                    </button>
+                    
+                    <button
+                      onClick={() => {
+                        if (confirm('Êtes-vous sûr de vouloir supprimer ce média ?')) {
+                          onDeleteMedia?.(url, index)
+                        }
+                        setShowMediaMenu(false)
+                      }}
+                      className="w-full px-3 py-2 text-left text-red-400 hover:bg-red-500/20 flex items-center gap-2 text-sm"
+                    >
+                      <Trash2 size={14} />
+                      <span>Supprimer</span>
+                    </button>
+                  </div>
+                </motion.div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -426,6 +552,9 @@ export default function MediaFeedWithGallery({
                     onReactionChange={onReactionChange}
                     refreshTrigger={globalRefreshTrigger}
                     optimisticDelta={optimistic[stableMediaId({ rawId: content.id || null, profileId, url: content.url })] || 0}
+                    viewerIsOwner={viewerIsOwner}
+                    onDeleteMedia={onDeleteMedia}
+                    onEditMedia={onEditMedia}
                   />
                 </div>
               </div>
@@ -459,6 +588,9 @@ export default function MediaFeedWithGallery({
                       refreshTrigger={globalRefreshTrigger}
                       optimisticDelta={0}
                       isPrivate={!isOwner}
+                      viewerIsOwner={viewerIsOwner}
+                      onDeleteMedia={onDeleteMedia}
+                      onEditMedia={onEditMedia}
                     />
                     {!isOwner && (
                       <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm">
@@ -501,6 +633,9 @@ export default function MediaFeedWithGallery({
                     refreshTrigger={globalRefreshTrigger}
                     optimisticDelta={optimistic[stableMediaId({ rawId: content.id || null, profileId, url: content.url })] || 0}
                     isPrivate={false}
+                    viewerIsOwner={viewerIsOwner}
+                    onDeleteMedia={onDeleteMedia}
+                    onEditMedia={onEditMedia}
                   />
                 </div>
               </div>

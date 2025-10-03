@@ -161,6 +161,11 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
   // Vérifier si l'utilisateur est le propriétaire du média
   const isOwner = session?.user?.id === item.author.id
   
+  // Debug: vérifier la propriété
+  console.log('🔧 [MEDIA MENU] Session user ID:', session?.user?.id)
+  console.log('🔧 [MEDIA MENU] Author ID:', item.author.id)
+  console.log('🔧 [MEDIA MENU] Is owner:', isOwner)
+  
   // Robust check: only treat as video if URL looks like a video
   const isVideoUrl = typeof item.url === 'string' && /(\.mp4|\.webm|\.mov)(\?.*)?$/i.test(item.url)
   const shouldShowVideo = item.type === 'VIDEO' && isVideoUrl
@@ -212,20 +217,23 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
   // Gestionnaire de clic unifié
   const handleVideoClick = useClickHandler(handleSingleClick, handleDoubleClick)
 
-  // Click outside to close pill
+  // Click outside to close pill and media menu
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (radialOpen) {
         setRadialOpen(false)
         setShowReactions(false)
       }
+      if (showMediaMenu) {
+        setShowMediaMenu(false)
+      }
     }
     
-    if (radialOpen) {
+    if (radialOpen || showMediaMenu) {
       document.addEventListener('mousedown', handleClickOutside)
       return () => document.removeEventListener('mousedown', handleClickOutside)
     }
-  }, [radialOpen])
+  }, [radialOpen, showMediaMenu])
 
   // Gestion de l'intersection
   const onIntersectingChange = useCallback((inView: boolean) => {
@@ -234,7 +242,7 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
       trackedRef.current = true
       try { (window as any)?.umami?.track?.('media_view', { mediaId }) } catch {}
     }
-  }, [handleIntersectingChange, item.id, mediaId])
+  }, [handleIntersectingChange, item.id, mediaId, videoRef])
 
   // Click outside to close pill
   useEffect(() => {
@@ -391,14 +399,16 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
         
         {/* Menu de gestion des médias (propriétaire uniquement) */}
         {isOwner && (
-          <div className="absolute top-4 right-4 z-20">
+          <div className="absolute top-4 right-4 z-30 pointer-events-auto">
             <div className="relative">
               <button
                 onClick={(e) => {
+                  e.preventDefault()
                   e.stopPropagation()
+                  console.log('🔧 [MEDIA MENU] Clic sur le bouton 3 points')
                   setShowMediaMenu(!showMediaMenu)
                 }}
-                className="w-8 h-8 rounded-full bg-black/50 backdrop-blur-sm text-white hover:bg-black/70 transition-colors flex items-center justify-center"
+                className="w-8 h-8 rounded-full bg-black/50 backdrop-blur-sm text-white hover:bg-black/70 transition-colors flex items-center justify-center border border-white/20"
                 aria-label="Options du média"
               >
                 <MoreVertical size={16} />

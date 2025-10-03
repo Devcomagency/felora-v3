@@ -93,6 +93,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       message: 'Média ajouté au profil',
+      mediaId: media.id, // Pour compatibilité avec MediaManager
       media: {
         id: media.id,
         url: publicUrl,
