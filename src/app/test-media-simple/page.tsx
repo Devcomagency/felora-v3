@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, memo, useEffect } from 'react'
+import { useState, useCallback, memo, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import { useSession } from 'next-auth/react'
@@ -35,7 +35,7 @@ interface CapturedMedia {
   type: 'image' | 'video'
 }
 
-export default function TestMediaSimplePage() {
+function TestMediaSimpleContent() {
   const { data: session } = useSession()
   const searchParams = useSearchParams()
   const mode = searchParams.get('mode') as 'photo' | 'video' | 'upload' | null
@@ -327,5 +327,20 @@ export default function TestMediaSimplePage() {
         />
       )}
     </div>
+  )
+}
+
+export default function TestMediaSimplePage() {
+  return (
+    <Suspense fallback={
+      <div className="fixed inset-0 bg-black flex items-center justify-center z-50">
+        <div className="text-white text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500 mx-auto mb-4"></div>
+          <p>Chargement...</p>
+        </div>
+      </div>
+    }>
+      <TestMediaSimpleContent />
+    </Suspense>
   )
 }
