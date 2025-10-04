@@ -40,11 +40,9 @@ function TestMediaSimpleContent() {
   const searchParams = useSearchParams()
   const mode = searchParams.get('mode') as 'photo' | 'video' | 'upload' | null
 
-  // Initialiser les états en fonction du mode URL
-  const hasMode = mode === 'photo' || mode === 'video' || mode === 'upload'
-  const [showModeSelector, setShowModeSelector] = useState(!hasMode)
-  const [showCamera, setShowCamera] = useState(mode === 'photo' || mode === 'video')
-  const [cameraMode, setCameraMode] = useState<'photo' | 'video'>(mode === 'photo' ? 'photo' : 'video')
+  const [showModeSelector, setShowModeSelector] = useState(true)
+  const [showCamera, setShowCamera] = useState(false)
+  const [cameraMode, setCameraMode] = useState<'photo' | 'video'>('video')
   const [showPublishEditor, setShowPublishEditor] = useState(false)
   const [capturedMedia, setCapturedMedia] = useState<CapturedMedia | null>(null)
   const [isPublishing, setIsPublishing] = useState(false)
@@ -58,9 +56,13 @@ function TestMediaSimpleContent() {
     session.user.email?.includes('escort')
   )
 
-  // Gérer le mode upload depuis sessionStorage
+  // Gérer l'ouverture automatique selon le mode URL
   useEffect(() => {
-    if (mode === 'upload') {
+    if (mode === 'photo' || mode === 'video') {
+      setCameraMode(mode)
+      setShowModeSelector(false)
+      setShowCamera(true)
+    } else if (mode === 'upload') {
       const fileUrl = sessionStorage.getItem('upload-file-url')
       const fileName = sessionStorage.getItem('upload-file-name')
       const fileType = sessionStorage.getItem('upload-file-type')
@@ -85,6 +87,10 @@ function TestMediaSimpleContent() {
             sessionStorage.removeItem('upload-file-type')
           })
       }
+    } else {
+      // Pas de mode spécifié, afficher le sélecteur
+      setShowModeSelector(true)
+      setShowCamera(false)
     }
   }, [mode])
 
