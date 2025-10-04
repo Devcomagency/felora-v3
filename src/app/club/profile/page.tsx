@@ -17,6 +17,7 @@ type Club = {
   websiteUrl?: string
   isActive: boolean
   capacity?: number
+  establishmentType?: 'institut_massage' | 'agence_escorte' | 'salon_erotique' | 'club'
 }
 
 export default function ClubProfilePage() {
@@ -28,6 +29,7 @@ export default function ClubProfilePage() {
     companyName?: string;
     handle?: string;
     managerName?: string;
+    establishmentType?: 'institut_massage' | 'agence_escorte' | 'salon_erotique' | 'club';
   }>({})
   const [loading, setLoading] = useState(true)
   const [saving, startSaving] = useTransition()
@@ -59,6 +61,7 @@ export default function ClubProfilePage() {
               coverUrl: data.club.coverUrl || '',
               isActive: !!data.club.isActive,
               websiteUrl: (data.club as any).websiteUrl || '',
+              establishmentType: data.club.establishmentType || 'club',
               // Pré-remplir avec les données d'inscription
               email: data.club.user?.email || '',
               phone: data.club.user?.phoneE164 || '',
@@ -209,6 +212,7 @@ export default function ClubProfilePage() {
           capacity: form.capacity ? Number(form.capacity) : null,
           latitude: coordinates?.lat || null,
           longitude: coordinates?.lng || null,
+          establishmentType: form.establishmentType,
         }
         const res = await fetch('/api/clubs/profile/update', {
           method: 'POST',
@@ -379,6 +383,20 @@ export default function ClubProfilePage() {
                     placeholder="Ex. Club Luxe Geneva"
                   />
                   {fieldErrors.name && <p className="text-xs text-red-400 mt-1">{fieldErrors.name}</p>}
+                </div>
+
+                <div>
+                  <label className="block text-sm text-gray-300 mb-1">Type d'établissement</label>
+                  <select
+                    value={form.establishmentType || 'club'}
+                    onChange={e => updateField('establishmentType', e.target.value as any)}
+                    className="w-full px-3 py-2.5 text-[15px] bg-gray-800/60 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
+                  >
+                    <option value="institut_massage">Institut de massage</option>
+                    <option value="agence_escorte">Agence d'escorte</option>
+                    <option value="salon_erotique">Salon érotique</option>
+                    <option value="club">Club</option>
+                  </select>
                 </div>
 
                 {/* Données d'inscription modifiables */}

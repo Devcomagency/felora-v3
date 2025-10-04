@@ -73,27 +73,28 @@ model ClubProfileV2 {
 }
 
 model ClubDetails {
-  id           String    @id @default(cuid())
-  clubId       String    @unique
-  name         String?
-  description  String?
-  address      String?
-  city         String?
-  postalCode   String?
-  country      String?   @default("CH")
-  openingHours String?
-  websiteUrl   String?
-  email        String?
-  phone        String?
-  avatarUrl    String?
-  coverUrl     String?
-  isActive     Boolean   @default(false)
-  capacity     Int?
-  latitude     Float?
-  longitude    Float?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  club         ClubProfileV2 @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  id               String    @id @default(cuid())
+  clubId           String    @unique
+  name             String?
+  description      String?
+  address          String?
+  city             String?
+  postalCode       String?
+  country          String?   @default("CH")
+  openingHours     String?
+  websiteUrl       String?
+  email            String?
+  phone            String?
+  avatarUrl        String?
+  coverUrl         String?
+  isActive         Boolean   @default(false)
+  capacity         Int?
+  latitude         Float?
+  longitude        Float?
+  establishmentType String?  @default("club")
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  club             ClubProfileV2 @relation(fields: [clubId], references: [id], onDelete: Cascade)
 
   @@map("club_details")
 }

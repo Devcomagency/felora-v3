@@ -42,6 +42,7 @@ interface ClubProfile {
   verified?: boolean
   premium?: boolean
   description?: string
+  establishmentType?: 'institut_massage' | 'agence_escorte' | 'salon_erotique' | 'club'
   stats?: {
     likes?: number
     followers?: number
@@ -315,6 +316,15 @@ export default function ClubProfileTestPage() {
 
       {/* 2) CARTE HEADER PROFIL - Design moderne 2025 */}
       <div className="relative mx-4 mt-24 rounded-2xl bg-[#1A1A1A] border border-[#2A2A2A] shadow-lg">
+        {/* Badge type discret en haut à droite */}
+        <div className="absolute top-4 right-4">
+          <div className="px-2 py-1 rounded-full bg-[#4FD1C7]/10 border border-[#4FD1C7]/20 text-[#4FD1C7] text-[11px] font-medium">
+            {profile.establishmentType === 'institut_massage' ? 'INSTITUT' :
+             profile.establishmentType === 'agence_escorte' ? 'AGENCE' :
+             profile.establishmentType === 'salon_erotique' ? 'SALON' :
+             'CLUB'}
+          </div>
+        </div>
         
         {/* Avatar moderne et net */}
         <div className="flex justify-center -mt-6 mb-4">

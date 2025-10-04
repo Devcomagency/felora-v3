@@ -1,12 +1,13 @@
 'use client'
 
-import { useState, useCallback, memo } from 'react'
+import { useState, useCallback, memo, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import { useSession } from 'next-auth/react'
-import { Plus, ChevronLeft, Home, Search, User } from 'lucide-react'
+import { Plus, ChevronLeft, Home, Search, User, Camera, Video } from 'lucide-react'
 
-// Lazy loading des composants - Utiliser Capacitor si disponible, sinon fallback
-const CapacitorCamera = dynamic(() => import('@/components/camera/CapacitorCamera').catch(() => import('@/components/camera/CameraCapturePro')), {
+// Lazy loading des composants
+const CameraCapturePro = dynamic(() => import('@/components/camera/CameraCapturePro'), {
   loading: () => (
     <div className="fixed inset-0 bg-black flex items-center justify-center z-50">
       <div className="text-white text-center">
@@ -36,8 +37,12 @@ interface CapturedMedia {
 
 export default function TestMediaSimplePage() {
   const { data: session } = useSession()
+  const searchParams = useSearchParams()
+  const mode = searchParams.get('mode') as 'photo' | 'video' | 'upload' | null
 
-  const [showCamera, setShowCamera] = useState(true) // Ouvrir directement la caméra
+  const [showModeSelector, setShowModeSelector] = useState(true) // Sélecteur photo/vidéo
+  const [showCamera, setShowCamera] = useState(false)
+  const [cameraMode, setCameraMode] = useState<'photo' | 'video'>('video')
   const [showPublishEditor, setShowPublishEditor] = useState(false)
   const [capturedMedia, setCapturedMedia] = useState<CapturedMedia | null>(null)
   const [isPublishing, setIsPublishing] = useState(false)
@@ -50,6 +55,42 @@ export default function TestMediaSimplePage() {
     session.user.email?.includes('club') ||
     session.user.email?.includes('escort')
   )
+
+  // Gérer l'ouverture automatique selon le mode URL
+  useEffect(() => {
+    if (mode === 'photo' || mode === 'video') {
+      setCameraMode(mode)
+      setShowModeSelector(false)
+      setShowCamera(true)
+    } else if (mode === 'upload') {
+      // Récupérer le fichier depuis sessionStorage
+      const fileUrl = sessionStorage.getItem('upload-file-url')
+      const fileName = sessionStorage.getItem('upload-file-name')
+      const fileType = sessionStorage.getItem('upload-file-type')
+
+      if (fileUrl && fileName && fileType) {
+        // Créer un fichier à partir de l'URL
+        fetch(fileUrl)
+          .then(res => res.blob())
+          .then(blob => {
+            const file = new File([blob], fileName, { type: fileType })
+            const isVideo = fileType.startsWith('video/')
+            setCapturedMedia({
+              file,
+              previewUrl: fileUrl,
+              type: isVideo ? 'video' : 'image'
+            })
+            setShowModeSelector(false)
+            setShowPublishEditor(true)
+
+            // Nettoyer le sessionStorage
+            sessionStorage.removeItem('upload-file-url')
+            sessionStorage.removeItem('upload-file-name')
+            sessionStorage.removeItem('upload-file-type')
+          })
+      }
+    }
+  }, [mode])
 
   // Handler pour la capture depuis la caméra
   const handleCameraCapture = useCallback((file: File) => {
@@ -65,6 +106,7 @@ export default function TestMediaSimplePage() {
     })
 
     setShowCamera(false)
+    setShowModeSelector(false)
     setShowPublishEditor(true)
   }, [])
 
@@ -208,12 +250,64 @@ export default function TestMediaSimplePage() {
         </div>
       )}
 
-      {/* Écran caméra Capacitor */}
+      {/* Sélecteur de mode photo/vidéo */}
+      {showModeSelector && !showCamera && !showPublishEditor && (
+        <div className="pt-14 flex flex-col items-center justify-center min-h-screen px-4">
+          <div className="text-center max-w-md w-full">
+            <h2 className="text-2xl font-bold text-white mb-8">Que souhaitez-vous créer ?</h2>
+
+            <div className="space-y-4">
+              {/* Bouton Vidéo */}
+              <button
+                onClick={() => {
+                  setCameraMode('video')
+                  setShowModeSelector(false)
+                  setShowCamera(true)
+                }}
+                className="w-full p-6 rounded-2xl bg-gradient-to-br from-purple-600/20 to-pink-600/20 border border-purple-500/30 hover:border-purple-500/50 transition-all duration-200 group"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
+                    <Video className="text-white" size={32} />
+                  </div>
+                  <div className="flex-1 text-left">
+                    <h3 className="text-xl font-bold text-white mb-1">Vidéo</h3>
+                    <p className="text-sm text-gray-400">Capturer une vidéo</p>
+                  </div>
+                </div>
+              </button>
+
+              {/* Bouton Photo */}
+              <button
+                onClick={() => {
+                  setCameraMode('photo')
+                  setShowModeSelector(false)
+                  setShowCamera(true)
+                }}
+                className="w-full p-6 rounded-2xl bg-gradient-to-br from-blue-600/20 to-cyan-600/20 border border-blue-500/30 hover:border-blue-500/50 transition-all duration-200 group"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center flex-shrink-0">
+                    <Camera className="text-white" size={32} />
+                  </div>
+                  <div className="flex-1 text-left">
+                    <h3 className="text-xl font-bold text-white mb-1">Photo</h3>
+                    <p className="text-sm text-gray-400">Prendre une photo</p>
+                  </div>
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Écran caméra */}
       {showCamera && (
-        <CapacitorCamera
+        <CameraCapturePro
+          mode={cameraMode}
           onClose={() => {
             setShowCamera(false)
-            window.history.back()
+            setShowModeSelector(true)
           }}
           onCapture={handleCameraCapture}
         />

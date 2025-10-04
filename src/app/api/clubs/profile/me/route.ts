@@ -71,6 +71,7 @@ export async function GET(request: NextRequest) {
       capacity: details?.capacity || null,
       latitude: details?.latitude || null,
       longitude: details?.longitude || null,
+      establishmentType: details?.establishmentType || 'club',
 
       // Données utilisateur
       user: club.user,

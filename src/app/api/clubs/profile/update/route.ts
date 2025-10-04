@@ -32,7 +32,8 @@ export async function POST(req: NextRequest) {
       services: z.array(z.string()).optional(),
       avatarUrl: z.string().optional(),
       coverUrl: z.string().optional(),
-      isActive: z.boolean().optional()
+      isActive: z.boolean().optional(),
+      establishmentType: z.enum(['institut_massage', 'agence_escorte', 'salon_erotique', 'club']).optional()
     })
     
     const parsed = Schema.safeParse(body)
@@ -99,6 +100,7 @@ export async function POST(req: NextRequest) {
     if (typeof input.avatarUrl === 'string') detailsData.avatarUrl = input.avatarUrl || null
     if (typeof input.coverUrl === 'string') detailsData.coverUrl = input.coverUrl || null
     if (typeof input.isActive === 'boolean') detailsData.isActive = input.isActive
+    if (typeof input.establishmentType === 'string') detailsData.establishmentType = input.establishmentType
 
     // Créer ou mettre à jour ClubDetails
     if (Object.keys(detailsData).length > 0) {

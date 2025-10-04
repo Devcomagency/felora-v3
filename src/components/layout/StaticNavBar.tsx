@@ -6,7 +6,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useSession, signOut } from 'next-auth/react'
 import {
   Home, Search, MessageCircle, User, Settings, Bell, Menu,
-  Map, Globe, LogIn, UserPlus, BarChart3, Calendar, Heart, Plus
+  Map, Globe, LogIn, UserPlus, BarChart3, Calendar, Heart, Plus,
+  Camera, Video, Upload
 } from 'lucide-react'
 
 const languages = [
@@ -30,6 +31,9 @@ export default function StaticNavBar() {
   const [currentLanguage, setCurrentLanguage] = useState('fr')
   const [hasNotifications, setHasNotifications] = useState(false)
   const [unreadConversations, setUnreadConversations] = useState(0)
+
+  // État pour le menu en arc de cercle
+  const [showCreateMenu, setShowCreateMenu] = useState(false)
 
   // Charger la langue sauvegardée
   useEffect(() => {
@@ -81,11 +85,26 @@ export default function StaticNavBar() {
           setShowMenu(false)
         }
       }
-      
+
       document.addEventListener('click', handleClickOutside)
       return () => document.removeEventListener('click', handleClickOutside)
     }
   }, [showMenu])
+
+  // Fermer le menu créer en cliquant à l'extérieur
+  useEffect(() => {
+    if (showCreateMenu) {
+      const handleClickOutside = (event: MouseEvent) => {
+        const target = event.target as Element
+        if (!target.closest('[data-create-menu]')) {
+          setShowCreateMenu(false)
+        }
+      }
+
+      document.addEventListener('click', handleClickOutside)
+      return () => document.removeEventListener('click', handleClickOutside)
+    }
+  }, [showCreateMenu])
 
   const handleLanguageChange = (langCode: string) => {
     setCurrentLanguage(langCode)
@@ -109,7 +128,7 @@ export default function StaticNavBar() {
         id: 'create',
         icon: Plus,
         label: 'Créer',
-        href: '/test-media-simple',
+        onClick: () => setShowCreateMenu(!showCreateMenu), // Ouvrir le menu au lieu de naviguer
         active: pathname === '/test-media-simple',
         special: true // Marqueur pour un style spécial
       })
@@ -163,7 +182,8 @@ export default function StaticNavBar() {
               <motion.button
                 key={item.id}
                 whileTap={{ scale: 0.9 }}
-                onClick={() => router.push(item.href)}
+                onClick={() => item.onClick ? item.onClick() : router.push(item.href)}
+                data-create-menu={item.id === 'create' ? true : undefined}
                 className={`
                   relative flex flex-col items-center justify-center px-3 py-2 rounded-xl
                   transition-all duration-200 min-w-[60px]
@@ -187,6 +207,87 @@ export default function StaticNavBar() {
           })}
         </div>
       </div>
+
+      {/* Menu en arc de cercle autour du + */}
+      <AnimatePresence>
+        {showCreateMenu && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => setShowCreateMenu(false)}
+              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
+            />
+
+            {/* Boutons en arc de cercle */}
+            <div className="fixed bottom-20 left-0 right-0 z-50 flex justify-center" data-create-menu>
+              <div className="relative">
+                {/* Bouton Photo (gauche) */}
+                <motion.button
+                  initial={{ opacity: 0, scale: 0, x: 0, y: 0 }}
+                  animate={{ opacity: 1, scale: 1, x: -80, y: -60 }}
+                  exit={{ opacity: 0, scale: 0, x: 0, y: 0 }}
+                  transition={{ type: "spring", stiffness: 260, damping: 20 }}
+                  onClick={() => {
+                    setShowCreateMenu(false)
+                    router.push('/test-media-simple?mode=photo')
+                  }}
+                  className="absolute w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg hover:shadow-xl hover:scale-110 transition-all"
+                >
+                  <Camera size={28} className="text-white" />
+                </motion.button>
+
+                {/* Bouton Vidéo (milieu haut) */}
+                <motion.button
+                  initial={{ opacity: 0, scale: 0, x: 0, y: 0 }}
+                  animate={{ opacity: 1, scale: 1, x: 0, y: -80 }}
+                  exit={{ opacity: 0, scale: 0, x: 0, y: 0 }}
+                  transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.05 }}
+                  onClick={() => {
+                    setShowCreateMenu(false)
+                    router.push('/test-media-simple?mode=video')
+                  }}
+                  className="absolute w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg hover:shadow-xl hover:scale-110 transition-all"
+                >
+                  <Video size={28} className="text-white" />
+                </motion.button>
+
+                {/* Bouton Upload (droite) */}
+                <motion.button
+                  initial={{ opacity: 0, scale: 0, x: 0, y: 0 }}
+                  animate={{ opacity: 1, scale: 1, x: 80, y: -60 }}
+                  exit={{ opacity: 0, scale: 0, x: 0, y: 0 }}
+                  transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.1 }}
+                  onClick={() => {
+                    setShowCreateMenu(false)
+                    const input = document.createElement('input')
+                    input.type = 'file'
+                    input.accept = 'image/*,video/*'
+                    input.onchange = (e: any) => {
+                      const file = e.target.files?.[0]
+                      if (file) {
+                        // Stocker temporairement le fichier et rediriger
+                        const url = URL.createObjectURL(file)
+                        sessionStorage.setItem('upload-file-url', url)
+                        sessionStorage.setItem('upload-file-name', file.name)
+                        sessionStorage.setItem('upload-file-type', file.type)
+                        router.push('/test-media-simple?mode=upload')
+                      }
+                    }
+                    input.click()
+                  }}
+                  className="absolute w-16 h-16 rounded-full bg-gradient-to-br from-gray-600 to-gray-700 flex items-center justify-center shadow-lg hover:shadow-xl hover:scale-110 transition-all"
+                >
+                  <Upload size={28} className="text-white" />
+                </motion.button>
+              </div>
+            </div>
+          </>
+        )}
+      </AnimatePresence>
 
       {/* Bouton menu burger - caché sur /messages */}
       {!isMessages && (
