@@ -313,44 +313,30 @@ export default function ClubProfileTestPage() {
           </div>
         </div>
 
-      {/* 2) CARTE HEADER PROFIL - Design premium avec halo et glassmorphism */}
-      <div className="relative mx-4 mt-24 rounded-3xl bg-[#14171D]/95 backdrop-blur-xl border border-[#4FD1C7]/20 shadow-[0_0_30px_rgba(79,209,199,0.25)]">
-        {/* Halo effect rose/violet - éclairage joyeux */}
-        <div className="pointer-events-none absolute inset-0 rounded-3xl [background:radial-gradient(60%_60%_at_50%_20%,#FF6B9D60,#B794F660_50%,#4FD1C760)] opacity-40" />
+      {/* 2) CARTE HEADER PROFIL - Design moderne 2025 */}
+      <div className="relative mx-4 mt-24 rounded-2xl bg-[#1A1A1A] border border-[#2A2A2A] shadow-lg">
         
-        {/* Overlay turquoise subtil - éclairage joyeux */}
-        <div className="pointer-events-none absolute inset-0 rounded-3xl [background:radial-gradient(80%_80%_at_50%_75%,#4FD1C730,#4FD1C740_30%,transparent_70%)] opacity-50" />
-        
-        {/* Avatar avec double anneau luxueux */}
-        <div className="flex justify-center -mt-8 mb-6">
+        {/* Avatar moderne et net */}
+        <div className="flex justify-center -mt-6 mb-4">
           <div className="relative">
-            {/* Halo radial externe */}
-            <div className="absolute inset-0 w-24 h-24 rounded-full bg-gradient-to-r from-[#FF6B9D]/25 to-[#B794F6]/25 blur-2xl scale-125"></div>
-            
-            {/* Anneau externe rose→violet */}
-            <div className="relative w-24 h-24 rounded-full p-[3px] bg-gradient-to-r from-[#FF6B9D] to-[#B794F6] shadow-[0_0_30px_rgba(255,107,157,0.5)]">
-              {/* Anneau interne turquoise */}
-              <div className="w-full h-full rounded-full p-[1px] bg-gradient-to-r from-[#4FD1C7] to-[#4FD1C7] shadow-[0_0_15px_rgba(79,209,199,0.4)]">
-                <div className="w-full h-full rounded-full overflow-hidden bg-[#111318]">
-                <Image
-                    src={profile.avatar || profile.media?.[0]?.url || '/icons/verified.svg'}
-                  alt={profile.name}
-                    width={92}
-                    height={92}
-                    className="w-full h-full object-cover"
-            />
-          </div>
-              </div>
+            <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-[#404040] bg-[#2A2A2A]">
+              <Image
+                src={profile.avatar || profile.media?.[0]?.url || '/icons/verified.svg'}
+                alt={profile.name}
+                width={76}
+                height={76}
+                className="w-full h-full object-cover"
+              />
             </div>
           </div>
         </div>
 
-        <div className="px-6 pb-6 pt-2 text-center">
+        <div className="px-6 pb-4 pt-1 text-center">
           {/* Nom avec typo premium */}
-          <h1 className="text-[22px] leading-6 text-white/90 font-semibold font-inter">{profile.name}</h1>
+          <h1 className="text-[20px] leading-5 text-white/90 font-semibold font-inter">{profile.name}</h1>
           
-          {/* Bio avec typo harmonisée */}
-          <div className="mt-2 text-[14px] leading-5 text-white/80 max-w-xs mx-auto">
+          {/* Bio avec typo moderne */}
+          <div className="mt-2 text-[13px] leading-4 text-[#CCCCCC] max-w-xs mx-auto">
             {profile.description ? (
               <div>
                 <p 
@@ -382,30 +368,30 @@ export default function ClubProfileTestPage() {
             )}
             </div>
           
-          {/* Stats avec espacement généreux */}
-          <div className="mt-6 grid grid-cols-3 gap-6">
+          {/* Stats avec design moderne */}
+          <div className="mt-4 grid grid-cols-3 gap-4">
             <div className="space-y-1">
-              <div className="text-[18px] text-white font-semibold font-inter drop-shadow-[0_0_8px_rgba(79,209,199,0.3)]">
+              <div className="text-[16px] text-white font-semibold">
                 {profile.stats?.views || 0}
-                </div>
-              <div className="text-[12px] text-white/70 font-inter">Vues</div>
-                        </div>
-            <div className="space-y-1">
-              <div className="text-[18px] text-white font-semibold font-inter drop-shadow-[0_0_8px_rgba(79,209,199,0.3)]">
-                {profile.stats?.likes || 0}
-                      </div>
-              <div className="text-[12px] text-white/70 font-inter">Likes</div>
-                      </div>
-            <div className="space-y-1">
-              <div className="text-[18px] text-white font-semibold font-inter drop-shadow-[0_0_8px_rgba(79,209,199,0.3)]">
-                {profile.media?.length || 0}
-                </div>
-              <div className="text-[12px] text-white/70 font-inter">Publications</div>
               </div>
+              <div className="text-[11px] text-[#999999]">Vues</div>
+            </div>
+            <div className="space-y-1">
+              <div className="text-[16px] text-white font-semibold">
+                {profile.stats?.likes || 0}
+              </div>
+              <div className="text-[11px] text-[#999999]">Likes</div>
+            </div>
+            <div className="space-y-1">
+              <div className="text-[16px] text-white font-semibold">
+                {profile.media?.length || 0}
+              </div>
+              <div className="text-[11px] text-[#999999]">Publications</div>
+            </div>
           </div>
 
-          {/* Ligne lumineuse turquoise sous les stats */}
-          <div className="mt-4 w-full h-[1px] bg-gradient-to-r from-transparent via-[#4FD1C7] to-transparent shadow-[0_0_8px_rgba(79,209,199,0.5)]"></div>
+          {/* Séparateur moderne */}
+          <div className="mt-3 w-full h-[1px] bg-[#404040]"></div>
           
           {/* Site web sous le trait turquoise */}
                   {profile.contact?.website && (
@@ -421,28 +407,28 @@ export default function ClubProfileTestPage() {
             </div>
           )}
 
-          {/* 3) BOUTONS ACTIONS - Design luxueux */}
-          <div className="mt-8 flex flex-col gap-3">
+          {/* 3) BOUTONS ACTIONS - Design moderne */}
+          <div className="mt-5 flex flex-col gap-3">
             {/* Bouton CTA principal avec glow externe */}
                 <button
               onClick={handleEnSavoirPlus}
-              className="h-12 rounded-xl text-[#0B0B0B] font-bold shadow-[0_0_25px_rgba(255,107,157,0.6)] [background:linear-gradient(135deg,#FF6B9D,#B794F6)] hover:shadow-[0_0_35px_rgba(255,107,157,0.8)] hover:scale-[1.02] transition-all duration-300 relative overflow-hidden"
+              className="h-10 rounded-lg text-[#0B0B0B] font-bold shadow-[0_0_25px_rgba(255,107,157,0.6)] [background:linear-gradient(135deg,#FF6B9D,#B794F6)] hover:shadow-[0_0_35px_rgba(255,107,157,0.8)] hover:scale-[1.02] transition-all duration-300 relative overflow-hidden"
                 >
               <span className="relative z-10">En savoir plus</span>
               <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
                 </button>
             
-            {/* Boutons secondaires glass style */}
+            {/* Boutons secondaires modernes */}
             <div className="grid grid-cols-2 gap-3">
                 <button
                 onClick={handleAgenda}
-                className="h-10 rounded-xl border border-white/10 bg-black/20 backdrop-blur-xl text-white/80 hover:bg-white/[0.08] hover:text-white hover:border-white/20 hover:shadow-[0_0_15px_rgba(255,255,255,0.1)] transition-all duration-300"
+                className="h-9 rounded-lg border border-[#404040] bg-[#2A2A2A] text-[#CCCCCC] hover:bg-[#333333] hover:border-[#555555] hover:text-white transition-all duration-200 text-[13px]"
                 >
                   Agenda
                 </button>
                 <button
                 onClick={handleContact}
-                className="h-10 rounded-xl border border-white/10 bg-black/20 backdrop-blur-xl text-white/80 hover:bg-white/[0.08] hover:text-white hover:border-white/20 hover:shadow-[0_0_15px_rgba(255,255,255,0.1)] transition-all duration-300"
+                className="h-9 rounded-lg border border-[#404040] bg-[#2A2A2A] text-[#CCCCCC] hover:bg-[#333333] hover:border-[#555555] hover:text-white transition-all duration-200 text-[13px]"
                 >
                   Contact
                 </button>
@@ -451,8 +437,8 @@ export default function ClubProfileTestPage() {
                     </div>
                     </div>
 
-      {/* 4) TABS (Public / Privé) - Design luxueux */}
-      <nav className="sticky top-14 z-10 bg-gradient-to-b from-[#111318]/95 to-[#0B0B0B]/95 backdrop-blur-xl px-4 py-4 flex gap-8 mt-6 border-b border-white/[0.05]">
+      {/* 4) TABS (Public / Privé) - Design moderne */}
+      <nav className="sticky top-14 z-10 bg-[#1A1A1A] px-4 py-4 flex gap-8 mt-6 border-b border-[#404040]">
         <button 
           onClick={() => setActiveTab('public')}
           className={`px-4 py-3 text-[14px] leading-5 relative transition-all duration-300 font-inter ${
@@ -463,7 +449,7 @@ export default function ClubProfileTestPage() {
         >
           Public
           {activeTab === 'public' && (
-            <span className="absolute left-1/2 -bottom-2 h-[2px] w-8 -translate-x-1/2 rounded-full bg-[#4FD1C7] shadow-[0_0_15px_#4FD1C7] animate-pulse" />
+            <span className="absolute left-1/2 -bottom-2 h-[2px] w-8 -translate-x-1/2 rounded-full bg-white" />
           )}
         </button>
         <button 
@@ -476,7 +462,7 @@ export default function ClubProfileTestPage() {
         >
           Privé
           {activeTab === 'private' && (
-            <span className="absolute left-1/2 -bottom-2 h-[2px] w-8 -translate-x-1/2 rounded-full bg-[#4FD1C7] shadow-[0_0_15px_#4FD1C7] animate-pulse" />
+            <span className="absolute left-1/2 -bottom-2 h-[2px] w-8 -translate-x-1/2 rounded-full bg-white" />
           )}
         </button>
       </nav>
@@ -486,7 +472,7 @@ export default function ClubProfileTestPage() {
         {profile.media && profile.media.length > 0 ? (
           <div className="grid grid-cols-2 gap-3">
             {profile.media.map((media, index) => (
-              <article key={index} className="relative aspect-[9/16] overflow-hidden rounded-2xl group cursor-pointer hover:scale-[1.02] transition-all duration-300 animate-in fade-in-0 slide-in-from-bottom-4 border border-white/10 hover:border-[#4FD1C7]/30 hover:shadow-[0_0_20px_rgba(79,209,199,0.2)]" style={{ animationDelay: `${index * 100}ms` }} onClick={() => handleMediaClick(media, index)}>
+              <article key={index} className="relative aspect-[9/16] overflow-hidden rounded-lg group cursor-pointer hover:scale-[1.01] transition-all duration-200 animate-in fade-in-0 slide-in-from-bottom-4 border border-[#404040] hover:border-[#666666] hover:shadow-lg" style={{ animationDelay: `${index * 100}ms` }} onClick={() => handleMediaClick(media, index)}>
                 {media.type === 'video' ? (
                   <video 
                     src={media.url} 

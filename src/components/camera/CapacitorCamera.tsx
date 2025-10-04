@@ -1,8 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { CameraPreview } from '@capacitor-community/camera-preview'
-import { Haptics, ImpactStyle } from '@capacitor/haptics'
+import { Capacitor } from '@capacitor/core'
 import { X, Camera, Video, Upload, Image as ImageIcon } from 'lucide-react'
 
 interface CapacitorCameraProps {
@@ -14,18 +13,35 @@ export default function CapacitorCamera({ onCapture, onClose }: CapacitorCameraP
   const [mode, setMode] = useState<'video' | 'photo'>('video')
   const [isRecording, setIsRecording] = useState(false)
   const [isCameraStarted, setIsCameraStarted] = useState(false)
+  const [isNative, setIsNative] = useState(false)
 
-  // Démarrer la caméra native
+  // Vérifier si on est en mode natif
   useEffect(() => {
+    const native = Capacitor.isNativePlatform()
+    setIsNative(native)
+    console.log('🔍 Plateforme:', native ? 'NATIVE' : 'WEB')
+
+    if (!native) {
+      // Si web, utiliser fallback direct
+      setIsCameraStarted(true)
+    }
+  }, [])
+
+  // Démarrer la caméra native (seulement si natif)
+  useEffect(() => {
+    if (!isNative) return
+
     async function startCamera() {
       try {
+        const { CameraPreview } = await import('@capacitor-community/camera-preview')
+
         await CameraPreview.start({
           position: 'rear',
           width: window.innerWidth,
           height: window.innerHeight,
           x: 0,
           y: 0,
-          toBack: true, // Caméra en arrière-plan, UI web par-dessus
+          toBack: true,
           enableZoom: true,
           enableOpacity: true,
         })
@@ -33,31 +49,49 @@ export default function CapacitorCamera({ onCapture, onClose }: CapacitorCameraP
         console.log('📹 Caméra native démarrée')
       } catch (error) {
         console.error('Erreur démarrage caméra:', error)
+        setIsCameraStarted(true) // Fallback
       }
     }
 
     startCamera()
 
     return () => {
-      // Arrêter la caméra au démontage
-      CameraPreview.stop().catch(console.error)
+      if (isNative) {
+        import('@capacitor-community/camera-preview').then(({ CameraPreview }) => {
+          CameraPreview.stop().catch(console.error)
+        })
+      }
     }
-  }, [])
+  }, [isNative])
 
   // Prendre une photo
   const handleTakePhoto = async () => {
     try {
-      await Haptics.impact({ style: ImpactStyle.Medium })
+      if (isNative) {
+        const { Haptics, ImpactStyle } = await import('@capacitor/haptics')
+        const { CameraPreview } = await import('@capacitor-community/camera-preview')
 
-      const result = await CameraPreview.capture({ quality: 90 })
+        await Haptics.impact({ style: ImpactStyle.Medium })
+        const result = await CameraPreview.capture({ quality: 90 })
 
-      // Convertir base64 en File
-      const base64Response = await fetch(`data:image/jpeg;base64,${result.value}`)
-      const blob = await base64Response.blob()
-      const file = new File([blob], `photo-${Date.now()}.jpg`, { type: 'image/jpeg' })
+        const base64Response = await fetch(`data:image/jpeg;base64,${result.value}`)
+        const blob = await base64Response.blob()
+        const file = new File([blob], `photo-${Date.now()}.jpg`, { type: 'image/jpeg' })
 
-      await CameraPreview.stop()
-      onCapture(file)
+        await CameraPreview.stop()
+        onCapture(file)
+      } else {
+        // Fallback web: ouvrir file picker
+        const input = document.createElement('input')
+        input.type = 'file'
+        input.accept = 'image/*'
+        input.capture = 'environment'
+        input.onchange = (e: any) => {
+          const file = e.target.files?.[0]
+          if (file) onCapture(file)
+        }
+        input.click()
+      }
     } catch (error) {
       console.error('Erreur capture photo:', error)
     }
@@ -66,22 +100,37 @@ export default function CapacitorCamera({ onCapture, onClose }: CapacitorCameraP
   // Démarrer/arrêter enregistrement vidéo
   const handleRecordVideo = async () => {
     try {
-      await Haptics.impact({ style: ImpactStyle.Heavy })
+      if (isNative) {
+        const { Haptics, ImpactStyle } = await import('@capacitor/haptics')
+        const { CameraPreview } = await import('@capacitor-community/camera-preview')
 
-      if (!isRecording) {
-        await CameraPreview.startRecordVideo()
-        setIsRecording(true)
+        await Haptics.impact({ style: ImpactStyle.Heavy })
+
+        if (!isRecording) {
+          await CameraPreview.startRecordVideo()
+          setIsRecording(true)
+        } else {
+          const result = await CameraPreview.stopRecordVideo()
+          setIsRecording(false)
+
+          const base64Response = await fetch(`data:video/mp4;base64,${result.videoFilePath}`)
+          const blob = await base64Response.blob()
+          const file = new File([blob], `video-${Date.now()}.mp4`, { type: 'video/mp4' })
+
+          await CameraPreview.stop()
+          onCapture(file)
+        }
       } else {
-        const result = await CameraPreview.stopRecordVideo()
-        setIsRecording(false)
-
-        // Convertir base64 en File
-        const base64Response = await fetch(`data:video/mp4;base64,${result.videoFilePath}`)
-        const blob = await base64Response.blob()
-        const file = new File([blob], `video-${Date.now()}.mp4`, { type: 'video/mp4' })
-
-        await CameraPreview.stop()
-        onCapture(file)
+        // Fallback web: ouvrir file picker
+        const input = document.createElement('input')
+        input.type = 'file'
+        input.accept = 'video/*'
+        input.capture = 'environment'
+        input.onchange = (e: any) => {
+          const file = e.target.files?.[0]
+          if (file) onCapture(file)
+        }
+        input.click()
       }
     } catch (error) {
       console.error('Erreur enregistrement vidéo:', error)
@@ -92,18 +141,19 @@ export default function CapacitorCamera({ onCapture, onClose }: CapacitorCameraP
   // Upload depuis galerie
   const handleUpload = async () => {
     try {
-      await Haptics.impact({ style: ImpactStyle.Light })
-      await CameraPreview.stop()
+      if (isNative) {
+        const { Haptics, ImpactStyle } = await import('@capacitor/haptics')
+        const { CameraPreview } = await import('@capacitor-community/camera-preview')
+        await Haptics.impact({ style: ImpactStyle.Light })
+        await CameraPreview.stop()
+      }
 
-      // Ouvrir le sélecteur de fichiers
       const input = document.createElement('input')
       input.type = 'file'
       input.accept = 'image/*,video/*'
       input.onchange = (e: any) => {
         const file = e.target.files?.[0]
-        if (file) {
-          onCapture(file)
-        }
+        if (file) onCapture(file)
       }
       input.click()
     } catch (error) {
@@ -122,20 +172,26 @@ export default function CapacitorCamera({ onCapture, onClose }: CapacitorCameraP
     const touchEnd = e.changedTouches[0].clientX
     const diff = touchStart - touchEnd
 
-    // Swipe à droite = Photo
     if (diff < -80 && mode === 'video') {
-      await Haptics.impact({ style: ImpactStyle.Light })
+      if (isNative) {
+        const { Haptics, ImpactStyle } = await import('@capacitor/haptics')
+        await Haptics.impact({ style: ImpactStyle.Light })
+      }
       setMode('photo')
-    }
-    // Swipe à gauche = Vidéo
-    else if (diff > 80 && mode === 'photo') {
-      await Haptics.impact({ style: ImpactStyle.Light })
+    } else if (diff > 80 && mode === 'photo') {
+      if (isNative) {
+        const { Haptics, ImpactStyle } = await import('@capacitor/haptics')
+        await Haptics.impact({ style: ImpactStyle.Light })
+      }
       setMode('video')
     }
   }
 
   const handleClose = async () => {
-    await CameraPreview.stop()
+    if (isNative) {
+      const { CameraPreview } = await import('@capacitor-community/camera-preview')
+      await CameraPreview.stop()
+    }
     onClose()
   }
 
