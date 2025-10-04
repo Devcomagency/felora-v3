@@ -5,8 +5,8 @@ import dynamic from 'next/dynamic'
 import { useSession } from 'next-auth/react'
 import { Plus, ChevronLeft, Home, Search, User } from 'lucide-react'
 
-// Lazy loading des composants
-const CameraCapturePro = dynamic(() => import('@/components/camera/CameraCapturePro'), {
+// Lazy loading des composants - Utiliser Capacitor si disponible, sinon fallback
+const CapacitorCamera = dynamic(() => import('@/components/camera/CapacitorCamera').catch(() => import('@/components/camera/CameraCapturePro')), {
   loading: () => (
     <div className="fixed inset-0 bg-black flex items-center justify-center z-50">
       <div className="text-white text-center">
@@ -38,7 +38,6 @@ export default function TestMediaSimplePage() {
   const { data: session } = useSession()
 
   const [showCamera, setShowCamera] = useState(true) // Ouvrir directement la caméra
-  const [cameraMode, setCameraMode] = useState<'photo' | 'video'>('video')
   const [showPublishEditor, setShowPublishEditor] = useState(false)
   const [capturedMedia, setCapturedMedia] = useState<CapturedMedia | null>(null)
   const [isPublishing, setIsPublishing] = useState(false)
@@ -209,43 +208,15 @@ export default function TestMediaSimplePage() {
         </div>
       )}
 
-      {/* Écran caméra avec toggle intégré */}
+      {/* Écran caméra Capacitor */}
       {showCamera && (
-        <div className="fixed inset-0 z-50 bg-black">
-          {/* Toggle Photo/Video en haut */}
-          <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-[60] flex gap-2 bg-black/60 backdrop-blur-md rounded-full p-1">
-            <button
-              onClick={() => setCameraMode('video')}
-              className={`px-6 py-2 rounded-full font-medium transition-all ${
-                cameraMode === 'video'
-                  ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white'
-                  : 'text-white/60 hover:text-white'
-              }`}
-            >
-              🎥 Vidéo
-            </button>
-            <button
-              onClick={() => setCameraMode('photo')}
-              className={`px-6 py-2 rounded-full font-medium transition-all ${
-                cameraMode === 'photo'
-                  ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white'
-                  : 'text-white/60 hover:text-white'
-              }`}
-            >
-              📷 Photo
-            </button>
-          </div>
-
-          {/* Composant caméra */}
-          <CameraCapturePro
-            mode={cameraMode}
-            onClose={() => {
-              setShowCamera(false)
-              window.history.back()
-            }}
-            onCapture={handleCameraCapture}
-          />
-        </div>
+        <CapacitorCamera
+          onClose={() => {
+            setShowCamera(false)
+            window.history.back()
+          }}
+          onCapture={handleCameraCapture}
+        />
       )}
 
       {/* Éditeur de publication */}

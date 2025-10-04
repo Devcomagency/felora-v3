@@ -286,6 +286,7 @@ export default function ClubProfileTestPage() {
     <div className="min-h-screen bg-gradient-to-b from-[#111318] to-[#0B0B0B] relative overflow-hidden">
       {/* Grain texture overlay */}
       <div className="absolute inset-0 opacity-[0.02] bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48ZmlsdGVyIGlkPSJub2lzZSIgeD0iMCIgeT0iMCIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSI+PGZlVHVyYnVsZW5jZSBiYXNlRnJlcXVlbmN5PSIwLjkiIG51bU9jdGF2ZXM9IjQiIHN0aXRjaFRpbGVzPSJzdGl0Y2giLz48L2ZpbHRlcj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsdGVyPSJ1cmwoI25vaXNlKSIgb3BhY2l0eT0iMC40Ii8+PC9zdmc+')] pointer-events-none" />
+      
       {/* 1) BARRE SUPÉRIEURE */}
       <div 
         className="fixed top-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-b border-white/5"
@@ -313,12 +314,12 @@ export default function ClubProfileTestPage() {
         </div>
 
       {/* 2) CARTE HEADER PROFIL - Design premium avec halo et glassmorphism */}
-      <div className="relative mx-4 mt-24 rounded-3xl bg-black/99 backdrop-blur-xl border border-[#4FD1C7]/10 shadow-[0_0_20px_rgba(79,209,199,0.15)]">
-        {/* Halo effect rose/violet - éclairage très réduit */}
-        <div className="pointer-events-none absolute inset-0 rounded-3xl [background:radial-gradient(60%_60%_at_50%_20%,#FF6B9D33,#B794F633_50%,#4FD1C733)] opacity-10" />
+      <div className="relative mx-4 mt-24 rounded-3xl bg-[#14171D]/95 backdrop-blur-xl border border-[#4FD1C7]/20 shadow-[0_0_30px_rgba(79,209,199,0.25)]">
+        {/* Halo effect rose/violet - éclairage joyeux */}
+        <div className="pointer-events-none absolute inset-0 rounded-3xl [background:radial-gradient(60%_60%_at_50%_20%,#FF6B9D60,#B794F660_50%,#4FD1C760)] opacity-40" />
         
-        {/* Overlay turquoise subtil - éclairage très réduit */}
-        <div className="pointer-events-none absolute inset-0 rounded-3xl [background:radial-gradient(80%_80%_at_50%_75%,#4FD1C708,#4FD1C712_30%,transparent_70%)] opacity-15" />
+        {/* Overlay turquoise subtil - éclairage joyeux */}
+        <div className="pointer-events-none absolute inset-0 rounded-3xl [background:radial-gradient(80%_80%_at_50%_75%,#4FD1C730,#4FD1C740_30%,transparent_70%)] opacity-50" />
         
         {/* Avatar avec double anneau luxueux */}
         <div className="flex justify-center -mt-8 mb-6">
@@ -349,7 +350,7 @@ export default function ClubProfileTestPage() {
           <h1 className="text-[22px] leading-6 text-white/90 font-semibold font-inter">{profile.name}</h1>
           
           {/* Bio avec typo harmonisée */}
-          <div className="mt-2 text-[14px] leading-5 text-[#A1A5B0]/70 max-w-xs mx-auto">
+          <div className="mt-2 text-[14px] leading-5 text-white/80 max-w-xs mx-auto">
             {profile.description ? (
               <div>
                 <p 
@@ -387,19 +388,19 @@ export default function ClubProfileTestPage() {
               <div className="text-[18px] text-white font-semibold font-inter drop-shadow-[0_0_8px_rgba(79,209,199,0.3)]">
                 {profile.stats?.views || 0}
                 </div>
-              <div className="text-[12px] text-[#A1A5B0]/60 font-inter">Vues</div>
+              <div className="text-[12px] text-white/70 font-inter">Vues</div>
                         </div>
             <div className="space-y-1">
               <div className="text-[18px] text-white font-semibold font-inter drop-shadow-[0_0_8px_rgba(79,209,199,0.3)]">
                 {profile.stats?.likes || 0}
                       </div>
-              <div className="text-[12px] text-[#A1A5B0]/60 font-inter">Likes</div>
+              <div className="text-[12px] text-white/70 font-inter">Likes</div>
                       </div>
             <div className="space-y-1">
               <div className="text-[18px] text-white font-semibold font-inter drop-shadow-[0_0_8px_rgba(79,209,199,0.3)]">
                 {profile.media?.length || 0}
                 </div>
-              <div className="text-[12px] text-[#A1A5B0]/60 font-inter">Publications</div>
+              <div className="text-[12px] text-white/70 font-inter">Publications</div>
               </div>
           </div>
 
@@ -485,7 +486,7 @@ export default function ClubProfileTestPage() {
         {profile.media && profile.media.length > 0 ? (
           <div className="grid grid-cols-2 gap-3">
             {profile.media.map((media, index) => (
-              <article key={index} className="relative aspect-[9/16] overflow-hidden rounded-2xl group cursor-pointer hover:scale-[1.02] transition-all duration-300 animate-in fade-in-0 slide-in-from-bottom-4" style={{ animationDelay: `${index * 100}ms` }} onClick={() => handleMediaClick(media, index)}>
+              <article key={index} className="relative aspect-[9/16] overflow-hidden rounded-2xl group cursor-pointer hover:scale-[1.02] transition-all duration-300 animate-in fade-in-0 slide-in-from-bottom-4 border border-white/10 hover:border-[#4FD1C7]/30 hover:shadow-[0_0_20px_rgba(79,209,199,0.2)]" style={{ animationDelay: `${index * 100}ms` }} onClick={() => handleMediaClick(media, index)}>
                 {media.type === 'video' ? (
                   <video 
                     src={media.url} 
