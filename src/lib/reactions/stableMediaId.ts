@@ -3,13 +3,14 @@ export function normalizeUrl(input?: string | null) {
   try {
     const u = new URL(input, 'http://_')
     const path = decodeURIComponent(u.pathname || '')
-    const query = u.search || ''
-    const normalized = '/' + path.split('/').filter(Boolean).join('/') + query
+    // NE PAS inclure les query parameters (signatures R2 qui changent)
+    const normalized = '/' + path.split('/').filter(Boolean).join('/')
     return normalized
   } catch {
     const raw = decodeURIComponent(String(input))
-    // Garde les query parameters dans le fallback aussi
-    const normalized = '/' + raw.split('/').filter(Boolean).join('/')
+    // Retirer tout ce qui est après '?' (query params)
+    const pathOnly = raw.split('?')[0]
+    const normalized = '/' + pathOnly.split('/').filter(Boolean).join('/')
     return normalized
   }
 }

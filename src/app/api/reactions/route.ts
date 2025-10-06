@@ -84,11 +84,34 @@ export async function POST(req: NextRequest) {
       }
     } else {
       const existingSame = await prisma.reaction.findFirst({ where: { mediaId, userId, type: type as any } })
-      if (!existingSame) {
-        // Remplacer toute autre réaction non-LIKE par celle-ci (idempotent)
+      if (existingSame) {
+        // Toggle : Si la même réaction existe, on la supprime
+        await prisma.reaction.delete({ where: { id: existingSame.id } })
+      } else {
+        // Remplacer toute autre réaction non-LIKE par celle-ci
         await prisma.reaction.deleteMany({ where: { mediaId, userId, NOT: { type: 'LIKE' as any } } })
         await prisma.reaction.create({ data: { mediaId, userId, type: type as any } })
       }
+    }
+
+    // 🔥 Synchroniser les compteurs dans la table media
+    try {
+      const [likeCount, reactCount] = await Promise.all([
+        prisma.reaction.count({ where: { mediaId, type: 'LIKE' as any } }),
+        prisma.reaction.count({ where: { mediaId, NOT: { type: 'LIKE' as any } } })
+      ])
+
+      console.log(`[REACTIONS SYNC] mediaId: ${mediaId}, likeCount: ${likeCount}, reactCount: ${reactCount}`)
+
+      await prisma.media.update({
+        where: { id: mediaId },
+        data: { likeCount, reactCount }
+      })
+
+      console.log(`[REACTIONS SYNC] ✅ Media updated successfully`)
+    } catch (syncError) {
+      console.error('[REACTIONS] Failed to sync media counts:', syncError)
+      // Non-blocking - continuer même si la synchro échoue
     }
 
     const data = await getStats(mediaId, userId)

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react'
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter, useParams } from 'next/navigation'
 import { ArrowLeft, Star, BadgeCheck } from 'lucide-react'
@@ -518,23 +518,18 @@ export default function EscortProfilePage() {
     }
 
     try {
-      // Exclure le premier média (photo de profil) des réactions
-      const feedMedia = profile.media.slice(1)
-      const mediaIds = feedMedia.map(m => stableMediaId({ rawId: null, profileId: profile.id, url: m.url }))
-      const res = await fetch('/api/reactions/bulk', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mediaIds })
-      })
+      // Utiliser l'API profil pour obtenir le total correct (inclut ancien + nouveau système)
+      const res = await fetch(`/api/public/profile/${profile.id}`)
       const data = await res.json()
-      if (data?.success && data?.totals) {
-        const sum = Object.values<number>(data.totals).reduce((a, b) => a + b, 0)
-        setTotalReactions(sum)
+      if (data?.stats) {
+        const total = (data.stats.likes || 0) + (data.stats.reactions || 0)
+        setTotalReactions(total)
+        console.log('[PROFILE] Total réactions calculé:', total, '(likes:', data.stats.likes, '+ reactions:', data.stats.reactions, ')')
       } else {
         setTotalReactions(0)
       }
     } catch (error) {
-      console.error('Error fetching reactions bulk:', error)
+      console.error('Error fetching profile stats:', error)
       setTotalReactions(0)
     }
   }, [profile?.media, profile?.id])
@@ -542,6 +537,24 @@ export default function EscortProfilePage() {
   // Calculer le total au chargement du profil uniquement
   useEffect(() => {
     calculateTotalReactions()
+  }, [calculateTotalReactions])
+
+  // Fonction pour forcer le recalcul des réactions (appelée après chaque réaction)
+  const reactionChangeTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const handleReactionChange = useCallback(async () => {
+    console.log('[PROFILE] Reaction changed, scheduling recalculation...')
+    
+    // Annuler le timeout précédent s'il existe
+    if (reactionChangeTimeoutRef.current) {
+      clearTimeout(reactionChangeTimeoutRef.current)
+    }
+    
+    // Programmer le recalcul avec un délai pour éviter les appels multiples
+    reactionChangeTimeoutRef.current = setTimeout(async () => {
+      console.log('[PROFILE] Recalculating total reactions...')
+      await calculateTotalReactions()
+      reactionChangeTimeoutRef.current = null
+    }, 500) // Délai de 500ms pour éviter les appels multiples
   }, [calculateTotalReactions])
 
   // Umami tracking pour la vue profil
@@ -685,7 +698,8 @@ export default function EscortProfilePage() {
                 languages={[]}
                 services={profile.services}
                 stats={{
-                  likes: totalReactions || 0,
+                  likes: profile.stats?.likes || 0,
+                  reactions: profile.stats?.reactions || 0,
                   followers: profile.stats?.followers || 0,
                   views: profile.stats?.views || 0
                 }}
@@ -729,7 +743,7 @@ export default function EscortProfilePage() {
                 viewerIsOwner={isOwner}
                 onLike={handleMediaLike}
                 onSave={handleMediaSave}
-                onReactionChange={calculateTotalReactions}
+                onReactionChange={handleReactionChange}
                 onUpdateMedia={async (mediaUrl: string, updates: any) => {
                   const result = await updateMediaWithErrorHandling(mediaUrl, updates)
                   if (!result.success) {

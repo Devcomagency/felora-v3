@@ -122,7 +122,7 @@ export default function ProfileHeader({
               </div>
               {/* Réactions */}
               <div className="text-center">
-                <div className="text-lg font-bold text-white">{stats?.likes || 0}</div>
+                <div className="text-lg font-bold text-white">{(stats?.likes || 0) + (stats?.reactions || 0)}</div>
                 <div className="text-xs text-gray-400">React</div>
               </div>
               {/* Publications (public + privé) */}

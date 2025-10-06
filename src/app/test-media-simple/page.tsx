@@ -40,10 +40,6 @@ function TestMediaSimpleContent() {
   const searchParams = useSearchParams()
   const mode = searchParams.get('mode') as 'photo' | 'video' | 'upload' | null
 
-  const [showModeSelector, setShowModeSelector] = useState(true)
-  const [showCamera, setShowCamera] = useState(false)
-  const [cameraMode, setCameraMode] = useState<'photo' | 'video'>('video')
-  const [showPublishEditor, setShowPublishEditor] = useState(false)
   const [capturedMedia, setCapturedMedia] = useState<CapturedMedia | null>(null)
   const [isPublishing, setIsPublishing] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
@@ -56,13 +52,9 @@ function TestMediaSimpleContent() {
     session.user.email?.includes('escort')
   )
 
-  // Gérer l'ouverture automatique selon le mode URL
+  // Gérer l'upload mode (nécessite useEffect pour async)
   useEffect(() => {
-    if (mode === 'photo' || mode === 'video') {
-      setCameraMode(mode)
-      setShowModeSelector(false)
-      setShowCamera(true)
-    } else if (mode === 'upload') {
+    if (mode === 'upload') {
       const fileUrl = sessionStorage.getItem('upload-file-url')
       const fileName = sessionStorage.getItem('upload-file-name')
       const fileType = sessionStorage.getItem('upload-file-type')
@@ -78,8 +70,6 @@ function TestMediaSimpleContent() {
               previewUrl: fileUrl,
               type: isVideo ? 'video' : 'image'
             })
-            setShowModeSelector(false)
-            setShowPublishEditor(true)
 
             // Nettoyer le sessionStorage
             sessionStorage.removeItem('upload-file-url')
@@ -87,10 +77,6 @@ function TestMediaSimpleContent() {
             sessionStorage.removeItem('upload-file-type')
           })
       }
-    } else {
-      // Pas de mode spécifié, afficher le sélecteur
-      setShowModeSelector(true)
-      setShowCamera(false)
     }
   }, [mode])
 
@@ -211,6 +197,44 @@ function TestMediaSimpleContent() {
     }
   }, [])
 
+  // MODE DIRECT : Afficher directement la caméra ou l'éditeur
+  if (mode === 'photo' || mode === 'video') {
+    return (
+      <CameraCapturePro
+        mode={mode}
+        onClose={() => window.history.back()}
+        onCapture={handleCameraCapture}
+      />
+    )
+  }
+
+  // MODE UPLOAD : Afficher l'éditeur si fichier capturé
+  if (mode === 'upload' && capturedMedia) {
+    return (
+      <PublishMediaEditor
+        mediaFile={capturedMedia.file}
+        mediaUrl={capturedMedia.previewUrl}
+        mediaType={capturedMedia.type}
+        onClose={() => window.history.back()}
+        onPublish={handlePublish}
+      />
+    )
+  }
+
+  // ÉDITEUR après capture (depuis sélecteur interne)
+  if (capturedMedia) {
+    return (
+      <PublishMediaEditor
+        mediaFile={capturedMedia.file}
+        mediaUrl={capturedMedia.previewUrl}
+        mediaType={capturedMedia.type}
+        onClose={() => setCapturedMedia(null)}
+        onPublish={handlePublish}
+      />
+    )
+  }
+
+  // MODE SÉLECTEUR (par défaut, sans mode dans URL)
   return (
     <div
       className="min-h-screen text-white"
@@ -253,81 +277,65 @@ function TestMediaSimpleContent() {
       )}
 
       {/* Sélecteur de mode photo/vidéo */}
-      {showModeSelector && !showCamera && !showPublishEditor && (
-        <div className="pt-14 flex flex-col items-center justify-center min-h-screen px-4">
-          <div className="text-center max-w-md w-full">
-            <h2 className="text-2xl font-bold text-white mb-8">Que souhaitez-vous créer ?</h2>
+      <div className="pt-14 flex flex-col items-center justify-center min-h-screen px-4">
+        <div className="text-center max-w-md w-full">
+          <h2 className="text-2xl font-bold text-white mb-8">Que souhaitez-vous créer ?</h2>
 
-            <div className="space-y-4">
-              {/* Bouton Vidéo */}
-              <button
-                onClick={() => {
-                  setCameraMode('video')
-                  setShowModeSelector(false)
-                  setShowCamera(true)
-                }}
-                className="w-full p-6 rounded-2xl bg-gradient-to-br from-purple-600/20 to-pink-600/20 border border-purple-500/30 hover:border-purple-500/50 transition-all duration-200 group"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
-                    <Video className="text-white" size={32} />
-                  </div>
-                  <div className="flex-1 text-left">
-                    <h3 className="text-xl font-bold text-white mb-1">Vidéo</h3>
-                    <p className="text-sm text-gray-400">Capturer une vidéo</p>
-                  </div>
+          <div className="space-y-4">
+            {/* Bouton Vidéo */}
+            <button
+              onClick={() => {
+                const input = document.createElement('input')
+                input.type = 'file'
+                input.accept = 'video/*'
+                input.capture = 'environment'
+                input.onchange = (e: any) => {
+                  const file = e.target.files?.[0]
+                  if (file) handleCameraCapture(file)
+                }
+                input.click()
+              }}
+              className="w-full p-6 rounded-2xl bg-gradient-to-br from-purple-600/20 to-pink-600/20 border border-purple-500/30 hover:border-purple-500/50 transition-all duration-200 group"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
+                  <Video className="text-white" size={32} />
                 </div>
-              </button>
+                <div className="flex-1 text-left">
+                  <h3 className="text-xl font-bold text-white mb-1">Vidéo</h3>
+                  <p className="text-sm text-gray-400">Capturer une vidéo</p>
+                </div>
+              </div>
+            </button>
 
-              {/* Bouton Photo */}
-              <button
-                onClick={() => {
-                  setCameraMode('photo')
-                  setShowModeSelector(false)
-                  setShowCamera(true)
-                }}
-                className="w-full p-6 rounded-2xl bg-gradient-to-br from-blue-600/20 to-cyan-600/20 border border-blue-500/30 hover:border-blue-500/50 transition-all duration-200 group"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center flex-shrink-0">
-                    <Camera className="text-white" size={32} />
-                  </div>
-                  <div className="flex-1 text-left">
-                    <h3 className="text-xl font-bold text-white mb-1">Photo</h3>
-                    <p className="text-sm text-gray-400">Prendre une photo</p>
-                  </div>
+            {/* Bouton Photo */}
+            <button
+              onClick={() => {
+                const input = document.createElement('input')
+                input.type = 'file'
+                input.accept = 'image/*'
+                input.capture = 'environment'
+                input.onchange = (e: any) => {
+                  const file = e.target.files?.[0]
+                  if (file) handleCameraCapture(file)
+                }
+                input.click()
+              }}
+              className="w-full p-6 rounded-2xl bg-gradient-to-br from-blue-600/20 to-cyan-600/20 border border-blue-500/30 hover:border-blue-500/50 transition-all duration-200 group"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center flex-shrink-0">
+                  <Camera className="text-white" size={32} />
                 </div>
-              </button>
-            </div>
+                <div className="flex-1 text-left">
+                  <h3 className="text-xl font-bold text-white mb-1">Photo</h3>
+                  <p className="text-sm text-gray-400">Prendre une photo</p>
+                </div>
+              </div>
+            </button>
           </div>
         </div>
-      )}
-
-      {/* Écran caméra */}
-      {showCamera && (
-        <CameraCapturePro
-          mode={cameraMode}
-          onClose={() => {
-            setShowCamera(false)
-            setShowModeSelector(true)
-          }}
-          onCapture={handleCameraCapture}
-        />
-      )}
-
-      {/* Éditeur de publication */}
-      {showPublishEditor && capturedMedia && (
-        <PublishMediaEditor
-          mediaFile={capturedMedia.file}
-          mediaUrl={capturedMedia.previewUrl}
-          mediaType={capturedMedia.type}
-          onClose={() => {
-            setShowPublishEditor(false)
-            setCapturedMedia(null)
-          }}
-          onPublish={handlePublish}
-        />
-      )}
+      </div>
     </div>
   )
 }

@@ -17,6 +17,7 @@ type Club = {
   avatarUrl?: string
   coverUrl?: string
   isActive: boolean
+  establishmentType?: 'institut_massage' | 'agence_escorte' | 'salon_erotique' | 'club'
 }
 
 // Old club page (V3 original)
@@ -80,6 +81,7 @@ function NewClubProfilePage() {
               coverUrl: data.club.coverUrl || '',
               isActive: !!data.club.isActive,
               websiteUrl: (data.club as any).websiteUrl || '',
+              establishmentType: data.club.establishmentType || 'club',
               // Pré-remplir avec les données d'inscription
               email: data.club.user?.email || '',
               phone: data.club.user?.phoneE164 || '',
@@ -153,6 +155,7 @@ function NewClubProfilePage() {
           avatarUrl: form.avatarUrl,
           coverUrl: form.coverUrl,
           isActive: form.isActive,
+          establishmentType: form.establishmentType,
         }
         // Note: websiteUrl non persisté pour l'instant côté serveur (champ à ajouter en DB si nécessaire)
         const res = await fetch('/api/clubs/profile/update', {
@@ -319,6 +322,20 @@ function NewClubProfilePage() {
                   placeholder="Ex. Club Luxe Geneva"
                 />
                 {fieldErrors.name && <p className="text-xs text-red-400 mt-1">{fieldErrors.name}</p>}
+              </div>
+
+              <div>
+                <label className="block text-sm text-gray-300 mb-1">Type d'établissement</label>
+                <select
+                  value={form.establishmentType || 'club'}
+                  onChange={e => updateField('establishmentType', e.target.value as any)}
+                  className="w-full px-3 py-2.5 text-[15px] bg-gray-800/60 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
+                >
+                  <option value="institut_massage">Institut de massage</option>
+                  <option value="agence_escorte">Agence d'escorte</option>
+                  <option value="salon_erotique">Salon érotique</option>
+                  <option value="club">Club</option>
+                </select>
               </div>
 
               <div>

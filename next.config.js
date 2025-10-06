@@ -35,6 +35,7 @@ const nextConfig = {
       
       // Development/testing only
       { protocol: 'https', hostname: 'picsum.photos', port: '', pathname: '/**' },
+      { protocol: 'https', hostname: 'fastly.picsum.photos', port: '', pathname: '/**' },
       { protocol: 'https', hostname: 'images.unsplash.com', port: '', pathname: '/**' },
       { protocol: 'https', hostname: 'commondatastorage.googleapis.com', port: '', pathname: '/**' },
       
@@ -74,6 +75,7 @@ const nextConfig = {
 
       // Demo images (mock)
       'https://picsum.photos',
+      'https://fastly.picsum.photos',
 
       // Observability & Analytics
       'https://*.sentry.io',

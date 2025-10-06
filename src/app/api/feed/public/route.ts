@@ -43,24 +43,21 @@ export async function GET(req: NextRequest) {
       })
     }
     
-    console.log('🚀 [FEED PUBLIC] Récupération des médias publics, cursor:', cursor, 'limit:', limit)
+    console.log('🚀 [FEED PUBLIC] Récupération des médias publics (escorts + clubs), cursor:', cursor, 'limit:', limit)
 
-    // Récupérer tous les médias publics des escorts avec les infos du profil
-    // Utilisation de Prisma ORM avec une requête optimisée
+    // Récupérer tous les médias publics (escorts ET clubs)
     const medias = await dbOperationWithRetry(async () => {
       return await prisma.media.findMany({
         where: {
           visibility: 'PUBLIC',
-          ownerType: 'ESCORT',
+          ownerType: { in: ['ESCORT', 'CLUB'] }, // Inclure escorts ET clubs
+          // TEMPORAIRE: Exclure les médias avec ownerId=unknown pour éviter les erreurs
+          ownerId: { not: 'unknown' },
           ...(cursor && {
             id: {
               lt: cursor
             }
           })
-        },
-        include: {
-          // Note: On doit passer par la relation User -> EscortProfile
-          // car Media n'a pas de relation directe avec EscortProfile
         },
         orderBy: {
           createdAt: 'desc'
@@ -72,12 +69,15 @@ export async function GET(req: NextRequest) {
       baseDelay: 500
     })
 
-    // Récupérer les profils escorts correspondants
-    const ownerIds = [...new Set(medias.map(m => m.ownerId))]
-    const escortProfiles = await dbOperationWithRetry(async () => {
+    // Séparer les IDs par type de profil
+    const escortIds = medias.filter(m => m.ownerType === 'ESCORT').map(m => m.ownerId)
+    const clubIds = medias.filter(m => m.ownerType === 'CLUB').map(m => m.ownerId)
+
+    // Récupérer les profils escorts
+    const escortProfiles = escortIds.length > 0 ? await dbOperationWithRetry(async () => {
       return await prisma.escortProfile.findMany({
         where: {
-          id: { in: ownerIds },
+          id: { in: escortIds },
           status: 'ACTIVE'
         },
         select: {
@@ -94,10 +94,36 @@ export async function GET(req: NextRequest) {
     }, {
       maxRetries: 2,
       baseDelay: 500
-    })
+    }) : []
 
-    // Créer un map pour accéder rapidement aux profils
-    const profileMap = new Map(escortProfiles.map(p => [p.id, p]))
+    // Récupérer les profils clubs
+    const clubProfiles = clubIds.length > 0 ? await dbOperationWithRetry(async () => {
+      return await prisma.clubProfileV2.findMany({
+        where: {
+          id: { in: clubIds }
+        },
+        select: {
+          id: true,
+          handle: true,
+          companyName: true,
+          details: {
+            select: {
+              avatarUrl: true,
+              name: true
+            }
+          }
+        }
+      })
+    }, {
+      maxRetries: 2,
+      baseDelay: 500
+    }) : []
+
+    // Créer un map unifié pour escorts et clubs
+    const profileMap = new Map([
+      ...escortProfiles.map(p => [p.id, { ...p, type: 'ESCORT' }]),
+      ...clubProfiles.map(p => [p.id, { ...p, type: 'CLUB' }])
+    ])
 
     // Vérifier s'il y a une page suivante
     const hasNextPage = medias.length > limit
@@ -133,26 +159,43 @@ export async function GET(req: NextRequest) {
     // Formater les items pour le frontend avec optimisation des médias
     const formattedItems = mediasWithScore.map(media => {
       const profile = media.profile
-      const authorHandle = profile.stageName ? `@${profile.stageName.toLowerCase().replace(/\s+/g, '_')}` : '@escort'
       const mediaType = media.type.toUpperCase() as 'IMAGE' | 'VIDEO'
-      
+
+      // Déterminer le type de profil (ESCORT ou CLUB)
+      const isClub = profile.type === 'CLUB'
+
+      // Générer les infos auteur selon le type
+      const authorHandle = isClub
+        ? `@${profile.handle || 'club'}`
+        : (profile.stageName ? `@${profile.stageName.toLowerCase().replace(/\s+/g, '_')}` : '@escort')
+
+      const authorName = isClub
+        ? (profile.details?.name || profile.companyName || 'Club')
+        : (profile.stageName || profile.user?.name || 'Escort')
+
+      const authorAvatar = isClub
+        ? (profile.details?.avatarUrl || 'https://picsum.photos/100/100?random=club')
+        : (profile.profilePhoto || 'https://picsum.photos/100/100?random=default')
+
       // Optimiser les URLs des médias
       const optimizedUrl = optimizeMediaUrl(media.url, mediaType)
-      const optimizedThumb = media.thumbUrl 
+      const optimizedThumb = media.thumbUrl
         ? generateThumbnailUrl(media.thumbUrl)
         : generateThumbnailUrl(media.url)
-      
+
       return {
         id: media.id,
         type: mediaType,
         url: optimizedUrl,
         thumb: optimizedThumb,
         visibility: media.visibility,
+        ownerType: isClub ? 'CLUB' : 'ESCORT', // Type de propriétaire
+        clubHandle: isClub ? profile.handle : null, // Handle du club si applicable
         author: {
           id: profile.id,
           handle: authorHandle,
-          name: profile.stageName || profile.user.name || 'Escort',
-          avatar: profile.profilePhoto || 'https://picsum.photos/100/100?random=default'
+          name: authorName,
+          avatar: authorAvatar
         },
         likeCount: media.likeCount,
         reactCount: media.reactCount,

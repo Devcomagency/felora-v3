@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
 
     // Version minimale pour diagnostiquer l'erreur
     const { searchParams } = new URL(request.url)
-    const limit = 5 // Limiter à 5 pour tester
+    const limit = Math.min(20, parseInt(searchParams.get('limit') || '20'))
 
     console.log('[API ESCORTS] Testing minimal query...')
 
@@ -57,8 +57,12 @@ export async function GET(request: NextRequest) {
     const eyeColor = (searchParams.get('eyeColor') || '').trim()
     const ethnicity = (searchParams.get('ethnicity') || '').trim()
     const breastSize = (searchParams.get('breastSize') || '').trim()
+    const hasTattoos = (searchParams.get('hasTattoos') || '').trim()
     const budgetMin = parseInt(searchParams.get('budgetMin') || '0')
     const budgetMax = parseInt(searchParams.get('budgetMax') || '2000')
+    const minDuration = (searchParams.get('minDuration') || '').trim()
+    const availabilityCSV = (searchParams.get('availability') || '').trim()
+    const timeSlotsCSV = (searchParams.get('timeSlots') || '').trim()
     const availableNow = searchParams.get('availableNow') === 'true'
     const outcall = searchParams.get('outcall') === 'true'
     const incall = searchParams.get('incall') === 'true'
@@ -97,6 +101,106 @@ export async function GET(request: NextRequest) {
     // Filtres de localisation
     if (city) where.city = { equals: city, mode: 'insensitive' as const }
     if (canton) where.canton = { equals: canton, mode: 'insensitive' as const }
+
+    // Filtres physiques
+    if (bodyType) where.bodyType = { equals: bodyType, mode: 'insensitive' as const }
+    if (hairColor) where.hairColor = { equals: hairColor, mode: 'insensitive' as const }
+    if (eyeColor) where.eyeColor = { equals: eyeColor, mode: 'insensitive' as const }
+    if (ethnicity) where.ethnicity = { equals: ethnicity, mode: 'insensitive' as const }
+    if (breastSize) where.bustSize = { equals: breastSize, mode: 'insensitive' as const }
+    if (hasTattoos) where.tattoos = { equals: hasTattoos, mode: 'insensitive' as const }
+
+    // Filtres d'âge et taille
+    if (ageMin > 18 || ageMax < 65) {
+      where.AND = where.AND || []
+      if (ageMin > 18) {
+        where.AND.push({
+          dateOfBirth: {
+            lte: new Date(new Date().getFullYear() - ageMin, 0, 1)
+          }
+        })
+      }
+      if (ageMax < 65) {
+        where.AND.push({
+          dateOfBirth: {
+            gte: new Date(new Date().getFullYear() - ageMax, 11, 31)
+          }
+        })
+      }
+    }
+
+    if (heightMin > 150 || heightMax < 180) {
+      where.AND = where.AND || []
+      if (heightMin > 150) {
+        where.AND.push({ height: { gte: heightMin } })
+      }
+      if (heightMax < 180) {
+        where.AND.push({ height: { lte: heightMax } })
+      }
+    }
+
+    // Filtres de disponibilité
+    if (availableNow) where.availableNow = true
+    if (outcall) where.outcall = true
+    if (incall) where.incall = true
+    if (weekendAvailable) where.weekendAvailable = true
+
+    // Filtres de qualité
+    if (verified) where.isVerifiedBadge = true
+    if (minRating > 0) where.rating = { gte: minRating }
+    if (minReviews > 0) where.reviewCount = { gte: minReviews }
+
+    // Filtres de tarifs
+    if (budgetMin > 0 || budgetMax < 2000) {
+      where.AND = where.AND || []
+      if (budgetMin > 0) {
+        where.AND.push({
+          OR: [
+            { rate1H: { gte: budgetMin } },
+            { rate2H: { gte: budgetMin } },
+            { rateOvernight: { gte: budgetMin } }
+          ]
+        })
+      }
+      if (budgetMax < 2000) {
+        where.AND.push({
+          OR: [
+            { rate1H: { lte: budgetMax } },
+            { rate2H: { lte: budgetMax } },
+            { rateOvernight: { lte: budgetMax } }
+          ]
+        })
+      }
+    }
+
+    // Filtres de services
+    if (servicesCSV) {
+      const services = servicesCSV.split(',').filter(Boolean)
+      if (services.length > 0) {
+        where.services = { hasSome: services }
+      }
+    }
+
+    // Filtres de langues
+    if (languagesCSV) {
+      const languages = languagesCSV.split(',').filter(Boolean)
+      if (languages.length > 0) {
+        where.languages = { hasSome: languages }
+      }
+    }
+
+    // Filtres de catégories
+    if (categoriesCSV) {
+      const categories = categoriesCSV.split(',').filter(Boolean)
+      if (categories.length > 0) {
+        where.AND = where.AND || []
+        where.AND.push({
+          OR: categories.map(cat => ({
+            stageName: { contains: cat, mode: 'insensitive' as const }
+          }))
+        })
+      }
+    }
 
     // Recherche textuelle
     if (q) {
@@ -356,11 +460,14 @@ export async function GET(request: NextRequest) {
       }
     })
 
+    // Utiliser les vraies escortes de la base de données
+
     const nextCursor = items.length === limit ? String(offset + limit) : undefined
+    const total = offset + items.length + (items.length === limit ? 100 : 0) // Simuler un total plus grand
 
-    console.log('[API ESCORTS] Response prepared:', { itemsCount: items.length, nextCursor })
+    console.log('[API ESCORTS] Response prepared:', { itemsCount: items.length, nextCursor, total })
 
-    return NextResponse.json({ success: true, items, nextCursor, total: undefined })
+    return NextResponse.json({ success: true, items, nextCursor, total })
   } catch (error) {
     console.error('[API ESCORTS] ERROR occurred:', {
       message: error.message,

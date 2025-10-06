@@ -15,10 +15,13 @@ export interface MediaOptimizationOptions {
  * Optimise une URL d'image pour de meilleures performances
  */
 export function optimizeImageUrl(
-  originalUrl: string, 
+  originalUrl: string,
   options: MediaOptimizationOptions = {}
 ): string {
-  if (!originalUrl) return originalUrl
+  // Retourner une URL placeholder si l'URL est invalide
+  if (!originalUrl || originalUrl === 'undefined' || originalUrl === 'null') {
+    return 'https://picsum.photos/1080/1920?random=placeholder'
+  }
 
   // Si c'est déjà une URL optimisée ou une URL externe, retourner tel quel
   if (originalUrl.includes('_optimized') || originalUrl.startsWith('http')) {
@@ -34,7 +37,7 @@ export function optimizeImageUrl(
   } = options
 
   // Pour les URLs Cloudflare R2 ou similaires, ajouter des paramètres d'optimisation
-  if (originalUrl.includes('r2.dev') || originalUrl.includes('cloudflare')) {
+  if (originalUrl.includes('r2.dev') || originalUrl.includes('cloudflare') || originalUrl.includes('media.felora.ch')) {
     const url = new URL(originalUrl)
     url.searchParams.set('width', width.toString())
     url.searchParams.set('height', height.toString())
@@ -66,14 +69,17 @@ export function optimizeVideoUrl(
   originalUrl: string,
   options: { quality?: 'low' | 'medium' | 'high' } = {}
 ): string {
-  if (!originalUrl) return originalUrl
+  // Retourner une URL placeholder si l'URL est invalide
+  if (!originalUrl || originalUrl === 'undefined' || originalUrl === 'null') {
+    return 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4'
+  }
 
   const { quality = 'medium' } = options
 
   // Pour les URLs Cloudflare R2 ou similaires, ajouter des paramètres d'optimisation vidéo
-  if (originalUrl.includes('r2.dev') || originalUrl.includes('cloudflare')) {
+  if (originalUrl.includes('r2.dev') || originalUrl.includes('cloudflare') || originalUrl.includes('media.felora.ch')) {
     const url = new URL(originalUrl)
-    
+
     // Paramètres d'optimisation vidéo
     switch (quality) {
       case 'low':
@@ -89,10 +95,10 @@ export function optimizeVideoUrl(
         url.searchParams.set('resolution', '1080p')
         break
     }
-    
+
     url.searchParams.set('format', 'mp4')
     url.searchParams.set('codec', 'h264')
-    
+
     return url.toString()
   }
 

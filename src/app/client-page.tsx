@@ -19,6 +19,8 @@ interface MediaItem {
   url: string
   thumb: string
   visibility: string
+  ownerType?: 'ESCORT' | 'CLUB'
+  clubHandle?: string | null
   author: MediaAuthor
   likeCount: number
   reactCount: number

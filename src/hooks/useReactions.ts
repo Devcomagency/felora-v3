@@ -57,10 +57,29 @@ function useReactions(mediaIdRaw: string, userIdRaw?: string|null, refreshTrigge
   }, [mediaId, userId, refreshTrigger])
 
   const toggleReaction = useCallback(async (type: ReactionType) => {
-    if (!mediaId) return
-    if (!userId) { setError('Connexion requise'); return }
-    if (postingRef.current) return
+    console.log('[REACTION HOOK] toggleReaction called', { mediaId, userId, type })
+    if (!mediaId) {
+      console.log('[REACTION HOOK] ❌ No mediaId, aborting')
+      return
+    }
+    if (!userId) {
+      console.log('[REACTION HOOK] ❌ No userId, aborting')
+      setError('Connexion requise');
+      return
+    }
+    if (postingRef.current) {
+      console.log('[REACTION HOOK] ❌ Already posting, aborting')
+      return
+    }
     postingRef.current = true
+    
+    // Timeout de sécurité pour débloquer postingRef
+    const timeoutId = setTimeout(() => {
+      if (postingRef.current) {
+        console.log('[REACTION HOOK] ⚠️ Timeout: déblocage postingRef')
+        postingRef.current = false
+      }
+    }, 5000) // 5 secondes max
     setError(null)
 
     const prev = { stats, userHasLiked, userReactions }
@@ -74,28 +93,30 @@ function useReactions(mediaIdRaw: string, userIdRaw?: string|null, refreshTrigge
         return n
       })
     } else {
-      // Exclusivité stricte et idempotence: 1 seule réaction non-LIKE; recliquer la même ne change rien
+      // Toggle des réactions : si déjà active, on la supprime, sinon on la remplace
       const had = userReactions.includes(type)
-      if (had) {
-        // Rien à changer côté client ni serveur
-        postingRef.current = false
-        return
-      }
+
       setStats(s => {
         const n = { ...s, reactions: { ...s.reactions } }
-        // Si on avait une autre réaction, la retirer
-        if (!had && userReactions.length) {
-          for (const t of userReactions) {
-            if (t !== 'LIKE') n.reactions[t] = Math.max(0, (n.reactions[t] ?? 0) - 1)
+
+        if (had) {
+          // Toggle OFF : retirer la réaction
+          n.reactions[type] = Math.max(0, (n.reactions[type] ?? 0) - 1)
+          setUserReactions([]) // Plus de réaction
+        } else {
+          // Toggle ON ou remplacement : retirer l'ancienne et ajouter la nouvelle
+          if (userReactions.length) {
+            for (const t of userReactions) {
+              if (t !== 'LIKE') n.reactions[t] = Math.max(0, (n.reactions[t] ?? 0) - 1)
+            }
           }
+          n.reactions[type] = Math.max(0, (n.reactions[type] ?? 0) + 1)
+          setUserReactions([type])
         }
-        // Appliquer toggle sur la réaction cible
-        n.reactions[type] = Math.max(0, (n.reactions[type] ?? 0) + 1)
+
         n.total = Object.values(n.reactions).reduce((a,b)=>a+b,0)
         return n
       })
-      // Mettre à jour l'état utilisateur (exactement 1 réaction non-LIKE)
-      setUserReactions([type])
     }
 
     setLoading(true)
@@ -117,6 +138,7 @@ function useReactions(mediaIdRaw: string, userIdRaw?: string|null, refreshTrigge
       setUserReactions(prev.userReactions)
       setError(e?.message || 'Erreur')
     } finally {
+      clearTimeout(timeoutId)
       postingRef.current = false
       setLoading(false)
     }

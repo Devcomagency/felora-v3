@@ -54,10 +54,15 @@ export async function POST(request: NextRequest) {
       profileId = escortProfile.id
     }
 
-    // Mapper la visibilité vers l'enum Prisma
+    // Mapper la visibilité vers l'enum Prisma (accepter minuscules et majuscules)
     let visibilityEnum: 'PUBLIC' | 'PREMIUM' | 'PRIVATE' = 'PUBLIC'
-    if (visibility === 'premium') visibilityEnum = 'PREMIUM'
-    else if (visibility === 'private') visibilityEnum = 'PRIVATE'
+    const visibilityLower = (visibility || 'public').toLowerCase()
+
+    if (visibilityLower === 'premium') visibilityEnum = 'PREMIUM'
+    else if (visibilityLower === 'private') visibilityEnum = 'PRIVATE'
+    else visibilityEnum = 'PUBLIC' // Par défaut PUBLIC
+
+    console.log('🔍 Visibilité mappée:', { input: visibility, output: visibilityEnum })
 
     // Sauvegarder en base de données
     const media = await prisma.media.create({

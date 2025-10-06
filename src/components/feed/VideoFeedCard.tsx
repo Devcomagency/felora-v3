@@ -27,6 +27,8 @@ interface MediaItem {
   url: string
   thumb: string
   visibility: string
+  ownerType?: 'ESCORT' | 'CLUB'
+  clubHandle?: string | null
   author: MediaAuthor
   likeCount: number
   reactCount: number
@@ -151,12 +153,18 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
   const { data: session } = useSession()
 
   // Build a stable mediaId and a stable guest user id
-  const mediaId = stableMediaId({ rawId: item.id, profileId: item.author.id, url: item.url })
-  // Utiliser l'ID réel du profil au lieu du slug généré
-  const profileId = item.author.id
-  
-  // Debug: vérifier que l'ID du profil est correct
-  console.log('🔗 [VIDEO FEED CARD] Profile ID:', profileId, 'Author:', item.author.name)
+  // IMPORTANT: On force rawId: null pour utiliser le hash basé sur profileId + url
+  // Cela garantit que le même média a le même ID dans le feed ET dans le profil
+  const mediaId = stableMediaId({ rawId: null, profileId: item.author.id, url: item.url })
+
+  // Déterminer l'URL du profil selon le type (CLUB ou ESCORT)
+  const isClub = item.ownerType === 'CLUB'
+  const profileUrl = isClub && item.clubHandle
+    ? `/profile-test/club/${item.clubHandle}`
+    : `/profile/${item.author.id}`
+
+  // Debug: vérifier la redirection
+  console.log('🔗 [VIDEO FEED CARD] Type:', item.ownerType, 'URL:', profileUrl, 'Author:', item.author.name)
   
   // Vérifier si l'utilisateur est le propriétaire du média
   const isOwner = session?.user?.id === item.author.id
@@ -217,24 +225,6 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
   // Gestionnaire de clic unifié
   const handleVideoClick = useClickHandler(handleSingleClick, handleDoubleClick)
 
-  // Click outside to close pill and media menu
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (radialOpen) {
-        setRadialOpen(false)
-        setShowReactions(false)
-      }
-      if (showMediaMenu) {
-        setShowMediaMenu(false)
-      }
-    }
-    
-    if (radialOpen || showMediaMenu) {
-      document.addEventListener('mousedown', handleClickOutside)
-      return () => document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [radialOpen, showMediaMenu])
-
   // Gestion de l'intersection
   const onIntersectingChange = useCallback((inView: boolean) => {
     handleIntersectingChange({ id: item.id, inView, videoRef })
@@ -244,25 +234,13 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
     }
   }, [handleIntersectingChange, item.id, mediaId, videoRef])
 
-  // Click outside to close pill
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (radialOpen && pillRef.current && !pillRef.current.contains(event.target as Node)) {
-        setRadialOpen(false)
-        setShowReactions(false)
-      }
-    }
-    
-    if (radialOpen) {
-      document.addEventListener('mousedown', handleClickOutside)
-      return () => document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [radialOpen])
-
   // Actions
   const onReact = useCallback((emoji: string) => {
+    console.log('🔥 [VIDEO FEED CARD] onReact called with emoji:', emoji)
     const map: Record<string, any> = { '💖':'LOVE','🔥':'FIRE','🤤':'WOW','💋':'SMILE' }
     const type = map[emoji] || 'SMILE'
+    console.log('🔥 [VIDEO FEED CARD] Mapped to type:', type)
+    console.log('🔥 [VIDEO FEED CARD] Calling toggleReaction with type:', type)
     toggleReaction(type)
     setShowReactions(false)
     
@@ -588,8 +566,8 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
         <div className="flex flex-col items-center justify-center gap-4 p-4 pb-4 pointer-events-auto">
           {/* Avatar */}
           <div className="relative">
-            <Link 
-              href={`/profile-test/escort/${profileId}`} 
+            <Link
+              href={profileUrl}
               aria-label={`Voir le profil de ${item.author.name}`}
               onClick={(e) => e.stopPropagation()}
               className="block"
@@ -640,25 +618,34 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
 
           {/* Réactions */}
           <div className="relative flex flex-col items-center gap-1">
-            {radialOpen && (
-              <div
-                className="fixed inset-0 z-0"
-                onClick={(e)=>{ e.stopPropagation(); setRadialOpen(false); setShowReactions(false) }}
-              />
-            )}
             <button
-              onClick={() => { setShowReactions(v => !v); setRadialOpen(v => !v) }}
+              onClick={() => {
+                console.log('🔥 [VIDEO FEED CARD] Reaction button clicked')
+                setShowReactions(v => {
+                  console.log('🔥 [VIDEO FEED CARD] setShowReactions from', v, 'to', !v)
+                  return !v
+                })
+                setRadialOpen(v => {
+                  console.log('🔥 [VIDEO FEED CARD] setRadialOpen from', v, 'to', !v)
+                  return !v
+                })
+              }}
               className={`relative z-10 w-10 h-10 backdrop-blur-sm rounded-full flex items-center justify-center transition-colors ${
-                showReactions
+                userReactions.length > 0
                   ? 'bg-violet-500/20 text-violet-300 hover:bg-violet-500/30'
-                  : 'bg-black/70 text-white hover:bg-black/90'
+                  : showReactions
+                    ? 'bg-violet-500/20 text-violet-300 hover:bg-violet-500/30'
+                    : 'bg-black/70 text-white hover:bg-black/90'
               }`}
               aria-haspopup="true"
               aria-expanded={radialOpen}
             >
-              <Flame size={18} className={showReactions ? '' : 'text-violet-300'} />
+              <Flame size={18} className={userReactions.length > 0 ? 'text-violet-300' : showReactions ? 'text-violet-300' : ''} />
             </button>
-            
+            <span className="text-xs text-white/70">
+              {(stats?.reactions?.LOVE ?? 0) + (stats?.reactions?.FIRE ?? 0) + (stats?.reactions?.WOW ?? 0) + (stats?.reactions?.SMILE ?? 0)}
+            </span>
+
             {/* Menu radial */}
             {radialOpen && (
               <motion.div
@@ -698,8 +685,9 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
                         transition={{ type: 'spring', stiffness: 240, damping: 18, delay: idx * 0.04 }}
                         whileHover={{ scale: 1.18, boxShadow: '0 8px 24px rgba(168,85,247,0.18), 0 4px 12px rgba(255,107,157,0.12)' }}
                         whileTap={{ scale: 0.95 }}
-                        onClick={(e) => { 
-                          e.stopPropagation(); 
+                        onClick={(e) => {
+                          console.log('🎯 [EMOJI BUTTON] Clicked on emoji:', emoji)
+                          e.stopPropagation();
                           onReact(emoji)
                           setRadialOpen(false)
                         }}

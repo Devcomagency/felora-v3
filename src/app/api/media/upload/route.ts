@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
     }))
 
     // URL publique du fichier
-    const publicUrl = `${process.env.CLOUDFLARE_R2_PUBLIC_URL}/${key}`
+    const publicUrl = `${process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL}/${key}`
 
     console.log('✅ Fichier uploadé sur R2:', publicUrl)
 

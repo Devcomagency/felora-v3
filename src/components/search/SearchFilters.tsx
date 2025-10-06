@@ -5,13 +5,45 @@ import { X, MapPin, Filter } from 'lucide-react'
 
 interface SearchFiltersProps {
   filters: {
-    q: string
-    city: string
-    canton: string
-    services: string[]
-    languages: string[]
-    status: string
-    sort: string
+    q?: string
+    city?: string
+    canton?: string
+    services?: string[]
+    languages?: string[]
+    status?: string
+    sort?: string
+    // Filtres étendus
+    categories?: string[]
+    ageRange?: [number, number]
+    heightRange?: [number, number]
+    bodyType?: string
+    hairColor?: string
+    eyeColor?: string
+    ethnicity?: string
+    breastSize?: string
+    hasTattoos?: string
+    serviceTypes?: string[]
+    specialties?: string[]
+    experienceTypes?: string[]
+    roleTypes?: string[]
+    budgetRange?: [number, number]
+    minDuration?: string
+    acceptsCards?: boolean
+    availability?: string[]
+    timeSlots?: string[]
+    weekendAvailable?: boolean
+    verified?: boolean
+    minRating?: number
+    minReviews?: number
+    premiumContent?: boolean
+    liveCam?: boolean
+    premiumMessaging?: boolean
+    privatePhotos?: boolean
+    exclusiveVideos?: boolean
+    availableNow?: boolean
+    outcall?: boolean
+    incall?: boolean
+    radius?: number
   }
   onFiltersChange: (filters: any) => void
   onClose: () => void
@@ -140,46 +172,46 @@ const DEVISES = ['CHF', 'EUR', 'USD']
 
 export default function SearchFilters({ filters, onFiltersChange, onClose, isOpen }: SearchFiltersProps) {
   // États des filtres basés sur les vrais champs de la base de données
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([])
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(filters.categories || [])
   const [selectedCanton, setSelectedCanton] = useState(filters.canton || '')
   const [selectedCity, setSelectedCity] = useState(filters.city || '')
-  const [availableNow, setAvailableNow] = useState(false)
-  const [outcall, setOutcall] = useState(false)
-  const [incall, setIncall] = useState(false)
+  const [availableNow, setAvailableNow] = useState(filters.availableNow || false)
+  const [outcall, setOutcall] = useState(filters.outcall || false)
+  const [incall, setIncall] = useState(filters.incall || false)
   
   // Profil & Physique (basé sur les vrais champs)
-  const [ageRange, setAgeRange] = useState([18, 65])
-  const [heightRange, setHeightRange] = useState([150, 180])
-  const [bodyType, setBodyType] = useState('')
-  const [hairColor, setHairColor] = useState('')
-  const [eyeColor, setEyeColor] = useState('')
-  const [ethnicity, setEthnicity] = useState('')
-  const [breastSize, setBreastSize] = useState('')
-  const [hasTattoos, setHasTattoos] = useState('')
+  const [ageRange, setAgeRange] = useState(filters.ageRange || [18, 65])
+  const [heightRange, setHeightRange] = useState(filters.heightRange || [150, 180])
+  const [bodyType, setBodyType] = useState(filters.bodyType || '')
+  const [hairColor, setHairColor] = useState(filters.hairColor || '')
+  const [eyeColor, setEyeColor] = useState(filters.eyeColor || '')
+  const [ethnicity, setEthnicity] = useState(filters.ethnicity || '')
+  const [breastSize, setBreastSize] = useState(filters.breastSize || '')
+  const [hasTattoos, setHasTattoos] = useState(filters.hasTattoos || '')
   
   // Services & Types (basé sur les vrais champs)
   const [services, setServices] = useState<string[]>(filters.services || [])
-  const [serviceTypes, setServiceTypes] = useState<string[]>([])
-  const [specialties, setSpecialties] = useState<string[]>([])
+  const [serviceTypes, setServiceTypes] = useState<string[]>(filters.serviceTypes || [])
+  const [specialties, setSpecialties] = useState<string[]>(filters.specialties || [])
   
   // Expériences & Rôles
-  const [experienceTypes, setExperienceTypes] = useState<string[]>([])
-  const [roleTypes, setRoleTypes] = useState<string[]>([])
+  const [experienceTypes, setExperienceTypes] = useState<string[]>(filters.experienceTypes || [])
+  const [roleTypes, setRoleTypes] = useState<string[]>(filters.roleTypes || [])
   
   // Tarifs
-  const [budgetRange, setBudgetRange] = useState([0, 2000])
-  const [minDuration, setMinDuration] = useState('')
-  const [acceptsCards, setAcceptsCards] = useState(false)
+  const [budgetRange, setBudgetRange] = useState(filters.budgetRange || [0, 2000])
+  const [minDuration, setMinDuration] = useState(filters.minDuration || '')
+  const [acceptsCards, setAcceptsCards] = useState(filters.acceptsCards || false)
   
   // Disponibilité
-  const [availability, setAvailability] = useState<string[]>([])
-  const [timeSlots, setTimeSlots] = useState<string[]>([])
-  const [weekendAvailable, setWeekendAvailable] = useState(false)
+  const [availability, setAvailability] = useState<string[]>(filters.availability || [])
+  const [timeSlots, setTimeSlots] = useState<string[]>(filters.timeSlots || [])
+  const [weekendAvailable, setWeekendAvailable] = useState(filters.weekendAvailable || false)
   
   // Qualité
-  const [verified, setVerified] = useState(false)
-  const [minRating, setMinRating] = useState(0)
-  const [minReviews, setMinReviews] = useState(0)
+  const [verified, setVerified] = useState(filters.verified || false)
+  const [minRating, setMinRating] = useState(filters.minRating || 0)
+  const [minReviews, setMinReviews] = useState(filters.minReviews || 0)
   
   // Communication
   const [languages, setLanguages] = useState<string[]>(filters.languages || [])
@@ -273,8 +305,8 @@ export default function SearchFilters({ filters, onFiltersChange, onClose, isOpe
   // Appliquer les filtres
   const applyFilters = () => {
     const newFilters = {
-      ...filters,
       // Filtres de base
+      q: filters.q || '',
       city: selectedCity,
       canton: selectedCanton,
       services: services,

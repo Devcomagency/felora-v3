@@ -945,9 +945,18 @@ function transformProfileData(rawProfile: any, mode: 'dashboard' | 'public') {
     .map(item => item.replace(/^opt:/, '').trim())
     .filter(item => item !== '')
 
-  // Déduplication des amenities
+  // Extraire les services (srv:)
+  const venueServices = rawVenueOptions
+    .filter(item => item && item.trim() !== '' && item.startsWith('srv:'))
+    .map(item => item.replace(/^srv:/, '').trim())
+    .filter(item => item !== '')
+
+  // Déduplication
   const uniqueAmenities = [...new Set(amenities)]
+  const uniqueServices = [...new Set(venueServices)]
+  
   console.log('🔄 [API UNIFIED] amenities filtrées:', uniqueAmenities.length, 'éléments')
+  console.log('🔄 [API UNIFIED] services filtrés:', uniqueServices.length, 'éléments')
 
   const acceptedCurrencies = parseStringArray((rawProfile as any).acceptedCurrencies)
 
@@ -969,7 +978,7 @@ function transformProfileData(rawProfile: any, mode: 'dashboard' | 'public') {
 
     // Langues et services
     languages,
-    services,
+    services: uniqueServices, // Services extraits de venueOptions
     specialties, // Ajout des spécialités mappées depuis practices
 
     // Nouvelles options (déplacées au niveau du profil pour cohérence)

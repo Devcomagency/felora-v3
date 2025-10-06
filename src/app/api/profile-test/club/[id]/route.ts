@@ -216,13 +216,9 @@ export async function GET(
             .filter((m: any) => m.pos >= 2) // Ne prendre que les médias de publication (pos 2+), pas les médias de profil (pos 0, 1)
             .map((m: any) => ({
               type: m.type.toLowerCase() as 'image' | 'video',
-              url: m.url.includes('example.com')
-                ? (m.type === 'IMAGE'
-                  ? `https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&h=600&fit=crop&seed=${m.id}${m.pos}`
-                  : 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4')
-                : m.url.startsWith('/uploads/')
+              url: m.url.startsWith('/uploads/')
                 ? `http://localhost:3000${m.url}` // Ajouter le domaine pour les uploads locaux
-                : m.url, // Laisser les autres URLs telles quelles
+                : m.url, // Utiliser les vraies URLs (pas de mock)
               thumb: m.thumbUrl || null // Use null instead of undefined for Zod
             })),
           contact: {
@@ -239,9 +235,40 @@ export async function GET(
           },
           amenities: services?.equipments || [],
           workingHours: services?.openingHours || null,
+          establishmentType: details?.establishmentType || 'club',
           stats: {
-            views: Math.floor(Math.random() * 1000) + 100 // Mock views for now
+            views: Math.floor(Math.random() * 1000) + 100,
+            likes: 0, // Sera calculé après
+            reactions: 0 // Sera calculé après
           }
+        }
+
+        // Calculer les vraies stats de réactions pour les médias du club
+        try {
+          const clubMediaIds = media
+            .filter((m: any) => m.pos >= 2) // Seulement les médias de publication
+            .map((m: any) => m.id)
+
+          if (clubMediaIds.length > 0) {
+            // Compter les réactions pour les médias du club
+            const reactions = await prisma.reaction.findMany({
+              where: {
+                mediaId: { in: clubMediaIds }
+              },
+              select: { type: true }
+            })
+
+            const likeCount = reactions.filter(r => r.type === 'LIKE').length
+            const reactCount = reactions.filter(r => r.type !== 'LIKE').length
+
+            // Mettre à jour les stats
+            clubProfile.stats.likes = likeCount
+            clubProfile.stats.reactions = reactCount
+
+            console.log(`🔥 [CLUB API] Club ${validatedId}: ${likeCount} likes + ${reactCount} reactions`)
+          }
+        } catch (error) {
+          console.error('Erreur calcul stats club:', error)
         }
 
         console.log('🌐 Website check:', {
@@ -257,7 +284,8 @@ export async function GET(
           servicesCount: clubProfile.services?.length || 0,
           mediaCount: clubProfile.media.length,
           hasContact: !!clubProfile.contact,
-          hasLocation: !!clubProfile.location
+          hasLocation: !!clubProfile.location,
+          stats: clubProfile.stats
         })
       }
     } catch (dbError) {

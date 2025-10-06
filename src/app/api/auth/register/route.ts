@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
 import { ESCORT_SUBSCRIPTION_PLANS, getSubscriptionPlan, calculateEndDate } from '@/lib/subscription-plans'
+import { sendEmailResend, emailTemplates } from '@/lib/resend'
 
 export async function POST(request: NextRequest) {
   try {
@@ -255,6 +256,19 @@ export async function POST(request: NextRequest) {
       redirectUrl = `/login?message=Inscription+escorte+réussie+!+Connectez-vous+avec+vos+identifiants&redirect=/escort/profile`
     }
 
+
+    // Envoyer l'email de bienvenue (ne pas bloquer l'inscription si l'email échoue)
+    try {
+      const userName = user.name || email.split('@')[0]
+      await sendEmailResend({
+        to: email,
+        ...emailTemplates.welcome(userName)
+      })
+      console.log('✅ Email de bienvenue envoyé à:', email)
+    } catch (emailError) {
+      console.error('⚠️ Erreur envoi email (non bloquant):', emailError)
+      // On continue quand même, l'inscription est réussie
+    }
 
     return NextResponse.json({
       success: true,

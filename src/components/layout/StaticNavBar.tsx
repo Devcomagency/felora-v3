@@ -31,9 +31,8 @@ export default function StaticNavBar() {
   const [currentLanguage, setCurrentLanguage] = useState('fr')
   const [hasNotifications, setHasNotifications] = useState(false)
   const [unreadConversations, setUnreadConversations] = useState(0)
-
-  // État pour le menu en arc de cercle
   const [showCreateMenu, setShowCreateMenu] = useState(false)
+
 
   // Charger la langue sauvegardée
   useEffect(() => {
@@ -100,7 +99,6 @@ export default function StaticNavBar() {
           setShowCreateMenu(false)
         }
       }
-
       document.addEventListener('click', handleClickOutside)
       return () => document.removeEventListener('click', handleClickOutside)
     }
@@ -128,9 +126,9 @@ export default function StaticNavBar() {
         id: 'create',
         icon: Plus,
         label: 'Créer',
-        onClick: () => setShowCreateMenu(!showCreateMenu), // Ouvrir le menu au lieu de naviguer
-        active: pathname === '/test-media-simple',
-        special: true // Marqueur pour un style spécial
+        onClick: () => setShowCreateMenu(!showCreateMenu),
+        active: pathname === '/camera',
+        special: true
       })
     }
 
@@ -208,7 +206,7 @@ export default function StaticNavBar() {
         </div>
       </div>
 
-      {/* Menu en arc de cercle autour du + */}
+      {/* Menu radial au-dessus du + */}
       <AnimatePresence>
         {showCreateMenu && (
           <>
@@ -233,7 +231,7 @@ export default function StaticNavBar() {
                   transition={{ type: "spring", stiffness: 260, damping: 20 }}
                   onClick={() => {
                     setShowCreateMenu(false)
-                    router.push('/test-media-simple?mode=photo')
+                    router.push('/camera?mode=photo')
                   }}
                   className="absolute w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg hover:shadow-xl hover:scale-110 transition-all"
                 >
@@ -248,7 +246,7 @@ export default function StaticNavBar() {
                   transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.05 }}
                   onClick={() => {
                     setShowCreateMenu(false)
-                    router.push('/test-media-simple?mode=video')
+                    router.push('/camera?mode=video')
                   }}
                   className="absolute w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg hover:shadow-xl hover:scale-110 transition-all"
                 >
@@ -269,12 +267,11 @@ export default function StaticNavBar() {
                     input.onchange = (e: any) => {
                       const file = e.target.files?.[0]
                       if (file) {
-                        // Stocker temporairement le fichier et rediriger
                         const url = URL.createObjectURL(file)
                         sessionStorage.setItem('upload-file-url', url)
                         sessionStorage.setItem('upload-file-name', file.name)
                         sessionStorage.setItem('upload-file-type', file.type)
-                        router.push('/test-media-simple?mode=upload')
+                        router.push('/camera?mode=upload')
                       }
                     }
                     input.click()

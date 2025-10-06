@@ -261,7 +261,29 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
                 </>
               )}
 
-              {/* 3. Langues - En troisième selon la demande */}
+              {/* 3. Services & Spécialités - En troisième selon la demande */}
+              {(safeProfile.services && safeProfile.services.length > 0) && (
+                <div className="glass-card">
+                  <div className="p-5">
+                    <h3 className="text-lg font-semibold text-white mb-4">Services & Spécialités</h3>
+                    <div className="grid grid-cols-2 gap-2">
+                      {safeProfile.services.map((service, index) => (
+                        <div
+                          key={index}
+                          className="flex items-center gap-2 p-3 bg-gradient-to-r from-pink-500/10 to-purple-500/10 rounded-lg border border-pink-500/20 hover:border-pink-400/40 transition-all"
+                        >
+                          <span className="w-2 h-2 bg-pink-400 rounded-full flex-shrink-0"></span>
+                          <span className="text-pink-300 text-sm font-medium truncate">
+                            {service}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* 4. Langues - En quatrième selon la demande */}
               {safeProfile.languages && Object.keys(safeProfile.languages).length > 0 && (
                 <div className="glass-card">
                   <div className="p-5">
@@ -283,7 +305,7 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
                 </div>
               )}
 
-              {/* 4. Équipements - En quatrième selon la demande */}
+              {/* 5. Équipements - En cinquième selon la demande */}
               {safeProfile.options?.amenities && safeProfile.options.amenities.length > 0 && (
                 <>
                   {safeProfile.options.amenities.filter(amenity => {
@@ -320,7 +342,7 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
                 </>
               )}
 
-              {/* 5. Tarifs - En cinquième selon la demande */}
+              {/* 6. Tarifs - En sixième selon la demande */}
               <div className="glass-card">
                 <div className="p-4">
                   <h3 className="text-md font-medium text-white/90 mb-3 flex items-center gap-2">
@@ -400,7 +422,7 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
                 </div>
               </div>
 
-              {/* 6. Paiements - En sixième selon la demande */}
+              {/* 7. Paiements - En septième selon la demande */}
               {safeProfile.options?.paymentMethods && safeProfile.options.paymentMethods.length > 0 && (
                 <div className="glass-card">
                   <div className="p-4">
@@ -422,7 +444,7 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
                 </div>
               )}
 
-              {/* 7. Devises - En septième selon la demande */}
+              {/* 8. Devises - En huitième selon la demande */}
               {safeProfile.options?.acceptedCurrencies && safeProfile.options.acceptedCurrencies.length > 0 && (
                 <div className="glass-card">
                   <div className="p-4">

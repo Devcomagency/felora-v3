@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { calculateAvailability, normalizeScheduleData } from '@/lib/availability-calculator'
+import { stableMediaId } from '@/lib/reactions/stableMediaId'
 
 export async function GET(
   request: NextRequest,
@@ -73,10 +74,12 @@ export async function GET(
         acceptsWomen: true,
         // Agenda
         agendaEnabled: true,
-        // Stats (à implémenter plus tard)
-        // likes: true,
-        // views: true,
-        // rating: true,
+        // Stats
+        likes: true,
+        views: true,
+        rating: true,
+        totalLikes: true,
+        totalReacts: true,
       }
     })
 
@@ -256,7 +259,7 @@ export async function GET(
     })
 
     // Combiner les médias (galleryPhotos + table Media)
-    const allMedia = [...media, ...mediaFromTableFormatted]
+    const allMedia = [...mediaFromTableFormatted, ...media]
       .sort((a, b) => a.pos - b.pos)
 
     console.log(`[DEBUG] Profile ${profileId} - Total media: ${allMedia.length} (${media.length} from galleryPhotos + ${mediaFromTableFormatted.length} from Media table)`)
@@ -273,12 +276,174 @@ export async function GET(
       currency: escort.currency || 'CHF'
     }
 
-    // Construire les stats (placeholder pour l'instant)
-    const stats = {
-      likes: 0, // À implémenter plus tard
-      views: 0, // À implémenter plus tard
-      rating: 0 // À implémenter plus tard
+    // Récupérer tous les médias de cet escort avec leurs URLs (table media)
+    const escortMedia = await prisma.media.findMany({
+      where: {
+        ownerType: 'ESCORT',
+        ownerId: profileId
+      },
+      select: { id: true, url: true }
+    })
+
+    // Récupérer aussi les médias depuis galleryPhotos (ancien système)
+    let galleryPhotosUrls: string[] = []
+    try {
+      const gallerySlots = Array.isArray(escort.galleryPhotos)
+        ? escort.galleryPhotos
+        : JSON.parse(String(escort.galleryPhotos || '[]'))
+
+      galleryPhotosUrls = gallerySlots
+        .filter((slot: any) => slot?.url)
+        .map((slot: any) => slot.url)
+    } catch {
+      galleryPhotosUrls = []
     }
+
+    // Utiliser UNIQUEMENT les médias du feed qui seront réellement retournés
+    // (exclure photo de profil et utiliser la même logique que le retour)
+    const feedMedia = allMedia.slice(1) // Exclure le premier média (photo de profil)
+    const allMediaIds: string[] = []
+
+    // Ajouter les médias du feed qui sont réellement visibles
+    for (const mediaItem of feedMedia) {
+      // Ajouter l'ID brut si disponible (pour les médias de la table Media)
+      if (mediaItem.id && mediaItem.id !== `slot-${feedMedia.indexOf(mediaItem)}`) {
+        allMediaIds.push(mediaItem.id)
+      }
+      
+      // Ajouter le hash basé sur URL (pour tous les médias)
+      const hashId = stableMediaId({ rawId: null, profileId, url: mediaItem.url })
+      allMediaIds.push(hashId)
+    }
+
+    console.log(`🔥 [PROFILE API] Feed media count: ${feedMedia.length}`)
+    console.log(`🔥 [PROFILE API] Feed media IDs:`, feedMedia.map(m => m.id))
+
+    // Dédupliquer
+    const uniqueMediaIds = [...new Set(allMediaIds)]
+
+    console.log(`🔥 [PROFILE API] Found ${allMedia.length} total media (${media.length} from galleryPhotos + ${mediaFromTableFormatted.length} from Media table)`)
+    console.log(`🔥 [PROFILE API] Using ${feedMedia.length} feed media (excluding profile photo)`)
+    console.log(`🔥 [PROFILE API] Generated ${uniqueMediaIds.length} unique mediaIds for feed (IDs + hashes)`)
+    console.log(`🔥 [PROFILE API] Sample mediaIds:`, uniqueMediaIds.slice(0, 3))
+
+    // DEBUG: Trouver TOUS les mediaIds qui ont des réactions avec leurs URLs
+    const allReactionsWithMedia = await prisma.reaction.findMany({
+      select: {
+        mediaId: true,
+        type: true,
+        media: {
+          select: {
+            url: true,
+            ownerId: true,
+            ownerType: true
+          }
+        }
+      }
+    })
+
+    console.log(`🔥 [DEBUG] Total ${allReactionsWithMedia.length} réactions dans la base`)
+
+    // Trouver les réactions qui correspondent potentiellement à ce profil par ownerId
+    const profileReactionsByOwnerId = allReactionsWithMedia.filter(r =>
+      r.media?.ownerType === 'ESCORT' && r.media?.ownerId === profileId
+    )
+
+    console.log(`🔥 [DEBUG] ${profileReactionsByOwnerId.length} réactions avec media.ownerId = ${profileId}`)
+
+    // Extraire les mediaIds uniques qui ont des réactions
+    const allReactionMediaIds = [...new Set(allReactionsWithMedia.map(r => r.mediaId))]
+    console.log(`🔥 [DEBUG] ${allReactionMediaIds.length} mediaIds uniques avec réactions`)
+
+    // Voir combien de ces mediaIds correspondent aux nôtres
+    const matchingIds = allReactionMediaIds.filter(id => allMediaIds.includes(id))
+    console.log(`🔥 [DEBUG] ${matchingIds.length} mediaIds correspondent à nos médias générés`)
+    console.log(`🔥 [DEBUG] MediaIds qui matchent:`, matchingIds)
+
+    // Afficher les mediaIds qui ne matchent PAS mais qui ont des réactions
+    const nonMatchingIds = allReactionMediaIds.filter(id => !allMediaIds.includes(id))
+    console.log(`🔥 [DEBUG] ${nonMatchingIds.length} mediaIds avec réactions mais qui ne matchent PAS`)
+    console.log(`🔥 [DEBUG] MediaIds qui ne matchent pas:`, nonMatchingIds.slice(0, 5))
+
+    // Comparer les URLs
+    const mediaUrlsMap = new Map(escortMedia.map(m => [m.id, m.url]))
+    console.log(`🔥 [DEBUG] URLs de nos médias (table media):`)
+    escortMedia.forEach(m => {
+      console.log(`  - ${m.id}: ${m.url}`)
+    })
+
+    console.log(`🔥 [DEBUG] URLs dans galleryPhotos:`)
+    galleryPhotosUrls.forEach((url, i) => {
+      console.log(`  - slot ${i}: ${url}`)
+    })
+
+    // Compter TOUTES les réactions peu importe le mediaId, juste pour voir
+    const [totalLikes, totalReacts] = await Promise.all([
+      prisma.reaction.count({ where: { type: 'LIKE' } }),
+      prisma.reaction.count({ where: { NOT: { type: 'LIKE' } } })
+    ])
+
+    console.log(`🔥 [DEBUG] Total global: ${totalLikes} likes, ${totalReacts} reactions`)
+
+    // Compter TOUTES les réactions du profil (sans doublons)
+    
+    // 1. Réactions via media.ownerId
+    const reactionsViaOwner = await prisma.reaction.findMany({
+      where: {
+        media: {
+          ownerId: profileId,
+          ownerType: 'ESCORT'
+        }
+      },
+      select: { 
+        id: true,
+        type: true 
+      }
+    })
+    
+    // 2. Réactions via mediaIds directs (nouveau système)
+    const reactionsViaMediaIds = await prisma.reaction.findMany({
+      where: {
+        mediaId: { in: uniqueMediaIds }
+      },
+      select: { 
+        id: true,
+        type: true 
+      }
+    })
+    
+    // 3. Combiner et dédupliquer par ID
+    const allReactionsMap = new Map()
+    
+    // Ajouter les réactions via ownerId
+    reactionsViaOwner.forEach(r => {
+      allReactionsMap.set(r.id, r)
+    })
+    
+    // Ajouter les réactions via mediaIds (sans écraser)
+    reactionsViaMediaIds.forEach(r => {
+      if (!allReactionsMap.has(r.id)) {
+        allReactionsMap.set(r.id, r)
+      }
+    })
+    
+    // 4. Convertir en array et compter
+    const allReactions = Array.from(allReactionsMap.values())
+    const likeCount = allReactions.filter(r => r.type === 'LIKE').length
+    const reactCount = allReactions.filter(r => r.type !== 'LIKE').length
+    
+    console.log(`🔥 [PROFILE API] Réactions via ownerId: ${reactionsViaOwner.length}`)
+    console.log(`🔥 [PROFILE API] Réactions via mediaIds: ${reactionsViaMediaIds.length}`)
+    console.log(`🔥 [PROFILE API] Total réactions: ${allReactions.length} (${likeCount} likes + ${reactCount} autres)`)
+
+    const stats = {
+      likes: likeCount || 0,
+      views: escort.views || 0,
+      rating: escort.rating || 0,
+      reactions: reactCount || 0
+    }
+
+    console.log(`🔥 [PROFILE API] Stats calculés pour ${profileId}:`, stats)
 
     const profile = {
       id: escort.id,

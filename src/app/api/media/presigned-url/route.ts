@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
     const presignedUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 })
 
     // URL publique du fichier (après upload)
-    const publicUrl = `${process.env.CLOUDFLARE_R2_PUBLIC_URL}/${key}`
+    const publicUrl = `${process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL}/${key}`
 
     console.log('✅ Presigned URL générée:', {
       key,
