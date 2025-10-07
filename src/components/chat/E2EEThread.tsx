@@ -7,8 +7,9 @@ import { fetchBundle, uploadKeyBundle } from '@packages/e2ee-signal/client'
 import { ensureLibsignalBootstrap } from '@packages/e2ee-signal/bootstrap'
 import { createSession, encrypt, getSession, setLocalUser, decrypt } from '@packages/e2ee-signal/session'
 import { useNotification } from '@/components/providers/NotificationProvider'
+import TypingIndicator from './TypingIndicator'
 
-type Envelope = { id: string; messageId: string; senderUserId: string; cipherText: string; attachmentUrl?: string | null; attachmentMeta?: any; createdAt: string }
+type Envelope = { id: string; messageId: string; senderUserId: string; cipherText: string; attachmentUrl?: string | null; attachmentMeta?: any; createdAt: string; status?: 'sending' | 'sent' | 'delivered' | 'read' | 'failed' }
 
 export default function E2EEThread({ conversationId, userId, partnerId }: { conversationId: string; userId: string; partnerId: string }) {
   const [envelopes, setEnvelopes] = useState<Envelope[]>([])
@@ -18,9 +19,58 @@ export default function E2EEThread({ conversationId, userId, partnerId }: { conv
   const { success: toastSuccess, error: toastError, info: toastInfo } = useNotification()
   const [uploadProgress, setUploadProgress] = useState<number | null>(null)
   const [textCache, setTextCache] = useState<Record<string, string>>({})
+  const [messageStatuses, setMessageStatuses] = useState<Record<string, 'sending' | 'sent' | 'delivered' | 'read' | 'failed'>>({})
+  const [isTyping, setIsTyping] = useState(false)
+  const [typingUser, setTypingUser] = useState<string | null>(null)
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   const addEnvelopeUnique = (env: Envelope) => {
     setEnvelopes(prev => prev.some(e => e.id === env.id || e.messageId === env.messageId) ? prev : [...prev, env])
+  }
+
+  const updateMessageStatus = (messageId: string, status: 'sending' | 'sent' | 'delivered' | 'read' | 'failed') => {
+    setMessageStatuses(prev => ({ ...prev, [messageId]: status }))
+  }
+
+  const startTyping = () => {
+    setIsTyping(true)
+    setTypingUser(userId)
+    
+    // Envoyer l'événement de frappe au serveur
+    fetch('/api/e2ee/typing/start', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ conversationId, userId })
+    }).catch(error => {
+      console.error('Erreur lors de l\'envoi de l\'indicateur de frappe:', error)
+    })
+
+    // Arrêter l'indicateur après 3 secondes d'inactivité
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current)
+    }
+    typingTimeoutRef.current = setTimeout(() => {
+      stopTyping()
+    }, 3000)
+  }
+
+  const stopTyping = () => {
+    setIsTyping(false)
+    setTypingUser(null)
+    
+    // Envoyer l'événement d'arrêt de frappe au serveur
+    fetch('/api/e2ee/typing/stop', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ conversationId, userId })
+    }).catch(error => {
+      console.error('Erreur lors de l\'arrêt de l\'indicateur de frappe:', error)
+    })
+
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current)
+      typingTimeoutRef.current = null
+    }
   }
 
   // Init device + upload dummy bundle
@@ -31,11 +81,22 @@ export default function E2EEThread({ conversationId, userId, partnerId }: { conv
         setLocalUser(userId)
         const deviceKey = `felora-e2ee-device-${userId}`
         let deviceId = localStorage.getItem(deviceKey) || ''
-        if (!deviceId) { deviceId = `${userId}-${Math.random().toString(36).slice(2)}`; localStorage.setItem(deviceKey, deviceId) }
+        if (!deviceId) { 
+          deviceId = `${userId}-${Math.random().toString(36).slice(2)}`
+          localStorage.setItem(deviceKey, deviceId) 
+        }
         const bundle = await ensureLibsignalBootstrap(userId, deviceId)
         await uploadKeyBundle(bundle)
-        try { const { bundle } = await fetchBundle(partnerId); await createSession(partnerId, bundle) } catch {}
-      } catch {}
+        try { 
+          const { bundle } = await fetchBundle(partnerId)
+          await createSession(partnerId, bundle) 
+        } catch (error) {
+          console.warn('Impossible de créer la session avec le partenaire:', error)
+        }
+      } catch (error) {
+        console.error('Erreur lors de l\'initialisation E2EE:', error)
+        toastError('Erreur de configuration du chiffrement')
+      }
     })()
     return () => { mounted = false }
   }, [userId, partnerId])
@@ -46,9 +107,21 @@ export default function E2EEThread({ conversationId, userId, partnerId }: { conv
       try {
         setLoadingHistory(true)
         const res = await fetch(`/api/e2ee/messages/history?conversationId=${encodeURIComponent(conversationId)}`)
+        if (!res.ok) {
+          throw new Error(`Erreur ${res.status}: ${res.statusText}`)
+        }
         const data = await res.json()
-        if (Array.isArray(data?.messages)) setEnvelopes(data.messages)
-      } finally { setLoadingHistory(false) }
+        if (Array.isArray(data?.messages)) {
+          setEnvelopes(data.messages)
+        } else {
+          console.warn('Format de données inattendu:', data)
+        }
+      } catch (error) {
+        console.error('Erreur lors du chargement de l\'historique:', error)
+        toastError('Impossible de charger l\'historique des messages')
+      } finally { 
+        setLoadingHistory(false) 
+      }
     })()
   }, [conversationId])
 
@@ -59,8 +132,34 @@ export default function E2EEThread({ conversationId, userId, partnerId }: { conv
     const last = envelopes.length ? envelopes[envelopes.length - 1] : null
     const after = last ? `&after=${encodeURIComponent(new Date(last.createdAt).getTime())}` : ''
     const es = new EventSource(`/api/e2ee/messages/sse?conversationId=${encodeURIComponent(conversationId)}${after}`)
-    es.onmessage = (evt) => { try { const env: Envelope = JSON.parse(evt.data); addEnvelopeUnique(env) } catch {} }
-    es.onerror = () => {}
+    es.onmessage = (evt) => { 
+      try { 
+        const data = JSON.parse(evt.data)
+        
+        // Gérer les messages
+        if (data.type === 'message') {
+          const env: Envelope = data
+          addEnvelopeUnique(env)
+        }
+        
+        // Gérer les indicateurs de frappe
+        if (data.type === 'typing_start' && data.userId !== userId) {
+          setIsTyping(true)
+          setTypingUser(data.userId)
+        }
+        
+        if (data.type === 'typing_stop' && data.userId !== userId) {
+          setIsTyping(false)
+          setTypingUser(null)
+        }
+      } catch (error) {
+        console.error('Erreur lors du parsing du message SSE:', error)
+      } 
+    }
+    es.onerror = (error) => {
+      console.error('Erreur de connexion SSE:', error)
+      toastError('Connexion en temps réel interrompue')
+    }
     esRef.current = es
     return () => { es.close() }
   }, [conversationId, loadingHistory])
@@ -104,6 +203,14 @@ export default function E2EEThread({ conversationId, userId, partnerId }: { conv
     })()
   }, [envelopes, partnerId, userId])
 
+  // Exposer les fonctions de frappe globalement
+  useEffect(() => {
+    // @ts-ignore
+    window.__feloraChatStartTyping = startTyping
+    // @ts-ignore
+    window.__feloraChatStopTyping = stopTyping
+  }, [conversationId, userId])
+
   // Bridge external composer
   useEffect(() => {
     // @ts-ignore
@@ -127,15 +234,24 @@ export default function E2EEThread({ conversationId, userId, partnerId }: { conv
           fd.append('file', cipherBlob, 'blob.bin')
           fd.append('meta', JSON.stringify(meta))
           const { url } = await uploadWithProgress(fd, (p) => setUploadProgress(p))
-          const payload = { conversationId, senderUserId: userId, senderDeviceId: deviceId, messageId: uuidv4(), cipherText: btoa(`[attachment:${url}]`), attachment: { url, meta } }
+          const messageId = uuidv4()
+          updateMessageStatus(messageId, 'sending')
+          const payload = { conversationId, senderUserId: userId, senderDeviceId: deviceId, messageId, cipherText: btoa(`[attachment:${url}]`), attachment: { url, meta } }
           const res = await fetch('/api/e2ee/messages/send', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(payload) })
-          if (!res.ok) throw new Error('send_failed')
+          if (!res.ok) {
+            updateMessageStatus(messageId, 'failed')
+            throw new Error('send_failed')
+          }
           const data = await res.json()
-          if (data?.message) addEnvelopeUnique(data.message)
+          if (data?.message) {
+            addEnvelopeUnique(data.message)
+            updateMessageStatus(messageId, 'sent')
+          }
           toastSuccess('Média envoyé')
           setUploadProgress(null)
-        } catch {
-          toastError('Echec envoi média')
+        } catch (error) {
+          console.error('Erreur lors de l\'envoi du média:', error)
+          toastError('Échec de l\'envoi du média. Veuillez réessayer.')
           setUploadProgress(null)
         }
         return
@@ -147,13 +263,22 @@ export default function E2EEThread({ conversationId, userId, partnerId }: { conv
         }
         const ct = text ? (sess ? await encrypt(sess, text) : b64EncodeUtf8(text)) : ''
         if (!ct) return
-        const payload = { conversationId, senderUserId: userId, senderDeviceId: deviceId, messageId: uuidv4(), cipherText: ct }
+        const messageId = uuidv4()
+        updateMessageStatus(messageId, 'sending')
+        const payload = { conversationId, senderUserId: userId, senderDeviceId: deviceId, messageId, cipherText: ct }
         const res = await fetch('/api/e2ee/messages/send', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
-        if (!res.ok) throw new Error('send_failed')
+        if (!res.ok) {
+          updateMessageStatus(messageId, 'failed')
+          throw new Error('send_failed')
+        }
         const data = await res.json()
-        if (data?.message) addEnvelopeUnique(data.message)
-      } catch {
-        toastError('Echec envoi message')
+        if (data?.message) {
+          addEnvelopeUnique(data.message)
+          updateMessageStatus(messageId, 'sent')
+        }
+      } catch (error) {
+        console.error('Erreur lors de l\'envoi du message:', error)
+        toastError('Échec de l\'envoi du message. Veuillez réessayer.')
       }
     }
     return () => { /* cleanup left empty to preserve composer binding between renders */ }
@@ -191,8 +316,9 @@ export default function E2EEThread({ conversationId, userId, partnerId }: { conv
             ? await decryptFileWithEnvelopes(cipherBlob, env.attachmentMeta, unwrap, userId)
             : await decryptFile(cipherBlob, env.attachmentMeta)
           updates[env.id] = { url: URL.createObjectURL(plainBlob), mime: env.attachmentMeta?.mime || plainBlob.type || 'application/octet-stream' }
-        } catch {
-          toastError('Echec déchiffrement média')
+        } catch (error) {
+          console.error('Erreur lors du déchiffrement du média:', error)
+          toastError('Impossible de déchiffrer le média')
         }
       }
       if (Object.keys(updates).length) setMediaCache(prev => ({ ...prev, ...updates }))
@@ -238,6 +364,30 @@ export default function E2EEThread({ conversationId, userId, partnerId }: { conv
           const bubbleClass = mine ? 'ml-auto bg-gradient-to-br from-pink-500/30 to-purple-500/30 border border-white/20' : 'bg-white/5 border border-white/10'
           const media = mediaCache[env.id]
           const text = renderText(env)
+          const status = messageStatuses[env.messageId] || env.status || 'sent'
+          
+          const getStatusIcon = (status: string) => {
+            switch (status) {
+              case 'sending': return '⏳'
+              case 'sent': return '✓'
+              case 'delivered': return '✓✓'
+              case 'read': return '✓✓'
+              case 'failed': return '❌'
+              default: return '✓'
+            }
+          }
+
+          const getStatusColor = (status: string) => {
+            switch (status) {
+              case 'sending': return 'text-yellow-400'
+              case 'sent': return 'text-gray-400'
+              case 'delivered': return 'text-blue-400'
+              case 'read': return 'text-green-400'
+              case 'failed': return 'text-red-400'
+              default: return 'text-gray-400'
+            }
+          }
+
           return (
             <div key={env.id} className={`relative max-w-[85%] sm:max-w-[70%] rounded-xl px-3 py-2 pr-10 text-sm ${bubbleClass}`}>
               {text && <div className="whitespace-pre-wrap break-words mb-1">{text}</div>}
@@ -250,10 +400,24 @@ export default function E2EEThread({ conversationId, userId, partnerId }: { conv
               {!media && env.attachmentUrl && (
                 <div className="mt-1 text-xs text-white/60">Pièce jointe… déchiffrement en cours</div>
               )}
-              <div className="absolute bottom-1 right-2 text-[10px] leading-none text-white/50">{new Date(env.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+              <div className="absolute bottom-1 right-2 flex items-center gap-1 text-[10px] leading-none text-white/50">
+                <span>{new Date(env.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                {mine && (
+                  <span className={`${getStatusColor(status)}`} title={status}>
+                    {getStatusIcon(status)}
+                  </span>
+                )}
+              </div>
             </div>
           )
         })}
+        
+        {/* Indicateur de frappe */}
+        <TypingIndicator 
+          isTyping={isTyping && typingUser !== userId} 
+          userName={typingUser !== userId ? typingUser : undefined}
+          className="max-w-[85%] sm:max-w-[70%]"
+        />
       </div>
     </div>
   )

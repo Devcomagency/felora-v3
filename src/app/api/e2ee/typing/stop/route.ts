@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 import { jwtVerify } from 'jose'
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId, deviceId, publicKey, preKeyBundle } = await request.json()
+    const { conversationId, userId } = await request.json()
     
-    if (!userId || !deviceId || !publicKey) {
+    if (!conversationId || !userId) {
       return NextResponse.json({ 
         error: 'Paramètres requis manquants' 
       }, { status: 400 })
@@ -39,7 +38,7 @@ export async function POST(request: NextRequest) {
             }
           }
         } catch (jwtError) {
-          console.error('[KEYS API] Error decoding JWT:', jwtError)
+          console.error('[TYPING API] Error decoding JWT:', jwtError)
         }
       }
     }
@@ -48,22 +47,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
     }
 
-    // Vérifier que l'utilisateur peut uploader ses clés
-    if (user.id !== userId) {
-      return NextResponse.json({ error: 'Accès non autorisé' }, { status: 403 })
-    }
-
-    // Pour l'instant, on simule juste l'upload des clés
-    // Dans une vraie implémentation, on stockerait les clés dans la base de données
-    console.log(`[KEYS API] Uploading keys for user ${userId}, device ${deviceId}`)
+    // Pour l'instant, on simule juste l'arrêt de l'indicateur de frappe
+    console.log(`[TYPING API] User ${userId} stopped typing in conversation ${conversationId}`)
 
     return NextResponse.json({ 
       success: true,
-      message: 'Clés uploadées avec succès'
+      message: 'Indicateur de frappe arrêté'
     })
 
   } catch (error) {
-    console.error('Erreur lors de l\'upload des clés:', error)
+    console.error('Erreur lors de l\'arrêt de l\'indicateur de frappe:', error)
     return NextResponse.json(
       { error: 'Erreur interne du serveur' },
       { status: 500 }

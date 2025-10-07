@@ -156,7 +156,7 @@ export default function ClientFeedPage({ initialItems, initialCursor }: ClientFe
         <section className="snap-start h-32 flex items-center justify-center">
           <div className="text-center">
             <div className="w-8 h-8 border-4 border-[#FF6B9D]/30 border-t-[#FF6B9D] rounded-full animate-spin mx-auto mb-2" />
-            <p className="text-white/70 text-sm">Chargement...</p>
+            <p className="text-white/90 text-sm">Chargement...</p>
           </div>
         </section>
       )}
@@ -166,7 +166,7 @@ export default function ClientFeedPage({ initialItems, initialCursor }: ClientFe
         <section className="snap-start h-dvh flex items-center justify-center">
           <div className="text-center">
             <div className="w-12 h-12 border-4 border-[#FF6B9D]/30 border-t-[#FF6B9D] rounded-full animate-spin mx-auto mb-4" />
-            <p className="text-white/70 text-lg">Chargement du feed...</p>
+            <p className="text-white/90 text-lg">Chargement du feed...</p>
           </div>
         </section>
       )}
@@ -175,7 +175,7 @@ export default function ClientFeedPage({ initialItems, initialCursor }: ClientFe
       {items.length > 0 && !nextCursor && !isLoading && (
         <section className="snap-start h-32 flex items-center justify-center">
           <div className="text-center">
-            <p className="text-white/50 text-sm">Fin du feed - Plus de contenu à charger</p>
+            <p className="text-white/80 text-sm">Fin du feed - Plus de contenu à charger</p>
           </div>
         </section>
       )}

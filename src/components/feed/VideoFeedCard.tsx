@@ -552,9 +552,9 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
             </div>
 
             {/* Type de média */}
-            <div className="space-y-2 text-white/90 drop-shadow">
+            <div className="space-y-2 text-white drop-shadow">
               <div className="text-xs">
-                <span className="text-[#4FD1C7] font-semibold">
+                <span className="text-[#5FE1D7] font-semibold">
                   {item.type === 'VIDEO' ? 'Vidéo' : 'Photo'}
                 </span>
               </div>
@@ -613,7 +613,7 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
             >
               <Heart size={18} className={userHasLiked ? 'fill-current' : ''} />
             </button>
-            <span className="text-xs text-white/70">{totalDisplay}</span>
+            <span className="text-xs text-white/90">{totalDisplay}</span>
           </div>
 
           {/* Réactions */}
@@ -642,7 +642,7 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
             >
               <Flame size={18} className={userReactions.length > 0 ? 'text-violet-300' : showReactions ? 'text-violet-300' : ''} />
             </button>
-            <span className="text-xs text-white/70">
+            <span className="text-xs text-white/90">
               {(stats?.reactions?.LOVE ?? 0) + (stats?.reactions?.FIRE ?? 0) + (stats?.reactions?.WOW ?? 0) + (stats?.reactions?.SMILE ?? 0)}
             </span>
 

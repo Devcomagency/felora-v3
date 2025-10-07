@@ -2,6 +2,7 @@
 
 import React, { useState, useCallback, useEffect, useMemo } from 'react'
 import { useSession } from 'next-auth/react'
+import { getMessageButtonConfig } from '@/utils/messageButtonLogic'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft, Star, BadgeCheck, Crown, MapPin } from 'lucide-react'
 
@@ -197,7 +198,8 @@ function ActionsBar({
   onShowDetails,
   isFollowing,
   isLiked,
-  isSaved
+  isSaved,
+  session
 }: {
   onMessage: () => void
   onFollow: () => void
@@ -208,16 +210,27 @@ function ActionsBar({
   isFollowing: boolean
   isLiked: boolean
   isSaved: boolean
+  session: any
 }) {
   return (
     <div className="px-4 py-3 border-y border-white/10">
       <div className="flex gap-3 mb-3">
-        <button
-          onClick={onMessage}
-          className="flex-1 bg-gradient-to-r from-pink-500 to-purple-600 text-white py-3 px-4 rounded-xl font-medium text-sm hover:from-pink-600 hover:to-purple-700 transition-all"
-        >
-          Message
-        </button>
+        {/* Bouton Message - logique intelligente selon le rôle */}
+        {(() => {
+          const messageConfig = getMessageButtonConfig(session, { user: { role: 'escort' } }, { push: onMessage })
+          
+          if (!messageConfig.showButton) return null
+          
+          return (
+            <button
+              onClick={onMessage}
+              disabled={messageConfig.disabled}
+              className="flex-1 bg-gradient-to-r from-pink-500 to-purple-600 text-white py-3 px-4 rounded-xl font-medium text-sm hover:from-pink-600 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {messageConfig.buttonText}
+            </button>
+          )
+        })()}
         <button
           onClick={onFollow}
           className={`flex-1 py-3 px-4 rounded-xl font-medium text-sm transition-all ${
@@ -331,8 +344,9 @@ export default function ProfileClientV2({ profile }: { profile: EscortProfile })
 
   // Handlers
   const handleMessage = useCallback(() => {
-    router.push(`/messages?to=${profile.id}`)
-  }, [router, profile.id])
+    const messageConfig = getMessageButtonConfig(session?.user, profile, router)
+    messageConfig.onClick()
+  }, [session?.user, profile, router])
 
   const handleFollow = useCallback(() => {
     setIsFollowing(!isFollowing)
@@ -438,6 +452,7 @@ export default function ProfileClientV2({ profile }: { profile: EscortProfile })
           isFollowing={isFollowing}
           isLiked={isLiked}
           isSaved={isSaved}
+          session={session}
         />
 
         <div className="py-6">

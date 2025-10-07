@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { optimizeMediaUrl, generateThumbnailUrl } from '@/lib/media-optimizer'
 import { dbOperationWithRetry, createErrorHandler } from '@/lib/retry-utils'
 import { feedRateLimit } from '@/lib/rate-limiter'
+import { generateSignedUrl } from '@/lib/media/signedUrls'
 
 // Cache en mémoire pour les requêtes fréquentes
 const cache = new Map<string, { data: any; timestamp: number }>()
@@ -183,11 +184,15 @@ export async function GET(req: NextRequest) {
         ? generateThumbnailUrl(media.thumbUrl)
         : generateThumbnailUrl(media.url)
 
+      // Générer des signed URLs pour sécuriser les médias (expiration 1 heure)
+      const signedUrl = generateSignedUrl(optimizedUrl, { expirySeconds: 3600 })
+      const signedThumb = generateSignedUrl(optimizedThumb, { expirySeconds: 3600 })
+
       return {
         id: media.id,
         type: mediaType,
-        url: optimizedUrl,
-        thumb: optimizedThumb,
+        url: signedUrl,
+        thumb: signedThumb,
         visibility: media.visibility,
         ownerType: isClub ? 'CLUB' : 'ESCORT', // Type de propriétaire
         clubHandle: isClub ? profile.handle : null, // Handle du club si applicable

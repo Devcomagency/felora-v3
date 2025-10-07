@@ -172,3 +172,18 @@ export const heavyOperationRateLimit = createRateLimitMiddleware({
     return `heavy:${ip}`
   }
 })
+
+/**
+ * Rate limiting pour les likes et réactions
+ */
+export const reactionRateLimit = createRateLimitMiddleware({
+  limit: 30, // 30 likes/réactions par minute (1 toutes les 2 secondes)
+  windowMs: 60000, // 1 minute
+  keyGenerator: (req) => {
+    // Combiner IP et userId si disponible
+    const forwarded = req.headers.get('x-forwarded-for')
+    const ip = forwarded ? forwarded.split(',')[0] : 'unknown'
+    const userId = req.headers.get('x-user-id') || 'anonymous'
+    return `reaction:${ip}:${userId}`
+  }
+})

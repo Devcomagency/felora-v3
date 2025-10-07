@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, Suspense, useRef, useEffect } from 'react'
+import React, { useState, Suspense, useRef, useEffect, useCallback, useMemo } from 'react'
 import '@/styles/scrollbar.css'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
@@ -18,9 +18,11 @@ import {
 } from 'lucide-react'
 import { useSearch } from '@/hooks/useSearch'
 import { useClubs } from '@/hooks/useClubs'
+import { useThrottle } from '@/hooks/useThrottle'
+import { useDebounce } from '@/hooks/useDebounce'
 import EscortCard2025 from '@/components/search/EscortCard2025'
 import ClubCard from '@/components/search/ClubCard'
-import SearchFilters from '@/components/search/SearchFilters'
+import SearchFiltersSimple from '@/components/search/SearchFiltersSimple'
 
 // Interface pour les escortes
 interface Escort {
@@ -107,17 +109,20 @@ function SearchContent() {
   const [searchQuery, setSearchQuery] = useState('')
   const [activeSection, setActiveSection] = useState<'escorts' | 'clubs'>('escorts')
 
+  // Debounce de la recherche
+  const debouncedSearchQuery = useDebounce(searchQuery, 300)
+
   // Refs pour le scroll
   const escortsSectionRef = useRef<HTMLDivElement>(null)
   const clubsSectionRef = useRef<HTMLDivElement>(null)
 
-  // Gestion des likes
-  const handleLike = (escortId: string) => {
+  // Gestion des likes (memoized)
+  const handleLike = useCallback((escortId: string) => {
     if (!isAuthenticated) {
       router.push('/login')
       return
     }
-    
+
     setLikedEscorts(prev => {
       const newSet = new Set(prev)
       if (newSet.has(escortId)) {
@@ -127,63 +132,59 @@ function SearchContent() {
       }
       return newSet
     })
-  }
+  }, [isAuthenticated, router])
 
-  // Gestion de la recherche
-  const handleSearchChange = (value: string) => {
-    setSearchQuery(value)
-    // Débounce la recherche
-    const timeoutId = setTimeout(() => {
-      setEscortsFilters({ ...escortsFilters, q: value })
-      setClubsFilters({ ...clubsFilters, q: value })
-    }, 300)
+  // Appliquer la recherche debouncée aux filtres
+  useEffect(() => {
+    if (debouncedSearchQuery !== escortsFilters.q) {
+      setEscortsFilters({ ...escortsFilters, q: debouncedSearchQuery })
+      setClubsFilters({ ...clubsFilters, q: debouncedSearchQuery })
+    }
+  }, [debouncedSearchQuery])
 
-    return () => clearTimeout(timeoutId)
-  }
-
-  // Gestion des filtres pour les escortes
-  const handleEscortsFiltersChange = (newFilters: any) => {
+  // Gestion des filtres pour les escortes (memoized)
+  const handleEscortsFiltersChange = useCallback((newFilters: any) => {
     setEscortsFilters(newFilters)
-  }
+  }, [setEscortsFilters])
 
-  // Gestion des filtres pour les clubs
-  const handleClubsFiltersChange = (newFilters: any) => {
+  // Gestion des filtres pour les clubs (memoized)
+  const handleClubsFiltersChange = useCallback((newFilters: any) => {
     setClubsFilters(newFilters)
-  }
+  }, [setClubsFilters])
 
-  // Navigation entre sections
-  const scrollToSection = (section: 'escorts' | 'clubs') => {
+  // Navigation entre sections (memoized)
+  const scrollToSection = useCallback((section: 'escorts' | 'clubs') => {
     if (section === 'escorts' && escortsSectionRef.current) {
       escortsSectionRef.current.scrollIntoView({ behavior: 'smooth' })
     } else if (section === 'clubs' && clubsSectionRef.current) {
       clubsSectionRef.current.scrollIntoView({ behavior: 'smooth' })
     }
     setActiveSection(section)
-  }
+  }, [])
 
-  // Infinite scroll pour les escortes
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollTop = window.pageYOffset || document.documentElement.scrollTop
-      const windowHeight = window.innerHeight
-      const documentHeight = document.documentElement.scrollHeight
-      
-      // Se déclencher quand on arrive à 300px de la fin
-      if (scrollTop + windowHeight >= documentHeight - 300) {
-        console.log('[Scroll] Near bottom detected', { scrollTop, windowHeight, documentHeight, activeSection, escortsHasMore, clubsHasMore })
-        if (activeSection === 'escorts' && escortsHasMore && !escortsLoading) {
-          console.log('[Scroll] Loading more escorts...')
-          loadMoreEscorts()
-        } else if (activeSection === 'clubs' && clubsHasMore && !clubsLoading) {
-          console.log('[Scroll] Loading more clubs...')
-          loadMoreClubs()
-        }
+  // Infinite scroll pour les escortes (avec throttle pour performance)
+  const handleScroll = useThrottle(() => {
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop
+    const windowHeight = window.innerHeight
+    const documentHeight = document.documentElement.scrollHeight
+
+    // Se déclencher quand on arrive à 300px de la fin
+    if (scrollTop + windowHeight >= documentHeight - 300) {
+      console.log('[Scroll] Near bottom detected', { scrollTop, windowHeight, documentHeight, activeSection, escortsHasMore, clubsHasMore })
+      if (activeSection === 'escorts' && escortsHasMore && !escortsLoading) {
+        console.log('[Scroll] Loading more escorts...')
+        loadMoreEscorts()
+      } else if (activeSection === 'clubs' && clubsHasMore && !clubsLoading) {
+        console.log('[Scroll] Loading more clubs...')
+        loadMoreClubs()
       }
     }
+  }, 200)
 
+  useEffect(() => {
     window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
-  }, [activeSection, escortsHasMore, clubsHasMore, escortsLoading, clubsLoading, loadMoreEscorts, loadMoreClubs])
+  }, [handleScroll])
 
   return (
     <div className="min-h-screen bg-black text-white max-w-[500px] mx-auto overflow-y-auto">
@@ -203,21 +204,23 @@ function SearchContent() {
         <div className="px-4 pb-4">
           <div className="flex gap-3">
             <div className="flex-1 relative">
-              <Search size={20} className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white/40" />
+              <Search size={20} className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white/40" aria-hidden="true" />
               <input
                 type="text"
                 placeholder="Rechercher par nom, ville..."
                 value={searchQuery}
-                onChange={(e) => handleSearchChange(e.target.value)}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-12 pr-4 py-4 text-white placeholder-white/40 glass input-focus rounded-2xl"
+                aria-label="Rechercher des escortes ou clubs par nom ou ville"
               />
             </div>
-            
+
             <button
               onClick={() => setShowFilters(true)}
               className="px-4 py-4 glass btn-glow rounded-2xl flex items-center justify-center"
+              aria-label="Ouvrir les filtres de recherche"
             >
-              <SlidersHorizontal size={20} className="text-white/80" />
+              <SlidersHorizontal size={20} className="text-white/80" aria-hidden="true" />
             </button>
           </div>
         </div>
@@ -227,23 +230,33 @@ function SearchContent() {
           <div className="flex gap-6">
             <button
               onClick={() => scrollToSection('escorts')}
-              className={`text-lg font-medium transition-all duration-300 ${
-                activeSection === 'escorts' 
-                  ? 'text-white' 
+              className={`relative text-lg font-medium transition-all duration-300 ${
+                activeSection === 'escorts'
+                  ? 'text-white'
                   : 'text-white/60 hover:text-white/80'
               }`}
+              aria-label="Afficher les escortes"
+              aria-current={activeSection === 'escorts' ? 'page' : undefined}
             >
               Escortes
+              {activeSection === 'escorts' && (
+                <span className="absolute -bottom-2 left-0 w-full h-0.5 bg-gradient-to-r from-[#FF6B9D] to-[#B794F6] rounded-full" />
+              )}
             </button>
             <button
               onClick={() => scrollToSection('clubs')}
-              className={`text-lg font-medium transition-all duration-300 ${
-                activeSection === 'clubs' 
-                  ? 'text-white' 
+              className={`relative text-lg font-medium transition-all duration-300 ${
+                activeSection === 'clubs'
+                  ? 'text-white'
                   : 'text-white/60 hover:text-white/80'
               }`}
+              aria-label="Afficher les clubs et salons"
+              aria-current={activeSection === 'clubs' ? 'page' : undefined}
             >
               Clubs & Salons
+              {activeSection === 'clubs' && (
+                <span className="absolute -bottom-2 left-0 w-full h-0.5 bg-gradient-to-r from-[#FF6B9D] to-[#B794F6] rounded-full" />
+              )}
             </button>
           </div>
         </div>
@@ -366,6 +379,7 @@ function SearchContent() {
                   onClick={loadMoreEscorts}
                   disabled={escortsLoading}
                   className="px-6 py-3 gradient-pink-purple text-white font-medium rounded-xl btn-glow disabled:opacity-50"
+                  aria-label={escortsLoading ? 'Chargement en cours' : 'Charger plus d\'escortes'}
                 >
                   {escortsLoading ? 'Chargement...' : 'Voir plus'}
                 </button>
@@ -375,52 +389,67 @@ function SearchContent() {
         )}
       </div>
 
+      {/* Bouton flottant carte (bas droite) */}
+      <button
+        onClick={() => router.push('/map-test')}
+        className="fixed bottom-20 right-4 w-14 h-14 rounded-full bg-gradient-to-r from-[#FF6B9D] to-[#B794F6] shadow-lg shadow-pink-500/25 flex items-center justify-center btn-glow z-40 hover:scale-110 transition-transform duration-300"
+        aria-label="Ouvrir la carte interactive"
+      >
+        <MapPin size={24} className="text-white" aria-hidden="true" />
+      </button>
+
       {/* Bottom Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 max-w-[500px] mx-auto bg-black/90 backdrop-blur-xl border-t border-white/5">
+      <div className="fixed bottom-0 left-0 right-0 max-w-[500px] mx-auto bg-black/90 backdrop-blur-xl border-t border-white/5 z-50">
         <div className="flex items-center justify-around px-4 py-3">
-          <button 
+          <button
             onClick={() => router.push('/')}
             className="flex flex-col items-center gap-1 p-2 hover:bg-white/5 rounded-xl transition-all duration-300"
+            aria-label="Retour à l'accueil"
           >
-            <Home size={24} className="text-white/70" />
+            <Home size={24} className="text-white/70" aria-hidden="true" />
             <span className="text-xs text-white/60">Accueil</span>
           </button>
-          
-          <button 
+
+          <button
             onClick={() => router.push('/search')}
             className="flex flex-col items-center gap-1 p-2 hover:bg-white/5 rounded-xl transition-all duration-300"
+            aria-label="Page de recherche actuelle"
+            aria-current="page"
           >
-            <Search size={24} className="text-pink-500" />
+            <Search size={24} className="text-pink-500" aria-hidden="true" />
             <span className="text-xs text-pink-500">Recherche</span>
           </button>
-          
-          <button 
+
+          <button
             onClick={() => router.push('/test-media-simple')}
             className="relative w-14 h-14 rounded-2xl gradient-pink-purple shadow-lg shadow-pink-500/25 flex items-center justify-center btn-glow"
+            aria-label="Ajouter du contenu"
           >
-            <Plus size={28} className="text-white" />
+            <Plus size={28} className="text-white" aria-hidden="true" />
           </button>
-          
-          <button 
+
+          <button
             onClick={() => router.push('/messages')}
             className="flex flex-col items-center gap-1 p-2 hover:bg-white/5 rounded-xl transition-all duration-300"
+            aria-label="Accéder aux messages"
           >
-            <MessageSquare size={24} className="text-white/70" />
+            <MessageSquare size={24} className="text-white/70" aria-hidden="true" />
             <span className="text-xs text-white/60">Messages</span>
           </button>
-          
-          <button 
+
+          <button
             onClick={() => router.push('/profile')}
             className="flex flex-col items-center gap-1 p-2 hover:bg-white/5 rounded-xl transition-all duration-300"
+            aria-label="Voir mon profil"
           >
-            <User size={24} className="text-white/70" />
+            <User size={24} className="text-white/70" aria-hidden="true" />
             <span className="text-xs text-white/60">Profil</span>
           </button>
         </div>
       </div>
 
-      {/* Modal de filtres */}
-      <SearchFilters
+      {/* Modal de filtres simplifié */}
+      <SearchFiltersSimple
         filters={activeSection === 'escorts' ? escortsFilters : clubsFilters}
         onFiltersChange={activeSection === 'escorts' ? handleEscortsFiltersChange : handleClubsFiltersChange}
         onClose={() => setShowFilters(false)}

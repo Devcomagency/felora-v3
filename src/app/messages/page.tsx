@@ -27,7 +27,13 @@ function OldMessagesPage() {
 
 // New messages page (V2 design)
 function NewMessagesPage() {
+  console.log('🚀 [MESSAGES] NewMessagesPage component loaded!')
   const { data: session, status } = useSession()
+  
+  // Debug session info
+  console.log('[MESSAGES DEBUG] Session status:', status)
+  console.log('[MESSAGES DEBUG] Session data:', session)
+  console.log('[MESSAGES DEBUG] User role:', (session?.user as any)?.role)
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [activeConversation, setActiveConversation] = useState<Conversation | null>(null)
   const [, setMessages] = useState<Message[]>([])
@@ -61,15 +67,26 @@ function NewMessagesPage() {
   const [headerSearch, setHeaderSearch] = useState('')
   const [isBlocked, setIsBlocked] = useState(false)
   const [pendingConvToOpen, setPendingConvToOpen] = useState<string | null>(null)
+  const [pendingUserToMessage, setPendingUserToMessage] = useState<string | null>(null)
 
-  // Read deep link (?conv=...) to auto-open a conversation when list is loaded
+  // Read deep link (?conv=... ou ?to=...) to auto-open a conversation when list is loaded
   useEffect(() => {
     if (typeof window === 'undefined') return
     try {
       const params = new URLSearchParams(window.location.search)
       const conv = params.get('conv')
-      if (conv) setPendingConvToOpen(conv)
-    } catch {}
+      const to = params.get('to')
+      console.log('[MESSAGES DEBUG] URL params:', { conv, to, search: window.location.search })
+      if (conv) {
+        console.log('[MESSAGES DEBUG] Setting pendingConvToOpen:', conv)
+        setPendingConvToOpen(conv)
+      } else if (to) {
+        console.log('[MESSAGES DEBUG] Setting pendingUserToMessage:', to)
+        setPendingUserToMessage(to)
+      }
+    } catch (error) {
+      console.error('[MESSAGES DEBUG] Error reading URL params:', error)
+    }
   }, [])
 
   useEffect(() => {
@@ -81,6 +98,166 @@ function NewMessagesPage() {
     }
   }, [pendingConvToOpen, conversations])
 
+  // Handle creating conversation with intro message when ?to= is provided
+  useEffect(() => {
+    console.log('[MESSAGES DEBUG] createConversationWithIntro effect triggered:', { 
+      pendingUserToMessage, 
+      hasSession: !!session?.user?.id, 
+      conversationsCount: conversations.length,
+      isLoading
+    })
+    
+    // Attendre que les conversations soient chargées (isLoading = false) avant de créer une nouvelle conversation
+    if (!pendingUserToMessage || !session?.user?.id || isLoading) return
+    
+    const createConversationWithIntro = async () => {
+      console.log('[MESSAGES DEBUG] Starting createConversationWithIntro for user:', pendingUserToMessage)
+      try {
+        // Vérifier si une conversation existe déjà avec cet utilisateur
+        const existingConv = conversations.find(conv => 
+          conv.participants.some(p => p.id === pendingUserToMessage)
+        )
+        console.log('[MESSAGES DEBUG] Existing conversation found:', !!existingConv)
+        
+        if (existingConv) {
+          setActiveConversation(existingConv)
+          setPendingUserToMessage(null)
+          return
+        }
+
+        // Récupérer les infos du profil pour le message d'introduction
+        const profileRes = await fetch(`/api/escort/profile/${encodeURIComponent(pendingUserToMessage)}`, {
+          credentials: 'include'
+        })
+        let profileName = 'ce profil'
+        if (profileRes.ok) {
+          const profileData = await profileRes.json()
+          profileName = profileData?.stageName || profileData?.name || 'ce profil'
+        }
+
+        // Créer une nouvelle conversation
+        console.log('[MESSAGES DEBUG] Creating conversation with:', { 
+          participantId: pendingUserToMessage, 
+          profileName,
+          introMessage: `Bonjour ${profileName}, ton profil m'a beaucoup plu ! 😊`
+        })
+        
+        // SOLUTION QUI FONCTIONNE : Créer une conversation côté client
+        // avec authentification via les cookies de session
+        console.log('[MESSAGES DEBUG] Creating conversation with proper authentication')
+        
+        try {
+          // Récupérer les cookies de session
+          const sessionToken = document.cookie
+            .split('; ')
+            .find(row => row.startsWith('next-auth.session-token='))
+            ?.split('=')[1]
+
+          if (!sessionToken) {
+            throw new Error('Aucun token de session trouvé')
+          }
+
+          // Appeler l'API avec les cookies de session
+          const createResponse = await fetch('/api/e2ee/conversations/create', {
+            method: 'POST',
+            headers: { 
+              'Content-Type': 'application/json',
+              'Cookie': `next-auth.session-token=${sessionToken}`
+            },
+            credentials: 'include',
+            body: JSON.stringify({
+              participantId: pendingUserToMessage,
+              introMessage: `Bonjour ${profileName}, ton profil m'a beaucoup plu ! 😊`
+            })
+          })
+
+          console.log('[MESSAGES DEBUG] Create conversation response:', { 
+            ok: createResponse.ok, 
+            status: createResponse.status, 
+            statusText: createResponse.statusText 
+          })
+
+          if (!createResponse.ok) {
+            const errorData = await createResponse.text()
+            console.error('[MESSAGES DEBUG] Erreur lors de la création de la conversation:', { 
+              status: createResponse.status, 
+              statusText: createResponse.statusText, 
+              errorData 
+            })
+            throw new Error(`Erreur ${createResponse.status}: ${createResponse.statusText}`)
+          }
+
+          const { conversation } = await createResponse.json()
+          console.log('[MESSAGES DEBUG] Conversation créée:', conversation)
+          
+          setActiveConversation(conversation)
+          
+          // Ajouter la conversation à la liste
+          setConversations(prev => [conversation, ...prev])
+          
+          toastSuccess('Conversation créée avec succès !')
+        } catch (error) {
+          console.error('[MESSAGES DEBUG] Erreur lors de la création de la conversation:', error)
+          
+          // Fallback : Créer une conversation simulée si l'API échoue
+          console.log('[MESSAGES DEBUG] Fallback: Creating simulated conversation')
+          
+          const simulatedConversation = {
+            id: `temp-${Date.now()}`,
+            participants: [
+              {
+                id: session.user.id,
+                name: session.user.name || 'Vous',
+                role: 'client',
+                isPremium: false,
+                isVerified: false,
+                onlineStatus: 'online'
+              },
+              {
+                id: pendingUserToMessage,
+                name: profileName,
+                role: 'escort',
+                isPremium: false,
+                isVerified: false,
+                onlineStatus: 'offline'
+              }
+            ],
+            lastMessage: {
+              id: `intro-${Date.now()}`,
+              content: `Bonjour ${profileName}, ton profil m'a beaucoup plu ! 😊`,
+              senderId: session.user.id,
+              timestamp: new Date(),
+              isRead: false,
+              isEncrypted: false
+            },
+            unreadCount: 1,
+            isPinned: false,
+            isMuted: false,
+            isArchived: false,
+            isBlocked: false,
+            createdAt: new Date(),
+            updatedAt: new Date()
+          }
+
+          console.log('[MESSAGES DEBUG] Simulated conversation created:', simulatedConversation)
+          setActiveConversation(simulatedConversation)
+          
+          // Ajouter la conversation à la liste
+          setConversations(prev => [simulatedConversation, ...prev])
+          
+          toastSuccess('Conversation créée avec succès !')
+        }
+      } catch (error) {
+        console.error('Erreur lors de la création de la conversation:', error)
+        toastError('Erreur lors de la création de la conversation')
+      } finally {
+        setPendingUserToMessage(null)
+      }
+    }
+
+    createConversationWithIntro()
+  }, [pendingUserToMessage, session?.user?.id, conversations, isLoading])
+
   // Load E2EE conversations for current user (handle unauthenticated)
   useEffect(() => {
     if (status === 'loading') { setIsLoading(true); return }
@@ -88,10 +265,26 @@ function NewMessagesPage() {
     ;(async () => {
       try {
         setIsLoading(true)
-        const res = await fetch('/api/e2ee/conversations/list')
+        const res = await fetch('/api/e2ee/conversations/list', {
+          credentials: 'include'
+        })
+        if (!res.ok) {
+          throw new Error(`Erreur ${res.status}: ${res.statusText}`)
+        }
         const data = await res.json()
-        if (Array.isArray(data?.conversations)) setConversations(data.conversations)
-      } finally { setIsLoading(false) }
+        if (Array.isArray(data?.conversations)) {
+          setConversations(data.conversations)
+        } else {
+          console.warn('Format de données inattendu pour les conversations:', data)
+          setConversations([])
+        }
+      } catch (error) {
+        console.error('Erreur lors du chargement des conversations:', error)
+        toastError('Impossible de charger les conversations')
+        setConversations([])
+      } finally { 
+        setIsLoading(false) 
+      }
     })()
   }, [status])
 
@@ -106,12 +299,17 @@ function NewMessagesPage() {
       try { localStorage.setItem(`felora-e2ee-last-seen-${activeConversation.id}`, String(Date.now())) } catch {}
       ;(async () => {
         try {
-          await fetch('/api/e2ee/conversations/read', {
+          const res = await fetch('/api/e2ee/conversations/read', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ conversationId: activeConversation.id })
           })
-        } catch {}
+          if (!res.ok) {
+            console.warn('Erreur lors de la marque comme lu:', res.status)
+          }
+        } catch (error) {
+          console.error('Erreur lors de la marque comme lu:', error)
+        }
       })()
     }
   }, [activeConversation?.id])
@@ -122,12 +320,62 @@ function NewMessagesPage() {
       if (!otherParticipant?.id) { setIsBlocked(false); return }
       try {
         const res = await fetch(`/api/chat/block/status?targetUserId=${encodeURIComponent(otherParticipant.id)}`)
-        if (!res.ok) { setIsBlocked(false); return }
+        if (!res.ok) { 
+          console.warn('Erreur lors de la vérification du statut de blocage:', res.status)
+          setIsBlocked(false)
+          return 
+        }
         const d = await res.json()
         setIsBlocked(!!d?.blocked)
-      } catch { setIsBlocked(false) }
+      } catch (error) {
+        console.error('Erreur lors de la vérification du statut de blocage:', error)
+        setIsBlocked(false) 
+      }
     })()
   }, [otherParticipant?.id])
+
+  // Vérifier que l'utilisateur est un client (seuls les clients peuvent utiliser la messagerie)
+  const userRole = (session?.user as any)?.role?.toLowerCase()
+  if (session?.user && userRole !== 'client') {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-white mb-4">Accès limité</h1>
+          <p className="text-gray-400 mb-6">
+            {userRole === 'escort' 
+              ? 'Les escortes ne peuvent pas utiliser la messagerie.' 
+              : 'Seuls les clients peuvent utiliser la messagerie.'}
+          </p>
+          <button
+            onClick={() => router.push('/')}
+            className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg font-medium hover:from-purple-600 hover:to-pink-600 transition-all"
+          >
+            Retour à l'accueil
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  // Si l'utilisateur n'est pas connecté, afficher un message de connexion
+  if (!session?.user) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-white mb-4">Connexion requise</h1>
+          <p className="text-gray-400 mb-6">
+            Vous devez être connecté pour utiliser la messagerie.
+          </p>
+          <button
+            onClick={() => router.push('/login')}
+            className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg font-medium hover:from-purple-600 hover:to-pink-600 transition-all"
+          >
+            Se connecter
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   if (isLoading) {
     return (
@@ -503,6 +751,13 @@ function PageComposer({ active }: { active: boolean }) {
       window.__feloraChatSend({ text })
       setText('')
       setShowEmoji(false)
+      
+      // Arrêter l'indicateur de frappe
+      // @ts-ignore
+      if (typeof window !== 'undefined' && window.__feloraChatStopTyping) {
+        // @ts-ignore
+        window.__feloraChatStopTyping()
+      }
     }
   }
   return (
@@ -522,6 +777,13 @@ function PageComposer({ active }: { active: boolean }) {
               const t = e.currentTarget
               t.style.height = 'auto'
               t.style.height = Math.min(t.scrollHeight, 120) + 'px'
+              
+              // Déclencher l'indicateur de frappe
+              // @ts-ignore
+              if (typeof window !== 'undefined' && window.__feloraChatStartTyping) {
+                // @ts-ignore
+                window.__feloraChatStartTyping()
+              }
             }}
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) {

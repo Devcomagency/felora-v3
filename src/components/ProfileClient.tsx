@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect, useMemo } from 'react'
 import { useSession } from 'next-auth/react'
+import { getMessageButtonConfig } from '@/utils/messageButtonLogic'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
@@ -655,33 +656,32 @@ export default function ProfileClient({ profile: initialProfile }: ProfileClient
                   <Diamond size={14} />
                 </motion.button>
                 
-                <button 
-                  onClick={async () => {
-                    console.log('Bouton Message cliqué - ouverture messagerie ciblée')
-                    try {
-                      let to = (profile as any).userId as string | undefined
-                      if (!to) {
-                        try {
-                          const r = await fetch(`/api/escort/profile/${encodeURIComponent(profile.id)}`, { cache: 'no-store' })
-                          if (r.ok) {
-                            const data = await r.json()
-                            to = data?.userId || (data?.user && data.user.id) || undefined
-                          }
-                        } catch {}
-                      }
-                      if (to) {
-                        router.push(`/messages?to=${encodeURIComponent(to)}`)
-                      } else {
-                        router.push('/messages')
-                      }
-                    } catch {
-                      router.push('/messages')
-                    }
-                  }}
-                  className="flex-1 py-2 px-4 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg font-medium text-sm transition-all hover:from-blue-600 hover:to-cyan-600 active:scale-95 shadow-md"
-                >
-                  Message
-                </button>
+                {/* Bouton Message - logique intelligente selon le rôle */}
+                {(() => {
+                  const messageConfig = getMessageButtonConfig(session?.user, profile, router)
+                  
+                  console.log('[MESSAGE DEBUG] Session user:', session?.user)
+                  console.log('[MESSAGE DEBUG] Profile:', profile)
+                  console.log('[MESSAGE DEBUG] Message config:', messageConfig)
+                  
+                  if (!messageConfig.showButton) {
+                    console.log('[MESSAGE DEBUG] Bouton masqué - showButton = false')
+                    return null
+                  }
+                  
+                  return (
+                    <button 
+                      onClick={() => {
+                        console.log('[MESSAGE DEBUG] Bouton cliqué, exécution de:', messageConfig.onClick)
+                        messageConfig.onClick()
+                      }}
+                      disabled={messageConfig.disabled}
+                      className="flex-1 py-2 px-4 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg font-medium text-sm transition-all hover:from-blue-600 hover:to-cyan-600 active:scale-95 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {messageConfig.buttonText}
+                    </button>
+                  )
+                })()}
                 {/* Bouton Contact avec dropdown */}
                 <div className="relative">
                   <button

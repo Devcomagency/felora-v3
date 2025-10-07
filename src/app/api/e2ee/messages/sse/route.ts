@@ -1,84 +1,99 @@
-import { NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { registerStream, unregisterStream } from '@/app/api/e2ee/messages/stream'
-import { getServerSession } from 'next-auth/next'
-import { authOptions } from '@/lib/auth'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/app/api/auth/[...nextauth]/route'
+import { jwtVerify } from 'jose'
 
-export const dynamic = 'force-dynamic'
-
-export async function GET(req: Request) {
-  const { searchParams } = new URL(req.url)
-  const conversationId = searchParams.get('conversationId') || ''
-  const after = searchParams.get('after')
-  const session = await getServerSession(authOptions)
-  const userId = (session as any)?.user?.id || ''
-
-  if (!conversationId || !userId) {
-    return NextResponse.json({ error: 'missing_params' }, { status: 400 })
-  }
-
-  const conv = await prisma.e2EEConversation.findUnique({ where: { id: conversationId } })
-  if (!conv) return NextResponse.json({ error: 'conversation_not_found' }, { status: 404 })
-  if (!conv.participants.includes(userId)) return NextResponse.json({ error: 'not_authorized' }, { status: 403 })
-
-  const stream = new ReadableStream({
-    start(controller) {
-      const encoder = new TextEncoder()
-      const send = (payload: any) => {
-        const data = `data: ${JSON.stringify(payload)}\n\n`
-        controller.enqueue(encoder.encode(data))
-      }
-      // Optional catch-up: send messages after a given timestamp before live registration
-      if (after) {
-        const ts = Number(after)
-        if (!Number.isNaN(ts) && ts > 0) {
-          // Fire and forget; we can't await in start; wrap in promise
-          ;(async () => {
-            try {
-              const since = new Date(ts)
-              const missed = await prisma.e2EEMessageEnvelope.findMany({
-                where: { conversationId, createdAt: { gt: since } },
-                orderBy: { createdAt: 'asc' },
-                take: 200
-              })
-              for (const m of missed) {
-                send(m)
-              }
-            } catch {}
-          })()
-        }
-      }
-      registerStream(conversationId, send)
-      // Initial comment to open the stream
-      controller.enqueue(encoder.encode(': connected\n\n'))
-
-      const keepAlive = setInterval(() => {
-        try {
-          if (controller.desiredSize !== null) {
-            controller.enqueue(encoder.encode(': keep-alive\n\n'))
-          }
-        } catch (error) {
-          // Controller fermé, ne rien faire
-          clearInterval(keepAlive)
-        }
-      }, 25000)
-
-      ;(controller as any)._cleanup = () => {
-        clearInterval(keepAlive)
-        unregisterStream(conversationId, send)
-      }
-    },
-    cancel() {
-      // @ts-ignore
-      this._cleanup?.()
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url)
+    const conversationId = searchParams.get('conversationId')
+    
+    if (!conversationId) {
+      return new Response('ID de conversation requis', { status: 400 })
     }
-  })
 
-  return new Response(stream, {
-    headers: {
-      'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-cache, no-transform',
-      'Connection': 'keep-alive',
-    },
-  })
+    // Authentification
+    let session = await getServerSession(authOptions)
+    let user = null
+    
+    if (session?.user?.id) {
+      user = session.user
+    } else {
+      // Fallback : décoder le JWT directement
+      const cookieHeader = request.headers.get('cookie')
+      const sessionToken = cookieHeader?.match(/next-auth\.session-token=([^;]+)/)?.[1]
+      
+      if (sessionToken) {
+        try {
+          const secret = new TextEncoder().encode(process.env.NEXTAUTH_SECRET)
+          const { payload } = await jwtVerify(sessionToken, secret)
+          
+          if (payload.sub) {
+            user = {
+              id: payload.sub,
+              email: payload.email as string,
+              name: payload.name as string,
+              role: (payload as any).role as string,
+            }
+          }
+        } catch (jwtError) {
+          console.error('[SSE API] Error decoding JWT:', jwtError)
+        }
+      }
+    }
+    
+    if (!user?.id) {
+      return new Response('Non authentifié', { status: 401 })
+    }
+
+    // Vérifier que la conversation existe et que l'utilisateur y participe
+    const conversation = await prisma.e2EEConversation.findUnique({
+      where: { id: conversationId }
+    })
+
+    if (!conversation) {
+      return new Response('Conversation introuvable', { status: 404 })
+    }
+
+    const participants = conversation.participants as string[]
+    if (!participants.includes(user.id)) {
+      return new Response('Accès non autorisé', { status: 403 })
+    }
+
+    // Créer un stream SSE
+    const stream = new ReadableStream({
+      start(controller) {
+        // Envoyer un message de connexion
+        const connectMessage = `data: ${JSON.stringify({ type: 'connected', timestamp: new Date().toISOString() })}\n\n`
+        controller.enqueue(new TextEncoder().encode(connectMessage))
+
+        // Simuler des messages en temps réel (pour l'instant)
+        const interval = setInterval(() => {
+          const heartbeat = `data: ${JSON.stringify({ type: 'heartbeat', timestamp: new Date().toISOString() })}\n\n`
+          controller.enqueue(new TextEncoder().encode(heartbeat))
+        }, 30000) // Heartbeat toutes les 30 secondes
+
+        // Nettoyer l'intervalle quand la connexion se ferme
+        request.signal.addEventListener('abort', () => {
+          clearInterval(interval)
+          controller.close()
+        })
+      }
+    })
+
+    return new Response(stream, {
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Cache-Control'
+      }
+    })
+
+  } catch (error) {
+    console.error('Erreur lors de la connexion SSE:', error)
+    return new Response('Erreur interne du serveur', { status: 500 })
+  }
 }

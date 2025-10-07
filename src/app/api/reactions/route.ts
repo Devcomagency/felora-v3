@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { reactionRateLimit } from '@/lib/rate-limiter'
 
 const TYPES = ['LIKE','LOVE','FIRE','WOW','SMILE'] as const
 type ReactionType = typeof TYPES[number]
@@ -46,6 +47,23 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  // Vérifier le rate limiting
+  const rateLimitResult = reactionRateLimit(req)
+  if (!rateLimitResult.allowed) {
+    console.log('🚫 [REACTIONS] Rate limit dépassé')
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Trop de réactions, veuillez ralentir',
+        code: 'RATE_LIMIT_EXCEEDED'
+      },
+      {
+        status: 429,
+        headers: rateLimitResult.headers
+      }
+    )
+  }
+
   const body = await req.json().catch(() => ({}))
   const mediaId: string = String(body.mediaId || '')
   const userId: string = String(body.userId || '')
@@ -115,7 +133,9 @@ export async function POST(req: NextRequest) {
     }
 
     const data = await getStats(mediaId, userId)
-    return NextResponse.json({ success:true, ...data })
+    return NextResponse.json({ success:true, ...data }, {
+      headers: rateLimitResult.headers
+    })
   } catch (e:any) {
     return NextResponse.json({ success:false, error: e?.message || 'server_error' }, { status: 500 })
   }

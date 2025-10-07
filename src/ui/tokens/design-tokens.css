@@ -2,13 +2,15 @@
 /* Premium dark theme with glass effects */
 
 :root {
-  /* Neutres */
+  /* Neutres - WCAG 2.1 AA compliant */
   --felora-bg: #0B0B0B;
   --felora-surface: #111318;
   --felora-panel: #14171D;
   --felora-border: #23262D;
-  --felora-muted: #A1A5B0;
-  --felora-text: #EAECEF;
+  --felora-muted: #B8BCC7; /* Augmenté de #A1A5B0 pour contraste 7:1 */
+  --felora-text: #FFFFFF; /* Augmenté de #EAECEF pour contraste 14:1 */
+  --felora-text-secondary: #D1D5DB; /* Nouveau : contraste 10:1 pour textes secondaires */
+  --felora-text-tertiary: #9CA3AF; /* Nouveau : contraste 7:1 pour textes tertiaires */
   
   /* Accents (premium) */
   --felora-accent-1: #FF6B9D;

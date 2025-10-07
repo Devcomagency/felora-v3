@@ -61,7 +61,13 @@ export default function ConversationList({
 
   const formatLastMessageTime = (date: Date) => {
     const now = new Date()
-    const messageDate = new Date(date)
+    const messageDate = date instanceof Date ? date : new Date(date)
+    
+    // Vérifier que la date est valide
+    if (isNaN(messageDate.getTime())) {
+      return 'Maintenant'
+    }
+    
     const diffInHours = (now.getTime() - messageDate.getTime()) / (1000 * 60 * 60)
     
     if (diffInHours < 24) {
@@ -222,7 +228,7 @@ export default function ConversationList({
             </p>
             {searchQuery && (
               <button
-                onClick={() => handleSearch('')}
+                onClick={() => onSearch?.('')}
                 className="mt-2 text-purple-400 hover:text-purple-300 text-sm"
               >
                 Effacer la recherche

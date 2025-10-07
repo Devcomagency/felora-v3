@@ -1,7 +1,11 @@
 /**
  * Utilitaire pour optimiser les URLs des médias
  * Ajoute des paramètres de compression et de format optimisé
+ *
+ * ⚡ CDN ACTIVÉ : Utilise Cloudflare R2 pour une distribution rapide des médias
  */
+
+import { optimizeCdnUrl, buildCdnUrl, isCdnUrl } from './media/cdn'
 
 export interface MediaOptimizationOptions {
   width?: number
@@ -36,17 +40,17 @@ export function optimizeImageUrl(
     blur = 0
   } = options
 
-  // Pour les URLs Cloudflare R2 ou similaires, ajouter des paramètres d'optimisation
-  if (originalUrl.includes('r2.dev') || originalUrl.includes('cloudflare') || originalUrl.includes('media.felora.ch')) {
-    const url = new URL(originalUrl)
-    url.searchParams.set('width', width.toString())
-    url.searchParams.set('height', height.toString())
-    url.searchParams.set('quality', quality.toString())
-    url.searchParams.set('format', format)
-    if (blur > 0) {
-      url.searchParams.set('blur', blur.toString())
-    }
-    return url.toString()
+  // ⚡ Utiliser le CDN Cloudflare R2 pour l'optimisation
+  if (isCdnUrl(originalUrl)) {
+    return optimizeCdnUrl(originalUrl, {
+      width,
+      height,
+      quality,
+      format,
+      blur: blur > 0 ? blur : undefined,
+      fit: 'cover',
+      position: 'center'
+    })
   }
 
   // Pour les URLs locales ou autres, ajouter un suffixe d'optimisation
@@ -74,32 +78,11 @@ export function optimizeVideoUrl(
     return 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4'
   }
 
-  const { quality = 'medium' } = options
-
-  // Pour les URLs Cloudflare R2 ou similaires, ajouter des paramètres d'optimisation vidéo
-  if (originalUrl.includes('r2.dev') || originalUrl.includes('cloudflare') || originalUrl.includes('media.felora.ch')) {
-    const url = new URL(originalUrl)
-
-    // Paramètres d'optimisation vidéo
-    switch (quality) {
-      case 'low':
-        url.searchParams.set('bitrate', '500k')
-        url.searchParams.set('resolution', '720p')
-        break
-      case 'medium':
-        url.searchParams.set('bitrate', '1500k')
-        url.searchParams.set('resolution', '1080p')
-        break
-      case 'high':
-        url.searchParams.set('bitrate', '3000k')
-        url.searchParams.set('resolution', '1080p')
-        break
-    }
-
-    url.searchParams.set('format', 'mp4')
-    url.searchParams.set('codec', 'h264')
-
-    return url.toString()
+  // ⚡ Utiliser le CDN pour les vidéos
+  if (isCdnUrl(originalUrl)) {
+    // Les vidéos sont déjà optimisées sur Cloudflare R2
+    // On retourne l'URL CDN telle quelle
+    return buildCdnUrl(originalUrl)
   }
 
   return originalUrl

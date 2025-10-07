@@ -132,9 +132,13 @@ export function useProfileActions(profileName: string) {
   const router = useRouter()
   const [showContactDropdown, setShowContactDropdown] = useState(false)
 
-  const handleMessage = () => {
-    console.log('Bouton Message cliqué - redirection vers /message')
-    router.push('/message')
+  const handleMessage = (profileId?: string) => {
+    console.log('Bouton Message cliqué - redirection vers /messages')
+    if (profileId) {
+      router.push(`/messages?to=${encodeURIComponent(profileId)}`)
+    } else {
+      router.push('/messages')
+    }
   }
 
   const handleCall = (phoneNumber: string) => {

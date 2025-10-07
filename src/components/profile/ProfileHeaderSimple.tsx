@@ -7,6 +7,7 @@ import {
   ChevronDown, MessageCircle, BadgeCheck
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { getMessageButtonConfig } from '@/utils/messageButtonLogic'
 import { EscortProfile, useProfileStore } from '../../stores/profileStore.simple'
 
 interface ProfileHeaderProps {
@@ -17,6 +18,7 @@ interface ProfileHeaderProps {
 
 export default function ProfileHeaderSimple({ profile, extendedData, onShowDetail }: ProfileHeaderProps) {
   const router = useRouter()
+  const { data: session } = useSession()
   const [showFullDescription, setShowFullDescription] = useState(false)
   const [showContactDropdown, setShowContactDropdown] = useState(false)
   const [showGiftModal, setShowGiftModal] = useState(false)
@@ -34,11 +36,8 @@ export default function ProfileHeaderSimple({ profile, extendedData, onShowDetai
   const totalReactions = getTotalReactions(profile.id)
 
   const handleMessage = () => {
-    try {
-      router.push(`/messages?to=${encodeURIComponent(profile.id)}`)
-    } catch {
-      router.push('/messages')
-    }
+    const messageConfig = getMessageButtonConfig(session?.user, profile, router)
+    messageConfig.onClick()
   }
 
   const handleCall = (phoneNumber: string) => {
@@ -139,12 +138,22 @@ export default function ProfileHeaderSimple({ profile, extendedData, onShowDetai
                 <Diamond size={14} />
               </motion.button>
               
-              <button 
-                onClick={handleMessage}
-                className="flex-1 py-2 px-4 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg font-medium text-sm transition-all hover:from-blue-600 hover:to-cyan-600 active:scale-95 shadow-md"
-              >
-                Message
-              </button>
+              {/* Bouton Message - logique intelligente selon le rôle */}
+              {(() => {
+                const messageConfig = getMessageButtonConfig(session?.user, profile, router)
+                
+                if (!messageConfig.showButton) return null
+                
+                return (
+                  <button 
+                    onClick={handleMessage}
+                    disabled={messageConfig.disabled}
+                    className="flex-1 py-2 px-4 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg font-medium text-sm transition-all hover:from-blue-600 hover:to-cyan-600 active:scale-95 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {messageConfig.buttonText}
+                  </button>
+                )
+              })()}
               
               {/* Bouton Contact avec dropdown */}
               <div className="relative">

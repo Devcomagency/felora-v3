@@ -77,6 +77,7 @@ export default function ActionsBar({
   }, [followState, onFollow, profileId, loading])
 
   const handleMessage = useCallback(() => {
+    console.log('[ACTIONSBAR DEBUG] Message button clicked:', { profileId, onMessage: !!onMessage })
     onMessage?.(profileId)
   }, [onMessage, profileId])
 
@@ -108,14 +109,17 @@ export default function ActionsBar({
         )}
         
         {/* Message - optionnel */}
-        {showMessage && (
-          <button 
-            onClick={handleMessage}
-            className="flex-1 py-2 px-4 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg font-medium text-sm transition-all hover:from-blue-600 hover:to-cyan-600 active:scale-95 shadow-md"
-          >
-            Message
-          </button>
-        )}
+        {(() => {
+          console.log('[ACTIONSBAR DEBUG] Message button render check:', { showMessage, onMessage: !!onMessage })
+          return showMessage && (
+            <button 
+              onClick={handleMessage}
+              className="flex-1 py-2 px-4 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg font-medium text-sm transition-all hover:from-blue-600 hover:to-cyan-600 active:scale-95 shadow-md"
+            >
+              Message
+            </button>
+          )
+        })()}
 
         {/* Favorite */}
         <button
