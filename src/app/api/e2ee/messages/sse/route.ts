@@ -3,12 +3,15 @@ import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 import { jwtVerify } from 'jose'
+import { sseBroadcaster } from '@/lib/sse-broadcast'
+
+export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const conversationId = searchParams.get('conversationId')
-    
+
     if (!conversationId) {
       return new Response('ID de conversation requis', { status: 400 })
     }
@@ -16,19 +19,19 @@ export async function GET(request: NextRequest) {
     // Authentification
     let session = await getServerSession(authOptions)
     let user = null
-    
+
     if (session?.user?.id) {
       user = session.user
     } else {
       // Fallback : décoder le JWT directement
       const cookieHeader = request.headers.get('cookie')
       const sessionToken = cookieHeader?.match(/next-auth\.session-token=([^;]+)/)?.[1]
-      
+
       if (sessionToken) {
         try {
           const secret = new TextEncoder().encode(process.env.NEXTAUTH_SECRET)
           const { payload } = await jwtVerify(sessionToken, secret)
-          
+
           if (payload.sub) {
             user = {
               id: payload.sub,
@@ -42,7 +45,7 @@ export async function GET(request: NextRequest) {
         }
       }
     }
-    
+
     if (!user?.id) {
       return new Response('Non authentifié', { status: 401 })
     }
@@ -64,20 +67,35 @@ export async function GET(request: NextRequest) {
     // Créer un stream SSE
     const stream = new ReadableStream({
       start(controller) {
+        // Enregistrer le client dans le broadcaster
+        sseBroadcaster.addClient(conversationId, user.id, controller)
+
         // Envoyer un message de connexion
         const connectMessage = `data: ${JSON.stringify({ type: 'connected', timestamp: new Date().toISOString() })}\n\n`
         controller.enqueue(new TextEncoder().encode(connectMessage))
 
-        // Simuler des messages en temps réel (pour l'instant)
-        const interval = setInterval(() => {
-          const heartbeat = `data: ${JSON.stringify({ type: 'heartbeat', timestamp: new Date().toISOString() })}\n\n`
-          controller.enqueue(new TextEncoder().encode(heartbeat))
+        // Heartbeat pour maintenir la connexion
+        const heartbeatInterval = setInterval(() => {
+          try {
+            const heartbeat = `data: ${JSON.stringify({ type: 'heartbeat', timestamp: new Date().toISOString() })}\n\n`
+            controller.enqueue(new TextEncoder().encode(heartbeat))
+          } catch (error) {
+            console.error('[SSE] Erreur lors du heartbeat:', error)
+            clearInterval(heartbeatInterval)
+          }
         }, 30000) // Heartbeat toutes les 30 secondes
 
-        // Nettoyer l'intervalle quand la connexion se ferme
+        // Nettoyer quand la connexion se ferme
         request.signal.addEventListener('abort', () => {
-          clearInterval(interval)
-          controller.close()
+          console.log(`[SSE] Connexion fermée pour ${user.id} dans ${conversationId}`)
+          clearInterval(heartbeatInterval)
+          sseBroadcaster.removeClient(conversationId, user.id)
+
+          try {
+            controller.close()
+          } catch (error) {
+            // Le controller est peut-être déjà fermé
+          }
         })
       }
     })

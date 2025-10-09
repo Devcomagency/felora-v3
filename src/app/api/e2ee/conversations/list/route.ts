@@ -30,9 +30,13 @@ export async function GET() {
     // Batch users
     const allParticipantIds = Array.from(new Set(mine.flatMap(c => (c.participants as any as string[]) || [])))
     const users = await prisma.user.findMany({ where: { id: { in: allParticipantIds } }, select: { id: true, name: true, role: true } })
-    const escortProfiles = await prisma.escortProfile.findMany({ where: { userId: { in: allParticipantIds } }, select: { userId: true, stageName: true } })
+    const escortProfiles = await prisma.escortProfile.findMany({ where: { userId: { in: allParticipantIds } }, select: { userId: true, stageName: true, profilePhoto: true } })
     const stageByUser = new Map<string, string>()
-    for (const ep of escortProfiles) stageByUser.set(ep.userId, ep.stageName || '')
+    const photoByUser = new Map<string, string | null>()
+    for (const ep of escortProfiles) {
+      stageByUser.set(ep.userId, ep.stageName || '')
+      photoByUser.set(ep.userId, ep.profilePhoto)
+    }
     // Batch read markers
     const reads = await prisma.e2EEConversationRead.findMany({ where: { conversationId: { in: convIds }, userId } })
     const readMap = new Map<string, Date>()
@@ -43,7 +47,8 @@ export async function GET() {
       const participants = parts.map(pid => {
         const u = users.find(x => x.id === pid)
         const display = stageByUser.get(pid) || u?.name || pid
-        return { id: pid, name: display, role: (u?.role || 'client') as any, isPremium: false, isVerified: false, onlineStatus: 'offline' }
+        const avatar = photoByUser.get(pid) || null
+        return { id: pid, name: display, avatar, role: (u?.role || 'client') as any, isPremium: false, isVerified: false, onlineStatus: 'offline' }
       })
       const last = lastByConv.get(c.id)
       const lastMsg = last
@@ -85,7 +90,19 @@ export async function GET() {
       }
     })
 
-    return NextResponse.json({ conversations: result })
+    console.log('[E2EE LIST API] Returning conversations:', result.length)
+    console.log('[E2EE LIST API] Conversation IDs:', result.map(c => c.id))
+
+    // Dédupliquer côté serveur par sécurité
+    const uniqueResult = Array.from(
+      new Map(result.map((conv: any) => [conv.id, conv])).values()
+    )
+
+    if (uniqueResult.length !== result.length) {
+      console.warn('[E2EE LIST API] ⚠️ Doublons détectés et supprimés:', result.length - uniqueResult.length)
+    }
+
+    return NextResponse.json({ conversations: uniqueResult })
   } catch (e) {
     console.error('e2ee/conversations/list error', e)
     return NextResponse.json({ error: 'server_error' }, { status: 500 })

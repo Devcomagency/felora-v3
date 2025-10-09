@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { SEARCH_CONSTANTS } from '@/constants/messaging'
 
 interface SearchFilters {
   q: string
@@ -242,8 +243,6 @@ export function useSearch(): UseSearchReturn {
       setError(null)
 
       const queryString = buildQueryString(filters, cursor)
-      console.log('[useSearch] Fetching escorts with query:', queryString)
-      console.log('[useSearch] Full URL:', `/api/escorts?${queryString}`)
       
       const response = await fetch(`/api/escorts?${queryString}`, {
         signal: controller.signal
@@ -254,9 +253,6 @@ export function useSearch(): UseSearchReturn {
       }
 
       const data: SearchResponse = await response.json()
-      console.log('[useSearch] API response:', data)
-      console.log('[useSearch] Items count:', data.items?.length || 0)
-      console.log('[useSearch] Items details:', data.items?.map(item => ({ id: item.id, stageName: item.stageName, city: item.city })))
 
       if (append) {
         setEscorts(prev => [...prev, ...data.items])
@@ -270,12 +266,7 @@ export function useSearch(): UseSearchReturn {
 
     } catch (err: any) {
       if (err.name !== 'AbortError') {
-        console.error('[useSearch] Erreur lors du chargement des escortes:', err)
-        console.error('[useSearch] Error details:', {
-          name: err.name,
-          message: err.message,
-          stack: err.stack
-        })
+        console.error('Erreur lors du chargement des escortes:', err)
         setError(err.message || 'Erreur lors du chargement')
       }
     } finally {
@@ -290,15 +281,13 @@ export function useSearch(): UseSearchReturn {
     }
 
     debounceTimeoutRef.current = setTimeout(() => {
-      console.log('[useSearch] Debounced search triggered:', newFilters)
       updateURL(newFilters)
       fetchEscorts(newFilters, undefined, false)
-    }, 300)
+    }, SEARCH_CONSTANTS.DEBOUNCE_DELAY)
   }, [updateURL, fetchEscorts])
 
   // Set filters with debounce
   const setFilters = useCallback((newFilters: SearchFilters) => {
-    console.log('[useSearch] Setting filters:', newFilters)
     setFiltersState(newFilters)
     debouncedSearch(newFilters)
   }, [debouncedSearch])

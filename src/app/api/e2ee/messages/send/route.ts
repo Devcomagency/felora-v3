@@ -3,10 +3,11 @@ import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 import { jwtVerify } from 'jose'
+import { sseBroadcaster } from '@/lib/sse-broadcast'
 
 export async function POST(request: NextRequest) {
   try {
-    const { conversationId, senderUserId, senderDeviceId, messageId, cipherText } = await request.json()
+    const { conversationId, senderUserId, senderDeviceId, messageId, cipherText, attachment } = await request.json()
     
     if (!conversationId || !senderUserId || !messageId || !cipherText) {
       return NextResponse.json({ 
@@ -70,6 +71,8 @@ export async function POST(request: NextRequest) {
         senderDeviceId: senderDeviceId || `${senderUserId}-device`,
         cipherText,
         messageId,
+        attachmentUrl: attachment?.url || null,
+        attachmentMeta: attachment?.meta || null,
         status: 'SENT'
       }
     })
@@ -80,14 +83,34 @@ export async function POST(request: NextRequest) {
       data: { updatedAt: new Date() }
     })
 
-    return NextResponse.json({ 
+    // Construire l'objet message pour la diffusion
+    const messageForBroadcast = {
+      type: 'message' as const,
+      id: message.id,
+      messageId: message.messageId,
+      conversationId: message.conversationId,
+      senderUserId: message.senderUserId,
+      cipherText: message.cipherText,
+      attachmentUrl: message.attachmentUrl,
+      attachmentMeta: message.attachmentMeta,
+      createdAt: message.createdAt.toISOString(),
+      status: 'sent'
+    }
+
+    // Diffuser le message via SSE
+    console.log(`[SEND API] Broadcasting message ${messageId} to conversation ${conversationId}`)
+    sseBroadcaster.broadcast(conversationId, messageForBroadcast)
+
+    return NextResponse.json({
       message: {
         id: message.id,
-        content: message.cipherText,
-        senderId: message.senderUserId,
-        timestamp: message.createdAt,
-        isRead: message.readAt !== null,
-        isEncrypted: true
+        messageId: message.messageId,
+        senderUserId: message.senderUserId,
+        cipherText: message.cipherText,
+        attachmentUrl: message.attachmentUrl,
+        attachmentMeta: message.attachmentMeta,
+        createdAt: message.createdAt.toISOString(),
+        status: 'sent'
       }
     })
 

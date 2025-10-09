@@ -196,7 +196,7 @@ export async function GET(request: NextRequest) {
         where.AND = where.AND || []
         where.AND.push({
           OR: categories.map(cat => ({
-            stageName: { contains: cat, mode: 'insensitive' as const }
+            category: { equals: cat, mode: 'insensitive' as const }
           }))
         })
       }

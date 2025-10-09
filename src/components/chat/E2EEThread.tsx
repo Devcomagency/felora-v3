@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { v4 as uuidv4 } from 'uuid'
+import { motion, AnimatePresence } from 'framer-motion'
 import { encryptFileWithEnvelopes, decryptFileWithEnvelopes, decryptFile } from '@packages/e2ee-signal/crypto'
 import { fetchBundle, uploadKeyBundle } from '@packages/e2ee-signal/client'
 import { ensureLibsignalBootstrap } from '@packages/e2ee-signal/bootstrap'
@@ -14,7 +15,7 @@ type Envelope = { id: string; messageId: string; senderUserId: string; cipherTex
 export default function E2EEThread({ conversationId, userId, partnerId }: { conversationId: string; userId: string; partnerId: string }) {
   const [envelopes, setEnvelopes] = useState<Envelope[]>([])
   const [loadingHistory, setLoadingHistory] = useState(true)
-  const [mediaCache, setMediaCache] = useState<Record<string, { url: string; mime: string }>>({})
+  const [mediaCache, setMediaCache] = useState<Record<string, { url: string | null; mime: string }>>({})
   const esRef = useRef<EventSource | null>(null)
   const { success: toastSuccess, error: toastError, info: toastInfo } = useNotification()
   const [uploadProgress, setUploadProgress] = useState<number | null>(null)
@@ -23,6 +24,18 @@ export default function E2EEThread({ conversationId, userId, partnerId }: { conv
   const [isTyping, setIsTyping] = useState(false)
   const [typingUser, setTypingUser] = useState<string | null>(null)
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const messagesEndRef = useRef<HTMLDivElement | null>(null)
+
+  const scrollToBottomTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  
+  const scrollToBottom = () => {
+    if (scrollToBottomTimeoutRef.current) {
+      clearTimeout(scrollToBottomTimeoutRef.current)
+    }
+    scrollToBottomTimeoutRef.current = setTimeout(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    }, 100)
+  }
 
   const addEnvelopeUnique = (env: Envelope) => {
     setEnvelopes(prev => prev.some(e => e.id === env.id || e.messageId === env.messageId) ? prev : [...prev, env])
@@ -35,11 +48,12 @@ export default function E2EEThread({ conversationId, userId, partnerId }: { conv
   const startTyping = () => {
     setIsTyping(true)
     setTypingUser(userId)
-    
+
     // Envoyer l'événement de frappe au serveur
     fetch('/api/e2ee/typing/start', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({ conversationId, userId })
     }).catch(error => {
       console.error('Erreur lors de l\'envoi de l\'indicateur de frappe:', error)
@@ -57,11 +71,12 @@ export default function E2EEThread({ conversationId, userId, partnerId }: { conv
   const stopTyping = () => {
     setIsTyping(false)
     setTypingUser(null)
-    
+
     // Envoyer l'événement d'arrêt de frappe au serveur
     fetch('/api/e2ee/typing/stop', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({ conversationId, userId })
     }).catch(error => {
       console.error('Erreur lors de l\'arrêt de l\'indicateur de frappe:', error)
@@ -106,62 +121,83 @@ export default function E2EEThread({ conversationId, userId, partnerId }: { conv
     ;(async () => {
       try {
         setLoadingHistory(true)
-        const res = await fetch(`/api/e2ee/messages/history?conversationId=${encodeURIComponent(conversationId)}`)
+        const res = await fetch(`/api/e2ee/messages/history?conversationId=${encodeURIComponent(conversationId)}`, {
+          credentials: 'include'
+        })
         if (!res.ok) {
           throw new Error(`Erreur ${res.status}: ${res.statusText}`)
         }
         const data = await res.json()
         if (Array.isArray(data?.messages)) {
-          setEnvelopes(data.messages)
+
+          // Dédupliquer les messages par ID avant de les définir
+          const uniqueMessages = Array.from(
+            new Map(data.messages.map((m: any) => [m.id, m])).values()
+          )
+
+          setEnvelopes(uniqueMessages as Envelope[])
         } else {
           console.warn('Format de données inattendu:', data)
         }
       } catch (error) {
         console.error('Erreur lors du chargement de l\'historique:', error)
         toastError('Impossible de charger l\'historique des messages')
-      } finally { 
-        setLoadingHistory(false) 
+      } finally {
+        setLoadingHistory(false)
       }
     })()
   }, [conversationId])
 
-  // SSE (with catch-up after last known timestamp)
+  // SSE (with catch-up after last known timestamp) - SE CONNECTE UNE SEULE FOIS
   useEffect(() => {
     if (loadingHistory) return
+
+
     esRef.current?.close()
-    const last = envelopes.length ? envelopes[envelopes.length - 1] : null
-    const after = last ? `&after=${encodeURIComponent(new Date(last.createdAt).getTime())}` : ''
-    const es = new EventSource(`/api/e2ee/messages/sse?conversationId=${encodeURIComponent(conversationId)}${after}`)
-    es.onmessage = (evt) => { 
-      try { 
+    const es = new EventSource(`/api/e2ee/messages/sse?conversationId=${encodeURIComponent(conversationId)}`, {
+      withCredentials: true
+    })
+
+    es.onmessage = (evt) => {
+      try {
         const data = JSON.parse(evt.data)
-        
+
         // Gérer les messages
         if (data.type === 'message') {
           const env: Envelope = data
+
+          // FIX: S'assurer que le senderUserId est défini
+          if (!env.senderUserId && env.messageId) {
+            console.warn('[SSE] senderUserId manquant, impossible de déterminer l\'expéditeur')
+          }
+
           addEnvelopeUnique(env)
         }
-        
+
         // Gérer les indicateurs de frappe
         if (data.type === 'typing_start' && data.userId !== userId) {
           setIsTyping(true)
           setTypingUser(data.userId)
         }
-        
+
         if (data.type === 'typing_stop' && data.userId !== userId) {
           setIsTyping(false)
           setTypingUser(null)
         }
       } catch (error) {
-        console.error('Erreur lors du parsing du message SSE:', error)
-      } 
+        console.error('[SSE] Erreur parsing:', error)
+      }
     }
+
     es.onerror = (error) => {
-      console.error('Erreur de connexion SSE:', error)
-      toastError('Connexion en temps réel interrompue')
+      console.error('[SSE] Erreur connexion:', error)
     }
+
     esRef.current = es
-    return () => { es.close() }
+
+    return () => {
+      es.close()
+    }
   }, [conversationId, loadingHistory])
 
   // Helpers for UTF-8 safe base64
@@ -188,16 +224,45 @@ export default function E2EEThread({ conversationId, userId, partnerId }: { conv
   useEffect(() => {
     (async () => {
       const sess = getSession(partnerId)
-      if (!sess) return
       const updates: Record<string, string> = {}
       for (const env of envelopes) {
         if (env.attachmentUrl) continue // only text here
-        if (env.senderUserId === userId) continue // outgoing; skip decrypt (not addressed to self)
-        if (textCache[env.id]) continue
-        try {
-          const plain = await decrypt(sess, env.cipherText)
-          updates[env.id] = plain
-        } catch {}
+        if (textCache[env.id]) continue // déjà en cache
+
+        // Pour les messages sortants, essayer de décoder directement en base64
+        if (env.senderUserId === userId) {
+          try {
+            const decoded = b64DecodeUtf8(env.cipherText)
+            if (decoded && !decoded.startsWith('[attachment:')) {
+              updates[env.id] = decoded
+            }
+          } catch {}
+          continue
+        }
+
+        // Pour les messages entrants, décrypter avec la session Signal
+        if (sess) {
+          try {
+            const plain = await decrypt(sess, env.cipherText)
+            updates[env.id] = plain
+          } catch {
+            // Fallback: essayer de décoder en base64 simple
+            try {
+              const decoded = b64DecodeUtf8(env.cipherText)
+              if (decoded && !decoded.startsWith('[attachment:')) {
+                updates[env.id] = decoded
+              }
+            } catch {}
+          }
+        } else {
+          // Pas de session Signal, essayer de décoder en base64
+          try {
+            const decoded = b64DecodeUtf8(env.cipherText)
+            if (decoded && !decoded.startsWith('[attachment:')) {
+              updates[env.id] = decoded
+            }
+          } catch {}
+        }
       }
       if (Object.keys(updates).length) setTextCache(prev => ({ ...prev, ...updates }))
     })()
@@ -211,21 +276,30 @@ export default function E2EEThread({ conversationId, userId, partnerId }: { conv
     window.__feloraChatStopTyping = stopTyping
   }, [conversationId, userId])
 
+  // Auto-scroll vers le bas quand les messages changent (mais pas pendant l'upload)
+  useEffect(() => {
+    if (!loadingHistory && envelopes.length > 0 && uploadProgress === null) {
+      setTimeout(scrollToBottom, 100)
+    }
+  }, [envelopes.length, loadingHistory, uploadProgress])
+
   // Bridge external composer
   useEffect(() => {
     // @ts-ignore
     window.__feloraChatSend = async ({ text, file }: { text?: string; file?: File }) => {
       const deviceId = localStorage.getItem(`felora-e2ee-device-${userId}`) || `${userId}-dev`
       if (file) {
+        const messageId = uuidv4()
         try {
-          toastInfo('Upload en cours…')
+          // OPTIMISTIC UI pour les médias - afficher une barre de progression
+          setUploadProgress(0)
+
           let sess = getSession(partnerId)
           if (!sess) {
             try { const { bundle } = await fetchBundle(partnerId); sess = await createSession(partnerId, bundle) } catch {}
           }
           const recipients = [userId, partnerId]
           const wrap = async (keyB64: string, _recipient: string) => {
-            // For now, fallback: if session exists (partner), use encrypt(keyB64) → placeholder; else plaintext for self
             if (_recipient === partnerId && sess) return await encrypt(sess, keyB64)
             return keyB64
           }
@@ -234,25 +308,35 @@ export default function E2EEThread({ conversationId, userId, partnerId }: { conv
           fd.append('file', cipherBlob, 'blob.bin')
           fd.append('meta', JSON.stringify(meta))
           const { url } = await uploadWithProgress(fd, (p) => setUploadProgress(p))
-          const messageId = uuidv4()
-          updateMessageStatus(messageId, 'sending')
+
           const payload = { conversationId, senderUserId: userId, senderDeviceId: deviceId, messageId, cipherText: btoa(`[attachment:${url}]`), attachment: { url, meta } }
           const res = await fetch('/api/e2ee/messages/send', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(payload) })
+
+          setUploadProgress(null)
+
           if (!res.ok) {
-            updateMessageStatus(messageId, 'failed')
             throw new Error('send_failed')
           }
+
           const data = await res.json()
           if (data?.message) {
-            addEnvelopeUnique(data.message)
+            const newEnvelope = data.message
+            if (!newEnvelope.senderUserId) {
+              newEnvelope.senderUserId = userId
+            }
+            // Ajouter le vrai message (pas de message optimiste à supprimer)
+            addEnvelopeUnique(newEnvelope)
             updateMessageStatus(messageId, 'sent')
           }
+
           toastSuccess('Média envoyé')
-          setUploadProgress(null)
+          scrollToBottom()
         } catch (error) {
           console.error('Erreur lors de l\'envoi du média:', error)
-          toastError('Échec de l\'envoi du média. Veuillez réessayer.')
+          toastError('Échec de l\'envoi du média')
           setUploadProgress(null)
+          // Marquer le message optimiste comme échoué
+          updateMessageStatus(messageId, 'failed')
         }
         return
       }
@@ -264,17 +348,58 @@ export default function E2EEThread({ conversationId, userId, partnerId }: { conv
         const ct = text ? (sess ? await encrypt(sess, text) : b64EncodeUtf8(text)) : ''
         if (!ct) return
         const messageId = uuidv4()
+
+        // OPTIMISTIC UI: Afficher le message immédiatement avant l'envoi
+        const optimisticEnvelope: Envelope = {
+          id: `temp-${messageId}`,
+          messageId,
+          senderUserId: userId,
+          cipherText: ct,
+          createdAt: new Date().toISOString(),
+          status: 'sending'
+        }
+        addEnvelopeUnique(optimisticEnvelope)
         updateMessageStatus(messageId, 'sending')
+
+        // Stocker le texte pour l'affichage immédiat
+        if (text) {
+          setTextCache(prev => ({ ...prev, [`temp-${messageId}`]: text }))
+        }
+
+        // Envoyer en arrière-plan
         const payload = { conversationId, senderUserId: userId, senderDeviceId: deviceId, messageId, cipherText: ct }
-        const res = await fetch('/api/e2ee/messages/send', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+        const res = await fetch('/api/e2ee/messages/send', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(payload) })
+
         if (!res.ok) {
           updateMessageStatus(messageId, 'failed')
           throw new Error('send_failed')
         }
+
         const data = await res.json()
+
         if (data?.message) {
-          addEnvelopeUnique(data.message)
+          const newEnvelope = data.message
+
+          // CRITICAL FIX: S'assurer que le senderUserId est défini
+          if (!newEnvelope.senderUserId) {
+            newEnvelope.senderUserId = userId
+          }
+
+          // Remplacer le message optimiste par le vrai message de l'API
+          setEnvelopes(prev => prev.map(e =>
+            e.id === `temp-${messageId}` ? newEnvelope : e
+          ))
           updateMessageStatus(messageId, 'sent')
+
+          // Stocker le texte original pour le vrai ID
+          if (text && newEnvelope.id) {
+            setTextCache(prev => {
+              const updated: Record<string, string> = { ...prev, [newEnvelope.id]: text }
+              const tempKey = `temp-${messageId}`
+              delete updated[tempKey] // Supprimer l'ancien cache si présent
+              return updated
+            })
+          }
         }
       } catch (error) {
         console.error('Erreur lors de l\'envoi du message:', error)
@@ -292,56 +417,82 @@ export default function E2EEThread({ conversationId, userId, partnerId }: { conv
       const updates: Record<string, { url: string; mime: string }> = {}
       for (const env of pending) {
         try {
+
           const urlObj = new URL(String(env.attachmentUrl), window.location.origin)
           const safePath = urlObj.pathname.split('/').pop() || ''
           const resp = await fetch(`/api/e2ee/attachments/get?path=${encodeURIComponent(safePath)}&conversationId=${encodeURIComponent(conversationId)}`)
+
+          if (!resp.ok) {
+            throw new Error(`Erreur fetch: ${resp.status} ${resp.statusText}`)
+          }
+
           const cipherBlob = await resp.blob()
+
           // Unwrap via envelope if present
           const sess = getSession(env.senderUserId === userId ? partnerId : env.senderUserId)
+
           const unwrap = async (envelope: string) => {
             if (sess && env.senderUserId !== userId) {
               // Receiver side — if we had libsignal: decrypt(envelope)
-              // Fallback: base64 decode via decrypt placeholder not needed; envelope contains keyB64 or encrypt(base64)
               try {
                 // @ts-ignore
                 const dec = await decrypt(sess as any, envelope)
                 return dec
-              } catch {
+              } catch (e) {
+                console.warn('[E2EE] Erreur déchiffrement envelope Signal, fallback vers plaintext:', e)
                 return envelope
               }
             }
             return envelope
           }
+
           const plainBlob = env.attachmentMeta?.envelopes
             ? await decryptFileWithEnvelopes(cipherBlob, env.attachmentMeta, unwrap, userId)
             : await decryptFile(cipherBlob, env.attachmentMeta)
+
           updates[env.id] = { url: URL.createObjectURL(plainBlob), mime: env.attachmentMeta?.mime || plainBlob.type || 'application/octet-stream' }
         } catch (error) {
-          console.error('Erreur lors du déchiffrement du média:', error)
-          toastError('Impossible de déchiffrer le média')
+          console.error('[E2EE] Erreur lors du déchiffrement du média:', env.id)
+          console.error('[E2EE] Détails erreur:', error)
+          // Marquer le média comme indisponible
+          updates[env.id] = { url: null, mime: 'error' }
         }
       }
       if (Object.keys(updates).length) setMediaCache(prev => ({ ...prev, ...updates }))
     })()
-    return () => { Object.values(mediaCache).forEach(({ url }) => URL.revokeObjectURL(url)) }
+    return () => { Object.values(mediaCache).forEach(({ url }) => { if (url) URL.revokeObjectURL(url) }) }
   }, [envelopes])
 
   const renderText = (env: Envelope) => {
-    // Prefer decrypted cache for incoming. For outgoing or fallback, attempt base64.
+    // Préférer le cache déchiffré
     const cached = textCache[env.id]
     if (cached) return cached.startsWith('[attachment:') ? '' : cached
+
+    // Si c'est une pièce jointe, ne pas afficher de texte
+    if (env.attachmentUrl) return ''
+
+    // Essayer de décoder en base64 comme fallback
     try {
       const dec = b64DecodeUtf8(env.cipherText)
-      if (dec.startsWith('[attachment:')) return ''
-      return dec
-    } catch {
-      return env.attachmentUrl ? '' : '•••'
-    }
+      if (dec && !dec.startsWith('[attachment:')) {
+        return dec
+      }
+    } catch {}
+
+    // Si tout échoue, afficher un message de chargement
+    return '[unable to decrypt]'
   }
 
   return (
     <div className="grid grid-rows-[1fr] h-full min-h-0">
-      <div className="relative overflow-y-auto p-3 sm:p-4 space-y-2">
+      <div
+        className="relative overflow-y-auto p-3 sm:p-4 space-y-2 pb-20 lg:pb-4"
+        style={{
+          WebkitOverflowScrolling: 'touch',
+          touchAction: 'pan-y',
+          overscrollBehavior: 'contain'
+        }}
+      >
         {uploadProgress !== null && (
           <div className="sticky bottom-2 left-0 right-0 z-10">
             <div className="mx-auto w-full max-w-xs bg-white/10 border border-white/20 rounded-full h-2 overflow-hidden">
@@ -389,35 +540,68 @@ export default function E2EEThread({ conversationId, userId, partnerId }: { conv
           }
 
           return (
-            <div key={env.id} className={`relative max-w-[85%] sm:max-w-[70%] rounded-xl px-3 py-2 pr-10 text-sm ${bubbleClass}`}>
+            <motion.div 
+              key={env.id} 
+              initial={{ opacity: 0, y: 20, scale: 0.95 }}
+              animate={{ 
+                opacity: status === 'sending' ? 0.7 : 1, 
+                y: 0, 
+                scale: 1 
+              }}
+              transition={{ duration: 0.3, ease: 'easeOut' }}
+              className={`relative max-w-[85%] sm:max-w-[70%] rounded-xl px-3 py-2 ${media && media.url && media.mime.startsWith('audio/') ? 'pb-8' : 'pr-10'} text-sm ${bubbleClass} ${status === 'sending' ? 'animate-pulse' : ''}`}>
               {text && <div className="whitespace-pre-wrap break-words mb-1">{text}</div>}
-              {media && media.mime.startsWith('image/') && (
-                <img src={media.url} alt="Pièce jointe" className="mt-1 rounded-lg max-w-full h-auto max-h-[55vh] border border-white/10" loading="lazy" />
+              {media && media.mime === 'error' && (
+                <div className="mt-1 mb-5 text-xs text-red-400/70 flex items-center gap-1">
+                  <span>⚠️</span>
+                  <span>Média indisponible</span>
+                </div>
               )}
-              {media && media.mime.startsWith('video/') && (
-                <video src={media.url} controls className="mt-1 rounded-lg max-w-full h-auto max-h-[55vh] border border-white/10" />
+              {media && media.url && media.mime.startsWith('image/') && (
+                <img src={media.url} alt="Pièce jointe" className="mt-1 mb-5 rounded-lg max-w-full h-auto max-h-[55vh] border border-white/10" loading="lazy" />
+              )}
+              {media && media.url && media.mime.startsWith('video/') && (
+                <video src={media.url} controls className="mt-1 mb-5 rounded-lg max-w-full h-auto max-h-[55vh] border border-white/10" />
+              )}
+              {media && media.url && media.mime.startsWith('audio/') && (
+                <div className="mt-1 mb-5">
+                  <audio src={media.url} controls className="w-full max-w-sm" style={{ minHeight: '40px' }} />
+                </div>
               )}
               {!media && env.attachmentUrl && (
-                <div className="mt-1 text-xs text-white/60">Pièce jointe… déchiffrement en cours</div>
+                <div className="mt-1 mb-5 text-xs text-white/60">Pièce jointe… déchiffrement en cours</div>
               )}
               <div className="absolute bottom-1 right-2 flex items-center gap-1 text-[10px] leading-none text-white/50">
-                <span>{new Date(env.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                <span>
+                  {(() => {
+                    try {
+                      const date = new Date(env.createdAt)
+                      if (isNaN(date.getTime())) return 'Maintenant'
+                      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                    } catch {
+                      return 'Maintenant'
+                    }
+                  })()}
+                </span>
                 {mine && (
                   <span className={`${getStatusColor(status)}`} title={status}>
                     {getStatusIcon(status)}
                   </span>
                 )}
               </div>
-            </div>
+            </motion.div>
           )
         })}
         
         {/* Indicateur de frappe */}
-        <TypingIndicator 
-          isTyping={isTyping && typingUser !== userId} 
-          userName={typingUser !== userId ? typingUser : undefined}
+        <TypingIndicator
+          isTyping={isTyping && typingUser !== userId}
+          userName={typingUser !== userId && typingUser ? typingUser : undefined}
           className="max-w-[85%] sm:max-w-[70%]"
         />
+
+        {/* Élément invisible pour l'auto-scroll */}
+        <div ref={messagesEndRef} />
       </div>
     </div>
   )

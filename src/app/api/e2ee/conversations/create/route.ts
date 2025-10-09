@@ -57,20 +57,65 @@ export async function POST(request: NextRequest) {
     }
 
     const { participantId, introMessage } = await request.json()
-    
+
     if (!participantId) {
+      console.log('[API DEBUG] Missing participantId in request body')
       return NextResponse.json({ error: 'ID du participant requis' }, { status: 400 })
     }
 
-    // Vérifier que l'utilisateur cible existe
-    const targetUser = await prisma.user.findUnique({
+    console.log('[API DEBUG] Looking for target user or profile:', participantId)
+
+    // Essayer de trouver l'utilisateur directement
+    let targetUser = await prisma.user.findUnique({
       where: { id: participantId },
       select: { id: true, name: true, role: true }
     })
 
+    // Si pas trouvé, c'est peut-être un Profile ID - chercher dans escort_profiles
     if (!targetUser) {
-      return NextResponse.json({ error: 'Utilisateur introuvable' }, { status: 404 })
+      console.log('[API DEBUG] Not a User ID, checking if it\'s a Profile ID in escort_profiles...')
+      const profile = await prisma.escortProfile.findUnique({
+        where: { id: participantId },
+        select: {
+          userId: true,
+          user: {
+            select: { id: true, name: true, role: true }
+          }
+        }
+      })
+
+      if (profile) {
+        console.log('[API DEBUG] escort_profiles found, using User ID:', profile.userId)
+        targetUser = profile.user
+      } else {
+        // Essayer aussi EscortProfileV2
+        console.log('[API DEBUG] Not in escort_profiles, checking EscortProfileV2...')
+        const profileV2 = await prisma.escortProfileV2.findUnique({
+          where: { id: participantId },
+          select: {
+            userId: true,
+            user: {
+              select: { id: true, name: true, role: true }
+            }
+          }
+        })
+
+        if (profileV2) {
+          console.log('[API DEBUG] EscortProfileV2 found, using User ID:', profileV2.userId)
+          targetUser = profileV2.user
+        }
+      }
     }
+
+    if (!targetUser) {
+      console.log('[API DEBUG] Target user/profile not found:', participantId)
+      return NextResponse.json({
+        error: 'Utilisateur introuvable',
+        details: `L'utilisateur ou le profil avec l'ID ${participantId} n'existe pas`
+      }, { status: 404 })
+    }
+
+    console.log('[API DEBUG] Target user found:', targetUser)
 
     // Vérifier que l'utilisateur connecté est un client
     const currentUser = await prisma.user.findUnique({
@@ -83,50 +128,69 @@ export async function POST(request: NextRequest) {
     }
 
     // Seuls les clients peuvent initier des conversations avec les escortes
-    if (currentUser.role !== 'client') {
-      return NextResponse.json({ 
-        error: 'Seuls les clients peuvent initier des conversations' 
+    if (currentUser.role !== 'CLIENT') {
+      return NextResponse.json({
+        error: 'Seuls les clients peuvent initier des conversations'
       }, { status: 403 })
     }
 
     // Vérifier que l'utilisateur cible est une escorte
-    if (targetUser.role !== 'escort') {
-      return NextResponse.json({ 
-        error: 'Vous ne pouvez contacter que des escortes' 
+    if (targetUser.role !== 'ESCORT') {
+      return NextResponse.json({
+        error: 'Vous ne pouvez contacter que des escortes'
       }, { status: 403 })
     }
 
     // Vérifier si une conversation E2EE existe déjà entre ces deux utilisateurs
-    const existingConversation = await prisma.e2EEConversation.findFirst({
-      where: {
-        participants: {
-          has: user.id
-        }
-      }
-    })
+    // On récupère toutes les conversations et on filtre en JavaScript car JSON queries sont complexes
+    console.log('[API DEBUG] Checking for existing conversation between:', user.id, 'and', targetUser.id)
+    const allConversations = await prisma.e2EEConversation.findMany()
 
-    // Vérifier si l'autre participant est dans la conversation
     let conversationToUse = null
-    if (existingConversation && Array.isArray(existingConversation.participants)) {
-      const participants = existingConversation.participants as string[]
-      if (participants.includes(participantId)) {
-        conversationToUse = existingConversation
+    for (const conv of allConversations) {
+      if (Array.isArray(conv.participants)) {
+        const participants = conv.participants as string[]
+        // Vérifier si les deux utilisateurs sont dans cette conversation (ORDER DOESN'T MATTER)
+        const hasUser = participants.includes(user.id)
+        const hasTarget = participants.includes(targetUser.id)
+        console.log('[API DEBUG] Conversation', conv.id, 'participants:', participants, '- hasUser:', hasUser, 'hasTarget:', hasTarget)
+
+        if (hasUser && hasTarget && participants.length === 2) {
+          console.log('[API DEBUG] ✅ Existing conversation found:', conv.id)
+          conversationToUse = conv
+          break
+        }
       }
     }
 
+    if (!conversationToUse) {
+      console.log('[API DEBUG] ❌ No existing conversation found, will create new one')
+    }
+
     if (conversationToUse) {
+      console.log('[API DEBUG] Conversation found, enriching participant data...')
+
       // Récupérer les informations des participants
       const allParticipantIds = conversationToUse.participants as string[]
-      const users = await prisma.user.findMany({ 
-        where: { id: { in: allParticipantIds } }, 
-        select: { id: true, name: true, role: true } 
+      const users = await prisma.user.findMany({
+        where: { id: { in: allParticipantIds } },
+        select: { id: true, name: true, role: true }
       })
-      
+
+      // Récupérer les profils escort pour les escorts
+      const escortProfiles = await prisma.escortProfile.findMany({
+        where: { userId: { in: allParticipantIds } },
+        select: { userId: true, stageName: true, profilePhoto: true }
+      })
+
       const participants = allParticipantIds.map(pid => {
         const user = users.find(u => u.id === pid)
+        const escortProfile = escortProfiles.find(ep => ep.userId === pid)
+
         return {
           id: pid,
-          name: user?.name || 'Utilisateur',
+          name: escortProfile?.stageName || user?.name || 'Utilisateur',
+          avatar: escortProfile?.profilePhoto || null,
           role: user?.role || 'client',
           isPremium: false,
           isVerified: false,
@@ -134,7 +198,9 @@ export async function POST(request: NextRequest) {
         }
       })
 
-      return NextResponse.json({ 
+      console.log('[API DEBUG] Returning existing conversation with enriched participants:', participants)
+
+      return NextResponse.json({
         conversation: {
           id: conversationToUse.id,
           participants,
@@ -150,30 +216,50 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // Créer une nouvelle conversation E2EE
+    // Créer une nouvelle conversation E2EE avec les User IDs (pas les Profile IDs !)
+    console.log('[API DEBUG] Creating new conversation between:', user.id, 'and', targetUser.id)
+
+    // Générer un participantsKey unique basé sur les IDs triés (pour éviter collision)
+    const sortedIds = [user.id, targetUser.id].sort()
+    const uniqueParticipantsKey = `${sortedIds[0]}-${sortedIds[1]}-${Date.now()}`
+
     const conversation = await prisma.e2EEConversation.create({
       data: {
-        participants: [user.id, participantId]
+        participants: [user.id, targetUser.id],
+        participantsKey: uniqueParticipantsKey // Clé unique pour cette conversation
       }
     })
 
+    console.log('[API DEBUG] Creating new conversation, enriching participant data...')
+
     // Récupérer les informations des participants pour la nouvelle conversation
-    const users = await prisma.user.findMany({ 
-      where: { id: { in: [user.id, participantId] } }, 
-      select: { id: true, name: true, role: true } 
+    const users = await prisma.user.findMany({
+      where: { id: { in: [user.id, targetUser.id] } },
+      select: { id: true, name: true, role: true }
     })
-    
-    const participants = [user.id, participantId].map(pid => {
+
+    // Récupérer les profils escort pour les escorts
+    const escortProfiles = await prisma.escortProfile.findMany({
+      where: { userId: { in: [user.id, targetUser.id] } },
+      select: { userId: true, stageName: true, profilePhoto: true }
+    })
+
+    const participants = [user.id, targetUser.id].map(pid => {
       const userData = users.find(u => u.id === pid)
+      const escortProfile = escortProfiles.find(ep => ep.userId === pid)
+
       return {
         id: pid,
-        name: userData?.name || 'Utilisateur',
+        name: escortProfile?.stageName || userData?.name || 'Utilisateur',
+        avatar: escortProfile?.profilePhoto || null,
         role: userData?.role || 'client',
         isPremium: false,
         isVerified: false,
         onlineStatus: 'offline'
       }
     })
+
+    console.log('[API DEBUG] New conversation participants:', participants)
 
     // Si un message d'introduction est fourni, l'envoyer via l'API E2EE
     if (introMessage) {

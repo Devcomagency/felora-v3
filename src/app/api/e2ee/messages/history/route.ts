@@ -73,15 +73,20 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Accès non autorisé' }, { status: 403 })
     }
 
-    // Formater les messages pour le client
+    // Formater les messages au format Envelope attendu par E2EEThread
     const formattedMessages = messages.map(msg => ({
       id: msg.id,
-      content: msg.cipherText,
-      senderId: msg.senderUserId,
-      timestamp: msg.createdAt,
-      isRead: msg.readAt !== null,
-      isEncrypted: true
+      messageId: msg.messageId || msg.id,
+      senderUserId: msg.senderUserId,
+      cipherText: msg.cipherText,
+      attachmentUrl: msg.attachmentUrl,
+      attachmentMeta: msg.attachmentMeta,
+      createdAt: msg.createdAt.toISOString(),
+      status: 'sent' as const
     }))
+
+    console.log(`[HISTORY API] Returning ${formattedMessages.length} messages for conversation ${conversationId}`)
+    console.log(`[HISTORY API] Messages with attachments: ${formattedMessages.filter(m => m.attachmentUrl).length}`)
 
     return NextResponse.json({ messages: formattedMessages })
 

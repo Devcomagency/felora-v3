@@ -10,6 +10,7 @@ interface SearchFiltersSimpleProps {
     city?: string
     canton?: string
     sort?: string
+    categories?: string[]
   }
   onFiltersChange: (filters: any) => void
   onClose: () => void
@@ -18,17 +19,25 @@ interface SearchFiltersSimpleProps {
 
 // Cantons et villes principales de Suisse (simplifiés)
 const swissLocations = {
-  "Genève": ["Genève", "Carouge", "Meyrin", "Vernier"],
-  "Vaud": ["Lausanne", "Montreux", "Nyon", "Yverdon"],
-  "Valais": ["Sion", "Martigny", "Monthey", "Sierre"],
-  "Neuchâtel": ["Neuchâtel", "La Chaux-de-Fonds"],
-  "Fribourg": ["Fribourg", "Bulle"],
-  "Berne": ["Berne", "Biel/Bienne", "Thun"],
-  "Zurich": ["Zurich", "Winterthur", "Uster"],
-  "Basel": ["Basel", "Liestal"],
-  "Lucerne": ["Lucerne", "Emmen"],
-  "Tessin": ["Lugano", "Bellinzona", "Locarno"]
+  "GE": ["Genève", "Carouge", "Meyrin", "Vernier"],
+  "VD": ["Lausanne", "Montreux", "Nyon", "Yverdon"],
+  "VS": ["Sion", "Martigny", "Monthey", "Sierre"],
+  "NE": ["Neuchâtel", "La Chaux-de-Fonds"],
+  "FR": ["Fribourg", "Bulle"],
+  "BE": ["Berne", "Biel/Bienne", "Thun"],
+  "ZH": ["Zurich", "Winterthur", "Uster"],
+  "BS": ["Basel", "Liestal"],
+  "LU": ["Lucerne", "Emmen"],
+  "TI": ["Lugano", "Bellinzona", "Locarno"]
 }
+
+// Catégories d'escortes
+const escortCategories = [
+  { value: 'escort', label: 'Escorte' },
+  { value: 'masseuse_erotique', label: 'Masseuse Érotique' },
+  { value: 'dominatrice_bdsm', label: 'Dominatrice BDSM' },
+  { value: 'transsexuel', label: 'Transsexuel' }
+]
 
 export default function SearchFiltersSimple({
   filters,
@@ -36,7 +45,10 @@ export default function SearchFiltersSimple({
   onClose,
   isOpen
 }: SearchFiltersSimpleProps) {
-  const [localFilters, setLocalFilters] = useState(filters)
+  const [localFilters, setLocalFilters] = useState({
+    ...filters,
+    categories: filters.categories || []
+  })
 
   const handleApply = () => {
     onFiltersChange(localFilters)
@@ -44,10 +56,27 @@ export default function SearchFiltersSimple({
   }
 
   const handleReset = () => {
-    const resetFilters = { q: filters.q || '' }
+    const resetFilters = { q: filters.q || '', categories: [] }
     setLocalFilters(resetFilters)
     onFiltersChange(resetFilters)
   }
+
+  const handleCategoryToggle = (categoryValue: string) => {
+    const currentCategories = localFilters.categories || []
+    const newCategories = currentCategories.includes(categoryValue)
+      ? currentCategories.filter(c => c !== categoryValue)
+      : [...currentCategories, categoryValue]
+    
+    setLocalFilters({ ...localFilters, categories: newCategories })
+  }
+
+  // Synchroniser les filtres locaux avec les filtres reçus
+  React.useEffect(() => {
+    setLocalFilters({
+      ...filters,
+      categories: filters.categories || []
+    })
+  }, [filters])
 
   if (!isOpen) return null
 
@@ -85,22 +114,55 @@ export default function SearchFiltersSimple({
 
             {/* Content */}
             <div className="p-6 space-y-6">
+              {/* Catégories */}
+              <div>
+                <label className="block text-sm font-medium text-white/80 mb-3">
+                  Catégorie
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  {escortCategories.map(category => (
+                    <button
+                      key={category.value}
+                      onClick={() => handleCategoryToggle(category.value)}
+                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                        (localFilters.categories || []).includes(category.value)
+                          ? 'bg-gradient-to-r from-[#FF6B9D] to-[#B794F6] text-white'
+                          : 'bg-white/5 hover:bg-white/10 text-white/80'
+                      }`}
+                    >
+                      {category.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               {/* Canton */}
               <div>
                 <label className="block text-sm font-medium text-white/80 mb-2">
                   <MapPin size={16} className="inline mr-2" />
                   Canton
                 </label>
-                <select
-                  value={localFilters.canton || ''}
-                  onChange={(e) => setLocalFilters({ ...localFilters, canton: e.target.value, city: '' })}
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-[#FF6B9D] transition-colors"
-                >
-                  <option value="">Tous les cantons</option>
-                  {Object.keys(swissLocations).map(canton => (
-                    <option key={canton} value={canton}>{canton}</option>
-                  ))}
-                </select>
+              <select
+                value={localFilters.canton || ''}
+                onChange={(e) => setLocalFilters({ ...localFilters, canton: e.target.value, city: '' })}
+                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-[#FF6B9D] transition-colors"
+              >
+                <option value="">Tous les cantons</option>
+                {Object.keys(swissLocations).map(canton => (
+                  <option key={canton} value={canton}>
+                    {canton === 'GE' ? 'Genève' :
+                     canton === 'VD' ? 'Vaud' :
+                     canton === 'VS' ? 'Valais' :
+                     canton === 'NE' ? 'Neuchâtel' :
+                     canton === 'FR' ? 'Fribourg' :
+                     canton === 'BE' ? 'Berne' :
+                     canton === 'ZH' ? 'Zurich' :
+                     canton === 'BS' ? 'Basel' :
+                     canton === 'LU' ? 'Lucerne' :
+                     canton === 'TI' ? 'Tessin' : canton}
+                  </option>
+                ))}
+              </select>
               </div>
 
               {/* Ville (si canton sélectionné) */}

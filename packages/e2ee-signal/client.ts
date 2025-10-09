@@ -4,6 +4,7 @@ export async function uploadKeyBundle(payload: any) {
   const res = await fetch('/api/e2ee/keys/upload', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
     body: JSON.stringify(payload),
   })
   if (!res.ok) throw new Error('keys_upload_failed')
@@ -11,7 +12,9 @@ export async function uploadKeyBundle(payload: any) {
 }
 
 export async function fetchBundle(userId: string) {
-  const res = await fetch(`/api/e2ee/keys/${encodeURIComponent(userId)}`)
+  const res = await fetch(`/api/e2ee/keys/${encodeURIComponent(userId)}`, {
+    credentials: 'include'
+  })
   if (!res.ok) throw new Error('keys_fetch_failed')
   return res.json()
 }

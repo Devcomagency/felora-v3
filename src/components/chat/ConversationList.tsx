@@ -17,6 +17,7 @@ interface ConversationListProps {
   onPin?: (conversationId: string) => void
   className?: string
   loading?: boolean
+  currentUserId?: string
 }
 
 export default function ConversationList({
@@ -28,7 +29,8 @@ export default function ConversationList({
   onArchive,
   onPin,
   className = '',
-  loading = false
+  loading = false,
+  currentUserId
 }: ConversationListProps) {
   const [showActions, setShowActions] = useState<string | null>(null)
 
@@ -82,8 +84,11 @@ export default function ConversationList({
   }
 
   const getOtherParticipant = (conversation: Conversation) => {
-    // TODO: Get current user ID and filter properly
-    return conversation.participants[0] // Simplified for now
+    if (!currentUserId) {
+      return conversation.participants[0] // Fallback
+    }
+    // Trouver l'autre participant (pas l'utilisateur courant)
+    return conversation.participants.find((p: any) => p.id !== currentUserId) || conversation.participants[0]
   }
 
   const truncateMessage = (message: string, maxLength: number = 50) => {
@@ -132,12 +137,20 @@ export default function ConversationList({
               >
                 {/* Avatar */}
                 <div className="relative flex-shrink-0">
-                  <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white font-bold">
-                    {otherParticipant.name.charAt(0).toUpperCase()}
-                  </div>
-                  
+                  {(otherParticipant as any).avatar ? (
+                    <img
+                      src={(otherParticipant as any).avatar}
+                      alt={otherParticipant.name}
+                      className="w-12 h-12 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white font-bold">
+                      {otherParticipant.name.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+
                   {/* Online status removed by request */}
-                  
+
                   {/* Pinned indicator */}
                   {conversation.isPinned && (
                     <div className="absolute -top-1 -left-1 w-4 h-4 bg-yellow-500 rounded-full flex items-center justify-center">

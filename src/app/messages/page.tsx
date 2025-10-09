@@ -1,17 +1,23 @@
 'use client'
 
-import { useState, useEffect, useMemo, useRef } from 'react'
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import ConversationList from '../../components/chat/ConversationList'
 import E2EEThread from '../../components/chat/E2EEThread'
-import { MessageCircle, ArrowLeft, Paperclip, Image as ImageIcon, Smile, Send, MoreVertical, Link as LinkIcon } from 'lucide-react'
+import { MessageCircle, ArrowLeft, Paperclip, Image as ImageIcon, Smile, Send, MoreVertical, Link as LinkIcon, Mic } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { Conversation, Message } from '../../types/chat'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import EmojiPicker from '../../components/chat/EmojiPicker'
+import AttachmentPreview from '../../components/chat/AttachmentPreview'
+import VoiceRecorder from '../../components/chat/VoiceRecorder'
 import BodyPortal from '../../components/BodyPortal'
 import { useNotification } from '@/components/providers/NotificationProvider'
 import { useFeatureFlag } from '@/hooks/useFeatureFlag'
+import { MESSAGING_CONSTANTS, MEDIA_CONSTANTS } from '@/constants/messaging'
+import { compressImageIfNeeded } from '@/utils/imageCompression'
+import { useNetworkError } from '@/hooks/useNetworkError'
+import NetworkErrorBanner from '@/components/NetworkErrorBanner'
 
 // Old messages page (V3 original)
 function OldMessagesPage() {
@@ -27,13 +33,7 @@ function OldMessagesPage() {
 
 // New messages page (V2 design)
 function NewMessagesPage() {
-  console.log('🚀 [MESSAGES] NewMessagesPage component loaded!')
   const { data: session, status } = useSession()
-  
-  // Debug session info
-  console.log('[MESSAGES DEBUG] Session status:', status)
-  console.log('[MESSAGES DEBUG] Session data:', session)
-  console.log('[MESSAGES DEBUG] User role:', (session?.user as any)?.role)
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [activeConversation, setActiveConversation] = useState<Conversation | null>(null)
   const [, setMessages] = useState<Message[]>([])
@@ -45,13 +45,17 @@ function NewMessagesPage() {
   const [reportSubmitting, setReportSubmitting] = useState(false)
   const router = useRouter()
   const { success: toastSuccess, error: toastError } = useNotification()
+  const { error: networkError, isRetrying, retryCount, handleError, clearError, retry } = useNetworkError()
   const headerTitle = useMemo(() => {
     if (activeConversation && activeConversation.participants?.length) {
-      const other = (activeConversation.participants as any[]).find(p => p?.role !== 'escort') || (activeConversation.participants as any[])[0]
+      const parts = activeConversation.participants as any[]
+      const currentUserId = session?.user?.id || ''
+      // Trouver l'autre participant (pas l'utilisateur courant)
+      const other = parts.find(p => p?.id !== currentUserId) || parts[0]
       return other?.name || 'Conversation'
     }
     return 'Messages'
-  }, [activeConversation])
+  }, [activeConversation, session?.user?.id])
   const headerSubtitle = useMemo(() => {
     if (activeConversation) return 'Conversation chiffrée'
     return 'Vos conversations'
@@ -59,15 +63,23 @@ function NewMessagesPage() {
   const otherParticipant = useMemo(() => {
     if (activeConversation && Array.isArray((activeConversation as any).participants)) {
       const parts = (activeConversation as any).participants
-      const other = parts.find((p: any) => p?.role !== 'escort') || parts[0]
+      const currentUserId = session?.user?.id || ''
+      // Trouver l'autre participant (pas l'utilisateur courant)
+      const other = parts.find((p: any) => p?.id !== currentUserId) || parts[0]
       return other
     }
     return null
-  }, [activeConversation])
+  }, [activeConversation, session?.user?.id])
   const [headerSearch, setHeaderSearch] = useState('')
   const [isBlocked, setIsBlocked] = useState(false)
   const [pendingConvToOpen, setPendingConvToOpen] = useState<string | null>(null)
   const [pendingUserToMessage, setPendingUserToMessage] = useState<string | null>(null)
+  const conversationsRef = useRef<Conversation[]>([])
+
+  // Update ref when conversations change
+  useEffect(() => {
+    conversationsRef.current = conversations
+  }, [conversations])
 
   // Read deep link (?conv=... ou ?to=...) to auto-open a conversation when list is loaded
   useEffect(() => {
@@ -76,16 +88,13 @@ function NewMessagesPage() {
       const params = new URLSearchParams(window.location.search)
       const conv = params.get('conv')
       const to = params.get('to')
-      console.log('[MESSAGES DEBUG] URL params:', { conv, to, search: window.location.search })
       if (conv) {
-        console.log('[MESSAGES DEBUG] Setting pendingConvToOpen:', conv)
         setPendingConvToOpen(conv)
       } else if (to) {
-        console.log('[MESSAGES DEBUG] Setting pendingUserToMessage:', to)
         setPendingUserToMessage(to)
       }
     } catch (error) {
-      console.error('[MESSAGES DEBUG] Error reading URL params:', error)
+      console.error('Error reading URL params:', error)
     }
   }, [])
 
@@ -99,193 +108,177 @@ function NewMessagesPage() {
   }, [pendingConvToOpen, conversations])
 
   // Handle creating conversation with intro message when ?to= is provided
-  useEffect(() => {
-    console.log('[MESSAGES DEBUG] createConversationWithIntro effect triggered:', { 
-      pendingUserToMessage, 
-      hasSession: !!session?.user?.id, 
-      conversationsCount: conversations.length,
-      isLoading
-    })
-    
-    // Attendre que les conversations soient chargées (isLoading = false) avant de créer une nouvelle conversation
+  const createConversationWithIntro = useCallback(async () => {
     if (!pendingUserToMessage || !session?.user?.id || isLoading) return
     
-    const createConversationWithIntro = async () => {
-      console.log('[MESSAGES DEBUG] Starting createConversationWithIntro for user:', pendingUserToMessage)
+    try {
+      // Vérifier si une conversation existe déjà avec cet utilisateur
+      const existingConv = conversationsRef.current.find(conv =>
+        conv.participants.some(p => p.id === pendingUserToMessage)
+      )
+
+      if (existingConv) {
+        setActiveConversation(existingConv)
+        setPendingUserToMessage(null)
+        return
+      }
+
+      // Récupérer les infos du profil pour le message d'introduction
+      const profileRes = await fetch(`/api/escort/profile/${encodeURIComponent(pendingUserToMessage)}`, {
+        credentials: 'include'
+      })
+      let profileName = 'ce profil'
+      if (profileRes.ok) {
+        const profileData = await profileRes.json()
+        profileName = profileData?.stageName || profileData?.name || 'ce profil'
+      }
+
       try {
-        // Vérifier si une conversation existe déjà avec cet utilisateur
-        const existingConv = conversations.find(conv => 
-          conv.participants.some(p => p.id === pendingUserToMessage)
-        )
-        console.log('[MESSAGES DEBUG] Existing conversation found:', !!existingConv)
-        
-        if (existingConv) {
-          setActiveConversation(existingConv)
-          setPendingUserToMessage(null)
-          return
-        }
-
-        // Récupérer les infos du profil pour le message d'introduction
-        const profileRes = await fetch(`/api/escort/profile/${encodeURIComponent(pendingUserToMessage)}`, {
-          credentials: 'include'
-        })
-        let profileName = 'ce profil'
-        if (profileRes.ok) {
-          const profileData = await profileRes.json()
-          profileName = profileData?.stageName || profileData?.name || 'ce profil'
-        }
-
-        // Créer une nouvelle conversation
-        console.log('[MESSAGES DEBUG] Creating conversation with:', { 
-          participantId: pendingUserToMessage, 
-          profileName,
-          introMessage: `Bonjour ${profileName}, ton profil m'a beaucoup plu ! 😊`
-        })
-        
-        // SOLUTION QUI FONCTIONNE : Créer une conversation côté client
-        // avec authentification via les cookies de session
-        console.log('[MESSAGES DEBUG] Creating conversation with proper authentication')
-        
-        try {
-          // Récupérer les cookies de session
-          const sessionToken = document.cookie
-            .split('; ')
-            .find(row => row.startsWith('next-auth.session-token='))
-            ?.split('=')[1]
-
-          if (!sessionToken) {
-            throw new Error('Aucun token de session trouvé')
-          }
-
-          // Appeler l'API avec les cookies de session
-          const createResponse = await fetch('/api/e2ee/conversations/create', {
-            method: 'POST',
-            headers: { 
-              'Content-Type': 'application/json',
-              'Cookie': `next-auth.session-token=${sessionToken}`
-            },
-            credentials: 'include',
-            body: JSON.stringify({
-              participantId: pendingUserToMessage,
-              introMessage: `Bonjour ${profileName}, ton profil m'a beaucoup plu ! 😊`
-            })
+        // Appeler l'API avec les cookies de session
+        const createResponse = await fetch('/api/e2ee/conversations/create', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include',
+          body: JSON.stringify({
+            participantId: pendingUserToMessage,
+            introMessage: `Bonjour ${profileName}, ton profil m'a beaucoup plu ! 😊`
           })
+        })
 
-          console.log('[MESSAGES DEBUG] Create conversation response:', { 
-            ok: createResponse.ok, 
+        if (!createResponse.ok) {
+          const errorData = await createResponse.text()
+          console.error('Erreur lors de la création de la conversation:', { 
             status: createResponse.status, 
-            statusText: createResponse.statusText 
+            statusText: createResponse.statusText, 
+            errorData 
           })
-
-          if (!createResponse.ok) {
-            const errorData = await createResponse.text()
-            console.error('[MESSAGES DEBUG] Erreur lors de la création de la conversation:', { 
-              status: createResponse.status, 
-              statusText: createResponse.statusText, 
-              errorData 
-            })
-            throw new Error(`Erreur ${createResponse.status}: ${createResponse.statusText}`)
-          }
-
-          const { conversation } = await createResponse.json()
-          console.log('[MESSAGES DEBUG] Conversation créée:', conversation)
-          
-          setActiveConversation(conversation)
-          
-          // Ajouter la conversation à la liste
-          setConversations(prev => [conversation, ...prev])
-          
-          toastSuccess('Conversation créée avec succès !')
-        } catch (error) {
-          console.error('[MESSAGES DEBUG] Erreur lors de la création de la conversation:', error)
-          
-          // Fallback : Créer une conversation simulée si l'API échoue
-          console.log('[MESSAGES DEBUG] Fallback: Creating simulated conversation')
-          
-          const simulatedConversation = {
-            id: `temp-${Date.now()}`,
-            participants: [
-              {
-                id: session.user.id,
-                name: session.user.name || 'Vous',
-                role: 'client',
-                isPremium: false,
-                isVerified: false,
-                onlineStatus: 'online'
-              },
-              {
-                id: pendingUserToMessage,
-                name: profileName,
-                role: 'escort',
-                isPremium: false,
-                isVerified: false,
-                onlineStatus: 'offline'
-              }
-            ],
-            lastMessage: {
-              id: `intro-${Date.now()}`,
-              content: `Bonjour ${profileName}, ton profil m'a beaucoup plu ! 😊`,
-              senderId: session.user.id,
-              timestamp: new Date(),
-              isRead: false,
-              isEncrypted: false
-            },
-            unreadCount: 1,
-            isPinned: false,
-            isMuted: false,
-            isArchived: false,
-            isBlocked: false,
-            createdAt: new Date(),
-            updatedAt: new Date()
-          }
-
-          console.log('[MESSAGES DEBUG] Simulated conversation created:', simulatedConversation)
-          setActiveConversation(simulatedConversation)
-          
-          // Ajouter la conversation à la liste
-          setConversations(prev => [simulatedConversation, ...prev])
-          
-          toastSuccess('Conversation créée avec succès !')
+          throw new Error(`Erreur ${createResponse.status}: ${createResponse.statusText}`)
         }
+
+        const { conversation } = await createResponse.json()
+
+        setActiveConversation(conversation)
+
+        // Ajouter la conversation à la liste SEULEMENT si elle n'existe pas déjà
+        setConversations(prev => {
+          const exists = prev.some(c => c.id === conversation.id)
+          if (exists) {
+            return prev
+          }
+          return [conversation, ...prev]
+        })
+
+        toastSuccess('Conversation créée avec succès !')
       } catch (error) {
         console.error('Erreur lors de la création de la conversation:', error)
-        toastError('Erreur lors de la création de la conversation')
-      } finally {
-        setPendingUserToMessage(null)
-      }
-    }
+        
+        // Fallback : Créer une conversation simulée si l'API échoue
+        const simulatedConversation: Conversation = {
+          id: `temp-${Date.now()}`,
+          type: 'direct',
+          participants: [
+            {
+              id: session.user.id,
+              name: session.user.name || 'Vous',
+              role: 'client',
+              isPremium: false,
+              isVerified: false,
+              onlineStatus: 'online'
+            },
+            {
+              id: pendingUserToMessage,
+              name: profileName,
+              role: 'escort',
+              isPremium: false,
+              isVerified: false,
+              onlineStatus: 'offline'
+            }
+          ],
+          lastMessage: {
+            id: `intro-${Date.now()}`,
+            conversationId: `temp-${Date.now()}`,
+            senderId: session.user.id,
+            type: 'text',
+            content: `Bonjour ${profileName}, ton profil m'a beaucoup plu ! 😊`,
+            status: 'sent',
+            createdAt: new Date(),
+            updatedAt: new Date()
+          },
+          unreadCount: 1,
+          isPinned: false,
+          isMuted: false,
+          isArchived: false,
+          isBlocked: false,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        }
 
-    createConversationWithIntro()
-  }, [pendingUserToMessage, session?.user?.id, conversations, isLoading])
+        setActiveConversation(simulatedConversation)
+
+        // Ajouter la conversation à la liste SEULEMENT si elle n'existe pas déjà
+        setConversations(prev => {
+          const exists = prev.some(c => c.id === simulatedConversation.id)
+          if (exists) {
+            return prev
+          }
+          return [simulatedConversation, ...prev]
+        })
+
+        toastSuccess('Conversation créée avec succès !')
+      }
+    } catch (error) {
+      console.error('Erreur lors de la création de la conversation:', error)
+      toastError('Erreur lors de la création de la conversation')
+    } finally {
+      setPendingUserToMessage(null)
+    }
+  }, [pendingUserToMessage, session?.user?.id, isLoading, toastSuccess, toastError])
+
+  useEffect(() => {
+    if (pendingUserToMessage && session?.user?.id && !isLoading) {
+      createConversationWithIntro()
+    }
+  }, [createConversationWithIntro])
 
   // Load E2EE conversations for current user (handle unauthenticated)
+  const loadConversations = useCallback(async () => {
+    try {
+      setIsLoading(true)
+      const res = await fetch('/api/e2ee/conversations/list', {
+        credentials: 'include'
+      })
+      if (!res.ok) {
+        throw new Error(`Erreur ${res.status}: ${res.statusText}`)
+      }
+      const data = await res.json()
+      if (Array.isArray(data?.conversations)) {
+        // Dédupliquer les conversations par ID pour éviter les erreurs React de clés dupliquées
+        const uniqueConversations = Array.from(
+          new Map((data.conversations || []).map((conv: any) => [conv.id, conv])).values()
+        ) as Conversation[]
+        setConversations(uniqueConversations)
+        clearError() // Clear any previous errors on success
+      } else {
+        console.warn('Format de données inattendu pour les conversations:', data)
+        setConversations([])
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des conversations:', error)
+      handleError(error as Error, loadConversations)
+      toastError('Impossible de charger les conversations')
+      setConversations([])
+    } finally { 
+      setIsLoading(false) 
+    }
+  }, [toastError, handleError, clearError])
+
   useEffect(() => {
     if (status === 'loading') { setIsLoading(true); return }
     if (status === 'unauthenticated') { setIsLoading(false); return }
-    ;(async () => {
-      try {
-        setIsLoading(true)
-        const res = await fetch('/api/e2ee/conversations/list', {
-          credentials: 'include'
-        })
-        if (!res.ok) {
-          throw new Error(`Erreur ${res.status}: ${res.statusText}`)
-        }
-        const data = await res.json()
-        if (Array.isArray(data?.conversations)) {
-          setConversations(data.conversations)
-        } else {
-          console.warn('Format de données inattendu pour les conversations:', data)
-          setConversations([])
-        }
-      } catch (error) {
-        console.error('Erreur lors du chargement des conversations:', error)
-        toastError('Impossible de charger les conversations')
-        setConversations([])
-      } finally { 
-        setIsLoading(false) 
-      }
-    })()
+    loadConversations()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status])
 
   // Load messages for active conversation
@@ -302,6 +295,7 @@ function NewMessagesPage() {
           const res = await fetch('/api/e2ee/conversations/read', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify({ conversationId: activeConversation.id })
           })
           if (!res.ok) {
@@ -334,17 +328,15 @@ function NewMessagesPage() {
     })()
   }, [otherParticipant?.id])
 
-  // Vérifier que l'utilisateur est un client (seuls les clients peuvent utiliser la messagerie)
+  // Vérifier que l'utilisateur est un client ou une escort (les deux peuvent utiliser la messagerie)
   const userRole = (session?.user as any)?.role?.toLowerCase()
-  if (session?.user && userRole !== 'client') {
+  if (session?.user && userRole !== 'client' && userRole !== 'escort') {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-white mb-4">Accès limité</h1>
           <p className="text-gray-400 mb-6">
-            {userRole === 'escort' 
-              ? 'Les escortes ne peuvent pas utiliser la messagerie.' 
-              : 'Seuls les clients peuvent utiliser la messagerie.'}
+            Seuls les clients et les escortes peuvent utiliser la messagerie.
           </p>
           <button
             onClick={() => router.push('/')}
@@ -390,15 +382,19 @@ function NewMessagesPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-black text-white">
-      {/* Header avec style V2 */}
-      <div 
-        className="sticky top-0 z-30 p-4"
-        style={{
-          background: 'rgba(0, 0, 0, 0.9)',
-          backdropFilter: 'blur(20px)',
-          borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
-        }}
-      >
+      {/* Network Error Banner */}
+      {networkError && (
+        <NetworkErrorBanner
+          error={networkError}
+          isRetrying={isRetrying}
+          retryCount={retryCount}
+          onRetry={retry}
+          onDismiss={clearError}
+        />
+      )}
+
+      {/* Header simplifié */}
+      <div className="sticky top-0 z-30 bg-black/95 backdrop-blur-sm border-b border-white/10 p-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button
@@ -409,25 +405,17 @@ function NewMessagesPage() {
                   router.back()
                 }
               }}
-              className="p-2 text-gray-300 hover:text-white hover:bg-gray-700/50 rounded-lg transition-colors"
+              className="p-3 text-white hover:bg-white/20 rounded-xl transition-all duration-200 hover:scale-105"
               aria-label="Revenir à la page précédente"
               title="Retour"
             >
-              <ArrowLeft size={18} />
+              <ArrowLeft size={20} />
             </button>
             <div>
-              <h1 
-                className="text-2xl font-bold text-white flex items-center gap-2"
-                style={{
-                  background: 'linear-gradient(135deg, var(--felora-aurora) 0%, var(--felora-plasma) 100%)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text'
-                }}
-              >
+              <h1 className="text-xl font-bold text-white flex items-center gap-2">
                 {headerTitle}
                 {isBlocked && (
-                  <span className="px-2 py-0.5 text-xs rounded bg-red-500/20 border border-red-500/30 text-red-300">Bloqué</span>
+                  <span className="px-2 py-1 text-xs rounded-full bg-red-500/20 text-red-300">Bloqué</span>
                 )}
               </h1>
               <p className="text-gray-400 text-sm">{headerSubtitle}</p>
@@ -447,7 +435,7 @@ function NewMessagesPage() {
                     toastError('Impossible de copier le lien')
                   }
                 }}
-                className="mr-2 px-2 sm:px-3 py-2 text-sm rounded-lg bg-white/10 hover:bg-white/15 border border-white/20 inline-flex items-center gap-1 sm:gap-2"
+                className="mr-3 px-4 py-2 text-sm rounded-xl bg-white/20 hover:bg-white/30 border border-white/30 inline-flex items-center gap-2 transition-all duration-200 hover:scale-105"
                 title="Copier le lien d\'invitation"
                 aria-label="Copier le lien d\'invitation"
               >
@@ -456,13 +444,13 @@ function NewMessagesPage() {
               </button>
               <button
                 onClick={() => setShowHeaderMenu(v => !v)}
-                className="p-2 text-gray-300 hover:text-white hover:bg-gray-700/50 rounded-lg transition-colors"
+                className="p-3 text-white hover:bg-white/20 rounded-xl transition-all duration-200 hover:scale-105"
                 aria-haspopup="menu"
                 aria-expanded={showHeaderMenu}
                 aria-label="Options de conversation"
                 title="Options"
               >
-                <MoreVertical size={18} />
+                <MoreVertical size={20} />
               </button>
               {showHeaderMenu && (
                 <div className="absolute right-0 mt-2 w-48 rounded-lg border border-white/10 bg-gray-900/95 backdrop-blur-sm shadow-lg overflow-hidden z-50">
@@ -494,9 +482,9 @@ function NewMessagesPage() {
             </div>
           ) : null}
         </div>
-        {/* Search under header when no conversation */}
+        {/* Search simplifié */}
         {!activeConversation && (
-          <div className="max-w-7xl mx-auto mt-3">
+          <div className="max-w-7xl mx-auto mt-4">
             <div className="relative">
               <input
                 aria-label="Rechercher une conversation"
@@ -504,11 +492,7 @@ function NewMessagesPage() {
                 placeholder="Rechercher une conversation..."
                 value={headerSearch}
                 onChange={(e) => setHeaderSearch(e.target.value)}
-                className="w-full pl-4 pr-4 py-3 bg-gray-800/60 border border-gray-700/60 rounded-xl text-white placeholder-gray-400 focus:border-var(--felora-aurora) focus:outline-none transition-colors"
-                style={{
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  backdropFilter: 'blur(10px)'
-                }}
+                className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:border-pink-500 focus:outline-none transition-colors"
               />
             </div>
           </div>
@@ -516,16 +500,9 @@ function NewMessagesPage() {
       </div>
 
       {/* Interface Mobile-First avec style V2 */}
-      <div className="flex-1 min-h-0 px-4 py-4">
-        <div className="max-w-7xl mx-auto">
-          <div 
-            className="h-full min-h-0 rounded-2xl overflow-hidden"
-            style={{
-              background: 'rgba(255, 255, 255, 0.03)',
-              backdropFilter: 'blur(20px)',
-              border: '1px solid rgba(255, 255, 255, 0.1)'
-            }}
-          >
+      <div className="flex-1 min-h-0 px-2 sm:px-4 py-2 sm:py-4">
+        <div className="max-w-7xl mx-auto h-full">
+          <div className="h-full min-h-0 rounded-xl sm:rounded-2xl bg-white/5 border border-white/10">
             <>
               {/* Desktop: Split View */}
               <div className="hidden lg:flex h-full min-h-0">
@@ -536,19 +513,34 @@ function NewMessagesPage() {
                     onSelectConversation={handleSelectConversation}
                     searchQuery={headerSearch}
                     loading={isLoading}
+                    currentUserId={session?.user?.id}
                   />
                 </div>
-                <div className="flex-1 min-h-0">
+                <div className="flex-1 min-h-0 flex flex-col">
                   {activeConversation ? (
-                    <E2EEThread
-                      conversationId={activeConversation.id}
-                      userId={session?.user?.id || ''}
-                      partnerId={(activeConversation.participants.find((p:any)=> p.id!== (session?.user?.id||''))|| activeConversation.participants[0])?.id}
-                    />
+                    <>
+                      <div className="flex-1 min-h-0 overflow-hidden">
+                        <E2EEThread
+                          conversationId={activeConversation.id}
+                          userId={session?.user?.id || ''}
+                          partnerId={(activeConversation.participants.find((p:any)=> p.id!== (session?.user?.id||''))|| activeConversation.participants[0])?.id}
+                        />
+                      </div>
+                      {/* Composeur intégré pour desktop */}
+                      <div className="border-t border-gray-700/50 p-3">
+                        {isBlocked ? (
+                          <div className="text-center text-xs text-gray-400 py-2">
+                            Vous avez bloqué cet utilisateur. Débloquez pour envoyer des messages.
+                          </div>
+                        ) : (
+                          <PageComposer active={!isBlocked} />
+                        )}
+                      </div>
+                    </>
                   ) : (
                     <div className="flex flex-col items-center justify-center h-full text-gray-400">
                       <MessageCircle size={48} className="mb-4 opacity-50" />
-                      {status === 'unauthenticated' ? (
+                      {!session?.user ? (
                         <div className="text-center">
                           <h3 
                             className="text-lg font-medium mb-2 text-white"
@@ -605,14 +597,14 @@ function NewMessagesPage() {
                     />
                   </div>
                 ) : (
-                  <div className="h-full">
-                    {status === 'unauthenticated' ? (
+                  <div className="h-full flex flex-col">
+                    {!session?.user ? (
                       <div className="h-full flex flex-col items-center justify-center p-4 text-white/70">
                         <p className="mb-3" style={{ color: 'var(--felora-silver-70)' }}>
                           Connectez‑vous pour voir vos conversations.
                         </p>
-                        <a 
-                          href="/login" 
+                        <a
+                          href="/login"
                           className="px-6 py-3 rounded-lg text-white font-semibold transition-all hover:scale-105"
                           style={{
                             background: 'linear-gradient(135deg, var(--felora-aurora) 0%, var(--felora-plasma) 100%)',
@@ -629,6 +621,7 @@ function NewMessagesPage() {
                         onSelectConversation={handleSelectConversation}
                         searchQuery={headerSearch}
                         loading={isLoading}
+                        currentUserId={session?.user?.id}
                       />
                     )}
                   </div>
@@ -639,17 +632,18 @@ function NewMessagesPage() {
         </div>
       </div>
 
-      {/* Page-level composer fixed to footer via portal (only when a conversation is open) */}
+      {/* Mobile composer fixé en bas */}
       {activeConversation && (
         <BodyPortal>
-          <div 
-            className="fixed bottom-0 left-0 right-0 z-[9999] pointer-events-auto backdrop-blur border-t shadow-[0_-8px_16px_-8px_rgba(0,0,0,0.5)] pb-[calc(env(safe-area-inset-bottom)+8px)]"
+          <div
+            className="lg:hidden fixed bottom-0 left-0 right-0 z-[9999] backdrop-blur border-t shadow-[0_-8px_16px_-8px_rgba(0,0,0,0.5)] pb-[calc(env(safe-area-inset-bottom)+8px)]"
             style={{
               background: 'rgba(0, 0, 0, 0.8)',
-              borderTop: '1px solid rgba(255, 255, 255, 0.1)'
+              borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+              pointerEvents: 'auto'
             }}
           >
-            <div className="max-w-7xl mx-auto px-3 sm:px-4 pt-2">
+            <div className="max-w-7xl mx-auto px-2 sm:px-4 pt-2">
               {isBlocked && (
                 <div className="mb-2 text-center text-xs" style={{ color: 'var(--felora-silver-70)' }}>
                   Vous avez bloqué cet utilisateur. Débloquez pour envoyer des messages.
@@ -741,16 +735,21 @@ function NewMessagesPage() {
 function PageComposer({ active }: { active: boolean }) {
   const [text, setText] = useState('')
   const [showEmoji, setShowEmoji] = useState(false)
+  const [previewFile, setPreviewFile] = useState<File | null>(null)
+  const [showVoiceRecorder, setShowVoiceRecorder] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const mediaInputRef = useRef<HTMLInputElement>(null)
-  const onSend = () => {
+  
+  const onSend = (file?: File | Blob) => {
     if (!active) return
     // @ts-ignore
     if (typeof window !== 'undefined' && window.__feloraChatSend) {
       // @ts-ignore
-      window.__feloraChatSend({ text })
+      window.__feloraChatSend({ text, file })
       setText('')
       setShowEmoji(false)
+      setPreviewFile(null)
+      setShowVoiceRecorder(false)
       
       // Arrêter l'indicateur de frappe
       // @ts-ignore
@@ -760,19 +759,54 @@ function PageComposer({ active }: { active: boolean }) {
       }
     }
   }
+
+  const handleFileSelect = async (file: File) => {
+    // Vérifier la taille du fichier
+    if (file.size > MESSAGING_CONSTANTS.MAX_FILE_SIZE) {
+      alert(`Fichier trop volumineux. Taille maximale: ${MESSAGING_CONSTANTS.MAX_FILE_SIZE / (1024 * 1024)}MB`)
+      return
+    }
+
+    // Vérifier le type de fichier
+    const isSupported = 
+      MEDIA_CONSTANTS.SUPPORTED_IMAGE_TYPES.includes(file.type as any) ||
+      MEDIA_CONSTANTS.SUPPORTED_VIDEO_TYPES.includes(file.type as any) ||
+      MEDIA_CONSTANTS.SUPPORTED_AUDIO_TYPES.includes(file.type as any)
+
+    if (!isSupported) {
+      alert('Type de fichier non supporté')
+      return
+    }
+
+    try {
+      // Compresser l'image si c'est une image
+      if (MEDIA_CONSTANTS.SUPPORTED_IMAGE_TYPES.includes(file.type as any)) {
+        const compressionResult = await compressImageIfNeeded(file)
+        setPreviewFile(compressionResult.file)
+      } else {
+        setPreviewFile(file)
+      }
+    } catch (error) {
+      console.error('Erreur lors de la compression:', error)
+      setPreviewFile(file) // Utiliser le fichier original en cas d'erreur
+    }
+  }
   return (
-    <div className="relative">
+    <div className="relative w-full">
       <div className="flex items-center gap-2">
-        {/* Pill input */}
-        <div className={`flex items-end gap-2 flex-1 rounded-full bg-gray-800/60 px-3 py-2 ${!active ? 'opacity-50' : ''}`}>
+        {/* Input optimisé pour footer mobile */}
+        <div className={`flex items-end gap-1 sm:gap-2 flex-1 rounded-lg sm:rounded-xl bg-white/10 px-3 sm:px-4 py-2 sm:py-3 ${!active ? 'opacity-50' : ''}`}>
           <textarea
             value={text}
             onChange={e => setText(e.target.value)}
             placeholder={active ? 'Écrire un message…' : 'Sélectionnez une conversation'}
             disabled={!active}
             rows={1}
-            className="flex-1 bg-transparent border-0 outline-none text-white placeholder-gray-400 resize-none"
-            style={{ minHeight: 36, maxHeight: 120 }}
+            className="flex-1 bg-transparent border-0 outline-none text-white placeholder-gray-400 resize-none text-sm sm:text-base"
+            style={{ 
+              minHeight: '36px', 
+              maxHeight: '120px' 
+            }}
             onInput={(e) => {
               const t = e.currentTarget
               t.style.height = 'auto'
@@ -792,47 +826,53 @@ function PageComposer({ active }: { active: boolean }) {
               }
             }}
           />
-          <div className="flex items-center gap-1 pr-1">
-        <button
-          onClick={() => setShowEmoji(v => !v)}
-          className="p-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-full transition-colors"
-          aria-label="Emoji"
-          disabled={!active}
-        >
-          <Smile size={18} />
-        </button>
-        <button
-          onClick={() => mediaInputRef.current?.click()}
-          className="p-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-full transition-colors"
-          aria-label="Image/Vidéo"
-          disabled={!active}
-        >
-          <ImageIcon size={18} />
-        </button>
-        <button
-          onClick={() => fileInputRef.current?.click()}
-          className="p-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-full transition-colors"
-          aria-label="Pièce jointe"
-          disabled={!active}
-        >
-          <Paperclip size={18} />
-        </button>
+          
+          {/* Boutons d'action optimisés pour footer */}
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setShowEmoji(v => !v)}
+              className="p-2 text-white/70 hover:text-white hover:bg-white/20 rounded-lg transition-all duration-200"
+              aria-label="Emoji"
+              disabled={!active}
+            >
+              <Smile size={18} />
+            </button>
+            <button
+              onClick={() => setShowVoiceRecorder(true)}
+              className="p-2 text-white/70 hover:text-white hover:bg-white/20 rounded-lg transition-all duration-200"
+              aria-label="Message vocal"
+              disabled={!active}
+            >
+              <Mic size={18} />
+            </button>
+            <button
+              onClick={() => mediaInputRef.current?.click()}
+              className="p-2 text-white/70 hover:text-white hover:bg-white/20 rounded-lg transition-all duration-200"
+              aria-label="Image/Vidéo"
+              disabled={!active}
+            >
+              <ImageIcon size={18} />
+            </button>
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="p-2 text-white/70 hover:text-white hover:bg-white/20 rounded-lg transition-all duration-200"
+              aria-label="Pièce jointe"
+              disabled={!active}
+            >
+              <Paperclip size={18} />
+            </button>
           </div>
         </div>
 
-        {/* Send outside the pill */}
+        {/* Bouton d'envoi optimisé */}
         <button
-          onClick={onSend}
+          onClick={() => onSend()}
           disabled={!active || !text.trim()}
-          className={`p-2 rounded-full transition-all ${
+          className={`p-3 rounded-xl transition-all duration-200 flex-shrink-0 ${
             (!active || !text.trim()) 
               ? 'bg-white/10 text-white/40 cursor-not-allowed' 
-              : 'text-white hover:shadow-lg hover:scale-105'
+              : 'bg-pink-500 text-white hover:bg-pink-600 hover:scale-105'
           }`}
-          style={(!active || !text.trim()) ? {} : {
-            background: 'linear-gradient(135deg, var(--felora-aurora) 0%, var(--felora-plasma) 100%)',
-            boxShadow: '0 4px 15px rgba(255, 107, 157, 0.3)'
-          }}
           aria-label="Envoyer"
         >
           <Send size={18} />
@@ -843,24 +883,14 @@ function PageComposer({ active }: { active: boolean }) {
       <input ref={fileInputRef} type="file" className="hidden" onChange={e => {
         const file = e.target.files?.[0]
         if (!file || !active) return
-        // @ts-ignore
-        if (typeof window !== 'undefined' && window.__feloraChatSend) {
-          // @ts-ignore
-          window.__feloraChatSend({ text, file })
-          setText('')
-          e.currentTarget.value = ''
-        }
+        handleFileSelect(file)
+        e.currentTarget.value = ''
       }} />
       <input ref={mediaInputRef} type="file" accept="image/*,video/*" className="hidden" onChange={e => {
         const file = e.target.files?.[0]
         if (!file || !active) return
-        // @ts-ignore
-        if (typeof window !== 'undefined' && window.__feloraChatSend) {
-          // @ts-ignore
-          window.__feloraChatSend({ text, file })
-          setText('')
-          e.currentTarget.value = ''
-        }
+        handleFileSelect(file)
+        e.currentTarget.value = ''
       }} />
 
       {/* Emoji Picker */}
@@ -877,6 +907,28 @@ function PageComposer({ active }: { active: boolean }) {
               onClose={() => setShowEmoji(false)}
             />
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Attachment Preview */}
+      <AnimatePresence>
+        {previewFile && (
+          <AttachmentPreview
+            file={previewFile}
+            onRemove={() => setPreviewFile(null)}
+            onSend={onSend}
+            onCancel={() => setPreviewFile(null)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Voice Recorder */}
+      <AnimatePresence>
+        {showVoiceRecorder && (
+          <VoiceRecorder
+            onSend={onSend}
+            onCancel={() => setShowVoiceRecorder(false)}
+          />
         )}
       </AnimatePresence>
     </div>

@@ -6,11 +6,14 @@ import { jwtVerify } from 'jose'
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId, deviceId, publicKey, preKeyBundle } = await request.json()
-    
-    if (!userId || !deviceId || !publicKey) {
-      return NextResponse.json({ 
-        error: 'Paramètres requis manquants' 
+    const bundle = await request.json()
+    const { userId, deviceId, identityKeyPub } = bundle
+
+    if (!userId || !deviceId || !identityKeyPub) {
+      console.error('[KEYS API] Missing required fields:', { userId: !!userId, deviceId: !!deviceId, identityKeyPub: !!identityKeyPub })
+      console.error('[KEYS API] Received bundle:', bundle)
+      return NextResponse.json({
+        error: 'Paramètres requis manquants (userId, deviceId, identityKeyPub)'
       }, { status: 400 })
     }
 
@@ -53,13 +56,53 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Accès non autorisé' }, { status: 403 })
     }
 
-    // Pour l'instant, on simule juste l'upload des clés
-    // Dans une vraie implémentation, on stockerait les clés dans la base de données
-    console.log(`[KEYS API] Uploading keys for user ${userId}, device ${deviceId}`)
+    // Stocker le bundle Signal dans la base de données
+    console.log(`[KEYS API] Uploading Signal bundle for user ${userId}, device ${deviceId}`)
+    console.log(`[KEYS API] Bundle keys:`, Object.keys(bundle))
 
-    return NextResponse.json({ 
+    // Upsert du device (créer ou mettre à jour)
+    await prisma.userDevice.upsert({
+      where: {
+        userId_deviceId: {
+          userId,
+          deviceId
+        }
+      },
+      create: {
+        userId,
+        deviceId,
+        identityKeyPub: bundle.identityKeyPub,
+        signedPreKeyId: bundle.signedPreKeyId || 1,
+        signedPreKeyPub: bundle.signedPreKeyPub || '',
+        signedPreKeySig: bundle.signedPreKeySig || '',
+        preKeysJson: {
+          preKeys: bundle.preKeys || [],
+          registrationId: bundle.registrationId || 0
+        }
+      },
+      update: {
+        identityKeyPub: bundle.identityKeyPub,
+        signedPreKeyId: bundle.signedPreKeyId || 1,
+        signedPreKeyPub: bundle.signedPreKeyPub || '',
+        signedPreKeySig: bundle.signedPreKeySig || '',
+        preKeysJson: {
+          preKeys: bundle.preKeys || [],
+          registrationId: bundle.registrationId || 0
+        },
+        updatedAt: new Date()
+      }
+    })
+
+    console.log(`[KEYS API] Bundle Signal saved successfully for ${userId}/${deviceId}`)
+
+    return NextResponse.json({
       success: true,
-      message: 'Clés uploadées avec succès'
+      message: 'Bundle Signal uploadé avec succès',
+      bundle: {
+        userId,
+        deviceId,
+        identityKeyPub
+      }
     })
 
   } catch (error) {

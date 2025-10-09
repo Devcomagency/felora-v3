@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 import { jwtVerify } from 'jose'
+import { readFile } from 'fs/promises'
+import { join } from 'path'
+import { existsSync } from 'fs'
 
 export async function GET(request: NextRequest) {
   try {
@@ -47,13 +50,34 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
     }
 
-    // Pour l'instant, on simule la récupération d'une pièce jointe
-    // Dans une vraie implémentation, on récupérerait le fichier depuis le service de stockage
-    const mockUrl = `https://media.felora.ch/attachments/${path}`
-    
-    return NextResponse.json({ 
-      url: mockUrl,
-      success: true 
+    // Extraire le nom du fichier depuis le path (ex: /e2ee-attachments/1234567890-uuid.bin)
+    const filename = path.split('/').pop()
+    if (!filename) {
+      return NextResponse.json({ error: 'Nom de fichier invalide' }, { status: 400 })
+    }
+
+    // Construire le chemin complet vers le fichier chiffré
+    const uploadDir = join(process.cwd(), 'tmp', 'e2ee-attachments')
+    const filepath = join(uploadDir, filename)
+
+    // Vérifier que le fichier existe
+    if (!existsSync(filepath)) {
+      console.error('[GET API] Fichier introuvable:', filepath)
+      return NextResponse.json({ error: 'Fichier introuvable' }, { status: 404 })
+    }
+
+    // Lire le fichier chiffré
+    const buffer = await readFile(filepath)
+
+    console.log('[GET API] Fichier chiffré récupéré:', filename, 'Size:', buffer.length, 'bytes')
+
+    // Retourner le fichier chiffré en tant que Blob
+    return new Response(buffer, {
+      headers: {
+        'Content-Type': 'application/octet-stream',
+        'Content-Length': buffer.length.toString(),
+        'Cache-Control': 'no-cache'
+      }
     })
 
   } catch (error) {
