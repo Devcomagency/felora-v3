@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
             }
           }
         } catch (jwtError) {
-          console.error('[SSE API] Error decoding JWT:', jwtError)
+          // JWT decode failed
         }
       }
     }
@@ -80,14 +80,12 @@ export async function GET(request: NextRequest) {
             const heartbeat = `data: ${JSON.stringify({ type: 'heartbeat', timestamp: new Date().toISOString() })}\n\n`
             controller.enqueue(new TextEncoder().encode(heartbeat))
           } catch (error) {
-            console.error('[SSE] Erreur lors du heartbeat:', error)
             clearInterval(heartbeatInterval)
           }
         }, 30000) // Heartbeat toutes les 30 secondes
 
         // Nettoyer quand la connexion se ferme
         request.signal.addEventListener('abort', () => {
-          console.log(`[SSE] Connexion fermée pour ${user.id} dans ${conversationId}`)
           clearInterval(heartbeatInterval)
           sseBroadcaster.removeClient(conversationId, user.id)
 
@@ -111,7 +109,6 @@ export async function GET(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('Erreur lors de la connexion SSE:', error)
     return new Response('Erreur interne du serveur', { status: 500 })
   }
 }

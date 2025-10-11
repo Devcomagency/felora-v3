@@ -274,6 +274,10 @@ model EscortProfile {
   // Agenda/Disponibilité
   agendaEnabled       Boolean      @default(true)  // Activer l'agenda
 
+  // Tarifs personnalisés et blocage géographique
+  customPrices        Json?        // Tarifs personnalisés (ex: 90 minutes, week-end, etc.)
+  geoBlocking         Json?        // Blocage géographique par cantons et villes
+
   user                User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("escort_profiles")
@@ -566,13 +570,17 @@ model UserDevice {
 }
 
 model E2EEConversation {
-  id              String   @id @default(cuid())
-  isGroup         Boolean  @default(false)
-  name            String?
-  participants    Json
-  participantsKey String   @unique
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id                String   @id @default(cuid())
+  isGroup           Boolean  @default(false)
+  name              String?
+  participants      Json
+  participantsKey   String   @unique
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  // Messages éphémères
+  ephemeralMode     Boolean  @default(false)
+  ephemeralDuration Int      @default(86400) // 24h en secondes
 
   @@index([isGroup])
 }
@@ -590,9 +598,16 @@ model E2EEMessageEnvelope {
   createdAt      DateTime       @default(now())
   deliveredAt    DateTime?
   readAt         DateTime?
+  
+  // Messages éphémères et contrôles média
+  viewMode       String?        // "once" | "unlimited"
+  downloadable   Boolean        @default(true)
+  expiresAt      DateTime?      // Date d'expiration calculée
+  viewedBy       String[]       @default([]) // Array de userIds qui ont vu (pour vue unique)
 
   @@unique([conversationId, messageId])
   @@index([conversationId, createdAt])
+  @@index([expiresAt])
 }
 
 model E2EEConversationRead {

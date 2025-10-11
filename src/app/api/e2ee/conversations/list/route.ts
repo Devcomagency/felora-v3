@@ -90,9 +90,6 @@ export async function GET() {
       }
     })
 
-    console.log('[E2EE LIST API] Returning conversations:', result.length)
-    console.log('[E2EE LIST API] Conversation IDs:', result.map(c => c.id))
-
     // Dédupliquer côté serveur par sécurité
     const uniqueResult = Array.from(
       new Map(result.map((conv: any) => [conv.id, conv])).values()

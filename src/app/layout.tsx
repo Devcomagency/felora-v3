@@ -8,6 +8,7 @@ import StaticNavBar from "@/components/layout/StaticNavBar";
 import AgeGate from "@/components/AgeGate";
 import CookieConsent from "@/components/CookieConsent";
 import FooterLegal from "@/components/FooterLegal";
+import ToastContainer from "@/components/ui/Toast";
 
 export const metadata: Metadata = {
   title: {
@@ -86,6 +87,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <StaticNavBar />
           </AppGateway>
           <CookieConsent />
+          <ToastContainer />
         </Providers>
       </body>
     </html>

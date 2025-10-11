@@ -1,7 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
-import { Camera, Video, Upload, X, Smartphone } from 'lucide-react'
+import { Camera, Video, Upload, X } from 'lucide-react'
 
 interface CameraProProps {
   onCapture?: (file: File) => void
@@ -9,45 +8,11 @@ interface CameraProProps {
   mode?: 'photo' | 'video'
 }
 
+/**
+ * Composant de capture média via caméra native
+ * Propose 3 méthodes : Vidéo, Photo, Upload fichier
+ */
 export default function CameraCapturePro({ onCapture, onClose, mode = 'video' }: CameraProProps) {
-  const [captureMethod, setCaptureMethod] = useState<'native' | 'webapp' | null>(null)
-  const [isMobile, setIsMobile] = useState(false)
-  const nativeInputRef = useRef<HTMLInputElement>(null)
-
-  useEffect(() => {
-    // Détecter si on est sur mobile
-    const checkMobile = () => {
-      const ua = navigator.userAgent.toLowerCase()
-      const mobile = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(ua)
-      setIsMobile(mobile)
-    }
-    checkMobile()
-  }, [])
-
-  // Méthode 1 : Capture Native (meilleure qualité)
-  const handleNativeCapture = () => {
-    nativeInputRef.current?.click()
-  }
-
-  const handleNativeFileSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file && onCapture) {
-      onCapture(file)
-    }
-  }
-
-  // Méthode 2 : WebApp getUserMedia
-  const handleWebAppCapture = () => {
-    setCaptureMethod('webapp')
-    // On utilisera le composant CameraScreenTest existant
-  }
-
-  if (captureMethod === 'webapp') {
-    // Import dynamique du composant existant
-    const CameraScreenTest = require('./CameraScreenTest').default
-    return <CameraScreenTest onClose={onClose} onCapture={onCapture} />
-  }
-
   return (
     <div className="fixed inset-0 z-50 bg-black">
       {/* Header avec bouton fermer */}

@@ -2,9 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 import { jwtVerify } from 'jose'
-import { writeFile, mkdir } from 'fs/promises'
-import { join } from 'path'
-import { existsSync } from 'fs'
+import { mediaStorage } from '@/lib/storage'
 
 export async function POST(request: NextRequest) {
   try {
@@ -49,27 +47,25 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Aucun fichier fourni' }, { status: 400 })
     }
 
-    // Sauvegarder le fichier chiffré localement dans /tmp/e2ee-attachments/
-    const uploadDir = join(process.cwd(), 'tmp', 'e2ee-attachments')
-    if (!existsSync(uploadDir)) {
-      await mkdir(uploadDir, { recursive: true })
+    // Générer un nom de fichier unique
+    const filename = `${Date.now()}-${crypto.randomUUID()}.bin`
+
+    // Convertir le fichier en buffer
+    const buffer = Buffer.from(await file.arrayBuffer())
+
+    // Uploader vers R2 (prod) ou local (dev)
+    const result = await mediaStorage.uploadE2EEAttachment(buffer, filename)
+
+    if (!result.success) {
+      return NextResponse.json({ 
+        error: result.error || 'Échec de l\'upload' 
+      }, { status: 500 })
     }
 
-    const filename = `${Date.now()}-${crypto.randomUUID()}.bin`
-    const filepath = join(uploadDir, filename)
-
-    // Écrire le fichier chiffré
-    const buffer = Buffer.from(await file.arrayBuffer())
-    await writeFile(filepath, buffer)
-
-    console.log('[UPLOAD API] Fichier chiffré sauvegardé:', filename, 'Size:', buffer.length, 'bytes')
-
-    // Retourner l'URL relative
-    const url = `/e2ee-attachments/${filename}`
-
     return NextResponse.json({
-      url,
-      success: true
+      url: result.url,
+      success: true,
+      key: result.key
     })
 
   } catch (error) {

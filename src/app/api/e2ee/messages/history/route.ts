@@ -8,7 +8,9 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const conversationId = searchParams.get('conversationId')
-    
+    const offset = parseInt(searchParams.get('offset') || '0', 10)
+    const limit = parseInt(searchParams.get('limit') || '50', 10)
+
     if (!conversationId) {
       return NextResponse.json({ error: 'ID de conversation requis' }, { status: 400 })
     }
@@ -56,11 +58,12 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Conversation introuvable' }, { status: 404 })
     }
 
-    // Récupérer les messages de la conversation
+    // Récupérer les messages de la conversation avec pagination
     const messages = await prisma.e2EEMessageEnvelope.findMany({
       where: { conversationId },
       orderBy: { createdAt: 'asc' },
-      take: 50 // Limiter à 50 messages récents
+      skip: offset,
+      take: limit
     })
 
     if (!conversation) {
@@ -82,13 +85,19 @@ export async function GET(request: NextRequest) {
       attachmentUrl: msg.attachmentUrl,
       attachmentMeta: msg.attachmentMeta,
       createdAt: msg.createdAt.toISOString(),
-      status: 'sent' as const
+      status: msg.readAt ? 'read' : (msg.deliveredAt ? 'delivered' : 'sent'),
+      viewMode: msg.viewMode,
+      downloadable: msg.downloadable,
+      expiresAt: msg.expiresAt?.toISOString(),
+      viewedBy: msg.viewedBy || []
     }))
 
-    console.log(`[HISTORY API] Returning ${formattedMessages.length} messages for conversation ${conversationId}`)
-    console.log(`[HISTORY API] Messages with attachments: ${formattedMessages.filter(m => m.attachmentUrl).length}`)
-
-    return NextResponse.json({ messages: formattedMessages })
+    return NextResponse.json({ 
+      messages: formattedMessages,
+      hasMore: formattedMessages.length === limit,
+      offset,
+      limit
+    })
 
   } catch (error) {
     console.error('Erreur lors du chargement de l\'historique:', error)

@@ -3,20 +3,33 @@
 import { useEffect, useRef, useState } from 'react'
 import { v4 as uuidv4 } from 'uuid'
 import { motion, AnimatePresence } from 'framer-motion'
+import { Eye, Clock, ShieldOff, Download } from 'lucide-react'
 import { encryptFileWithEnvelopes, decryptFileWithEnvelopes, decryptFile } from '@packages/e2ee-signal/crypto'
 import { fetchBundle, uploadKeyBundle } from '@packages/e2ee-signal/client'
 import { ensureLibsignalBootstrap } from '@packages/e2ee-signal/bootstrap'
 import { createSession, encrypt, getSession, setLocalUser, decrypt } from '@packages/e2ee-signal/session'
 import { useNotification } from '@/components/providers/NotificationProvider'
 import TypingIndicator from './TypingIndicator'
+import FullscreenMediaViewer from './FullscreenMediaViewer'
+import LinkPreview from './LinkPreview'
 
-type Envelope = { id: string; messageId: string; senderUserId: string; cipherText: string; attachmentUrl?: string | null; attachmentMeta?: any; createdAt: string; status?: 'sending' | 'sent' | 'delivered' | 'read' | 'failed' }
+type Envelope = { id: string; messageId: string; senderUserId: string; cipherText: string; attachmentUrl?: string | null; attachmentMeta?: any; createdAt: string; status?: 'sending' | 'sent' | 'delivered' | 'read' | 'failed'; deliveredAt?: Date | string | null; readAt?: Date | string | null }
 
-export default function E2EEThread({ conversationId, userId, partnerId }: { conversationId: string; userId: string; partnerId: string }) {
+// Fonction pour détecter les URLs dans le texte
+function extractUrls(text: string): string[] {
+  const urlRegex = /(https?:\/\/[^\s]+)/g
+  return text.match(urlRegex) || []
+}
+
+export default function E2EEThread({ conversationId, userId, partnerId, partnerName, isActive = true }: { conversationId: string; userId: string; partnerId: string; partnerName?: string; isActive?: boolean }) {
   const [envelopes, setEnvelopes] = useState<Envelope[]>([])
   const [loadingHistory, setLoadingHistory] = useState(true)
-  const [mediaCache, setMediaCache] = useState<Record<string, { url: string | null; mime: string }>>({})
+  const [mediaCache, setMediaCache] = useState<Record<string, { url: string; mime: string }>>({})
+  const [messageOffset, setMessageOffset] = useState(0)
+  const [hasMoreMessages, setHasMoreMessages] = useState(true)
+  const MESSAGE_BATCH_SIZE = 200 // Augmenté pour éviter les problèmes de pagination
   const esRef = useRef<EventSource | null>(null)
+  const isInitializedRef = useRef(false)
   const { success: toastSuccess, error: toastError, info: toastInfo } = useNotification()
   const [uploadProgress, setUploadProgress] = useState<number | null>(null)
   const [textCache, setTextCache] = useState<Record<string, string>>({})
@@ -25,6 +38,19 @@ export default function E2EEThread({ conversationId, userId, partnerId }: { conv
   const [typingUser, setTypingUser] = useState<string | null>(null)
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const messagesEndRef = useRef<HTMLDivElement | null>(null)
+  const [fullscreenMedia, setFullscreenMedia] = useState<{ url: string; type: string; messageId: string; isOnceView?: boolean; downloadable?: boolean } | null>(null)
+  const [localViewedMessages, setLocalViewedMessages] = useState<string[]>(() => {
+    // Charger depuis localStorage au démarrage
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem(`viewed-messages-${conversationId}`)
+        return stored ? JSON.parse(stored) : []
+      } catch {
+        return []
+      }
+    }
+    return []
+  })
 
   const scrollToBottomTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   
@@ -38,11 +64,42 @@ export default function E2EEThread({ conversationId, userId, partnerId }: { conv
   }
 
   const addEnvelopeUnique = (env: Envelope) => {
-    setEnvelopes(prev => prev.some(e => e.id === env.id || e.messageId === env.messageId) ? prev : [...prev, env])
+    setEnvelopes(prev => {
+      // Vérifier si le message existe déjà (par messageId ou id)
+      const existsByMessageId = env.messageId && prev.some(e => e.messageId === env.messageId)
+      const existsById = prev.some(e => e.id === env.id)
+
+      if (existsByMessageId || existsById) {
+        // Remplacer le message existant (pour mettre à jour un message optimiste)
+        return prev.map(e => {
+          // Remplacer par messageId (prioritaire)
+          if (env.messageId && e.messageId === env.messageId) {
+            return env
+          }
+          // Remplacer par id (fallback)
+          if (e.id === env.id) {
+            return env
+          }
+          return e
+        })
+      }
+
+      // Ajouter le nouveau message
+      return [...prev, env]
+    })
   }
 
   const updateMessageStatus = (messageId: string, status: 'sending' | 'sent' | 'delivered' | 'read' | 'failed') => {
+    // Mettre à jour à la fois messageStatuses ET les envelopes
     setMessageStatuses(prev => ({ ...prev, [messageId]: status }))
+
+    // Mettre à jour le status dans les envelopes directement
+    setEnvelopes(prev => prev.map(env => {
+      if (env.messageId === messageId) {
+        return { ...env, status }
+      }
+      return env
+    }))
   }
 
   const startTyping = () => {
@@ -116,11 +173,12 @@ export default function E2EEThread({ conversationId, userId, partnerId }: { conv
     return () => { mounted = false }
   }, [userId, partnerId])
 
-  // Load history
+  // Load history (UNE SEULE FOIS au chargement)
   useEffect(() => {
-    ;(async () => {
+    const loadHistory = async () => {
+      console.log('[LOAD HISTORY] Chargement de l\'historique...', { conversationId })
       try {
-        setLoadingHistory(true)
+        if (!loadingHistory) setLoadingHistory(true)
         const res = await fetch(`/api/e2ee/messages/history?conversationId=${encodeURIComponent(conversationId)}`, {
           credentials: 'include'
         })
@@ -129,15 +187,38 @@ export default function E2EEThread({ conversationId, userId, partnerId }: { conv
         }
         const data = await res.json()
         if (Array.isArray(data?.messages)) {
+          const historyMessages = data.messages as Envelope[]
+          console.log('[LOAD HISTORY] Messages chargés:', historyMessages.length)
+          
+          // MERGER avec les messages existants au lieu d'écraser
+          setEnvelopes(prev => {
+            console.log('[LOAD HISTORY] Messages actuels avant merge:', prev.length)
+            // Garder les messages optimistes (temp-*)
+            const optimistic = prev.filter(e => e.id.startsWith('temp-'))
+            console.log('[LOAD HISTORY] Messages optimistes à garder:', optimistic.length)
+            
+            // Merger l'historique avec les optimistes
+            const merged = [...historyMessages]
+            optimistic.forEach(opt => {
+              if (!merged.some(m => m.messageId === opt.messageId)) {
+                merged.push(opt)
+              }
+            })
+            
+            // Trier par date
+            const sorted = merged.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+            console.log('[LOAD HISTORY] Messages après merge:', sorted.length)
+            return sorted
+          })
 
-          // Dédupliquer les messages par ID avant de les définir
-          const uniqueMessages = Array.from(
-            new Map(data.messages.map((m: any) => [m.id, m])).values()
-          )
-
-          setEnvelopes(uniqueMessages as Envelope[])
-        } else {
-          console.warn('Format de données inattendu:', data)
+          // Charger les statuts dans messageStatuses
+          const statuses: Record<string, 'sending' | 'sent' | 'delivered' | 'read' | 'failed'> = {}
+          historyMessages.forEach((m: any) => {
+            if (m.messageId) {
+              statuses[m.messageId] = m.readAt ? 'read' : m.deliveredAt ? 'delivered' : m.status?.toLowerCase() || 'sent'
+            }
+          })
+          setMessageStatuses(prev => ({ ...prev, ...statuses }))
         }
       } catch (error) {
         console.error('Erreur lors du chargement de l\'historique:', error)
@@ -145,12 +226,14 @@ export default function E2EEThread({ conversationId, userId, partnerId }: { conv
       } finally {
         setLoadingHistory(false)
       }
-    })()
+    }
+
+    loadHistory()
   }, [conversationId])
 
   // SSE (with catch-up after last known timestamp) - SE CONNECTE UNE SEULE FOIS
   useEffect(() => {
-    if (loadingHistory) return
+    if (loadingHistory || !isActive) return
 
 
     esRef.current?.close()
@@ -166,12 +249,31 @@ export default function E2EEThread({ conversationId, userId, partnerId }: { conv
         if (data.type === 'message') {
           const env: Envelope = data
 
-          // FIX: S'assurer que le senderUserId est défini
-          if (!env.senderUserId && env.messageId) {
-            console.warn('[SSE] senderUserId manquant, impossible de déterminer l\'expéditeur')
+          // Ajouter le message (remplacera l'optimiste si existe)
+          addEnvelopeUnique(env)
+
+          // Si c'est mon message qui vient d'être envoyé
+          if (env.senderUserId === userId && env.messageId) {
+            // Marquer comme 'sent' (le message a bien été envoyé)
+            updateMessageStatus(env.messageId, 'sent')
           }
 
-          addEnvelopeUnique(env)
+          // Si ce n'est pas mon message, marquer comme delivered
+          if (env.senderUserId !== userId && env.messageId) {
+            updateMessageStatus(env.messageId, 'delivered')
+
+            // Persister le statut DELIVERED en base de données
+            fetch('/api/e2ee/messages/ack', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
+              body: JSON.stringify({
+                conversationId,
+                messageId: env.messageId,
+                status: 'DELIVERED'
+              })
+            }).catch(err => console.error('[E2EE] Erreur ACK DELIVERED:', err))
+          }
         }
 
         // Gérer les indicateurs de frappe
@@ -184,13 +286,38 @@ export default function E2EEThread({ conversationId, userId, partnerId }: { conv
           setIsTyping(false)
           setTypingUser(null)
         }
+
+        // Gérer les messages vus (vue unique)
+        if (data.type === 'message_viewed') {
+          setEnvelopes(prev => prev.map(e => 
+            e.id === data.messageId ? { ...e, viewedBy: data.viewedBy } as any : e
+          ))
+        }
+
+        // Gérer les messages lus (statut read)
+        if (data.type === 'messages_read' && data.userId !== userId) {
+          setMessageStatuses(prev => {
+            const updated = { ...prev }
+            envelopes.forEach(e => {
+              if (e.senderUserId === userId && updated[e.messageId] !== 'read') {
+                updated[e.messageId] = 'read'
+              }
+            })
+            return updated
+          })
+        }
+
+        // Gérer les mises à jour de statut en temps réel (DELIVERED, READ)
+        if (data.type === 'message_status_update' && data.messageId) {
+          updateMessageStatus(data.messageId, data.status)
+        }
       } catch (error) {
-        console.error('[SSE] Erreur parsing:', error)
+        // Silent fail pour parsing errors
       }
     }
 
-    es.onerror = (error) => {
-      console.error('[SSE] Erreur connexion:', error)
+    es.onerror = () => {
+      // Silent fail, le polling prendra le relai
     }
 
     esRef.current = es
@@ -198,7 +325,33 @@ export default function E2EEThread({ conversationId, userId, partnerId }: { conv
     return () => {
       es.close()
     }
-  }, [conversationId, loadingHistory])
+  }, [conversationId, loadingHistory, isActive])
+
+  // Polling de secours léger toutes les 30 secondes (uniquement pour les statuts si SSE échoue)
+  useEffect(() => {
+    if (!conversationId || !userId || !isActive) return
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch(`/api/e2ee/messages/history?conversationId=${encodeURIComponent(conversationId)}`, {
+          credentials: 'include'
+        })
+        if (!res.ok) return
+        const data = await res.json()
+        if (data.messages && data.messages.length > 0) {
+          // Ne mettre à jour QUE les statuts, pas les messages complets
+          data.messages.forEach((m: any) => {
+            if (m.messageId) {
+              const status = m.readAt ? 'read' : m.deliveredAt ? 'delivered' : m.status?.toLowerCase() || 'sent'
+              updateMessageStatus(m.messageId, status)
+            }
+          })
+        }
+      } catch (error) {
+        // Silent fail - SSE prendra le relai
+      }
+    }, 30000) // Toutes les 30 secondes (fallback uniquement)
+    return () => clearInterval(interval)
+  }, [conversationId, userId, isActive])
 
   // Helpers for UTF-8 safe base64
   const b64EncodeUtf8 = (str: string) => {
@@ -227,14 +380,17 @@ export default function E2EEThread({ conversationId, userId, partnerId }: { conv
       const updates: Record<string, string> = {}
       for (const env of envelopes) {
         if (env.attachmentUrl) continue // only text here
-        if (textCache[env.id]) continue // déjà en cache
+
+        // Utiliser messageId comme clé de cache (ou fallback sur id)
+        const cacheKey = env.messageId || env.id
+        if (textCache[cacheKey]) continue // déjà en cache
 
         // Pour les messages sortants, essayer de décoder directement en base64
         if (env.senderUserId === userId) {
           try {
             const decoded = b64DecodeUtf8(env.cipherText)
             if (decoded && !decoded.startsWith('[attachment:')) {
-              updates[env.id] = decoded
+              updates[cacheKey] = decoded
             }
           } catch {}
           continue
@@ -244,13 +400,13 @@ export default function E2EEThread({ conversationId, userId, partnerId }: { conv
         if (sess) {
           try {
             const plain = await decrypt(sess, env.cipherText)
-            updates[env.id] = plain
+            updates[cacheKey] = plain
           } catch {
             // Fallback: essayer de décoder en base64 simple
             try {
               const decoded = b64DecodeUtf8(env.cipherText)
               if (decoded && !decoded.startsWith('[attachment:')) {
-                updates[env.id] = decoded
+                updates[cacheKey] = decoded
               }
             } catch {}
           }
@@ -259,7 +415,7 @@ export default function E2EEThread({ conversationId, userId, partnerId }: { conv
           try {
             const decoded = b64DecodeUtf8(env.cipherText)
             if (decoded && !decoded.startsWith('[attachment:')) {
-              updates[env.id] = decoded
+              updates[cacheKey] = decoded
             }
           } catch {}
         }
@@ -276,6 +432,49 @@ export default function E2EEThread({ conversationId, userId, partnerId }: { conv
     window.__feloraChatStopTyping = stopTyping
   }, [conversationId, userId])
 
+  // 🆕 IntersectionObserver pour marquer les messages comme lus (READ) automatiquement
+  const [readMessages, setReadMessages] = useState<Set<string>>(new Set())
+
+  useEffect(() => {
+    // Observer tous les messages du partenaire visibles à l'écran
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
+            const messageId = entry.target.getAttribute('data-message-id')
+            const senderId = entry.target.getAttribute('data-sender-id')
+
+            // Seulement pour les messages du partenaire (pas les miens)
+            if (messageId && senderId && senderId !== userId && !readMessages.has(messageId)) {
+              // Marquer comme lu en local
+              setReadMessages(prev => new Set(prev).add(messageId))
+              updateMessageStatus(messageId, 'read')
+
+              // Persister en base de données
+              fetch('/api/e2ee/messages/ack', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                  conversationId,
+                  messageId,
+                  status: 'READ'
+                })
+              }).catch(err => console.error('[E2EE] Erreur ACK READ:', err))
+            }
+          }
+        })
+      },
+      { threshold: 0.5 } // Visible à 50% minimum
+    )
+
+    // Observer tous les messages affichés
+    const messageElements = document.querySelectorAll('[data-message-id]')
+    messageElements.forEach(el => observer.observe(el))
+
+    return () => observer.disconnect()
+  }, [envelopes, conversationId, userId, readMessages])
+
   // Auto-scroll vers le bas quand les messages changent (mais pas pendant l'upload)
   useEffect(() => {
     if (!loadingHistory && envelopes.length > 0 && uploadProgress === null) {
@@ -286,7 +485,8 @@ export default function E2EEThread({ conversationId, userId, partnerId }: { conv
   // Bridge external composer
   useEffect(() => {
     // @ts-ignore
-    window.__feloraChatSend = async ({ text, file }: { text?: string; file?: File }) => {
+    window.__feloraChatSend = async ({ text, file, mediaOptions }: { text?: string; file?: File; mediaOptions?: { viewMode?: 'once' | 'unlimited', downloadable?: boolean } }) => {
+      console.log('[__feloraChatSend] APPELÉ !', { hasText: !!text, hasFile: !!file, conversationId, userId })
       const deviceId = localStorage.getItem(`felora-e2ee-device-${userId}`) || `${userId}-dev`
       if (file) {
         const messageId = uuidv4()
@@ -309,7 +509,16 @@ export default function E2EEThread({ conversationId, userId, partnerId }: { conv
           fd.append('meta', JSON.stringify(meta))
           const { url } = await uploadWithProgress(fd, (p) => setUploadProgress(p))
 
-          const payload = { conversationId, senderUserId: userId, senderDeviceId: deviceId, messageId, cipherText: btoa(`[attachment:${url}]`), attachment: { url, meta } }
+          const payload = { 
+            conversationId, 
+            senderUserId: userId, 
+            senderDeviceId: deviceId, 
+            messageId, 
+            cipherText: btoa(`[attachment:${url}]`), 
+            attachment: { url, meta },
+            viewMode: mediaOptions?.viewMode || 'unlimited',
+            downloadable: mediaOptions?.downloadable !== false
+          }
           const res = await fetch('/api/e2ee/messages/send', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(payload) })
 
           setUploadProgress(null)
@@ -319,12 +528,13 @@ export default function E2EEThread({ conversationId, userId, partnerId }: { conv
           }
 
           const data = await res.json()
+          
           if (data?.message) {
             const newEnvelope = data.message
             if (!newEnvelope.senderUserId) {
               newEnvelope.senderUserId = userId
             }
-            // Ajouter le vrai message (pas de message optimiste à supprimer)
+            // Ajouter le vrai message (il n'y a pas de message optimiste pour les médias, juste une progress bar)
             addEnvelopeUnique(newEnvelope)
             updateMessageStatus(messageId, 'sent')
           }
@@ -332,10 +542,8 @@ export default function E2EEThread({ conversationId, userId, partnerId }: { conv
           toastSuccess('Média envoyé')
           scrollToBottom()
         } catch (error) {
-          console.error('Erreur lors de l\'envoi du média:', error)
           toastError('Échec de l\'envoi du média')
           setUploadProgress(null)
-          // Marquer le message optimiste comme échoué
           updateMessageStatus(messageId, 'failed')
         }
         return
@@ -358,64 +566,78 @@ export default function E2EEThread({ conversationId, userId, partnerId }: { conv
           createdAt: new Date().toISOString(),
           status: 'sending'
         }
+        console.log('[OPTIMISTIC] Ajout du message optimiste:', optimisticEnvelope.id)
         addEnvelopeUnique(optimisticEnvelope)
         updateMessageStatus(messageId, 'sending')
 
-        // Stocker le texte pour l'affichage immédiat
+        // Stocker le texte pour l'affichage immédiat (utiliser l'ID temp)
         if (text) {
           setTextCache(prev => ({ ...prev, [`temp-${messageId}`]: text }))
         }
 
         // Envoyer en arrière-plan
         const payload = { conversationId, senderUserId: userId, senderDeviceId: deviceId, messageId, cipherText: ct }
+        console.log('[SEND] Envoi...', { conversationId, messageId })
+        
         const res = await fetch('/api/e2ee/messages/send', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(payload) })
+        
+        console.log('[SEND] Réponse:', res.status, res.ok)
 
         if (!res.ok) {
+          const errorText = await res.text()
+          console.error('[SEND] Erreur:', errorText)
           updateMessageStatus(messageId, 'failed')
           throw new Error('send_failed')
         }
 
         const data = await res.json()
+        console.log('[SEND] Données reçues:', data)
 
         if (data?.message) {
           const newEnvelope = data.message
-
-          // CRITICAL FIX: S'assurer que le senderUserId est défini
+          
+          // CRITICAL: S'assurer que senderUserId est défini
           if (!newEnvelope.senderUserId) {
             newEnvelope.senderUserId = userId
           }
-
-          // Remplacer le message optimiste par le vrai message de l'API
-          setEnvelopes(prev => prev.map(e =>
+          
+          // Remplacer le message optimiste par le vrai message de la DB
+          setEnvelopes(prev => prev.map(e => 
             e.id === `temp-${messageId}` ? newEnvelope : e
           ))
+          
           updateMessageStatus(messageId, 'sent')
-
-          // Stocker le texte original pour le vrai ID
+          
+          // Migrer le texte du cache temp vers le vrai ID
           if (text && newEnvelope.id) {
             setTextCache(prev => {
-              const updated: Record<string, string> = { ...prev, [newEnvelope.id]: text }
-              const tempKey = `temp-${messageId}`
-              delete updated[tempKey] // Supprimer l'ancien cache si présent
+              const updated = { ...prev, [newEnvelope.id]: text }
+              delete updated[`temp-${messageId}`] // Supprimer l'ancien cache temp
               return updated
             })
           }
         }
       } catch (error) {
-        console.error('Erreur lors de l\'envoi du message:', error)
+        console.error('[SEND] Exception:', error)
         toastError('Échec de l\'envoi du message. Veuillez réessayer.')
       }
     }
     return () => { /* cleanup left empty to preserve composer binding between renders */ }
   }, [conversationId, userId, partnerId])
 
-  // Decrypt attachments, cache URLs
+  // Decrypt attachments, cache URLs (parallèle avec limite de 3)
   useEffect(() => {
     (async () => {
       const pending = envelopes.filter(e => e.attachmentUrl && e.attachmentMeta && !mediaCache[e.id])
       if (!pending.length) return
+      
       const updates: Record<string, { url: string; mime: string }> = {}
-      for (const env of pending) {
+      
+      // Déchiffrer 3 médias en parallèle max pour éviter de bloquer
+      const PARALLEL_LIMIT = 3
+      for (let i = 0; i < pending.length; i += PARALLEL_LIMIT) {
+        const batch = pending.slice(i, i + PARALLEL_LIMIT)
+        await Promise.all(batch.map(async (env) => {
         try {
 
           const urlObj = new URL(String(env.attachmentUrl), window.location.origin)
@@ -452,20 +674,22 @@ export default function E2EEThread({ conversationId, userId, partnerId }: { conv
 
           updates[env.id] = { url: URL.createObjectURL(plainBlob), mime: env.attachmentMeta?.mime || plainBlob.type || 'application/octet-stream' }
         } catch (error) {
-          console.error('[E2EE] Erreur lors du déchiffrement du média:', env.id)
-          console.error('[E2EE] Détails erreur:', error)
-          // Marquer le média comme indisponible
-          updates[env.id] = { url: null, mime: 'error' }
+          // Déchiffrement échoué - marquer le média comme indisponible
+          updates[env.id] = { url: '', mime: '' }
         }
+        }))
+        
+        // Mettre à jour le cache après chaque batch
+        if (Object.keys(updates).length) setMediaCache(prev => ({ ...prev, ...updates }))
       }
-      if (Object.keys(updates).length) setMediaCache(prev => ({ ...prev, ...updates }))
     })()
-    return () => { Object.values(mediaCache).forEach(({ url }) => { if (url) URL.revokeObjectURL(url) }) }
+    // Ne pas révoquer les blob URLs immédiatement pour permettre le fullscreen
+    // return () => { Object.values(mediaCache).forEach(({ url }) => { if (url) URL.revokeObjectURL(url) }) }
   }, [envelopes])
 
   const renderText = (env: Envelope) => {
-    // Préférer le cache déchiffré
-    const cached = textCache[env.id]
+    // Préférer le cache déchiffré (utiliser messageId comme clé)
+    const cached = env.messageId ? textCache[env.messageId] : textCache[env.id]
     if (cached) return cached.startsWith('[attachment:') ? '' : cached
 
     // Si c'est une pièce jointe, ne pas afficher de texte
@@ -510,29 +734,50 @@ export default function E2EEThread({ conversationId, userId, partnerId }: { conv
             ))}
           </div>
         )}
-        {envelopes.map(env => {
+        {(() => {
+          console.log('[RENDER] Total envelopes:', envelopes.length, 'IDs:', envelopes.map(e => ({ id: e.id, messageId: e.messageId })))
+          return envelopes
+        })()
+          .filter(env => {
+            // Filtrer les messages expirés
+            const expiresAt = (env as any).expiresAt
+            if (expiresAt && new Date(expiresAt) < new Date()) {
+              return false
+            }
+            
+            // Ne PAS filtrer les messages "vue unique" - on les affiche différemment
+            return true
+          })
+          .map(env => {
           const mine = env.senderUserId === userId
           const bubbleClass = mine ? 'ml-auto bg-gradient-to-br from-pink-500/30 to-purple-500/30 border border-white/20' : 'bg-white/5 border border-white/10'
           const media = mediaCache[env.id]
           const text = renderText(env)
           const status = messageStatuses[env.messageId] || env.status || 'sent'
           
+          // Vérifier si c'est un message "vue unique" déjà vu
+          const viewMode = (env as any).viewMode
+          const viewedBy = (env as any).viewedBy || []
+          const isViewedLocally = localViewedMessages.includes(env.id)
+          const isViewedOnce = viewMode === 'once' && (viewedBy.length > 0 || isViewedLocally)
+          const isReceiverAndViewed = viewMode === 'once' && !mine && (viewedBy.includes(userId) || isViewedLocally)
+          
           const getStatusIcon = (status: string) => {
             switch (status) {
-              case 'sending': return '⏳'
-              case 'sent': return '✓'
-              case 'delivered': return '✓✓'
-              case 'read': return '✓✓'
-              case 'failed': return '❌'
+              case 'sending': return '○' // Cercle vide
+              case 'sent': return '✓' // Simple check
+              case 'delivered': return '✓✓' // Double check gris
+              case 'read': return '✓✓' // Double check vert
+              case 'failed': return '✗'
               default: return '✓'
             }
           }
 
           const getStatusColor = (status: string) => {
             switch (status) {
-              case 'sending': return 'text-yellow-400'
+              case 'sending': return 'text-gray-500'
               case 'sent': return 'text-gray-400'
-              case 'delivered': return 'text-blue-400'
+              case 'delivered': return 'text-gray-400'
               case 'read': return 'text-green-400'
               case 'failed': return 'text-red-400'
               default: return 'text-gray-400'
@@ -540,55 +785,228 @@ export default function E2EEThread({ conversationId, userId, partnerId }: { conv
           }
 
           return (
-            <motion.div 
-              key={env.id} 
+            <motion.div
+              key={env.id}
+              data-message-id={env.messageId}
+              data-sender-id={env.senderUserId}
               initial={{ opacity: 0, y: 20, scale: 0.95 }}
-              animate={{ 
-                opacity: status === 'sending' ? 0.7 : 1, 
-                y: 0, 
-                scale: 1 
+              animate={{
+                opacity: status === 'sending' ? 0.7 : 1,
+                y: 0,
+                scale: 1
               }}
               transition={{ duration: 0.3, ease: 'easeOut' }}
               className={`relative max-w-[85%] sm:max-w-[70%] rounded-xl px-3 py-2 ${media && media.url && media.mime.startsWith('audio/') ? 'pb-8' : 'pr-10'} text-sm ${bubbleClass} ${status === 'sending' ? 'animate-pulse' : ''}`}>
-              {text && <div className="whitespace-pre-wrap break-words mb-1">{text}</div>}
-              {media && media.mime === 'error' && (
+              
+              {/* Si c'est un message vu par le récepteur, cacher le média */}
+        {isReceiverAndViewed ? (
+          <div className="text-xs text-gray-500 italic py-1">
+            Contenu disparu
+          </div>
+        ) : viewMode === 'once' && mine ? (
+          // Chez l'expéditeur : afficher seulement le statut (pas le média)
+          <div className="py-2">
+            {isViewedOnce ? (
+              // Média vu et supprimé
+              <div className="flex items-center gap-2 text-sm">
+                <div className="w-1.5 h-1.5 rounded-full bg-green-400 flex-shrink-0" />
+                <span className="text-green-400/90">Vu et supprimé</span>
+              </div>
+            ) : (
+              // Média envoyé, en attente
+              <div className="flex items-center gap-2 text-sm">
+                <div className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse flex-shrink-0" />
+                <span className="text-blue-400/90">En attente</span>
+              </div>
+            )}
+          </div>
+        ) : (
+          <>
+              {text && (
+              <>
+                <div className="whitespace-pre-wrap break-words mb-1">{text}</div>
+                {/* Preview des liens */}
+                {extractUrls(text).slice(0, 2).map((url, idx) => (
+                  <LinkPreview key={idx} url={url} />
+                ))}
+              </>
+            )}
+          </>
+        )}
+              
+              {/* Badges vue unique et protection */}
+              {((env as any).viewMode || (env as any).downloadable === false) && (
+                <div className="flex gap-1.5 mb-2 flex-wrap">
+                  {(env as any).viewMode === 'once' && (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-purple-500/10 border border-purple-500/20 text-[11px] font-medium text-purple-300/90">
+                      <Eye size={11} className="flex-shrink-0" />
+                      <span>Vue unique</span>
+                    </span>
+                  )}
+                  {(env as any).downloadable === false && (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-red-500/10 border border-red-500/20 text-[11px] font-medium text-red-300/90">
+                      <ShieldOff size={11} className="flex-shrink-0" />
+                      <span>Protégé</span>
+                    </span>
+                  )}
+                </div>
+              )}
+              {media && (!media.mime || !media.url) && (
                 <div className="mt-1 mb-5 text-xs text-red-400/70 flex items-center gap-1">
                   <span>⚠️</span>
                   <span>Média indisponible</span>
                 </div>
               )}
-              {media && media.url && media.mime.startsWith('image/') && (
-                <img src={media.url} alt="Pièce jointe" className="mt-1 mb-5 rounded-lg max-w-full h-auto max-h-[55vh] border border-white/10" loading="lazy" />
+              {/* Affichage des images */}
+              {media && media.url && media.mime && media.mime.startsWith('image/') && !isReceiverAndViewed && !(viewMode === 'once' && mine) && (
+                <div className="relative mt-1 mb-5">
+                  {viewMode === 'once' && !mine && !isViewedLocally ? (
+                    // Image floutée avec bouton "Voir" (récepteur avant visionnage)
+                    <div className="relative">
+                      <img src={media.url} alt="Pièce jointe" className="rounded-lg max-w-full h-auto max-h-[55vh] border border-white/10 blur-xl" />
+                      <button
+                        onClick={() => setFullscreenMedia({ url: media.url!, type: 'image', messageId: env.id, isOnceView: true, downloadable: (env as any).downloadable !== false })}
+                        className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-lg"
+                      >
+                        <div className="px-6 py-3 bg-purple-500 hover:bg-purple-600 rounded-full text-white font-medium flex items-center gap-2 transition-all hover:scale-105">
+                          <span>👁️</span>
+                          <span>Voir</span>
+                        </div>
+                      </button>
+                    </div>
+                  ) : (
+                    // Image normale (messages normaux) - cliquable pour plein écran
+                    <div className="relative group">
+                      <img 
+                        src={media.url} 
+                        alt="Pièce jointe" 
+                        className="rounded-lg max-w-full h-auto max-h-[55vh] border border-white/10 cursor-pointer transition-all hover:brightness-90" 
+                        loading="lazy"
+                        onClick={() => setFullscreenMedia({ url: media.url!, type: 'image', messageId: env.id, isOnceView: false, downloadable: (env as any).downloadable !== false })}
+                      />
+                      {/* Bouton de téléchargement si autorisé */}
+                      {(env as any).downloadable !== false && (
+                        <a
+                          href={media.url}
+                          download
+                          onClick={(e) => e.stopPropagation()}
+                          className="absolute top-2 right-2 p-2 bg-black/60 hover:bg-black/80 rounded-lg text-white opacity-0 group-hover:opacity-100 transition-all"
+                          title="Télécharger"
+                        >
+                          <Download size={16} />
+                        </a>
+                      )}
+                    </div>
+                  )}
+                </div>
               )}
-              {media && media.url && media.mime.startsWith('video/') && (
-                <video src={media.url} controls className="mt-1 mb-5 rounded-lg max-w-full h-auto max-h-[55vh] border border-white/10" />
+              {/* Affichage des vidéos */}
+              {media && media.url && media.mime && media.mime.startsWith('video/') && !isReceiverAndViewed && !(viewMode === 'once' && mine) && (
+                <div className="relative mt-1 mb-5">
+                  {viewMode === 'once' && !mine && !isViewedLocally ? (
+                    // Vidéo floutée avec bouton "Voir" (récepteur avant visionnage)
+                    <div className="relative">
+                      <video src={media.url} className="rounded-lg max-w-full h-auto max-h-[55vh] border border-white/10 blur-xl" />
+                      <button
+                        onClick={() => setFullscreenMedia({ url: media.url!, type: 'video', messageId: env.id, isOnceView: true, downloadable: (env as any).downloadable !== false })}
+                        className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-lg"
+                      >
+                        <div className="px-6 py-3 bg-purple-500 hover:bg-purple-600 rounded-full text-white font-medium flex items-center gap-2 transition-all hover:scale-105">
+                          <span>👁️</span>
+                          <span>Voir</span>
+                        </div>
+                      </button>
+                    </div>
+                  ) : (
+                    // Vidéo normale (messages normaux) - cliquable pour plein écran
+                    <div className="relative group">
+                      <video 
+                        src={media.url} 
+                        controls 
+                        className="rounded-lg max-w-full h-auto max-h-[55vh] border border-white/10 cursor-pointer"
+                        onClick={(e) => {
+                          // Si on clique sur la vidéo (pas sur les contrôles), ouvrir en plein écran
+                          const target = e.target as HTMLVideoElement
+                          if (target.paused) {
+                            setFullscreenMedia({ url: media.url!, type: 'video', messageId: env.id, isOnceView: false, downloadable: (env as any).downloadable !== false })
+                          }
+                        }}
+                      />
+                      {/* Bouton de téléchargement si autorisé */}
+                      {(env as any).downloadable !== false && (
+                        <a
+                          href={media.url}
+                          download
+                          onClick={(e) => e.stopPropagation()}
+                          className="absolute top-2 right-2 p-2 bg-black/60 hover:bg-black/80 rounded-lg text-white opacity-0 group-hover:opacity-100 transition-all z-10"
+                          title="Télécharger"
+                        >
+                          <Download size={16} />
+                        </a>
+                      )}
+                    </div>
+                  )}
+                </div>
               )}
-              {media && media.url && media.mime.startsWith('audio/') && (
+              {media && media.url && media.mime && media.mime.startsWith('audio/') && (
                 <div className="mt-1 mb-5">
                   <audio src={media.url} controls className="w-full max-w-sm" style={{ minHeight: '40px' }} />
                 </div>
               )}
               {!media && env.attachmentUrl && (
-                <div className="mt-1 mb-5 text-xs text-white/60">Pièce jointe… déchiffrement en cours</div>
+                <div className="mt-1 mb-5">
+                  {/* Skeleton pour le chargement du média */}
+                  <div className="relative w-full max-w-sm h-48 bg-gradient-to-br from-white/5 to-white/10 rounded-lg border border-white/10">
+                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-4">
+                      <div className="relative">
+                        <div className="w-16 h-16 border-4 border-white/10 rounded-full" />
+                        <div className="absolute inset-0 w-16 h-16 border-4 border-transparent border-t-pink-500 border-r-purple-500 rounded-full animate-spin" />
+                      </div>
+                      <div className="text-center">
+                        <div className="text-sm text-white/80 font-medium mb-1">Déchiffrement sécurisé</div>
+                        <div className="text-xs text-white/50">Cela peut prendre quelques secondes...</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               )}
-              <div className="absolute bottom-1 right-2 flex items-center gap-1 text-[10px] leading-none text-white/50">
-                <span>
-                  {(() => {
-                    try {
-                      const date = new Date(env.createdAt)
-                      if (isNaN(date.getTime())) return 'Maintenant'
-                      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                    } catch {
-                      return 'Maintenant'
-                    }
-                  })()}
-                </span>
-                {mine && (
-                  <span className={`${getStatusColor(status)}`} title={status}>
-                    {getStatusIcon(status)}
-                  </span>
+              <div className="absolute bottom-1 right-2 flex flex-col items-end gap-0.5">
+                {/* Badge temps éphémère au-dessus */}
+                {(env as any).expiresAt && (
+                  <div className="flex items-center gap-0.5 text-[9px] text-orange-300/70">
+                    <Clock size={9} className="flex-shrink-0" />
+                    <span>{(() => {
+                      const expiresAt = new Date((env as any).expiresAt)
+                      const now = new Date()
+                      const diff = expiresAt.getTime() - now.getTime()
+                      const hours = Math.floor(diff / (1000 * 60 * 60))
+                      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+                      if (hours > 0) return `${hours}h`
+                      if (minutes > 0) return `${minutes}min`
+                      return 'Bientôt'
+                    })()}</span>
+                  </div>
                 )}
-              </div>
+                {/* Heure d'envoi */}
+                <div className="flex items-center gap-1 text-[10px] leading-none text-white/50">
+                  <span>
+                    {(() => {
+                      try {
+                        const date = new Date(env.createdAt)
+                        if (isNaN(date.getTime())) return 'Maintenant'
+                        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                      } catch {
+                        return 'Maintenant'
+                      }
+                    })()}
+                  </span>
+                  {mine && (
+                    <span className={`${getStatusColor(status)}`} title={status}>
+                      {getStatusIcon(status)}
+                    </span>
+                  )}
+                </div>
+            </div>
             </motion.div>
           )
         })}
@@ -596,13 +1014,65 @@ export default function E2EEThread({ conversationId, userId, partnerId }: { conv
         {/* Indicateur de frappe */}
         <TypingIndicator
           isTyping={isTyping && typingUser !== userId}
-          userName={typingUser !== userId && typingUser ? typingUser : undefined}
+          userName={typingUser !== userId && typingUser ? (partnerName || 'Quelqu\'un') : undefined}
           className="max-w-[85%] sm:max-w-[70%]"
         />
 
         {/* Élément invisible pour l'auto-scroll */}
         <div ref={messagesEndRef} />
       </div>
+
+      {/* Viewer fullscreen pour médias */}
+      {fullscreenMedia && (
+        <FullscreenMediaViewer
+          mediaUrl={fullscreenMedia.url}
+          mediaType={fullscreenMedia.type}
+          isOnceView={fullscreenMedia.isOnceView}
+          downloadable={fullscreenMedia.downloadable}
+          onClose={async () => {
+            // Vérifier si c'est un message "vue unique"
+            const message = envelopes.find(e => e.id === fullscreenMedia.messageId)
+            const isOnceView = (message as any)?.viewMode === 'once'
+            
+            // Marquer comme vu SEULEMENT si c'est un message "vue unique"
+            if (isOnceView) {
+              // Marquer le message comme vu localement immédiatement
+              const newViewedMessages = [...localViewedMessages, fullscreenMedia.messageId]
+              setLocalViewedMessages(newViewedMessages)
+              
+              // Sauvegarder dans localStorage
+              try {
+                localStorage.setItem(`viewed-messages-${conversationId}`, JSON.stringify(newViewedMessages))
+              } catch (e) {
+                console.error('Erreur localStorage:', e)
+              }
+              
+              // Appeler l'API en arrière-plan
+              try {
+              const res = await fetch('/api/e2ee/messages/mark-viewed', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                  messageId: fullscreenMedia.messageId,
+                  userId
+                })
+              })
+              
+              if (res.ok) {
+                toastInfo('Le message a disparu')
+              } else {
+                console.error('[MARK VIEWED] Erreur API:', res.status)
+              }
+              } catch (error) {
+                console.error('[MARK VIEWED] Erreur lors du marquage comme vu:', error)
+              }
+            }
+            
+            setFullscreenMedia(null)
+          }}
+        />
+      )}
     </div>
   )
 }

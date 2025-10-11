@@ -54,8 +54,6 @@ export async function POST(request: NextRequest) {
     }
 
     // Diffuser l'événement d'arrêt de frappe
-    console.log(`[TYPING API] User ${userId} stopped typing in conversation ${conversationId}`)
-
     sseBroadcaster.broadcast(conversationId, {
       type: 'typing_stop',
       conversationId,

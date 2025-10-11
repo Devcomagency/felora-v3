@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import { Mic, Square, Play, Pause, Trash2, Send } from 'lucide-react'
 import { motion } from 'framer-motion'
 import BodyPortal from '@/components/BodyPortal'
+import { MESSAGING_CONSTANTS } from '@/constants/messaging'
 
 interface VoiceRecorderProps {
   onSend: (audioBlob: Blob) => void
@@ -111,7 +112,7 @@ export default function VoiceRecorder({ onSend, onCancel }: VoiceRecorderProps) 
     return `${minutes}:${seconds.toString().padStart(2, '0')}`
   }
 
-  const isRecordingTooLong = duration > 300 // 5 minutes max
+  const isRecordingTooLong = duration > MESSAGING_CONSTANTS.MAX_VOICE_MESSAGE_DURATION
 
   return (
     <BodyPortal>

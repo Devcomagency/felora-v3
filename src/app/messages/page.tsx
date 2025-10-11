@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import ConversationList from '../../components/chat/ConversationList'
 import E2EEThread from '../../components/chat/E2EEThread'
-import { MessageCircle, ArrowLeft, Paperclip, Image as ImageIcon, Smile, Send, MoreVertical, Link as LinkIcon, Mic } from 'lucide-react'
+import { MessageCircle, ArrowLeft, Paperclip, Image as ImageIcon, Smile, Send, MoreVertical, Mic, Clock } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { Conversation, Message } from '../../types/chat'
 import { useSession } from 'next-auth/react'
@@ -40,11 +40,16 @@ function NewMessagesPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [showHeaderMenu, setShowHeaderMenu] = useState(false)
   const [showReportModal, setShowReportModal] = useState(false)
+  const [showEphemeralMenu, setShowEphemeralMenu] = useState(false)
   const [reportReason, setReportReason] = useState('Spam')
   const [reportDetails, setReportDetails] = useState('')
   const [reportSubmitting, setReportSubmitting] = useState(false)
+  const [ephemeralMode, setEphemeralMode] = useState(false)
+  const [ephemeralDuration, setEphemeralDuration] = useState(86400) // 24h par défaut
+  const [isDesktop, setIsDesktop] = useState(false)
   const router = useRouter()
   const { success: toastSuccess, error: toastError } = useNotification()
+  
   const { error: networkError, isRetrying, retryCount, handleError, clearError, retry } = useNetworkError()
   const headerTitle = useMemo(() => {
     if (activeConversation && activeConversation.participants?.length) {
@@ -71,6 +76,7 @@ function NewMessagesPage() {
     return null
   }, [activeConversation, session?.user?.id])
   const [headerSearch, setHeaderSearch] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
   const [isBlocked, setIsBlocked] = useState(false)
   const [pendingConvToOpen, setPendingConvToOpen] = useState<string | null>(null)
   const [pendingUserToMessage, setPendingUserToMessage] = useState<string | null>(null)
@@ -80,6 +86,27 @@ function NewMessagesPage() {
   useEffect(() => {
     conversationsRef.current = conversations
   }, [conversations])
+
+  // Détecter la taille d'écran pour activer/désactiver les instances E2EEThread
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    
+    const mediaQuery = window.matchMedia('(min-width: 1024px)') // lg breakpoint de Tailwind
+    
+    const handleChange = (e: MediaQueryListEvent | MediaQueryList) => {
+      setIsDesktop(e.matches)
+    }
+    
+    // Init
+    handleChange(mediaQuery)
+    
+    // Écouter les changements
+    mediaQuery.addEventListener('change', handleChange)
+    
+    return () => {
+      mediaQuery.removeEventListener('change', handleChange)
+    }
+  }, [])
 
   // Read deep link (?conv=... ou ?to=...) to auto-open a conversation when list is loaded
   useEffect(() => {
@@ -242,6 +269,30 @@ function NewMessagesPage() {
     }
   }, [createConversationWithIntro])
 
+  // Debounce pour la recherche
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(headerSearch)
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [headerSearch])
+
+  // Navigation au clavier
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Échap : Fermer les modaux
+      if (e.key === 'Escape') {
+        if (showHeaderMenu) setShowHeaderMenu(false)
+        if (showReportModal) setShowReportModal(false)
+        if (showEphemeralMenu) setShowEphemeralMenu(false)
+        if (activeConversation) setActiveConversation(null)
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [showHeaderMenu, showReportModal, showEphemeralMenu, activeConversation])
+
   // Load E2EE conversations for current user (handle unauthenticated)
   const loadConversations = useCallback(async () => {
     try {
@@ -284,12 +335,36 @@ function NewMessagesPage() {
   // Load messages for active conversation
   const handleSelectConversation = async (conversation: Conversation) => {
     setActiveConversation(conversation)
+    
+    // Charger les paramètres éphémères de la conversation
+    const ephemeralModeValue = (conversation as any).ephemeralMode || false
+    const ephemeralDurationValue = (conversation as any).ephemeralDuration || 86400
+    setEphemeralMode(ephemeralModeValue)
+    setEphemeralDuration(ephemeralDurationValue)
   }
 
   // Update local last-seen timestamp when opening a conversation
   useEffect(() => {
-    if (activeConversation?.id) {
+    if (activeConversation?.id && session?.user?.id) {
       try { localStorage.setItem(`felora-e2ee-last-seen-${activeConversation.id}`, String(Date.now())) } catch {}
+      
+      // Marquer les messages comme lus
+      ;(async () => {
+        try {
+          await fetch('/api/e2ee/messages/mark-read', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({
+              conversationId: activeConversation.id,
+              userId: session.user.id
+            })
+          })
+        } catch (error) {
+          console.error('Erreur marquage lecture:', error)
+        }
+      })()
+      
       ;(async () => {
         try {
           const res = await fetch('/api/e2ee/conversations/read', {
@@ -415,7 +490,13 @@ function NewMessagesPage() {
               <h1 className="text-xl font-bold text-white flex items-center gap-2">
                 {headerTitle}
                 {isBlocked && (
-                  <span className="px-2 py-1 text-xs rounded-full bg-red-500/20 text-red-300">Bloqué</span>
+                  <span className="px-2 py-1 text-xs rounded-full bg-red-500/20 text-red-300 border border-red-500/30">Bloqué</span>
+                )}
+                {ephemeralMode && activeConversation && (
+                  <span className="px-2 py-1 text-xs rounded-md bg-orange-500/10 text-orange-300 border border-orange-500/20 flex items-center gap-1">
+                    <Clock size={11} />
+                    <span>{ephemeralDuration / 3600}h</span>
+                  </span>
                 )}
               </h1>
               <p className="text-gray-400 text-sm">{headerSubtitle}</p>
@@ -424,24 +505,6 @@ function NewMessagesPage() {
           
           {activeConversation ? (
             <div className="relative">
-              <button
-                onClick={async () => {
-                  if (!activeConversation) return
-                  try {
-                    const url = `${window.location.origin}/messages?conv=${encodeURIComponent(activeConversation.id)}`
-                    await navigator.clipboard.writeText(url)
-                    toastSuccess('Lien d\'invitation copié')
-                  } catch {
-                    toastError('Impossible de copier le lien')
-                  }
-                }}
-                className="mr-3 px-4 py-2 text-sm rounded-xl bg-white/20 hover:bg-white/30 border border-white/30 inline-flex items-center gap-2 transition-all duration-200 hover:scale-105"
-                title="Copier le lien d\'invitation"
-                aria-label="Copier le lien d\'invitation"
-              >
-                <LinkIcon size={16} />
-                <span className="hidden sm:inline">Inviter</span>
-              </button>
               <button
                 onClick={() => setShowHeaderMenu(v => !v)}
                 className="p-3 text-white hover:bg-white/20 rounded-xl transition-all duration-200 hover:scale-105"
@@ -453,15 +516,28 @@ function NewMessagesPage() {
                 <MoreVertical size={20} />
               </button>
               {showHeaderMenu && (
-                <div className="absolute right-0 mt-2 w-48 rounded-lg border border-white/10 bg-gray-900/95 backdrop-blur-sm shadow-lg overflow-hidden z-50">
+                <div className="absolute right-0 mt-2 w-56 rounded-lg border border-white/10 bg-gray-900/95 backdrop-blur-sm shadow-lg overflow-hidden z-50">
                   <button
                     role="menuitem"
-                    className="w-full text-left px-3 py-2 text-sm text-white/90 hover:bg-white/10"
+                    className="w-full text-left px-4 py-3 text-sm text-white/90 hover:bg-white/10 flex items-center gap-2 border-b border-white/5"
+                    onClick={() => { setShowHeaderMenu(false); setShowEphemeralMenu(true) }}
+                  >
+                    <span>🔥</span>
+                    <div className="flex-1">
+                      <div>Messages éphémères</div>
+                      <div className="text-xs text-gray-400">
+                        {ephemeralMode ? `Activé (${ephemeralDuration / 3600}h)` : 'Désactivé'}
+                      </div>
+                    </div>
+                  </button>
+                  <button
+                    role="menuitem"
+                    className="w-full text-left px-4 py-3 text-sm text-white/90 hover:bg-white/10"
                     onClick={() => { setShowHeaderMenu(false); setShowReportModal(true) }}
                   >Signaler</button>
                   <button
                     role="menuitem"
-                    className="w-full text-left px-3 py-2 text-sm text-white/90 hover:bg-white/10"
+                    className="w-full text-left px-4 py-3 text-sm text-white/90 hover:bg-white/10"
                     onClick={async () => {
                       setShowHeaderMenu(false)
                       try {
@@ -477,6 +553,36 @@ function NewMessagesPage() {
                       }
                     }}
                   >{isBlocked ? 'Débloquer' : 'Bloquer'}</button>
+                  <button
+                    role="menuitem"
+                    className="w-full text-left px-4 py-3 text-sm text-red-400 hover:bg-red-500/10 border-t border-white/5"
+                    onClick={async () => {
+                      setShowHeaderMenu(false)
+                      if (!activeConversation?.id) return
+                      
+                      if (!confirm('Êtes-vous sûr de vouloir supprimer cette conversation ? Cette action est irréversible.')) {
+                        return
+                      }
+                      
+                      try {
+                        const res = await fetch('/api/e2ee/conversations/delete', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          credentials: 'include',
+                          body: JSON.stringify({ conversationId: activeConversation.id })
+                        })
+                        
+                        if (!res.ok) throw new Error('delete_failed')
+                        
+                        toastSuccess('Conversation supprimée')
+                        setActiveConversation(null)
+                        // Recharger la liste des conversations
+                        loadConversations()
+                      } catch {
+                        toastError('Impossible de supprimer la conversation')
+                      }
+                    }}
+                  >Supprimer la conversation</button>
                 </div>
               )}
             </div>
@@ -506,24 +612,27 @@ function NewMessagesPage() {
             <>
               {/* Desktop: Split View */}
               <div className="hidden lg:flex h-full min-h-0">
-                <div className="w-1/3 border-r border-gray-700/50">
-                  <ConversationList
-                    conversations={conversations}
-                    activeConversation={activeConversation}
-                    onSelectConversation={handleSelectConversation}
-                    searchQuery={headerSearch}
-                    loading={isLoading}
-                    currentUserId={session?.user?.id}
-                  />
-                </div>
-                <div className="flex-1 min-h-0 flex flex-col">
-                  {activeConversation ? (
-                    <>
+                  <div className="w-1/3 border-r border-gray-700/50">
+                    <ConversationList
+                      conversations={conversations}
+                      activeConversation={activeConversation}
+                      onSelectConversation={handleSelectConversation}
+                      searchQuery={debouncedSearch}
+                      loading={isLoading}
+                      currentUserId={session?.user?.id}
+                    />
+                  </div>
+                  <div className="flex-1 min-h-0 flex flex-col">
+                    {activeConversation ? (
+                      <>
                       <div className="flex-1 min-h-0 overflow-hidden">
                         <E2EEThread
+                          key={`desktop-thread-${activeConversation.id}`}
                           conversationId={activeConversation.id}
                           userId={session?.user?.id || ''}
                           partnerId={(activeConversation.participants.find((p:any)=> p.id!== (session?.user?.id||''))|| activeConversation.participants[0])?.id}
+                          partnerName={(activeConversation.participants.find((p:any)=> p.id!== (session?.user?.id||''))|| activeConversation.participants[0])?.stageName || (activeConversation.participants.find((p:any)=> p.id!== (session?.user?.id||''))|| activeConversation.participants[0])?.name}
+                          isActive={isDesktop}
                         />
                       </div>
                       {/* Composeur intégré pour desktop */}
@@ -588,14 +697,17 @@ function NewMessagesPage() {
               </div>
               {/* Mobile: Single View */}
               <div className="lg:hidden h-full min-h-0">
-                {activeConversation ? (
-                  <div className="h-full min-h-0">
-                    <E2EEThread
-                      conversationId={activeConversation.id}
-                      userId={session?.user?.id || ''}
-                      partnerId={(activeConversation.participants.find((p:any)=> p.id!== (session?.user?.id||''))|| activeConversation.participants[0])?.id}
-                    />
-                  </div>
+                  {activeConversation ? (
+                    <div className="h-full min-h-0">
+                      <E2EEThread
+                        key={`mobile-thread-${activeConversation.id}`}
+                        conversationId={activeConversation.id}
+                        userId={session?.user?.id || ''}
+                        partnerId={(activeConversation.participants.find((p:any)=> p.id!== (session?.user?.id||''))|| activeConversation.participants[0])?.id}
+                        partnerName={(activeConversation.participants.find((p:any)=> p.id!== (session?.user?.id||''))|| activeConversation.participants[0])?.stageName || (activeConversation.participants.find((p:any)=> p.id!== (session?.user?.id||''))|| activeConversation.participants[0])?.name}
+                        isActive={!isDesktop}
+                      />
+                    </div>
                 ) : (
                   <div className="h-full flex flex-col">
                     {!session?.user ? (
@@ -619,7 +731,7 @@ function NewMessagesPage() {
                         conversations={conversations}
                         activeConversation={activeConversation}
                         onSelectConversation={handleSelectConversation}
-                        searchQuery={headerSearch}
+                        searchQuery={debouncedSearch}
                         loading={isLoading}
                         currentUserId={session?.user?.id}
                       />
@@ -726,6 +838,125 @@ function NewMessagesPage() {
             </div>
           </div>
         ) : null}
+
+        {/* Modale Mode Éphémère */}
+        {showEphemeralMenu && activeConversation && (
+          <div className="fixed inset-0 z-[10000] flex items-center justify-center">
+            <div className="absolute inset-0 bg-black/60" onClick={() => setShowEphemeralMenu(false)} />
+            <div 
+              className="relative w-[min(92vw,28rem)] rounded-xl border p-6 text-white"
+              style={{
+                background: 'rgba(15, 15, 25, 0.95)',
+                backdropFilter: 'blur(20px)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)'
+              }}
+            >
+              <h3 
+                className="text-xl font-semibold mb-4 flex items-center gap-2"
+                style={{
+                  background: 'linear-gradient(135deg, var(--felora-aurora) 0%, var(--felora-plasma) 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text'
+                }}
+              >
+                <span>🔥</span> Messages éphémères
+              </h3>
+              <p className="text-sm text-gray-400 mb-6">
+                Les messages disparaîtront automatiquement après la durée choisie
+              </p>
+              
+              <div className="space-y-3 mb-6">
+                <button
+                  onClick={() => { setEphemeralMode(false); setEphemeralDuration(0) }}
+                  className={`w-full text-left px-4 py-3 rounded-lg transition-all ${!ephemeralMode ? 'bg-white/10 border-2 border-pink-500' : 'bg-white/5 border border-white/10'}`}
+                >
+                  <div className="font-medium">Désactivé</div>
+                  <div className="text-xs text-gray-400">Les messages restent indéfiniment</div>
+                </button>
+                
+                <button
+                  onClick={() => { setEphemeralMode(true); setEphemeralDuration(43200) }}
+                  className={`w-full text-left px-4 py-3 rounded-lg transition-all ${ephemeralMode && ephemeralDuration === 43200 ? 'bg-white/10 border-2 border-pink-500' : 'bg-white/5 border border-white/10'}`}
+                >
+                  <div className="font-medium">12 heures</div>
+                  <div className="text-xs text-gray-400">Les messages disparaissent après 12h</div>
+                </button>
+                
+                <button
+                  onClick={() => { setEphemeralMode(true); setEphemeralDuration(86400) }}
+                  className={`w-full text-left px-4 py-3 rounded-lg transition-all ${ephemeralMode && ephemeralDuration === 86400 ? 'bg-white/10 border-2 border-pink-500' : 'bg-white/5 border border-white/10'}`}
+                >
+                  <div className="font-medium">24 heures</div>
+                  <div className="text-xs text-gray-400">Les messages disparaissent après 24h</div>
+                </button>
+                
+                <button
+                  onClick={() => { setEphemeralMode(true); setEphemeralDuration(172800) }}
+                  className={`w-full text-left px-4 py-3 rounded-lg transition-all ${ephemeralMode && ephemeralDuration === 172800 ? 'bg-white/10 border-2 border-pink-500' : 'bg-white/5 border border-white/10'}`}
+                >
+                  <div className="font-medium">48 heures</div>
+                  <div className="text-xs text-gray-400">Les messages disparaissent après 2 jours</div>
+                </button>
+                
+                <button
+                  onClick={() => { setEphemeralMode(true); setEphemeralDuration(604800) }}
+                  className={`w-full text-left px-4 py-3 rounded-lg transition-all ${ephemeralMode && ephemeralDuration === 604800 ? 'bg-white/10 border-2 border-pink-500' : 'bg-white/5 border border-white/10'}`}
+                >
+                  <div className="font-medium">7 jours</div>
+                  <div className="text-xs text-gray-400">Les messages disparaissent après 1 semaine</div>
+                </button>
+              </div>
+              
+              <div className="flex justify-end gap-3">
+                <button 
+                  onClick={() => setShowEphemeralMenu(false)} 
+                  className="px-6 py-2 rounded-lg transition-colors bg-white/10 text-white/90 hover:bg-white/20"
+                >
+                  Annuler
+                </button>
+                <button 
+                  onClick={async () => {
+                    try {
+                      const res = await fetch('/api/e2ee/conversations/update-ephemeral', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include',
+                        body: JSON.stringify({
+                          conversationId: activeConversation.id,
+                          ephemeralMode,
+                          ephemeralDuration
+                        })
+                      })
+                      
+                      if (!res.ok) throw new Error('update_failed')
+                      
+                      // Animation de succès avant de fermer
+                      const btn = document.activeElement as HTMLButtonElement
+                      if (btn) {
+                        btn.textContent = '✓ Enregistré'
+                        btn.style.background = 'linear-gradient(to right, #10b981, #059669)'
+                        setTimeout(() => {
+                          setShowEphemeralMenu(false)
+                          toastSuccess(ephemeralMode ? `Mode éphémère activé (${ephemeralDuration / 3600}h)` : 'Mode éphémère désactivé')
+                        }, 500)
+                      } else {
+                        setShowEphemeralMenu(false)
+                        toastSuccess(ephemeralMode ? `Mode éphémère activé (${ephemeralDuration / 3600}h)` : 'Mode éphémère désactivé')
+                      }
+                    } catch {
+                      toastError('Impossible de modifier les paramètres')
+                    }
+                  }}
+                  className="px-6 py-2 rounded-lg transition-all bg-gradient-to-r from-pink-500 to-purple-500 text-white hover:scale-105"
+                >
+                  Appliquer
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </BodyPortal>
     </div>
   )
@@ -740,12 +971,12 @@ function PageComposer({ active }: { active: boolean }) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const mediaInputRef = useRef<HTMLInputElement>(null)
   
-  const onSend = (file?: File | Blob) => {
+  const onSend = (file?: File | Blob, options?: { viewMode?: 'once' | 'unlimited', downloadable?: boolean }) => {
     if (!active) return
     // @ts-ignore
     if (typeof window !== 'undefined' && window.__feloraChatSend) {
       // @ts-ignore
-      window.__feloraChatSend({ text, file })
+      window.__feloraChatSend({ text, file, mediaOptions: options })
       setText('')
       setShowEmoji(false)
       setPreviewFile(null)

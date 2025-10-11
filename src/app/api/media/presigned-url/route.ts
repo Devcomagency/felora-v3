@@ -8,9 +8,42 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
+// Types MIME autorisés pour les uploads
+const ALLOWED_MIME_TYPES = {
+  images: [
+    'image/jpeg',
+    'image/jpg',
+    'image/png',
+    'image/webp',
+    'image/gif',
+    'image/heic',
+    'image/heif'
+  ],
+  videos: [
+    'video/mp4',
+    'video/webm',
+    'video/quicktime', // MOV
+    'video/x-msvideo', // AVI
+    'video/x-matroska', // MKV
+    'video/mpeg'
+  ]
+}
+
+const ALL_ALLOWED_TYPES = [...ALLOWED_MIME_TYPES.images, ...ALLOWED_MIME_TYPES.videos]
+
+/**
+ * Valide le type MIME d'un fichier
+ * @param mimeType - Type MIME à valider
+ * @returns true si autorisé, false sinon
+ */
+function isAllowedMimeType(mimeType: string): boolean {
+  return ALL_ALLOWED_TYPES.includes(mimeType.toLowerCase())
+}
+
 /**
  * API pour générer une URL pré-signée pour upload direct vers R2
  * Évite la limite de 4.5MB de Vercel
+ * Valide le type MIME pour empêcher l'upload de fichiers malveillants
  */
 export async function POST(request: NextRequest) {
   try {
@@ -26,6 +59,19 @@ export async function POST(request: NextRequest) {
     // Validation de base
     if (!fileName || !fileType) {
       return NextResponse.json({ success: false, error: 'fileName et fileType requis' }, { status: 400 })
+    }
+
+    // Validation MIME type - SÉCURITÉ
+    if (!isAllowedMimeType(fileType)) {
+      console.warn(`⚠️ Tentative d'upload type MIME non autorisé:`, {
+        userId: session.user.id,
+        fileName,
+        fileType
+      })
+      return NextResponse.json({
+        success: false,
+        error: `Type de fichier non autorisé: ${fileType}. Formats acceptés : images (JPEG, PNG, WEBP, GIF, HEIC) et vidéos (MP4, MOV, WEBM)`
+      }, { status: 400 })
     }
 
     // Limite de taille : 500MB max

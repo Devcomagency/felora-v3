@@ -31,8 +31,6 @@ export default async function EscortV2Layout({ children }: { children: React.Rea
           </div>
           <nav className="flex items-center gap-1 text-sm">
             <a href="/dashboard-escort/profil" className="px-3 py-1.5 rounded-lg hover:bg-white/10">Mon profil</a>
-            <a href="/dashboard-escort/medias" className="px-3 py-1.5 rounded-lg hover:bg-white/10">Médias</a>
-            <a href="/dashboard-escort/parametres" className="px-3 py-1.5 rounded-lg hover:bg-white/10">Paramètres</a>
           </nav>
         </div>
       </div>

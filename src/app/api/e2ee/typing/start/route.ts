@@ -54,8 +54,6 @@ export async function POST(request: NextRequest) {
     }
 
     // Diffuser l'événement de frappe
-    console.log(`[TYPING API] User ${userId} started typing in conversation ${conversationId}`)
-
     sseBroadcaster.broadcast(conversationId, {
       type: 'typing_start',
       conversationId,

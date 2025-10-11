@@ -1,12 +1,17 @@
 'use client'
 
 import { useState, useRef, useEffect, useMemo } from 'react'
-import { useSearchParams } from 'next/navigation'
-import { User, Image, Eye, Heart, Clock, Settings as SettingsIcon, CheckCircle2, AlertTriangle, ShieldCheck, Pause, Calendar, Save, X, BadgeCheck, Search, Loader2, Star, MapPin } from 'lucide-react'
+import { useSearchParams, useRouter } from 'next/navigation'
+import { User, Image, Eye, Heart, Clock, Settings as SettingsIcon, CheckCircle2, AlertTriangle, ShieldCheck, Pause, Calendar, Save, X, BadgeCheck, Search, Loader2, Star, MapPin, ExternalLink, Zap, Trash2 } from 'lucide-react'
 import * as Dialog from '@radix-ui/react-dialog'
 import AddressAutocomplete from '../ui/AddressAutocomplete'
 import LocationPreviewMap from '../ui/LocationPreviewMap'
 import AddressValidator from '../ui/AddressValidator'
+import NetworkIndicator from '../ui/NetworkIndicator'
+import SimpleRichTextEditor from '../ui/SimpleRichTextEditor'
+import { logger } from '@/utils/logger'
+import { uploadWithProgress } from '@/utils/uploadWithProgress'
+import { SWISS_CANTONS, SWISS_MAJOR_CITIES } from '@/constants/geography'
 // import ModernMediaManager from './ModernMediaManager'
 
 const CANTON_MAP: Record<string, string> = {
@@ -168,11 +173,12 @@ const StarRating = ({
 }
 
 export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly?: boolean }) {
+  const router = useRouter()
   const [activeTab, setActiveTab] = useState('media')
   const fileInputsRef = useRef<Array<HTMLInputElement | null>>([])
   const [draggingIndex, setDraggingIndex] = useState<number | null>(null)
   const [mandatoryMedia, setMandatoryMedia] = useState<Array<{ file?: File; preview?: string; id?: string; uploading?: boolean }>>(
-    () => Array.from({ length: 6 }, () => ({ file: undefined, preview: undefined, id: undefined, uploading: false }))
+    () => Array.from({ length: 4 }, () => ({ file: undefined, preview: undefined, id: undefined, uploading: false }))
   )
   // Prix toujours visibles; plus de repli
   const [saving, setSaving] = useState(false)
@@ -188,6 +194,14 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
   const savedSnapshotRef = useRef<Partial<ProfileData>>({})
   const [pauseOpen, setPauseOpen] = useState(false)
   const [pauseReturnAt, setPauseReturnAt] = useState<string>('')
+
+  // 🆕 Nouveaux états pour améliorations
+  const [uploadProgress, setUploadProgress] = useState<Record<number, number>>({}) // Progress par slot
+  const [selectedMediaForBulk, setSelectedMediaForBulk] = useState<Set<number>>(new Set()) // Bulk management
+  const [selectionMode, setSelectionMode] = useState(false) // Mode sélection multiple
+  const [customPrices, setCustomPrices] = useState<Array<{ id: string; label: string; duration: string; price: number }>>([]) // Custom pricing
+  const [blockedCantons, setBlockedCantons] = useState<Set<string>>(new Set()) // Cantons bloqués
+  const [blockedCities, setBlockedCities] = useState<Set<string>>(new Set()) // Villes bloquées
   // Charger les médias existants (positions 1-6)
   useEffect(() => {
     let cancelled = false
@@ -196,13 +210,14 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
         const res = await fetch('/api/profile/unified/me', { cache: 'no-store', credentials: 'include' })
         const j = await res.json().catch(() => ({}))
         const gallery = j?.profile?.galleryPhotos
-        const slots = Array.from({ length: 6 }, () => ({ file: undefined as File|undefined, preview: undefined as string|undefined, id: undefined as string|undefined, uploading: false }))
+        const slots = Array.from({ length: 4 }, () => ({ file: undefined as File|undefined, preview: undefined as string|undefined, id: undefined as string|undefined, uploading: false }))
         if (gallery) {
           let arr: any[] = []
           try { arr = Array.isArray(gallery) ? gallery : JSON.parse(gallery) } catch { arr = [] }
           for (const it of arr) {
             const s = Number(it?.slot)
-            if (Number.isFinite(s) && s >= 0 && s < 6 && it?.url) {
+            // Ne charger que les 4 premiers slots (0-3)
+            if (Number.isFinite(s) && s >= 0 && s < 4 && it?.url) {
               slots[s] = { file: undefined, preview: String(it.url), id: String(it.id || `slot-${s}`), uploading: false }
             }
           }
@@ -349,7 +364,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
         const j = await r.json()
         if (!r.ok || !j?.profile || cancelled) return
         const p = j.profile
-        console.log('🔄 [PHYSICAL DEBUG] Données reçues de l\'API unified:', {
+        logger.log('🔄 [PHYSICAL DEBUG] Données reçues de l\'API unified:', {
           physical: p.physical,
           hasPhysical: !!p.physical,
           physicalKeys: p.physical ? Object.keys(p.physical) : 'undefined'
@@ -382,33 +397,33 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
           phoneVisibility: p.phoneVisibility || 'hidden',
           height: (() => {
             const height = p.physical?.height || undefined
-            console.log('🔄 [PHYSICAL DEBUG] Chargement height depuis API:', { raw: p.physical?.height, processed: height })
+            logger.log('🔄 [PHYSICAL DEBUG] Chargement height depuis API:', { raw: p.physical?.height, processed: height })
             return height
           })(),
           bodyType: (() => {
             const bodyType = p.physical?.bodyType || ''
-            console.log('🔄 [PHYSICAL DEBUG] Chargement bodyType depuis API:', { raw: p.physical?.bodyType, processed: bodyType })
+            logger.log('🔄 [PHYSICAL DEBUG] Chargement bodyType depuis API:', { raw: p.physical?.bodyType, processed: bodyType })
             return bodyType
           })(),
           hairColor: (() => {
             const hairColor = p.physical?.hairColor || ''
-            console.log('🔄 [PHYSICAL DEBUG] Chargement hairColor depuis API:', { raw: p.physical?.hairColor, processed: hairColor })
+            logger.log('🔄 [PHYSICAL DEBUG] Chargement hairColor depuis API:', { raw: p.physical?.hairColor, processed: hairColor })
             return hairColor
           })(),
           hairLength: '', // hairLength n'est pas encore disponible dans l'API unifiée
           eyeColor: (() => {
             const eyeColor = p.physical?.eyeColor || ''
-            console.log('🔄 [PHYSICAL DEBUG] Chargement eyeColor depuis API:', { raw: p.physical?.eyeColor, processed: eyeColor })
+            logger.log('🔄 [PHYSICAL DEBUG] Chargement eyeColor depuis API:', { raw: p.physical?.eyeColor, processed: eyeColor })
             return eyeColor
           })(),
           ethnicity: (() => {
             const ethnicity = p.physical?.ethnicity || ''
-            console.log('🔄 [PHYSICAL DEBUG] Chargement ethnicity depuis API:', { raw: p.physical?.ethnicity, processed: ethnicity })
+            logger.log('🔄 [PHYSICAL DEBUG] Chargement ethnicity depuis API:', { raw: p.physical?.ethnicity, processed: ethnicity })
             return ethnicity
           })(),
           breastSize: (() => {
             const breastSize = p.physical?.bustSize || ''
-            console.log('🔄 [PHYSICAL DEBUG] Chargement breastSize depuis API (bustSize):', { raw: p.physical?.bustSize, processed: breastSize })
+            logger.log('🔄 [PHYSICAL DEBUG] Chargement breastSize depuis API (bustSize):', { raw: p.physical?.bustSize, processed: breastSize })
             return breastSize
           })(),
           breastType: p.physical?.breastType || undefined,
@@ -418,22 +433,22 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
           piercings: p.physical?.piercings || false,
           acceptsCouples: (() => {
             const acceptsCouples = p.clientele?.acceptsCouples || false
-            console.log('🔄 [CLIENTELE DEBUG] Chargement acceptsCouples depuis API:', { raw: p.clientele?.acceptsCouples, processed: acceptsCouples })
+            logger.log('🔄 [CLIENTELE DEBUG] Chargement acceptsCouples depuis API:', { raw: p.clientele?.acceptsCouples, processed: acceptsCouples })
             return acceptsCouples
           })(),
           acceptsWomen: (() => {
             const acceptsWomen = p.clientele?.acceptsWomen || false
-            console.log('🔄 [CLIENTELE DEBUG] Chargement acceptsWomen depuis API:', { raw: p.clientele?.acceptsWomen, processed: acceptsWomen })
+            logger.log('🔄 [CLIENTELE DEBUG] Chargement acceptsWomen depuis API:', { raw: p.clientele?.acceptsWomen, processed: acceptsWomen })
             return acceptsWomen
           })(),
           acceptsHandicapped: (() => {
             const acceptsHandicapped = p.clientele?.acceptsHandicapped || false
-            console.log('🔄 [CLIENTELE DEBUG] Chargement acceptsHandicapped depuis API:', { raw: p.clientele?.acceptsHandicapped, processed: acceptsHandicapped })
+            logger.log('🔄 [CLIENTELE DEBUG] Chargement acceptsHandicapped depuis API:', { raw: p.clientele?.acceptsHandicapped, processed: acceptsHandicapped })
             return acceptsHandicapped
           })(),
           acceptsSeniors: (() => {
             const acceptsSeniors = p.clientele?.acceptsSeniors || false
-            console.log('🔄 [CLIENTELE DEBUG] Chargement acceptsSeniors depuis API:', { raw: p.clientele?.acceptsSeniors, processed: acceptsSeniors })
+            logger.log('🔄 [CLIENTELE DEBUG] Chargement acceptsSeniors depuis API:', { raw: p.clientele?.acceptsSeniors, processed: acceptsSeniors })
             return acceptsSeniors
           })(),
           specialties: (p.specialties || []).concat(p.options?.amenities || []).map((item: string) =>
@@ -446,13 +461,13 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
         try {
           // Utiliser les données brutes pour l'agenda car c'est spécifique au dashboard
           const rawTimeSlots = p.timeSlots // L'API unifiée en mode dashboard inclut ce champ
-          console.log('🔄 [AGENDA DEBUG] Chargement agenda depuis API:', {
+          logger.log('🔄 [AGENDA DEBUG] Chargement agenda depuis API:', {
             rawTimeSlots,
             type: typeof rawTimeSlots,
             isEmpty: rawTimeSlots === '' || rawTimeSlots === null || rawTimeSlots === undefined
           })
           const sched = normalizeScheduleData(rawTimeSlots)
-          console.log('🔄 [AGENDA DEBUG] Schedule normalisé:', sched)
+          logger.log('🔄 [AGENDA DEBUG] Schedule normalisé:', sched)
           
           if (sched?.weekly && Array.isArray(sched.weekly)) {
             const mapDays = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche']
@@ -466,31 +481,61 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                 end: String(w?.end || '22:00')
               }
             }
-            console.log('[DASHBOARD] Setting weekly schedule:', nextWeekly)
+            logger.log('[DASHBOARD] Setting weekly schedule:', nextWeekly)
             setWeekly(nextWeekly)
           }
 
           if (sched?.pause) {
-            console.log('[DASHBOARD] Setting pause:', sched.pause)
+            logger.log('[DASHBOARD] Setting pause:', sched.pause)
             setPauseEnabled(true)
             setPauseStart(String(sched.pause.start || ''))
             setPauseEnd(String(sched.pause.end || ''))
           } else {
-            console.log('[DASHBOARD] No pause, resetting')
+            logger.log('[DASHBOARD] No pause, resetting')
             setPauseEnabled(false)
             setPauseStart('')
             setPauseEnd('')
           }
 
           if (Array.isArray(sched?.absences)) {
-            console.log('[DASHBOARD] Setting absences:', sched.absences)
+            logger.log('[DASHBOARD] Setting absences:', sched.absences)
             setAbsences(sched.absences.map((a: any, idx: number) => ({ id: String(a.id || idx), start: String(a.start || ''), end: String(a.end || '') })))
           } else {
-            console.log('[DASHBOARD] No absences, resetting')
+            logger.log('[DASHBOARD] No absences, resetting')
             setAbsences([])
           }
         } catch (error) {
           console.error('[DASHBOARD] Error parsing agenda:', error)
+        }
+
+        // 🆕 Charger les tarifs personnalisés
+        try {
+          if (p.customPrices) {
+            const parsed = typeof p.customPrices === 'string' ? JSON.parse(p.customPrices) : p.customPrices
+            if (Array.isArray(parsed)) {
+              setCustomPrices(parsed)
+              logger.log('💰 [CUSTOM PRICING] Tarifs personnalisés chargés:', parsed)
+            }
+          }
+        } catch (error) {
+          logger.warn('[DASHBOARD] Error parsing customPrices:', error)
+        }
+
+        // 🆕 Charger le blocage géographique
+        try {
+          if (p.geoBlocking) {
+            const parsed = typeof p.geoBlocking === 'string' ? JSON.parse(p.geoBlocking) : p.geoBlocking
+            if (parsed.blockedCantons && Array.isArray(parsed.blockedCantons)) {
+              setBlockedCantons(new Set(parsed.blockedCantons))
+              logger.log('🌍 [GEO BLOCKING] Cantons bloqués chargés:', parsed.blockedCantons)
+            }
+            if (parsed.blockedCities && Array.isArray(parsed.blockedCities)) {
+              setBlockedCities(new Set(parsed.blockedCities))
+              logger.log('🌍 [GEO BLOCKING] Villes bloquées chargées:', parsed.blockedCities)
+            }
+          }
+        } catch (error) {
+          logger.warn('[DASHBOARD] Error parsing geoBlocking:', error)
         }
 
       } catch {}
@@ -510,13 +555,13 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
   ]
 
   const updateProfileData = (field: string, value: any) => {
-    console.log(`🔄 [PHYSICAL DEBUG] updateProfileData appelé:`, { field, value, type: typeof value })
+    logger.log(`🔄 [PHYSICAL DEBUG] updateProfileData appelé:`, { field, value, type: typeof value })
     setProfileData(prev => {
       const newData = {
         ...prev,
         [field]: value
       }
-      console.log(`📝 [PHYSICAL DEBUG] Nouveau profileData après update:`, {
+      logger.log(`📝 [PHYSICAL DEBUG] Nouveau profileData après update:`, {
         field,
         oldValue: prev[field as keyof ProfileData],
         newValue: value,
@@ -554,7 +599,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
   const updateLanguageRating = (language: string, rating: number) => {
     const currentLanguages = profileData.languages || {}
     const newLanguages = { ...currentLanguages, [language]: rating }
-    console.log('🔄 [DASHBOARD] Updating language rating:', { language, rating, newLanguages })
+    logger.log('🔄 [DASHBOARD] Updating language rating:', { language, rating, newLanguages })
     updateProfileData('languages', newLanguages)
   }
 
@@ -674,8 +719,8 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
   // Checks & completion
   const requiredChecks = useMemo(() => {
     const checks: Array<{ key: string; label: string; ok: boolean; targetTab: string }> = []
-    const mediasOk = mandatoryMedia.filter(m => !!m.preview).length === 6
-    checks.push({ key: 'medias', label: '6 médias requis', ok: mediasOk, targetTab: 'media' })
+    const mediasOk = mandatoryMedia.filter(m => !!m.preview).length === 4
+    checks.push({ key: 'medias', label: '4 médias requis', ok: mediasOk, targetTab: 'media' })
     checks.push({ key: 'stageName', label: 'Pseudo', ok: !!profileData.stageName, targetTab: 'basic' })
     checks.push({ key: 'age', label: 'Âge', ok: profileData.age !== undefined && profileData.age > 0, targetTab: 'basic' })
     checks.push({ key: 'description', label: 'Description (≥ 200 car.)', ok: (profileData.description||'').trim().length >= 200, targetTab: 'basic' })
@@ -703,17 +748,17 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
     const mapDays = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche']
     const packed = mapDays.map((d, idx) => ({ weekday: idx, ...weekly[d as keyof typeof weekly] }))
     const result = { weekly: packed, pause: pauseEnabled ? { start: pauseStart, end: pauseEnd } : null, absences }
-    console.log('🔄 [AGENDA DEBUG] Conversion schedule vers JSON:', result)
+    logger.log('🔄 [AGENDA DEBUG] Conversion schedule vers JSON:', result)
     
     // Vérifier si l'agenda a des données valides
     const hasValidData = packed.some(day => day.enabled) || 
                         (pauseEnabled && pauseStart && pauseEnd) || 
                         (absences && absences.length > 0)
     
-    console.log('🔄 [AGENDA DEBUG] Agenda a des données valides:', hasValidData)
+    logger.log('🔄 [AGENDA DEBUG] Agenda a des données valides:', hasValidData)
     
     if (!hasValidData) {
-      console.log('⚠️ [AGENDA DEBUG] Aucune donnée valide dans l\'agenda, retourne null')
+      logger.log('⚠️ [AGENDA DEBUG] Aucune donnée valide dans l\'agenda, retourne null')
       return null
     }
     
@@ -729,27 +774,27 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
 
   const doSave = async (payload: any, silent = false, retryCount = 0): Promise<boolean> => {
     const maxRetries = 3
-    console.log('🚀 [DEBUG] doSave appelée avec payload:', payload)
-    console.log('🔍 [PHYSICAL DEBUG] Payload physical dans doSave:', {
+    logger.log('🚀 [DEBUG] doSave appelée avec payload:', payload)
+    logger.log('🔍 [PHYSICAL DEBUG] Payload physical dans doSave:', {
       hasPhysical: !!payload.physical,
       physical: payload.physical,
       physicalKeys: payload.physical ? Object.keys(payload.physical) : 'undefined'
     })
     try {
-      console.log('🌐 [DEBUG] Envoi requête à /api/profile/unified/me')
+      logger.log('🌐 [DEBUG] Envoi requête à /api/profile/unified/me')
       const res = await fetch('/api/profile/unified/me', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify(payload)
       })
-      console.log('📡 [DEBUG] Réponse reçue, status:', res.status)
+      logger.log('📡 [DEBUG] Réponse reçue, status:', res.status)
       const data = await res.json().catch(() => ({}))
-      console.log('📦 [DEBUG] Données de réponse API:', data)
+      logger.log('📦 [DEBUG] Données de réponse API:', data)
 
       // Si erreur 500 ou 401, on retry automatiquement
       if ((res.status === 500 || res.status === 401) && retryCount < maxRetries) {
-        console.log(`🔄 [DASHBOARD] Retry ${retryCount + 1}/${maxRetries} pour erreur ${res.status}`)
+        logger.log(`🔄 [DASHBOARD] Retry ${retryCount + 1}/${maxRetries} pour erreur ${res.status}`)
         if (!silent) setSaveMsg({ type: 'warning', text: `Retry ${retryCount + 1}/${maxRetries}...` })
         await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1))) // Délai progressif
         return doSave(payload, silent, retryCount + 1)
@@ -779,10 +824,15 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
     triggerAutoSave()
   }, [weekly, pauseEnabled, pauseStart, pauseEnd, absences])
 
+  // 🆕 Auto-save quand les tarifs personnalisés ou le blocage géo change
+  useEffect(() => {
+    triggerAutoSave()
+  }, [customPrices, blockedCantons, blockedCities])
+
   const triggerAutoSave = () => {
     if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current)
     autoSaveTimer.current = setTimeout(async () => {
-      console.log('🔄 [PHYSICAL DEBUG] triggerAutoSave appelé - État des champs physiques:', {
+      logger.log('🔄 [PHYSICAL DEBUG] triggerAutoSave appelé - État des champs physiques:', {
         height: profileData.height,
         bodyType: profileData.bodyType,
         hairColor: profileData.hairColor,
@@ -816,7 +866,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
         ...(profileData.serviceType || []), // Catégorie principale (escort, masseuse, etc.)
         ...serviceDetails // Services détaillés uniquement
       ]
-      console.log('[DASHBOARD] Saving services:', {
+      logger.log('[DASHBOARD] Saving services:', {
         serviceType: profileData.serviceType,
         specialties: profileData.specialties,
         serviceDetails,
@@ -837,7 +887,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
         overnight: profileData.prices?.overnight
       }
       // Physique - Format unifié avec objet physical
-      console.log('🔍 [PHYSICAL DEBUG] Vérification des champs physiques pour autosave:', {
+      logger.log('🔍 [PHYSICAL DEBUG] Vérification des champs physiques pour autosave:', {
         height: profileData.height,
         bodyType: profileData.bodyType,
         hairColor: profileData.hairColor,
@@ -862,65 +912,65 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
           profileData.breastType !== undefined || profileData.pubicHair !== undefined || 
           typeof profileData.smoker === 'boolean'
       
-      console.log('🔍 [PHYSICAL DEBUG] hasPhysicalData:', hasPhysicalData)
+      logger.log('🔍 [PHYSICAL DEBUG] hasPhysicalData:', hasPhysicalData)
       
       if (hasPhysicalData) {
         payload.physical = {}
-        console.log('📦 [PHYSICAL DEBUG] Création de l\'objet physical pour autosave')
+        logger.log('📦 [PHYSICAL DEBUG] Création de l\'objet physical pour autosave')
         
         if (profileData.height !== undefined) {
           payload.physical.height = profileData.height
-          console.log('📦 [PHYSICAL DEBUG] Ajout height:', profileData.height)
+          logger.log('📦 [PHYSICAL DEBUG] Ajout height:', profileData.height)
         }
         if (profileData.bodyType !== undefined && profileData.bodyType !== '') {
           payload.physical.bodyType = profileData.bodyType
-          console.log('📦 [PHYSICAL DEBUG] Ajout bodyType:', profileData.bodyType)
+          logger.log('📦 [PHYSICAL DEBUG] Ajout bodyType:', profileData.bodyType)
         }
         if (profileData.hairColor !== undefined && profileData.hairColor !== '') {
           payload.physical.hairColor = profileData.hairColor
-          console.log('📦 [PHYSICAL DEBUG] Ajout hairColor:', profileData.hairColor)
+          logger.log('📦 [PHYSICAL DEBUG] Ajout hairColor:', profileData.hairColor)
         }
         if (profileData.eyeColor !== undefined && profileData.eyeColor !== '') {
           payload.physical.eyeColor = profileData.eyeColor
-          console.log('📦 [PHYSICAL DEBUG] Ajout eyeColor:', profileData.eyeColor)
+          logger.log('📦 [PHYSICAL DEBUG] Ajout eyeColor:', profileData.eyeColor)
         }
         if (profileData.ethnicity !== undefined && profileData.ethnicity !== '') {
           payload.physical.ethnicity = profileData.ethnicity
-          console.log('📦 [PHYSICAL DEBUG] Ajout ethnicity:', profileData.ethnicity)
+          logger.log('📦 [PHYSICAL DEBUG] Ajout ethnicity:', profileData.ethnicity)
         }
         if (profileData.breastSize !== undefined && profileData.breastSize !== '') {
           payload.physical.bustSize = profileData.breastSize
-          console.log('📦 [PHYSICAL DEBUG] Ajout breastSize -> bustSize:', profileData.breastSize)
+          logger.log('📦 [PHYSICAL DEBUG] Ajout breastSize -> bustSize:', profileData.breastSize)
         }
         if (profileData.tattoos !== undefined) {
           payload.physical.tattoos = profileData.tattoos
-          console.log('📦 [PHYSICAL DEBUG] Ajout tattoos:', profileData.tattoos)
+          logger.log('📦 [PHYSICAL DEBUG] Ajout tattoos:', profileData.tattoos)
         }
         if (profileData.piercings !== undefined) {
           payload.physical.piercings = profileData.piercings
-          console.log('📦 [PHYSICAL DEBUG] Ajout piercings:', profileData.piercings)
+          logger.log('📦 [PHYSICAL DEBUG] Ajout piercings:', profileData.piercings)
         }
         if (profileData.breastType !== undefined) {
           payload.physical.breastType = profileData.breastType
-          console.log('📦 [PHYSICAL DEBUG] Ajout breastType:', profileData.breastType)
+          logger.log('📦 [PHYSICAL DEBUG] Ajout breastType:', profileData.breastType)
         }
         if (profileData.pubicHair !== undefined) {
           payload.physical.pubicHair = profileData.pubicHair
-          console.log('📦 [PHYSICAL DEBUG] Ajout pubicHair:', profileData.pubicHair)
+          logger.log('📦 [PHYSICAL DEBUG] Ajout pubicHair:', profileData.pubicHair)
         }
         if (typeof profileData.smoker === 'boolean') {
           payload.physical.smoker = profileData.smoker
-          console.log('📦 [PHYSICAL DEBUG] Ajout smoker:', profileData.smoker)
+          logger.log('📦 [PHYSICAL DEBUG] Ajout smoker:', profileData.smoker)
         }
         
-        console.log('📦 [PHYSICAL DEBUG] Objet physical final pour autosave:', payload.physical)
+        logger.log('📦 [PHYSICAL DEBUG] Objet physical final pour autosave:', payload.physical)
       } else {
-        console.log('⚠️ [PHYSICAL DEBUG] Aucune donnée physique détectée pour autosave')
+        logger.log('⚠️ [PHYSICAL DEBUG] Aucune donnée physique détectée pour autosave')
       }
       if (profileData.phoneVisibility) payload.phoneVisibility = profileData.phoneVisibility
       
       // Clientèle
-      console.log('🔍 [CLIENTELE DEBUG] Vérification des champs clientèle pour autosave:', {
+      logger.log('🔍 [CLIENTELE DEBUG] Vérification des champs clientèle pour autosave:', {
         acceptsCouples: profileData.acceptsCouples,
         acceptsWomen: profileData.acceptsWomen,
         acceptsHandicapped: profileData.acceptsHandicapped,
@@ -938,39 +988,58 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                               typeof profileData.acceptsHandicapped === 'boolean' || 
                               typeof profileData.acceptsSeniors === 'boolean'
       
-      console.log('🔍 [CLIENTELE DEBUG] hasClienteleData:', hasClienteleData)
+      logger.log('🔍 [CLIENTELE DEBUG] hasClienteleData:', hasClienteleData)
       
       if (hasClienteleData) {
         payload.clientele = {}
-        console.log('📦 [CLIENTELE DEBUG] Création de l\'objet clientele pour autosave')
+        logger.log('📦 [CLIENTELE DEBUG] Création de l\'objet clientele pour autosave')
         
         if (typeof profileData.acceptsCouples === 'boolean') {
           payload.clientele.acceptsCouples = profileData.acceptsCouples
-          console.log('📦 [CLIENTELE DEBUG] Ajout acceptsCouples:', profileData.acceptsCouples)
+          logger.log('📦 [CLIENTELE DEBUG] Ajout acceptsCouples:', profileData.acceptsCouples)
         }
         if (typeof profileData.acceptsWomen === 'boolean') {
           payload.clientele.acceptsWomen = profileData.acceptsWomen
-          console.log('📦 [CLIENTELE DEBUG] Ajout acceptsWomen:', profileData.acceptsWomen)
+          logger.log('📦 [CLIENTELE DEBUG] Ajout acceptsWomen:', profileData.acceptsWomen)
         }
         if (typeof profileData.acceptsHandicapped === 'boolean') {
           payload.clientele.acceptsHandicapped = profileData.acceptsHandicapped
-          console.log('📦 [CLIENTELE DEBUG] Ajout acceptsHandicapped:', profileData.acceptsHandicapped)
+          logger.log('📦 [CLIENTELE DEBUG] Ajout acceptsHandicapped:', profileData.acceptsHandicapped)
         }
         if (typeof profileData.acceptsSeniors === 'boolean') {
           payload.clientele.acceptsSeniors = profileData.acceptsSeniors
-          console.log('📦 [CLIENTELE DEBUG] Ajout acceptsSeniors:', profileData.acceptsSeniors)
+          logger.log('📦 [CLIENTELE DEBUG] Ajout acceptsSeniors:', profileData.acceptsSeniors)
         }
         
-        console.log('📦 [CLIENTELE DEBUG] Objet clientele final pour autosave:', payload.clientele)
+        logger.log('📦 [CLIENTELE DEBUG] Objet clientele final pour autosave:', payload.clientele)
       } else {
-        console.log('⚠️ [CLIENTELE DEBUG] Aucune donnée clientèle détectée pour autosave')
+        logger.log('⚠️ [CLIENTELE DEBUG] Aucune donnée clientèle détectée pour autosave')
       }
+
+      // 🆕 Custom Prices - Tarifs personnalisés
+      if (customPrices.length > 0) {
+        payload.customPrices = JSON.stringify(customPrices)
+        logger.log('💰 [CUSTOM PRICING] Ajout customPrices:', customPrices)
+      }
+
+      // 🆕 Blocage géographique
+      if (blockedCantons.size > 0 || blockedCities.size > 0) {
+        payload.geoBlocking = JSON.stringify({
+          blockedCantons: Array.from(blockedCantons),
+          blockedCities: Array.from(blockedCities)
+        })
+        logger.log('🌍 [GEO BLOCKING] Ajout blocage géographique:', {
+          cantons: Array.from(blockedCantons),
+          cities: Array.from(blockedCities)
+        })
+      }
+
       const timeSlotsJson = scheduleToJson()
       if (timeSlotsJson !== null) {
         payload.timeSlots = timeSlotsJson
-        console.log('🔄 [AGENDA DEBUG] Ajout timeSlots à l\'autosave:', timeSlotsJson)
+        logger.log('🔄 [AGENDA DEBUG] Ajout timeSlots à l\'autosave:', timeSlotsJson)
       } else {
-        console.log('⚠️ [AGENDA DEBUG] Pas de timeSlots valides, non inclus dans l\'autosave')
+        logger.log('⚠️ [AGENDA DEBUG] Pas de timeSlots valides, non inclus dans l\'autosave')
       }
 
       // Inclure les médias dans l'autosave
@@ -997,8 +1066,8 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
       }
 
       const safeMediaCount = galleryMedia.filter(m => m.url && !m.url.startsWith('data:')).length
-      console.log('[DASHBOARD] Auto-saving agenda + safe media:', { timeSlots: payload.timeSlots, safeMediaCount })
-      console.log('📦 [AUTOSAVE] Payload complet avant doSave:', payload)
+      logger.log('[DASHBOARD] Auto-saving agenda + safe media:', { timeSlots: payload.timeSlots, safeMediaCount })
+      logger.log('📦 [AUTOSAVE] Payload complet avant doSave:', payload)
       await doSave(payload, true)
     }, 700)
   }
@@ -1033,7 +1102,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
         ...(profileData.serviceType || []), // Catégorie principale (escort, masseuse, etc.)
         ...serviceDetails // Services détaillés uniquement
       ]
-      console.log('[DASHBOARD] Saving services:', {
+      logger.log('[DASHBOARD] Saving services:', {
         serviceType: profileData.serviceType,
         specialties: profileData.specialties,
         serviceDetails,
@@ -1045,9 +1114,9 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
       const timeSlotsJsonManual = scheduleToJson()
       if (timeSlotsJsonManual !== null) {
         payload.timeSlots = timeSlotsJsonManual
-        console.log('🔄 [AGENDA DEBUG] Ajout timeSlots au manual save:', timeSlotsJsonManual)
+        logger.log('🔄 [AGENDA DEBUG] Ajout timeSlots au manual save:', timeSlotsJsonManual)
       } else {
-        console.log('⚠️ [AGENDA DEBUG] Pas de timeSlots valides pour manual save')
+        logger.log('⚠️ [AGENDA DEBUG] Pas de timeSlots valides pour manual save')
       }
       // Physique - Format unifié avec objet physical
       const hasPhysicalDataManual = profileData.height !== undefined || 
@@ -1088,7 +1157,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
       if (profileData.phoneVisibility) payload.phoneVisibility = profileData.phoneVisibility
       
       // Clientèle
-      console.log('🔍 [CLIENTELE DEBUG] Vérification des champs clientèle pour autosave:', {
+      logger.log('🔍 [CLIENTELE DEBUG] Vérification des champs clientèle pour autosave:', {
         acceptsCouples: profileData.acceptsCouples,
         acceptsWomen: profileData.acceptsWomen,
         acceptsHandicapped: profileData.acceptsHandicapped,
@@ -1106,32 +1175,32 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                               typeof profileData.acceptsHandicapped === 'boolean' || 
                               typeof profileData.acceptsSeniors === 'boolean'
       
-      console.log('🔍 [CLIENTELE DEBUG] hasClienteleData:', hasClienteleData)
+      logger.log('🔍 [CLIENTELE DEBUG] hasClienteleData:', hasClienteleData)
       
       if (hasClienteleData) {
         payload.clientele = {}
-        console.log('📦 [CLIENTELE DEBUG] Création de l\'objet clientele pour autosave')
+        logger.log('📦 [CLIENTELE DEBUG] Création de l\'objet clientele pour autosave')
         
         if (typeof profileData.acceptsCouples === 'boolean') {
           payload.clientele.acceptsCouples = profileData.acceptsCouples
-          console.log('📦 [CLIENTELE DEBUG] Ajout acceptsCouples:', profileData.acceptsCouples)
+          logger.log('📦 [CLIENTELE DEBUG] Ajout acceptsCouples:', profileData.acceptsCouples)
         }
         if (typeof profileData.acceptsWomen === 'boolean') {
           payload.clientele.acceptsWomen = profileData.acceptsWomen
-          console.log('📦 [CLIENTELE DEBUG] Ajout acceptsWomen:', profileData.acceptsWomen)
+          logger.log('📦 [CLIENTELE DEBUG] Ajout acceptsWomen:', profileData.acceptsWomen)
         }
         if (typeof profileData.acceptsHandicapped === 'boolean') {
           payload.clientele.acceptsHandicapped = profileData.acceptsHandicapped
-          console.log('📦 [CLIENTELE DEBUG] Ajout acceptsHandicapped:', profileData.acceptsHandicapped)
+          logger.log('📦 [CLIENTELE DEBUG] Ajout acceptsHandicapped:', profileData.acceptsHandicapped)
         }
         if (typeof profileData.acceptsSeniors === 'boolean') {
           payload.clientele.acceptsSeniors = profileData.acceptsSeniors
-          console.log('📦 [CLIENTELE DEBUG] Ajout acceptsSeniors:', profileData.acceptsSeniors)
+          logger.log('📦 [CLIENTELE DEBUG] Ajout acceptsSeniors:', profileData.acceptsSeniors)
         }
         
-        console.log('📦 [CLIENTELE DEBUG] Objet clientele final pour autosave:', payload.clientele)
+        logger.log('📦 [CLIENTELE DEBUG] Objet clientele final pour autosave:', payload.clientele)
       } else {
-        console.log('⚠️ [CLIENTELE DEBUG] Aucune donnée clientèle détectée pour autosave')
+        logger.log('⚠️ [CLIENTELE DEBUG] Aucune donnée clientèle détectée pour autosave')
       }
 
       // Inclure les médias dans la sauvegarde manuelle aussi
@@ -1188,6 +1257,8 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
 
   return (
     <div className="space-y-6">
+      {/* 🆕 Indicateur de connexion réseau */}
+      <NetworkIndicator />
 
       {saveMsg && (
         <div className={`p-3 rounded-xl ${saveMsg.type === 'success' ? 'bg-emerald-500/20 border border-emerald-500/30 text-emerald-300' : 'bg-red-500/20 border border-red-500/30 text-red-300'}`}>
@@ -1200,8 +1271,34 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
         </div>
       )}
 
-      {/* Bouton de sauvegarde manuel */}
-      <div className="flex justify-end">
+      {/* Boutons d'action */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        {/* 🆕 Bouton "Voir comme un client" */}
+        <button
+          onClick={() => {
+            // Récupérer l'ID escort depuis l'API ou session
+            fetch('/api/profile/unified/me', { credentials: 'include' })
+              .then(res => res.json())
+              .then(data => {
+                if (data?.profile?.id) {
+                  window.open(`/escort/${data.profile.id}`, '_blank')
+                } else {
+                  setSaveMsg({ type: 'error', text: 'Profil non trouvé. Sauvegardez d\'abord.' })
+                  setTimeout(() => setSaveMsg(null), 3000)
+                }
+              })
+              .catch(() => {
+                setSaveMsg({ type: 'error', text: 'Erreur lors de l\'ouverture du profil' })
+                setTimeout(() => setSaveMsg(null), 3000)
+              })
+          }}
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all bg-white/5 hover:bg-white/10 text-white border border-white/20 hover:border-white/40"
+        >
+          <ExternalLink className="w-4 h-4" />
+          <span className="hidden sm:inline">Voir comme un client</span>
+          <span className="sm:hidden">Aperçu</span>
+        </button>
+
         <button
           onClick={manualSave}
           disabled={saving}
@@ -1286,27 +1383,123 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
       <div className="bg-gray-800/30 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6">
         {activeTab === 'media' && (
           <div>
-            <h3 className="text-xl font-bold text-white">Médias (6 requis)</h3>
-            <div className="text-xs text-orange-300 mt-1">⚠️ 6 médias requis pour activer le profil</div>
-            <div className="text-xs text-purple-300 mb-5">Astuce : les profils avec vidéo sont 3× plus vus.</div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-              {/* 6 médias obligatoires avec drop/upload par emplacement */}
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="text-xl font-bold text-white">Médias (4 requis)</h3>
+                <div className="text-xs text-orange-300 mt-1">⚠️ 4 médias requis pour activer le profil (1 photo de profil + 3 médias)</div>
+                <div className="text-xs text-purple-300">Astuce : les profils avec vidéo sont 3× plus vus.</div>
+              </div>
+              {/* 🆕 Boutons de gestion en bulk */}
+              <div className="flex items-center gap-2">
+                {!selectionMode ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectionMode(true)
+                      setSelectedMediaForBulk(new Set())
+                    }}
+                    className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all bg-gray-700 hover:bg-gray-600 text-white border border-gray-600"
+                  >
+                    <CheckCircle2 className="w-4 h-4" />
+                    Sélectionner
+                  </button>
+                ) : (
+                  <>
+                    <span className="text-sm text-gray-400">
+                      {selectedMediaForBulk.size} sélectionné{selectedMediaForBulk.size > 1 ? 's' : ''}
+                    </span>
+                    {selectedMediaForBulk.size > 0 && (
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          if (!confirm(`Supprimer ${selectedMediaForBulk.size} média(s) ?`)) return
+
+                          const failures: number[] = []
+                          for (const idx of Array.from(selectedMediaForBulk)) {
+                            const media = mandatoryMedia[idx]
+                            if (media?.id) {
+                              try {
+                                const isProfile = idx === 0
+                                const resp = await fetch('/api/escort/media/delete', {
+                                  method: 'DELETE',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  credentials: 'include',
+                                  body: JSON.stringify({ mediaId: media.id, type: isProfile ? 'profile' : 'gallery' })
+                                })
+                                const data = await resp.json().catch(() => ({}))
+                                if (!resp.ok || !data?.success) {
+                                  failures.push(idx + 1)
+                                }
+                              } catch {
+                                failures.push(idx + 1)
+                              }
+                            }
+                          }
+
+                          // Mettre à jour l'état
+                          setMandatoryMedia(prev => {
+                            const next = [...prev]
+                            selectedMediaForBulk.forEach(idx => {
+                              if (next[idx]?.preview) {
+                                try { URL.revokeObjectURL(next[idx]!.preview as string) } catch {}
+                              }
+                              next[idx] = { file: undefined, preview: undefined, id: undefined, uploading: false }
+                            })
+                            return next
+                          })
+
+                          setSelectedMediaForBulk(new Set())
+                          setSelectionMode(false)
+
+                          if (failures.length > 0) {
+                            setSaveMsg({ type: 'error', text: `Échec suppression slots: ${failures.join(', ')}` })
+                          } else {
+                            setSaveMsg({ type: 'success', text: `${selectedMediaForBulk.size} média(s) supprimé(s)` })
+                          }
+                          setTimeout(() => setSaveMsg(null), 3000)
+                        }}
+                        className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-500/30"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        Supprimer sélection
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectionMode(false)
+                        setSelectedMediaForBulk(new Set())
+                      }}
+                      className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all bg-gray-700 hover:bg-gray-600 text-white border border-gray-600"
+                    >
+                      <X className="w-4 h-4" />
+                      Annuler
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+              {/* 4 médias obligatoires : 1 photo de profil + 3 médias libres */}
               {[
-                { n: 1, label: 'Photo de profil', accept: 'image/*' },
-                { n: 2, label: 'Vidéo de présentation', note: 'Augmente votre visibilité', accept: 'video/*' },
-                { n: 3, label: 'Photo', accept: 'image/*' },
-                { n: 4, label: 'Vidéo', accept: 'video/*' },
-                { n: 5, label: 'Photo', accept: 'image/*' },
-                { n: 6, label: 'Photo', accept: 'image/*' }
+                { n: 1, label: 'Photo de profil', accept: 'image/*', note: 'Obligatoire - Photo uniquement' },
+                { n: 2, label: 'Média 1', accept: 'image/*,video/*', note: 'Photo ou vidéo au choix' },
+                { n: 3, label: 'Média 2', accept: 'image/*,video/*', note: 'Photo ou vidéo au choix' },
+                { n: 4, label: 'Média 3', accept: 'image/*,video/*', note: 'Photo ou vidéo au choix' }
               ].map((slot, idx) => {
                 const media = mandatoryMedia[idx]
-                const isVideo = (!!media?.file && media.file.type.startsWith('video/')) || (!!media?.preview && slot.accept.startsWith('video'))
+                // Détection vidéo : vérifier le type du fichier, pas le slot.accept
+                const isVideo = (!!media?.file && media.file.type.startsWith('video/')) ||
+                                (!!media?.preview && (media.preview.endsWith('.mp4') || media.preview.endsWith('.webm') || media.preview.endsWith('.mov') || media.preview.includes('video')))
                 const isDragging = draggingIndex === idx
 
                 const onFilePicked = async (file: File) => {
                   if (!file) return
                   if (hasEscortProfile === false) { setSaveMsg({ type:'error', text:'Créez d\'abord votre profil (enregistrez vos infos), puis réessayez.' }); setTimeout(()=> setSaveMsg(null), 3000); return }
-                  const isValid = slot.accept.startsWith('image') ? file.type.startsWith('image/') : file.type.startsWith('video/')
+                  // Validation : slot 0 = image only, slots 1-3 = image ou video
+                  const isValid = slot.accept.includes('image/*,video/*')
+                    ? (file.type.startsWith('image/') || file.type.startsWith('video/'))
+                    : slot.accept.startsWith('image') ? file.type.startsWith('image/') : file.type.startsWith('video/')
                   if (!isValid) return
                   let fileToUpload: File = file
                   // Compression vidéo stricte pour éviter 413 sur Vercel
@@ -1351,16 +1544,25 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
 
                     const { presignedUrl, publicUrl } = await presignedRes.json()
 
-                    // 2. Upload direct vers R2
-                    const uploadRes = await fetch(presignedUrl, {
+                    // 2. Upload direct vers R2 avec progress bar
+                    const uploadId = `media-${idx}-${Date.now()}`
+
+                    await uploadWithProgress({
+                      url: presignedUrl,
+                      file: fileToUpload,
                       method: 'PUT',
-                      body: fileToUpload,
-                      headers: { 'Content-Type': fileToUpload.type }
+                      headers: { 'Content-Type': fileToUpload.type },
+                      onProgress: (progress) => {
+                        setUploadProgress(prev => ({ ...prev, [idx]: progress }))
+                      }
                     })
 
-                    if (!uploadRes.ok) {
-                      throw new Error('Erreur upload R2')
-                    }
+                    // Nettoyer le progress après upload
+                    setUploadProgress(prev => {
+                      const next = { ...prev }
+                      delete next[idx]
+                      return next
+                    })
 
                     // 3. Confirmer et sauvegarder métadonnées
                     const confirmRes = await fetch('/api/escort/media/confirm-upload', {
@@ -1419,13 +1621,59 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                   <div
                     key={slot.n}
                     className={`relative aspect-square rounded-xl border-2 border-dashed transition-colors p-3 text-center flex flex-col ${
-                      isDragging ? 'border-purple-400 bg-purple-500/10' : 'border-gray-600 hover:border-purple-500 bg-gray-700/50'
+                      isDragging ? 'border-purple-400 bg-purple-500/10' :
+                      selectionMode && selectedMediaForBulk.has(idx) ? 'border-purple-500 bg-purple-500/20' :
+                      'border-gray-600 hover:border-purple-500 bg-gray-700/50'
                     }`}
                     onDragOver={(e) => { e.preventDefault(); setDraggingIndex(idx) }}
                     onDragLeave={() => setDraggingIndex(null)}
                     onDrop={onDrop}
-                    onClick={() => fileInputsRef.current[idx]?.click()}
+                    onClick={() => {
+                      if (selectionMode && media?.id) {
+                        // Mode sélection : toggle selection
+                        setSelectedMediaForBulk(prev => {
+                          const next = new Set(prev)
+                          if (next.has(idx)) {
+                            next.delete(idx)
+                          } else {
+                            next.add(idx)
+                          }
+                          return next
+                        })
+                      } else if (!selectionMode) {
+                        // Mode normal : ouvrir file picker
+                        fileInputsRef.current[idx]?.click()
+                      }
+                    }}
                   >
+                    {/* 🆕 Checkbox overlay en mode sélection */}
+                    {selectionMode && media?.id && (
+                      <div
+                        className="absolute top-2 right-2 z-10"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setSelectedMediaForBulk(prev => {
+                            const next = new Set(prev)
+                            if (next.has(idx)) {
+                              next.delete(idx)
+                            } else {
+                              next.add(idx)
+                            }
+                            return next
+                          })
+                        }}
+                      >
+                        <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center cursor-pointer transition-all ${
+                          selectedMediaForBulk.has(idx)
+                            ? 'bg-purple-500 border-purple-500'
+                            : 'bg-gray-700 border-gray-500 hover:border-purple-400'
+                        }`}>
+                          {selectedMediaForBulk.has(idx) && (
+                            <CheckCircle2 className="w-4 h-4 text-white" />
+                          )}
+                        </div>
+                      </div>
+                    )}
                     {/* Header slot */}
                     <div className="flex items-center justify-between mb-1">
                       <div className="flex items-center gap-2">
@@ -1487,15 +1735,34 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                         <div className="flex flex-col items-center text-gray-400">
                           <Image className="text-gray-500 mb-1" size={24} />
                           <span className="text-xs">Déposez ou cliquez pour ajouter</span>
-                          <span className="text-[10px] text-gray-500 mt-1">{slot.accept.startsWith('image') ? 'Formats: JPG, PNG, WEBP (max 50MB)' : 'Formats: MP4, WEBM, MOV (max 50MB)'}</span>
+                          <span className="text-[10px] text-gray-500 mt-1">
+                            {slot.accept.includes('image/*,video/*')
+                              ? 'Photo ou vidéo (max 500MB)'
+                              : slot.accept.startsWith('image')
+                                ? 'Photo uniquement (max 500MB)'
+                                : 'Vidéo uniquement (max 500MB)'}
+                          </span>
                         </div>
                       )}
                       {media?.uploading && (
-                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                          <div className="flex items-center gap-2 text-white/80 text-xs">
-                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                            <span>Envoi…</span>
-                          </div>
+                        <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center p-4">
+                          {uploadProgress[idx] !== undefined ? (
+                            <>
+                              <div className="w-full bg-gray-700 rounded-full h-2 mb-2 overflow-hidden">
+                                <div
+                                  className="bg-gradient-to-r from-purple-500 to-pink-500 h-full transition-all duration-300 ease-out"
+                                  style={{ width: `${uploadProgress[idx]}%` }}
+                                />
+                              </div>
+                              <span className="text-white text-sm font-semibold">{uploadProgress[idx]}%</span>
+                              <span className="text-gray-300 text-xs mt-1">Upload en cours...</span>
+                            </>
+                          ) : (
+                            <div className="flex items-center gap-2 text-white/80 text-xs">
+                              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                              <span>Préparation…</span>
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
@@ -1583,14 +1850,14 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
 
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">Description *</label>
-                <textarea
-                  rows={4}
+                {/* 🆕 Rich Text Editor avec formatage */}
+                <SimpleRichTextEditor
                   value={profileData.description || ''}
-                  onChange={(e) => updateProfileData('description', e.target.value)}
+                  onChange={(value) => updateProfileData('description', value)}
                   placeholder="Décrivez-vous de manière attractive et professionnelle..."
-                  className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600/50 rounded-xl text-white focus:border-purple-500 focus:outline-none resize-none"
+                  minLength={200}
+                  rows={6}
                 />
-                <div className={`mt-1 text-xs ${((profileData.description||'').length>=200)?'text-emerald-300':'text-gray-400'}`}>{(profileData.description||'').length} / 200</div>
               </div>
 
               <div>
@@ -1874,6 +2141,131 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                         />
                         <span className="text-sm text-gray-300">🔒 Messagerie privée uniquement</span>
                       </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 🆕 Blocage géographique */}
+              <div className="bg-gradient-to-br from-red-500/10 via-orange-500/5 to-transparent border border-red-500/20 rounded-2xl p-6">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-12 h-12 bg-gradient-to-br from-red-500/20 to-orange-500/20 rounded-2xl flex items-center justify-center">
+                    <ShieldCheck className="text-red-400" size={24} />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-xl font-bold text-white">Blocage géographique</h3>
+                    <p className="text-sm text-gray-400">
+                      Cachez votre profil dans certaines zones pour préserver votre anonymat
+                    </p>
+                  </div>
+                  <span className="inline-flex items-center text-[11px] px-3 py-1 rounded-full bg-orange-500/20 text-orange-200 border border-orange-500/30">
+                    Optionnel
+                  </span>
+                </div>
+
+                <div className="space-y-6">
+                  {/* Bloquer par canton */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-3">
+                      Bloquer certains cantons
+                    </label>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                      {SWISS_CANTONS.map((canton) => {
+                        const isBlocked = blockedCantons.has(canton.code)
+                        return (
+                          <button
+                            key={canton.code}
+                            type="button"
+                            onClick={() => {
+                              setBlockedCantons(prev => {
+                                const next = new Set(prev)
+                                if (next.has(canton.code)) {
+                                  next.delete(canton.code)
+                                } else {
+                                  next.add(canton.code)
+                                }
+                                return next
+                              })
+                            }}
+                            className={`px-3 py-2 rounded-lg text-xs font-medium transition-all ${
+                              isBlocked
+                                ? 'bg-red-500/20 text-red-200 border-2 border-red-500/50'
+                                : 'bg-gray-700/30 text-gray-300 border border-gray-600/50 hover:bg-gray-700/50'
+                            }`}
+                          >
+                            {isBlocked && <X className="w-3 h-3 inline mr-1" />}
+                            {canton.name}
+                          </button>
+                        )
+                      })}
+                    </div>
+                    {blockedCantons.size > 0 && (
+                      <div className="mt-3 text-xs text-orange-300">
+                        {blockedCantons.size} canton{blockedCantons.size > 1 ? 's' : ''} bloqué{blockedCantons.size > 1 ? 's' : ''}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Bloquer par ville */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-3">
+                      Bloquer certaines villes principales
+                    </label>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                      {SWISS_MAJOR_CITIES.slice(0, 12).map((city) => {
+                        const isBlocked = blockedCities.has(city.name)
+                        return (
+                          <button
+                            key={city.name}
+                            type="button"
+                            onClick={() => {
+                              setBlockedCities(prev => {
+                                const next = new Set(prev)
+                                if (next.has(city.name)) {
+                                  next.delete(city.name)
+                                } else {
+                                  next.add(city.name)
+                                }
+                                return next
+                              })
+                            }}
+                            className={`px-3 py-2 rounded-lg text-xs font-medium transition-all ${
+                              isBlocked
+                                ? 'bg-red-500/20 text-red-200 border-2 border-red-500/50'
+                                : 'bg-gray-700/30 text-gray-300 border border-gray-600/50 hover:bg-gray-700/50'
+                            }`}
+                          >
+                            {isBlocked && <X className="w-3 h-3 inline mr-1" />}
+                            {city.name}
+                          </button>
+                        )
+                      })}
+                    </div>
+                    {blockedCities.size > 0 && (
+                      <div className="mt-3 text-xs text-orange-300">
+                        {blockedCities.size} ville{blockedCities.size > 1 ? 's' : ''} bloquée{blockedCities.size > 1 ? 's' : ''}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Informations */}
+                  <div className="bg-orange-500/10 border border-orange-500/20 rounded-xl p-4">
+                    <div className="flex items-start gap-3">
+                      <AlertTriangle className="w-5 h-5 text-orange-400 flex-shrink-0 mt-0.5" />
+                      <div className="text-xs text-gray-300 space-y-2">
+                        <p>
+                          <strong className="text-orange-200">Comment ça marche ?</strong>
+                        </p>
+                        <ul className="list-disc list-inside space-y-1 text-gray-400">
+                          <li>Votre profil sera complètement invisible pour les utilisateurs situés dans les zones bloquées</li>
+                          <li>Ils ne vous verront ni dans les résultats de recherche, ni sur la carte</li>
+                          <li>Cette fonction utilise la géolocalisation IP des visiteurs</li>
+                          <li>Vous pouvez modifier ces paramètres à tout moment</li>
+                        </ul>
+                        <p className="text-orange-300 mt-3">
+                          ⚠️ Note : Les données de blocage seront bientôt sauvegardées automatiquement. Fonctionnalité en cours de développement.
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -2349,6 +2741,81 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                 </div>
               </div>
 
+              {/* 🆕 Tarifs personnalisés */}
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <label className="block text-sm font-medium text-gray-300">Durées personnalisées</label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const newId = `custom-${Date.now()}`
+                      setCustomPrices(prev => [...prev, {
+                        id: newId,
+                        label: '',
+                        duration: '',
+                        price: 0
+                      }])
+                    }}
+                    className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all bg-purple-500/20 hover:bg-purple-500/30 text-purple-200 border border-purple-500/30"
+                  >
+                    <Zap className="w-3 h-3" />
+                    Ajouter durée personnalisée
+                  </button>
+                </div>
+
+                {customPrices.length > 0 && (
+                  <div className="space-y-3">
+                    {customPrices.map((customPrice) => (
+                      <div key={customPrice.id} className="flex items-center gap-3 p-3 bg-gray-700/30 rounded-lg border border-gray-600/50">
+                        <input
+                          type="text"
+                          placeholder="Ex: 90 minutes, 3 heures, Week-end..."
+                          value={customPrice.label}
+                          onChange={(e) => {
+                            setCustomPrices(prev => prev.map(cp =>
+                              cp.id === customPrice.id ? { ...cp, label: e.target.value } : cp
+                            ))
+                          }}
+                          className="flex-1 px-3 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white text-sm placeholder:text-gray-500 focus:border-purple-500 focus:outline-none"
+                        />
+                        <input
+                          type="number"
+                          placeholder="Prix CHF"
+                          value={customPrice.price || ''}
+                          onChange={(e) => {
+                            setCustomPrices(prev => prev.map(cp =>
+                              cp.id === customPrice.id ? { ...cp, price: parseInt(e.target.value) || 0 } : cp
+                            ))
+                          }}
+                          className="w-28 px-3 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white text-sm placeholder:text-gray-500 focus:border-purple-500 focus:outline-none"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setCustomPrices(prev => prev.filter(cp => cp.id !== customPrice.id))
+                          }}
+                          className="p-2 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
+                          title="Supprimer"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {customPrices.length === 0 && (
+                  <div className="text-xs text-gray-500 italic">
+                    Aucune durée personnalisée. Cliquez sur "+ Ajouter" pour en créer.
+                  </div>
+                )}
+
+                <div className="mt-3 text-xs text-orange-300 flex items-start gap-2">
+                  <span>⚠️</span>
+                  <span>Note : Les tarifs personnalisés seront bientôt sauvegardés automatiquement. Fonctionnalité en cours de développement.</span>
+                </div>
+              </div>
+
               <div className="mt-3 text-xs text-white/80">
                 Besoin d'ajuster vos disponibilités ?
                 <button onClick={()=> setActiveTab('agenda')} className="ml-2 text-purple-300 hover:text-purple-200 underline">Ouvrir l'onglet Agenda</button>
@@ -2375,7 +2842,74 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                   📅 Heures de présence
                   <span className="text-xs text-white/60 font-normal">(hebdomadaire)</span>
                 </h4>
-                
+
+                {/* 🆕 Templates d'agenda rapides */}
+                <div className="mb-4 flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      // Template "Lun-Ven 10h-22h"
+                      setWeekly({
+                        Lundi: { enabled: true, start: '10:00', end: '22:00' },
+                        Mardi: { enabled: true, start: '10:00', end: '22:00' },
+                        Mercredi: { enabled: true, start: '10:00', end: '22:00' },
+                        Jeudi: { enabled: true, start: '10:00', end: '22:00' },
+                        Vendredi: { enabled: true, start: '10:00', end: '22:00' },
+                        Samedi: { enabled: false, start: '10:00', end: '02:00' },
+                        Dimanche: { enabled: false, start: '14:00', end: '02:00' },
+                      })
+                      setSaveMsg({ type: 'success', text: 'Template "Semaine" appliqué' })
+                      setTimeout(() => setSaveMsg(null), 2000)
+                    }}
+                    className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all bg-purple-500/20 hover:bg-purple-500/30 text-purple-200 border border-purple-500/30"
+                  >
+                    <Zap className="w-3 h-3" />
+                    Lun-Ven 10h-22h
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      // Template "Week-end only"
+                      setWeekly({
+                        Lundi: { enabled: false, start: '10:00', end: '22:00' },
+                        Mardi: { enabled: false, start: '10:00', end: '22:00' },
+                        Mercredi: { enabled: false, start: '10:00', end: '22:00' },
+                        Jeudi: { enabled: false, start: '10:00', end: '22:00' },
+                        Vendredi: { enabled: true, start: '18:00', end: '02:00' },
+                        Samedi: { enabled: true, start: '14:00', end: '02:00' },
+                        Dimanche: { enabled: true, start: '14:00', end: '23:00' },
+                      })
+                      setSaveMsg({ type: 'success', text: 'Template "Week-end" appliqué' })
+                      setTimeout(() => setSaveMsg(null), 2000)
+                    }}
+                    className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all bg-blue-500/20 hover:bg-blue-500/30 text-blue-200 border border-blue-500/30"
+                  >
+                    <Zap className="w-3 h-3" />
+                    Week-end only
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      // Template "24/7"
+                      setWeekly({
+                        Lundi: { enabled: true, start: '00:00', end: '23:59' },
+                        Mardi: { enabled: true, start: '00:00', end: '23:59' },
+                        Mercredi: { enabled: true, start: '00:00', end: '23:59' },
+                        Jeudi: { enabled: true, start: '00:00', end: '23:59' },
+                        Vendredi: { enabled: true, start: '00:00', end: '23:59' },
+                        Samedi: { enabled: true, start: '00:00', end: '23:59' },
+                        Dimanche: { enabled: true, start: '00:00', end: '23:59' },
+                      })
+                      setSaveMsg({ type: 'success', text: 'Template "24/7" appliqué' })
+                      setTimeout(() => setSaveMsg(null), 2000)
+                    }}
+                    className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-200 border border-emerald-500/30"
+                  >
+                    <Zap className="w-3 h-3" />
+                    24/7
+                  </button>
+                </div>
+
                 {/* Mobile: Stack vertically, Desktop: More compact */}
                 <div className="space-y-3 sm:space-y-2">
                 {Object.entries(weekly).map(([day, slot]) => (

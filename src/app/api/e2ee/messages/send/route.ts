@@ -7,7 +7,7 @@ import { sseBroadcaster } from '@/lib/sse-broadcast'
 
 export async function POST(request: NextRequest) {
   try {
-    const { conversationId, senderUserId, senderDeviceId, messageId, cipherText, attachment } = await request.json()
+    const { conversationId, senderUserId, senderDeviceId, messageId, cipherText, attachment, viewMode, downloadable } = await request.json()
     
     if (!conversationId || !senderUserId || !messageId || !cipherText) {
       return NextResponse.json({ 
@@ -63,6 +63,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Accès non autorisé' }, { status: 403 })
     }
 
+    // Calculer l'expiration en fonction du mode éphémère
+    let expiresAt: Date | null = null
+    if (conversation.ephemeralMode && conversation.ephemeralDuration) {
+      expiresAt = new Date(Date.now() + conversation.ephemeralDuration * 1000)
+    }
+
     // Créer le message
     const message = await prisma.e2EEMessageEnvelope.create({
       data: {
@@ -73,7 +79,10 @@ export async function POST(request: NextRequest) {
         messageId,
         attachmentUrl: attachment?.url || null,
         attachmentMeta: attachment?.meta || null,
-        status: 'SENT'
+        status: 'SENT',
+        viewMode: viewMode || null,
+        downloadable: downloadable !== undefined ? downloadable : true,
+        expiresAt: expiresAt || null
       }
     })
 
@@ -94,12 +103,22 @@ export async function POST(request: NextRequest) {
       attachmentUrl: message.attachmentUrl,
       attachmentMeta: message.attachmentMeta,
       createdAt: message.createdAt.toISOString(),
-      status: 'sent'
+      status: 'sent',
+      viewMode: message.viewMode,
+      downloadable: message.downloadable,
+      expiresAt: message.expiresAt?.toISOString(),
+      viewedBy: message.viewedBy || []
     }
 
     // Diffuser le message via SSE
-    console.log(`[SEND API] Broadcasting message ${messageId} to conversation ${conversationId}`)
     sseBroadcaster.broadcast(conversationId, messageForBroadcast)
+    
+    // Retry après 200ms au cas où les clients ne seraient pas encore connectés (en dev avec HMR)
+    setTimeout(() => {
+      if (sseBroadcaster.getClientCount(conversationId) > 0) {
+        sseBroadcaster.broadcast(conversationId, messageForBroadcast)
+      }
+    }, 200)
 
     return NextResponse.json({
       message: {
@@ -110,7 +129,11 @@ export async function POST(request: NextRequest) {
         attachmentUrl: message.attachmentUrl,
         attachmentMeta: message.attachmentMeta,
         createdAt: message.createdAt.toISOString(),
-        status: 'sent'
+        status: 'sent',
+        viewMode: message.viewMode,
+        downloadable: message.downloadable,
+        expiresAt: message.expiresAt?.toISOString(),
+        viewedBy: message.viewedBy || []
       }
     })
 

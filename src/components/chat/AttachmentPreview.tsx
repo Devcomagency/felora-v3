@@ -9,7 +9,7 @@ import BodyPortal from '@/components/BodyPortal'
 interface AttachmentPreviewProps {
   file: File
   onRemove: () => void
-  onSend: (file: File) => void
+  onSend: (file: File, options?: { viewMode?: 'once' | 'unlimited', downloadable?: boolean }) => void
   onCancel: () => void
 }
 
@@ -19,6 +19,8 @@ export default function AttachmentPreview({ file, onRemove, onSend, onCancel }: 
   const [isMuted, setIsMuted] = useState(false)
   const [duration, setDuration] = useState(0)
   const [currentTime, setCurrentTime] = useState(0)
+  const [viewMode, setViewMode] = useState<'once' | 'unlimited'>('unlimited')
+  const [downloadable, setDownloadable] = useState(true)
   const videoRef = useRef<HTMLVideoElement>(null)
   const audioRef = useRef<HTMLAudioElement>(null)
 
@@ -111,7 +113,7 @@ export default function AttachmentPreview({ file, onRemove, onSend, onCancel }: 
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.9, opacity: 0 }}
-          className="fixed top-1/2 -translate-y-1/2 left-0 right-0 mx-auto w-[90%] max-w-xs sm:max-w-lg md:max-w-2xl bg-gray-900 rounded-lg sm:rounded-xl md:rounded-2xl overflow-hidden max-h-[85vh] flex flex-col"
+          className="fixed top-[30%] -translate-y-1/2 left-0 right-0 mx-auto w-[90%] max-w-xs sm:max-w-lg md:max-w-2xl bg-gray-900 rounded-lg sm:rounded-xl md:rounded-2xl overflow-hidden max-h-[75vh] flex flex-col"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
@@ -129,7 +131,7 @@ export default function AttachmentPreview({ file, onRemove, onSend, onCancel }: 
           </div>
 
             {/* Content */}
-            <div className="flex-1 p-2 sm:p-3 md:p-4 overflow-y-auto overscroll-contain touch-pan-y max-h-[calc(85vh-140px)]" style={{ WebkitOverflowScrolling: 'touch' }}>
+            <div className="flex-1 p-2 sm:p-3 md:p-4 overflow-y-auto overscroll-contain touch-pan-y" style={{ WebkitOverflowScrolling: 'touch' }}>
             {isFileTooLarge && (
               <div className="mb-4 p-3 bg-red-500/20 border border-red-500/30 rounded-lg">
                 <p className="text-red-300 text-sm">
@@ -216,6 +218,51 @@ export default function AttachmentPreview({ file, onRemove, onSend, onCancel }: 
             </div>
           </div>
 
+          {/* Options média */}
+          {(isImage || isVideo) && (
+            <div className="px-2 sm:px-3 md:px-4 py-3 border-t border-white/10 space-y-3">
+              <div>
+                <label className="text-xs sm:text-sm text-gray-300 mb-2 block">👁️ Visionnage</label>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setViewMode('unlimited')}
+                    className={`flex-1 px-3 py-2 rounded-lg text-xs sm:text-sm transition-all ${
+                      viewMode === 'unlimited' 
+                        ? 'bg-pink-500/20 border-2 border-pink-500 text-white' 
+                        : 'bg-white/5 border border-white/10 text-gray-400'
+                    }`}
+                  >
+                    Illimité
+                  </button>
+                  <button
+                    onClick={() => setViewMode('once')}
+                    className={`flex-1 px-3 py-2 rounded-lg text-xs sm:text-sm transition-all ${
+                      viewMode === 'once' 
+                        ? 'bg-pink-500/20 border-2 border-pink-500 text-white' 
+                        : 'bg-white/5 border border-white/10 text-gray-400'
+                    }`}
+                  >
+                    Une fois
+                  </button>
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <label className="text-xs sm:text-sm text-gray-300">📥 Téléchargement</label>
+                <button
+                  onClick={() => setDownloadable(!downloadable)}
+                  className={`relative w-12 h-6 rounded-full transition-colors ${
+                    downloadable ? 'bg-pink-500' : 'bg-gray-600'
+                  }`}
+                >
+                  <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${
+                    downloadable ? 'translate-x-7' : 'translate-x-1'
+                  }`} />
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Actions */}
           <div className="flex items-center justify-end gap-2 sm:gap-3 p-2 sm:p-3 md:p-4 border-t border-white/10 flex-shrink-0">
             <button
@@ -225,7 +272,7 @@ export default function AttachmentPreview({ file, onRemove, onSend, onCancel }: 
               Annuler
             </button>
             <button
-              onClick={() => onSend(file)}
+              onClick={() => onSend(file, { viewMode, downloadable })}
               disabled={isFileTooLarge}
               className={`px-3 sm:px-4 md:px-6 py-1.5 sm:py-2 rounded-md sm:rounded-lg font-medium transition-all text-xs sm:text-sm md:text-base ${
                 isFileTooLarge

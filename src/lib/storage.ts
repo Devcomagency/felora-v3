@@ -211,6 +211,93 @@ export class MediaStorage {
     }
   }
 
+  // Upload spécifique pour les fichiers E2EE chiffrés
+  async uploadE2EEAttachment(buffer: Buffer, filename: string): Promise<UploadResult> {
+    const isProduction = process.env.NODE_ENV === 'production'
+    const hasR2Config = !!(
+      process.env.CLOUDFLARE_R2_ENDPOINT && 
+      process.env.CLOUDFLARE_R2_ACCESS_KEY && 
+      process.env.CLOUDFLARE_R2_SECRET_KEY && 
+      process.env.CLOUDFLARE_R2_BUCKET
+    )
+
+    // En production avec R2 configuré, utiliser R2
+    if (isProduction && hasR2Config) {
+      return await this.uploadE2EEToR2(buffer, filename)
+    }
+
+    // En développement ou sans R2, utiliser le stockage local
+    return await this.uploadE2EELocal(buffer, filename)
+  }
+
+  // Upload E2EE vers R2
+  private async uploadE2EEToR2(buffer: Buffer, filename: string): Promise<UploadResult> {
+    try {
+      const endpoint = process.env.CLOUDFLARE_R2_ENDPOINT || ''
+      const accessKey = process.env.CLOUDFLARE_R2_ACCESS_KEY
+      const secretKey = process.env.CLOUDFLARE_R2_SECRET_KEY
+      const bucketName = process.env.CLOUDFLARE_R2_BUCKET
+
+      if (!endpoint || !accessKey || !secretKey || !bucketName) {
+        throw new Error('Cloudflare R2 configuration missing')
+      }
+
+      const { S3Client, PutObjectCommand } = await import('@aws-sdk/client-s3')
+
+      const s3 = new S3Client({
+        region: 'auto',
+        endpoint,
+        credentials: { 
+          accessKeyId: accessKey, 
+          secretAccessKey: secretKey 
+        },
+        forcePathStyle: true,
+      })
+
+      const key = `e2ee/${filename}`
+
+      await s3.send(new PutObjectCommand({
+        Bucket: bucketName,
+        Key: key,
+        Body: buffer,
+        ContentType: 'application/octet-stream',
+      }))
+
+      // Construire l'URL publique du CDN
+      const cdnUrl = `${process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL || 'https://media.felora.ch'}/${key}`
+
+      return { url: cdnUrl, success: true, key }
+    } catch (error) {
+      console.error('❌ R2 E2EE upload failed:', error)
+      return {
+        url: '',
+        success: false,
+        error: error instanceof Error ? error.message : 'R2 upload failed'
+      }
+    }
+  }
+
+  // Upload E2EE local (développement)
+  private async uploadE2EELocal(buffer: Buffer, filename: string): Promise<UploadResult> {
+    try {
+      const uploadDir = join(process.cwd(), 'tmp', 'e2ee-attachments')
+      await mkdir(uploadDir, { recursive: true })
+      
+      const filepath = join(uploadDir, filename)
+      await writeFile(filepath, buffer)
+      
+      const url = `/e2ee-attachments/${filename}`
+      
+      return { url, success: true, key: filename }
+    } catch (error) {
+      return {
+        url: '',
+        success: false,
+        error: error instanceof Error ? error.message : 'Local upload failed'
+      }
+    }
+  }
+
   // Nettoyage des anciens fichiers (cronjob)
   async cleanupOldFiles(olderThanDays: number = 30): Promise<void> {
     // TODO: Implémenter nettoyage automatique

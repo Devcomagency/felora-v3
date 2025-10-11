@@ -10,9 +10,15 @@ type SSEClient = {
 }
 
 type SSEEvent = {
-  type: 'message' | 'typing_start' | 'typing_stop' | 'heartbeat' | 'connected'
+  type: 'message' | 'typing_start' | 'typing_stop' | 'heartbeat' | 'connected' | 'message_viewed' | 'messages_read' | 'message_status_update'
   conversationId?: string
   userId?: string
+  messageId?: string
+  viewedBy?: string[]
+  status?: string
+  deliveredAt?: string
+  readAt?: string
+  timestamp?: string
   [key: string]: any
 }
 
@@ -32,8 +38,6 @@ class SSEBroadcaster {
     const clients = this.clients.get(conversationId)!
     clients.push({ conversationId, userId, controller })
 
-    console.log(`[SSE] Client connecté: ${clientId} (Total: ${clients.length})`)
-
     return clientId
   }
 
@@ -51,8 +55,6 @@ class SSEBroadcaster {
     } else {
       this.clients.set(conversationId, filtered)
     }
-
-    console.log(`[SSE] Client déconnecté: ${conversationId}-${userId}`)
   }
 
   /**
@@ -60,29 +62,19 @@ class SSEBroadcaster {
    */
   broadcast(conversationId: string, event: SSEEvent) {
     const clients = this.clients.get(conversationId)
-    if (!clients || clients.length === 0) {
-      console.log(`[SSE] Aucun client connecté pour la conversation ${conversationId}`)
-      return
-    }
+    if (!clients || clients.length === 0) return
 
     const eventData = `data: ${JSON.stringify(event)}\n\n`
     const encoder = new TextEncoder()
 
     // Diffuser à tous les clients connectés
-    let successCount = 0
-    let failCount = 0
-
     for (const client of clients) {
       try {
         client.controller.enqueue(encoder.encode(eventData))
-        successCount++
       } catch (error) {
-        console.error(`[SSE] Erreur lors de l'envoi à ${client.userId}:`, error)
-        failCount++
+        // Client déconnecté, ignoré
       }
     }
-
-    console.log(`[SSE] Événement diffusé: ${event.type} (✓ ${successCount} / ✗ ${failCount})`)
   }
 
   /**
