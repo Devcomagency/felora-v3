@@ -46,7 +46,11 @@ function NewMessagesPage() {
   const [reportSubmitting, setReportSubmitting] = useState(false)
   const [ephemeralMode, setEphemeralMode] = useState(false)
   const [ephemeralDuration, setEphemeralDuration] = useState(86400) // 24h par défaut
-  const [isDesktop, setIsDesktop] = useState(false)
+  const [isDesktop, setIsDesktop] = useState(() => {
+    // Initialiser correctement isDesktop dès le départ
+    if (typeof window === 'undefined') return true // SSR default to desktop
+    return window.innerWidth >= 1024
+  })
   const router = useRouter()
   const { success: toastSuccess, error: toastError } = useNotification()
   
