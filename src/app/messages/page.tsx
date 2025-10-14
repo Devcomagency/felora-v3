@@ -567,7 +567,7 @@ function NewMessagesPage() {
                       }
                       
                       try {
-                        const res = await fetch('/api/e2ee/conversations/delete', {
+                        const res = await fetch('/api/e2ee/conversations/remove', {
                           method: 'POST',
                           headers: { 'Content-Type': 'application/json' },
                           credentials: 'include',
