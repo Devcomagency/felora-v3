@@ -156,8 +156,8 @@ export function useSearch(): UseSearchReturn {
     if (newFilters.q) params.set('q', newFilters.q)
     if (newFilters.city) params.set('city', newFilters.city)
     if (newFilters.canton) params.set('canton', newFilters.canton)
-    if (newFilters.services.length > 0) params.set('services', newFilters.services.join(','))
-    if (newFilters.languages.length > 0) params.set('languages', newFilters.languages.join(','))
+    if (newFilters.services && newFilters.services.length > 0) params.set('services', newFilters.services.join(','))
+    if (newFilters.languages && newFilters.languages.length > 0) params.set('languages', newFilters.languages.join(','))
     if (newFilters.status) params.set('status', newFilters.status)
     if (newFilters.sort !== 'recent') params.set('sort', newFilters.sort)
     // Ajouter categories dans URL
@@ -175,8 +175,8 @@ export function useSearch(): UseSearchReturn {
     if (filters.q) params.set('q', filters.q)
     if (filters.city) params.set('city', filters.city)
     if (filters.canton) params.set('canton', filters.canton)
-    if (filters.services.length > 0) params.set('services', filters.services.join(','))
-    if (filters.languages.length > 0) params.set('languages', filters.languages.join(','))
+    if (filters.services && filters.services.length > 0) params.set('services', filters.services.join(','))
+    if (filters.languages && filters.languages.length > 0) params.set('languages', filters.languages.join(','))
     if (filters.status) params.set('status', filters.status)
     if (filters.sort !== 'recent') params.set('sort', filters.sort)
     

@@ -351,25 +351,84 @@ export default function SearchFilters({ filters, onFiltersChange, onClose, isOpe
 
   // Reset tous les filtres
   const resetFilters = () => {
+    // Réinitialiser tous les états locaux
     setSelectedCategories([])
     setSelectedCity('')
     setSelectedCanton('')
     setAvailableNow(false)
     setOutcall(false)
     setIncall(false)
+    setWeekendAvailable(false)
     setAgeRange([18, 65])
     setHeightRange([150, 180])
     setBodyType('')
     setHairColor('')
     setEyeColor('')
+    setEthnicity('')
     setBreastSize('')
+    setHasTattoos('')
     setServices([])
     setAcceptsCards(false)
     setVerified(false)
     setLanguages([])
     setServiceTypes([])
+    setSpecialties([])
     setExperienceTypes([])
-    setSelectedCategories([])
+    setRoleTypes([])
+    setBudgetRange([0, 10000])
+    setMinDuration('')
+    setAvailability([])
+    setTimeSlots([])
+    setMinRating(0)
+    setMinReviews(0)
+    setPremiumContent(false)
+    setLiveCam(false)
+    setPremiumMessaging(false)
+    setPrivatePhotos(false)
+    setExclusiveVideos(false)
+    
+    // Appliquer les filtres réinitialisés
+    const resetFiltersData = {
+      q: filters.q || '', // Garder la recherche textuelle
+      city: '',
+      canton: '',
+      services: [],
+      languages: [],
+      status: '',
+      sort: 'recent',
+      categories: [],
+      availableNow: false,
+      outcall: false,
+      incall: false,
+      weekendAvailable: false,
+      ageRange: [18, 65],
+      heightRange: [150, 180],
+      bodyType: '',
+      hairColor: '',
+      eyeColor: '',
+      ethnicity: '',
+      breastSize: '',
+      hasTattoos: '',
+      serviceTypes: [],
+      specialties: [],
+      experienceTypes: [],
+      roleTypes: [],
+      budgetRange: [0, 10000],
+      minDuration: '',
+      acceptsCards: false,
+      availability: [],
+      timeSlots: [],
+      minRating: 0,
+      minReviews: 0,
+      premiumContent: false,
+      liveCam: false,
+      premiumMessaging: false,
+      privatePhotos: false,
+      exclusiveVideos: false
+    }
+    
+    onFiltersChange(resetFiltersData)
+    onClose()
   }
 
 
