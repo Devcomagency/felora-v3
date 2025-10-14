@@ -7,11 +7,11 @@ import { pgBroadcaster } from '@/lib/pg-broadcast'
 
 export async function POST(request: NextRequest) {
   try {
-    const { conversationId, senderUserId, senderDeviceId, messageId, cipherText, attachment } = await request.json()
-    
+    const { conversationId, senderUserId, senderDeviceId, messageId, cipherText, attachment, viewMode, downloadable } = await request.json()
+
     if (!conversationId || !senderUserId || !messageId || !cipherText) {
-      return NextResponse.json({ 
-        error: 'Paramètres requis manquants' 
+      return NextResponse.json({
+        error: 'Paramètres requis manquants'
       }, { status: 400 })
     }
 
@@ -65,8 +65,8 @@ export async function POST(request: NextRequest) {
 
 
     // Créer le message (TOUJOURS utiliser user.id de la session pour la sécurité)
-    console.log('[SEND API] Création du message...', { conversationId, messageId, senderUserId: user.id })
-    
+    console.log('[SEND API] Création du message...', { conversationId, messageId, senderUserId: user.id, viewMode, downloadable })
+
     const message = await prisma.e2EEMessageEnvelope.create({
       data: {
         conversationId,
@@ -76,6 +76,8 @@ export async function POST(request: NextRequest) {
         messageId,
         attachmentUrl: attachment?.url || null,
         attachmentMeta: attachment?.meta || null,
+        viewMode: viewMode || null,
+        downloadable: downloadable !== undefined ? downloadable : true,
         status: 'SENT'
       }
     })
@@ -100,8 +102,11 @@ export async function POST(request: NextRequest) {
       cipherText: message.cipherText,
       attachmentUrl: message.attachmentUrl,
       attachmentMeta: message.attachmentMeta,
+      viewMode: message.viewMode,
+      downloadable: message.downloadable,
       createdAt: message.createdAt.toISOString(),
-      status: 'sent'
+      status: 'sent',
+      viewedBy: []
     }
 
     // Diffuser le message via PostgreSQL NOTIFY
@@ -117,8 +122,11 @@ export async function POST(request: NextRequest) {
         cipherText: message.cipherText,
         attachmentUrl: message.attachmentUrl,
         attachmentMeta: message.attachmentMeta,
+        viewMode: message.viewMode,
+        downloadable: message.downloadable,
         createdAt: message.createdAt.toISOString(),
-        status: 'sent'
+        status: 'sent',
+        viewedBy: []
       }
     })
 
