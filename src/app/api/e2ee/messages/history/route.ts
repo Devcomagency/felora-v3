@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const conversationId = searchParams.get('conversationId')
     const offset = parseInt(searchParams.get('offset') || '0', 10)
-    const limit = parseInt(searchParams.get('limit') || '50', 10)
+    const limit = parseInt(searchParams.get('limit') || '200', 10) // ✅ Augmenté à 200 pour éviter perte messages
 
     if (!conversationId) {
       return NextResponse.json({ error: 'ID de conversation requis' }, { status: 400 })

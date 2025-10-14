@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 import { jwtVerify } from 'jose'
-import { pgBroadcaster } from '@/lib/pg-broadcast'
+import { sseBroadcaster } from '@/lib/sse-broadcast'
 
 export async function POST(request: NextRequest) {
   try {
@@ -53,8 +53,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Action non autorisée' }, { status: 403 })
     }
 
-    // Diffuser l'événement de frappe via PostgreSQL
-    await pgBroadcaster.broadcast(conversationId, {
+    // Diffuser l'événement de frappe via SSE Broadcaster
+    sseBroadcaster.broadcast(conversationId, {
       type: 'typing_start',
       conversationId,
       userId,

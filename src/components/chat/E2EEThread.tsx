@@ -33,6 +33,7 @@ export default function E2EEThread({ conversationId, userId, partnerId, partnerN
   const { success: toastSuccess, error: toastError, info: toastInfo } = useNotification()
   const [uploadProgress, setUploadProgress] = useState<number | null>(null)
   const [textCache, setTextCache] = useState<Record<string, string>>({})
+  const textCacheRef = useRef<Record<string, string>>({}) // ✅ Ref pour vérification sans re-render
   const [messageStatuses, setMessageStatuses] = useState<Record<string, 'sending' | 'sent' | 'delivered' | 'read' | 'failed'>>({})
   const [isTyping, setIsTyping] = useState(false)
   const [typingUser, setTypingUser] = useState<string | null>(null)
@@ -91,15 +92,25 @@ export default function E2EEThread({ conversationId, userId, partnerId, partnerN
 
   const updateMessageStatus = (messageId: string, status: 'sending' | 'sent' | 'delivered' | 'read' | 'failed') => {
     // Mettre à jour à la fois messageStatuses ET les envelopes
-    setMessageStatuses(prev => ({ ...prev, [messageId]: status }))
+    setMessageStatuses(prev => {
+      // Éviter re-render si le statut n'a pas changé
+      if (prev[messageId] === status) return prev
+      return { ...prev, [messageId]: status }
+    })
 
     // Mettre à jour le status dans les envelopes directement
-    setEnvelopes(prev => prev.map(env => {
-      if (env.messageId === messageId) {
-        return { ...env, status }
-      }
-      return env
-    }))
+    setEnvelopes(prev => {
+      let hasChanged = false
+      const updated = prev.map(env => {
+        if (env.messageId === messageId && env.status !== status) {
+          hasChanged = true
+          return { ...env, status }
+        }
+        return env
+      })
+      // Ne retourner un nouveau tableau que si quelque chose a changé
+      return hasChanged ? updated : prev
+    })
   }
 
   const startTyping = () => {
@@ -250,10 +261,12 @@ export default function E2EEThread({ conversationId, userId, partnerId, partnerN
     }
 
     es.onmessage = (evt) => {
-      console.log('[SSE] 📨 Message reçu:', evt.data)
       try {
         const data = JSON.parse(evt.data)
-        console.log('[SSE] Type:', data.type)
+        // Logs uniquement pour les messages importants (pas les status updates)
+        if (data.type !== 'message_status_update') {
+          console.log('[SSE] 📨 Message reçu:', data.type)
+        }
 
         // Gérer les messages
         if (data.type === 'message') {
@@ -320,7 +333,11 @@ export default function E2EEThread({ conversationId, userId, partnerId, partnerN
 
         // Gérer les mises à jour de statut en temps réel (DELIVERED, READ)
         if (data.type === 'message_status_update' && data.messageId) {
-          updateMessageStatus(data.messageId, data.status)
+          // Vérifier si le statut a vraiment changé avant d'appeler updateMessageStatus
+          const currentStatus = messageStatuses[data.messageId]
+          if (currentStatus !== data.status) {
+            updateMessageStatus(data.messageId, data.status)
+          }
         }
       } catch (error) {
         // Silent fail pour parsing errors
@@ -338,7 +355,7 @@ export default function E2EEThread({ conversationId, userId, partnerId, partnerN
     }
   }, [conversationId, loadingHistory])
 
-  // Polling de secours léger toutes les 30 secondes (uniquement pour les statuts si SSE échoue)
+  // Polling rapide toutes les 3 secondes pour nouveaux messages (car SSE ne fonctionne pas avec Next.js dev)
   useEffect(() => {
     if (!conversationId || !userId) return
     const interval = setInterval(async () => {
@@ -349,7 +366,50 @@ export default function E2EEThread({ conversationId, userId, partnerId, partnerN
         if (!res.ok) return
         const data = await res.json()
         if (data.messages && data.messages.length > 0) {
-          // Ne mettre à jour QUE les statuts, pas les messages complets
+          // Mettre à jour les messages ET les statuts
+          const historyMessages = data.messages as Envelope[]
+
+          setEnvelopes(prev => {
+            // ✅ Garder les messages récents (moins de 10s) qui ne sont peut-être pas encore dans l'historique
+            const now = Date.now()
+            const recentMessages = prev.filter(e => {
+              const createdAt = new Date(e.createdAt).getTime()
+              return (now - createdAt) < 10000 // Messages de moins de 10 secondes
+            })
+            
+            // Garder aussi les messages optimistes (temp-*)
+            const optimistic = prev.filter(e => e.id.startsWith('temp-'))
+
+            // Merger l'historique avec les récents et optimistes
+            const merged = [...historyMessages]
+            
+            // Ajouter les optimistes qui ne sont pas encore dans l'historique
+            optimistic.forEach(opt => {
+              if (!merged.some(m => m.messageId === opt.messageId || m.id === opt.id)) {
+                merged.push(opt)
+              }
+            })
+            
+            // Ajouter les messages récents qui ne sont pas encore dans l'historique
+            recentMessages.forEach(recent => {
+              if (!merged.some(m => m.messageId === recent.messageId || m.id === recent.id)) {
+                merged.push(recent)
+              }
+            })
+
+            // Trier par date
+            const sorted = merged.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+
+            // ✅ Ne PAS écraser si on perdrait des messages !
+            if (sorted.length < prev.length) {
+              console.log('[POLLING] ⚠️ Historique incomplet, on garde les messages locaux')
+              return prev
+            }
+
+            return sorted
+          })
+
+          // Mettre à jour les statuts
           data.messages.forEach((m: any) => {
             if (m.messageId) {
               const status = m.readAt ? 'read' : m.deliveredAt ? 'delivered' : m.status?.toLowerCase() || 'sent'
@@ -358,9 +418,9 @@ export default function E2EEThread({ conversationId, userId, partnerId, partnerN
           })
         }
       } catch (error) {
-        // Silent fail - SSE prendra le relai
+        // Silent fail
       }
-    }, 30000) // Toutes les 30 secondes (fallback uniquement)
+    }, 3000) // Polling rapide toutes les 3 secondes
     return () => clearInterval(interval)
   }, [conversationId, userId])
 
@@ -389,21 +449,45 @@ export default function E2EEThread({ conversationId, userId, partnerId, partnerN
     (async () => {
       const sess = getSession(partnerId)
       const updates: Record<string, string> = {}
+      console.log('[DECRYPT] Démarrage déchiffrement...', { 
+        totalEnvelopes: envelopes.length, 
+        textMessages: envelopes.filter(e => !e.attachmentUrl).length,
+        cacheSize: Object.keys(textCacheRef.current).length
+      })
+      
       for (const env of envelopes) {
         if (env.attachmentUrl) continue // only text here
 
         // Utiliser messageId comme clé de cache (ou fallback sur id)
         const cacheKey = env.messageId || env.id
-        if (textCache[cacheKey]) continue // déjà en cache
+        
+        // ✅ Vérifier TOUTES les clés possibles (messageId, id, temp-id)
+        const isAlreadyCached = 
+          textCacheRef.current[env.messageId] || 
+          textCacheRef.current[env.id] || 
+          textCacheRef.current[`temp-${env.messageId}`]
+        
+        if (isAlreadyCached) {
+          console.log('[DECRYPT] Déjà en cache:', cacheKey.slice(0, 20))
+          continue
+        }
 
         // Pour les messages sortants, essayer de décoder directement en base64
         if (env.senderUserId === userId) {
           try {
             const decoded = b64DecodeUtf8(env.cipherText)
             if (decoded && !decoded.startsWith('[attachment:')) {
-              updates[cacheKey] = decoded
+              // ✅ Stocker avec TOUTES les clés possibles pour être sûr
+              updates[env.id] = decoded
+              updates[env.messageId] = decoded
+              if (env.id.startsWith('temp-')) {
+                updates[env.messageId] = decoded // Aussi sans temp-
+              }
+              console.log('[DECRYPT] Message sortant décodé:', cacheKey.slice(0, 20), '→', decoded.slice(0, 30))
             }
-          } catch {}
+          } catch (e) {
+            console.error('[DECRYPT] Erreur décodage sortant:', e)
+          }
           continue
         }
 
@@ -411,13 +495,17 @@ export default function E2EEThread({ conversationId, userId, partnerId, partnerN
         if (sess) {
         try {
           const plain = await decrypt(sess, env.cipherText)
-            updates[cacheKey] = plain
+            // ✅ Stocker avec toutes les clés
+            updates[env.id] = plain
+            updates[env.messageId] = plain
+            console.log('[DECRYPT] Message entrant déchiffré:', cacheKey.slice(0, 20), '→', plain.slice(0, 30))
           } catch {
             // Fallback: essayer de décoder en base64 simple
             try {
               const decoded = b64DecodeUtf8(env.cipherText)
               if (decoded && !decoded.startsWith('[attachment:')) {
-                updates[cacheKey] = decoded
+                updates[env.id] = decoded
+                updates[env.messageId] = decoded
               }
             } catch {}
           }
@@ -426,12 +514,25 @@ export default function E2EEThread({ conversationId, userId, partnerId, partnerN
           try {
             const decoded = b64DecodeUtf8(env.cipherText)
             if (decoded && !decoded.startsWith('[attachment:')) {
-              updates[cacheKey] = decoded
+              updates[env.id] = decoded
+              updates[env.messageId] = decoded
             }
         } catch {}
         }
       }
-      if (Object.keys(updates).length) setTextCache(prev => ({ ...prev, ...updates }))
+      
+      const updateCount = Object.keys(updates).length
+      if (updateCount > 0) {
+        console.log('[DECRYPT] ✅ Mise à jour cache:', updateCount / 2, 'messages déchiffrés (', updateCount, 'clés)')
+        setTextCache(prev => {
+          const newCache = { ...prev, ...updates }
+          textCacheRef.current = newCache // ✅ Garder ref à jour
+          console.log('[DECRYPT] Cache total après update:', Object.keys(newCache).length, 'clés')
+          return newCache
+        })
+      } else {
+        console.log('[DECRYPT] Aucun nouveau message à déchiffrer (cache:', Object.keys(textCacheRef.current).length, 'clés)')
+      }
     })()
   }, [envelopes, partnerId, userId])
 
@@ -581,9 +682,17 @@ export default function E2EEThread({ conversationId, userId, partnerId, partnerN
         addEnvelopeUnique(optimisticEnvelope)
         updateMessageStatus(messageId, 'sending')
 
-        // Stocker le texte pour l'affichage immédiat (utiliser l'ID temp)
+        // Stocker le texte pour l'affichage immédiat (utiliser messageId ET temp-id)
         if (text) {
-          setTextCache(prev => ({ ...prev, [`temp-${messageId}`]: text }))
+          setTextCache(prev => {
+            const newCache = { 
+              ...prev, 
+              [messageId]: text,              // ✅ Clé par messageId pour renderText()
+              [`temp-${messageId}`]: text     // ✅ Aussi en temp- pour compatibilité
+            }
+            textCacheRef.current = newCache // ✅ Garder ref à jour
+            return newCache
+          })
         }
 
         // Envoyer en arrière-plan
@@ -625,11 +734,16 @@ export default function E2EEThread({ conversationId, userId, partnerId, partnerN
           
           updateMessageStatus(messageId, 'sent')
           
-          // Migrer le texte du cache temp vers le vrai ID
-          if (text && newEnvelope.id) {
+          // Migrer le texte du cache vers le vrai ID et messageId
+          if (text && newEnvelope.id && newEnvelope.messageId) {
             setTextCache(prev => {
-              const updated = { ...prev, [newEnvelope.id]: text }
-              delete updated[`temp-${messageId}`] // Supprimer l'ancien cache temp
+              const updated = { ...prev }
+              // Ajouter avec le vrai ID ET messageId (pour renderText)
+              updated[newEnvelope.id] = text
+              updated[newEnvelope.messageId] = text
+              // Nettoyer seulement la clé temp
+              delete updated[`temp-${messageId}`]
+              textCacheRef.current = updated // ✅ Garder ref à jour
               return updated
             })
           }
@@ -689,7 +803,11 @@ export default function E2EEThread({ conversationId, userId, partnerId, partnerN
             ? await decryptFileWithEnvelopes(cipherBlob, env.attachmentMeta, unwrap, userId)
             : await decryptFile(cipherBlob, env.attachmentMeta)
 
-          updates[env.id] = { url: URL.createObjectURL(plainBlob), mime: env.attachmentMeta?.mime || plainBlob.type || 'application/octet-stream' }
+          const mime = env.attachmentMeta?.mime || plainBlob.type || 'application/octet-stream'
+
+          // Pour les vidéos/audios, créer un Blob avec le bon type MIME pour éviter les erreurs de range
+          const typedBlob = new Blob([plainBlob], { type: mime })
+          updates[env.id] = { url: URL.createObjectURL(typedBlob), mime }
         } catch (error) {
           // Déchiffrement échoué - marquer le média comme indisponible
           updates[env.id] = { url: '', mime: '' }
@@ -705,8 +823,12 @@ export default function E2EEThread({ conversationId, userId, partnerId, partnerN
   }, [envelopes])
 
   const renderText = (env: Envelope) => {
-    // Préférer le cache déchiffré (utiliser messageId comme clé)
-    const cached = env.messageId ? textCache[env.messageId] : textCache[env.id]
+    // ✅ Chercher avec TOUTES les clés possibles
+    const cached = 
+      textCache[env.messageId] || 
+      textCache[env.id] || 
+      textCache[`temp-${env.messageId}`]
+    
     if (cached) return cached.startsWith('[attachment:') ? '' : cached
 
     // Si c'est une pièce jointe, ne pas afficher de texte
@@ -751,10 +873,7 @@ export default function E2EEThread({ conversationId, userId, partnerId, partnerN
             ))}
           </div>
         )}
-        {(() => {
-          console.log('[RENDER] Total envelopes:', envelopes.length, 'IDs:', envelopes.map(e => ({ id: e.id, messageId: e.messageId })))
-          return envelopes
-        })()
+        {envelopes
           .filter(env => {
             // Filtrer les messages expirés
             const expiresAt = (env as any).expiresAt
@@ -820,26 +939,9 @@ export default function E2EEThread({ conversationId, userId, partnerId, partnerN
           <div className="text-xs text-gray-500 italic py-1">
             Contenu disparu
           </div>
-        ) : viewMode === 'once' && mine ? (
-          // Chez l'expéditeur : afficher seulement le statut (pas le média)
-          <div className="py-2">
-            {isViewedOnce ? (
-              // Média vu et supprimé
-              <div className="flex items-center gap-2 text-sm">
-                <div className="w-1.5 h-1.5 rounded-full bg-green-400 flex-shrink-0" />
-                <span className="text-green-400/90">Vu et supprimé</span>
-              </div>
-            ) : (
-              // Média envoyé, en attente
-              <div className="flex items-center gap-2 text-sm">
-                <div className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse flex-shrink-0" />
-                <span className="text-blue-400/90">En attente</span>
-              </div>
-            )}
-          </div>
         ) : (
           <>
-              {text && (
+            {text && (
               <>
                 <div className="whitespace-pre-wrap break-words mb-1">{text}</div>
                 {/* Preview des liens */}
@@ -847,6 +949,20 @@ export default function E2EEThread({ conversationId, userId, partnerId, partnerN
                   <LinkPreview key={idx} url={url} />
                 ))}
               </>
+            )}
+            
+            {/* Statut vue unique pour l'expéditeur (en plus du contenu) */}
+            {viewMode === 'once' && mine && (
+              <div className="mt-1 flex items-center gap-1.5 text-[11px]">
+                {isViewedOnce ? (
+                  <span className="text-green-400/80">✓ Vu</span>
+                ) : (
+                  <span className="text-blue-400/80 flex items-center gap-1">
+                    <div className="w-1 h-1 rounded-full bg-blue-400 animate-pulse" />
+                    Non vu
+                  </span>
+                )}
+              </div>
             )}
           </>
         )}
@@ -875,7 +991,7 @@ export default function E2EEThread({ conversationId, userId, partnerId, partnerN
                 </div>
               )}
               {/* Affichage des images */}
-              {media && media.url && media.mime && media.mime.startsWith('image/') && !isReceiverAndViewed && !(viewMode === 'once' && mine) && (
+              {media && media.url && media.mime && media.mime.startsWith('image/') && !isReceiverAndViewed && (
                 <div className="relative mt-1 mb-5">
                   {viewMode === 'once' && !mine && !isViewedLocally ? (
                     // Image floutée avec bouton "Voir" (récepteur avant visionnage)
@@ -918,7 +1034,7 @@ export default function E2EEThread({ conversationId, userId, partnerId, partnerN
                 </div>
               )}
               {/* Affichage des vidéos */}
-              {media && media.url && media.mime && media.mime.startsWith('video/') && !isReceiverAndViewed && !(viewMode === 'once' && mine) && (
+              {media && media.url && media.mime && media.mime.startsWith('video/') && !isReceiverAndViewed && (
                 <div className="relative mt-1 mb-5">
                   {viewMode === 'once' && !mine && !isViewedLocally ? (
                     // Vidéo floutée avec bouton "Voir" (récepteur avant visionnage)

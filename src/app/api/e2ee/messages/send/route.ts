@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 import { jwtVerify } from 'jose'
-import { pgBroadcaster } from '@/lib/pg-broadcast'
+import { sseBroadcaster } from '@/lib/sse-broadcast'
 
 export async function POST(request: NextRequest) {
   try {
@@ -109,10 +109,10 @@ export async function POST(request: NextRequest) {
       viewedBy: []
     }
 
-    // Diffuser le message via PostgreSQL NOTIFY
-    console.log('[BROADCAST] Envoi via PostgreSQL NOTIFY:', conversationId)
-    await pgBroadcaster.broadcast(conversationId, messageForBroadcast)
-    console.log('[BROADCAST] ✅ Message diffusé via PostgreSQL')
+    // Diffuser le message via SSE Broadcaster (in-memory)
+    console.log('[BROADCAST] Envoi via SSE Broadcaster:', conversationId)
+    sseBroadcaster.broadcast(conversationId, messageForBroadcast)
+    console.log('[BROADCAST] ✅ Message diffusé via SSE')
 
     return NextResponse.json({
       message: {
