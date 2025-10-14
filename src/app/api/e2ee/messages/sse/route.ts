@@ -66,13 +66,49 @@ export async function GET(request: NextRequest) {
 
     // Créer un stream SSE
     const stream = new ReadableStream({
-      start(controller) {
+      async start(controller) {
         // Enregistrer le client dans le broadcaster
-        sseBroadcaster.addClient(conversationId, user.id, controller)
+        const clientId = sseBroadcaster.addClient(conversationId, user.id, controller)
+        console.log('[SSE STREAM] 📡 Client SSE enregistré:', { clientId, conversationId, userId: user.id, totalClients: sseBroadcaster.getClientCount(conversationId) })
 
         // Envoyer un message de connexion
         const connectMessage = `data: ${JSON.stringify({ type: 'connected', timestamp: new Date().toISOString() })}\n\n`
         controller.enqueue(new TextEncoder().encode(connectMessage))
+
+        // 🆕 CATCH-UP: Envoyer les messages récents non encore reçus (derniers 5 messages)
+        try {
+          const recentMessages = await prisma.e2EEMessageEnvelope.findMany({
+            where: { conversationId },
+            orderBy: { createdAt: 'desc' },
+            take: 5
+          })
+
+          console.log('[SSE STREAM] 📤 Envoi des messages de catch-up:', recentMessages.length)
+
+          for (const msg of recentMessages.reverse()) {
+            const messageEvent = {
+              type: 'message' as const,
+              id: msg.id,
+              messageId: msg.messageId,
+              conversationId: msg.conversationId,
+              senderUserId: msg.senderUserId,
+              cipherText: msg.cipherText,
+              attachmentUrl: msg.attachmentUrl,
+              attachmentMeta: msg.attachmentMeta,
+              createdAt: msg.createdAt.toISOString(),
+              status: 'sent',
+              viewMode: (msg as any).viewMode,
+              downloadable: (msg as any).downloadable,
+              expiresAt: (msg as any).expiresAt?.toISOString(),
+              viewedBy: (msg as any).viewedBy || []
+            }
+            
+            const eventData = `data: ${JSON.stringify(messageEvent)}\n\n`
+            controller.enqueue(new TextEncoder().encode(eventData))
+          }
+        } catch (catchUpError) {
+          console.error('[SSE STREAM] Erreur catch-up:', catchUpError)
+        }
 
         // Heartbeat pour maintenir la connexion
         const heartbeatInterval = setInterval(() => {
@@ -86,6 +122,7 @@ export async function GET(request: NextRequest) {
 
         // Nettoyer quand la connexion se ferme
         request.signal.addEventListener('abort', () => {
+          console.log('[SSE STREAM] 🔌 Client SSE déconnecté:', { clientId, conversationId, userId: user.id })
           clearInterval(heartbeatInterval)
           sseBroadcaster.removeClient(conversationId, user.id)
 

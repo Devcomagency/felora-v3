@@ -3,11 +3,11 @@ import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 import { jwtVerify } from 'jose'
-import { sseBroadcaster } from '@/lib/sse-broadcast'
+import { pgBroadcaster } from '@/lib/pg-broadcast'
 
 export async function POST(request: NextRequest) {
   try {
-    const { conversationId, senderUserId, senderDeviceId, messageId, cipherText, attachment, viewMode, downloadable } = await request.json()
+    const { conversationId, senderUserId, senderDeviceId, messageId, cipherText, attachment } = await request.json()
     
     if (!conversationId || !senderUserId || !messageId || !cipherText) {
       return NextResponse.json({ 
@@ -63,34 +63,32 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Accès non autorisé' }, { status: 403 })
     }
 
-    // Calculer l'expiration en fonction du mode éphémère
-    let expiresAt: Date | null = null
-    if (conversation.ephemeralMode && conversation.ephemeralDuration) {
-      expiresAt = new Date(Date.now() + conversation.ephemeralDuration * 1000)
-    }
 
-    // Créer le message
+    // Créer le message (TOUJOURS utiliser user.id de la session pour la sécurité)
+    console.log('[SEND API] Création du message...', { conversationId, messageId, senderUserId: user.id })
+    
     const message = await prisma.e2EEMessageEnvelope.create({
       data: {
         conversationId,
-        senderUserId,
-        senderDeviceId: senderDeviceId || `${senderUserId}-device`,
+        senderUserId: user.id, // Utiliser l'ID de la session, pas celui du client
+        senderDeviceId: senderDeviceId || `${user.id}-device`,
         cipherText,
         messageId,
         attachmentUrl: attachment?.url || null,
         attachmentMeta: attachment?.meta || null,
-        status: 'SENT',
-        viewMode: viewMode || null,
-        downloadable: downloadable !== undefined ? downloadable : true,
-        expiresAt: expiresAt || null
+        status: 'SENT'
       }
     })
+
+    console.log('[SEND API] ✅ Message créé en base:', { id: message.id, messageId: message.messageId })
 
     // Mettre à jour la conversation avec le dernier message
     await prisma.e2EEConversation.update({
       where: { id: conversationId },
       data: { updatedAt: new Date() }
     })
+    
+    console.log('[SEND API] Conversation mise à jour')
 
     // Construire l'objet message pour la diffusion
     const messageForBroadcast = {
@@ -103,22 +101,13 @@ export async function POST(request: NextRequest) {
       attachmentUrl: message.attachmentUrl,
       attachmentMeta: message.attachmentMeta,
       createdAt: message.createdAt.toISOString(),
-      status: 'sent',
-      viewMode: message.viewMode,
-      downloadable: message.downloadable,
-      expiresAt: message.expiresAt?.toISOString(),
-      viewedBy: message.viewedBy || []
+      status: 'sent'
     }
 
-    // Diffuser le message via SSE
-    sseBroadcaster.broadcast(conversationId, messageForBroadcast)
-    
-    // Retry après 200ms au cas où les clients ne seraient pas encore connectés (en dev avec HMR)
-    setTimeout(() => {
-      if (sseBroadcaster.getClientCount(conversationId) > 0) {
-        sseBroadcaster.broadcast(conversationId, messageForBroadcast)
-      }
-    }, 200)
+    // Diffuser le message via PostgreSQL NOTIFY
+    console.log('[BROADCAST] Envoi via PostgreSQL NOTIFY:', conversationId)
+    await pgBroadcaster.broadcast(conversationId, messageForBroadcast)
+    console.log('[BROADCAST] ✅ Message diffusé via PostgreSQL')
 
     return NextResponse.json({
       message: {
@@ -129,11 +118,7 @@ export async function POST(request: NextRequest) {
         attachmentUrl: message.attachmentUrl,
         attachmentMeta: message.attachmentMeta,
         createdAt: message.createdAt.toISOString(),
-        status: 'sent',
-        viewMode: message.viewMode,
-        downloadable: message.downloadable,
-        expiresAt: message.expiresAt?.toISOString(),
-        viewedBy: message.viewedBy || []
+        status: 'sent'
       }
     })
 

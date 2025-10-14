@@ -59,12 +59,16 @@ export async function GET(request: NextRequest) {
     }
 
     // Récupérer les messages de la conversation avec pagination
+    console.log('[HISTORY API] Chargement des messages...', { conversationId, userId: user.id, offset, limit })
+    
     const messages = await prisma.e2EEMessageEnvelope.findMany({
       where: { conversationId },
       orderBy: { createdAt: 'asc' },
       skip: offset,
       take: limit
     })
+
+    console.log('[HISTORY API] Messages récupérés:', messages.length, 'IDs:', messages.map(m => m.id).slice(0, 5))
 
     if (!conversation) {
       return NextResponse.json({ error: 'Conversation introuvable' }, { status: 404 })
@@ -91,6 +95,8 @@ export async function GET(request: NextRequest) {
       expiresAt: msg.expiresAt?.toISOString(),
       viewedBy: msg.viewedBy || []
     }))
+
+    console.log('[HISTORY API] ✅ Retourne', formattedMessages.length, 'messages formatés')
 
     return NextResponse.json({ 
       messages: formattedMessages,

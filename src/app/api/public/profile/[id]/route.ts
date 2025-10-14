@@ -72,8 +72,6 @@ export async function GET(
         acceptsHandicapped: true,
         acceptsSeniors: true,
         acceptsWomen: true,
-        // Agenda
-        agendaEnabled: true,
         // Stats
         likes: true,
         views: true,

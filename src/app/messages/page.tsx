@@ -46,10 +46,10 @@ function NewMessagesPage() {
   const [reportSubmitting, setReportSubmitting] = useState(false)
   const [ephemeralMode, setEphemeralMode] = useState(false)
   const [ephemeralDuration, setEphemeralDuration] = useState(86400) // 24h par défaut
-  const [isDesktop, setIsDesktop] = useState(() => {
-    // Initialiser correctement isDesktop dès le départ
-    if (typeof window === 'undefined') return true // SSR default to desktop
-    return window.innerWidth >= 1024
+  const [isMobile, setIsMobile] = useState(() => {
+    // Initialiser correctement dès le départ
+    if (typeof window === 'undefined') return false
+    return window.innerWidth < 1024
   })
   const router = useRouter()
   const { success: toastSuccess, error: toastError } = useNotification()
@@ -91,25 +91,12 @@ function NewMessagesPage() {
     conversationsRef.current = conversations
   }, [conversations])
 
-  // Détecter la taille d'écran pour activer/désactiver les instances E2EEThread
+  // Détecter si mobile (pour ne monter qu'UNE SEULE instance d'E2EEThread)
   useEffect(() => {
-    if (typeof window === 'undefined') return
-    
-    const mediaQuery = window.matchMedia('(min-width: 1024px)') // lg breakpoint de Tailwind
-    
-    const handleChange = (e: MediaQueryListEvent | MediaQueryList) => {
-      setIsDesktop(e.matches)
-    }
-    
-    // Init
-    handleChange(mediaQuery)
-    
-    // Écouter les changements
-    mediaQuery.addEventListener('change', handleChange)
-    
-    return () => {
-      mediaQuery.removeEventListener('change', handleChange)
-    }
+    const checkMobile = () => setIsMobile(window.innerWidth < 1024)
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
   // Read deep link (?conv=... ou ?to=...) to auto-open a conversation when list is loaded
@@ -140,8 +127,19 @@ function NewMessagesPage() {
 
   // Handle creating conversation with intro message when ?to= is provided
   const createConversationWithIntro = useCallback(async () => {
-    if (!pendingUserToMessage || !session?.user?.id || isLoading) return
-    
+    console.log('[CREATE CONV] Checking conditions:', {
+      pendingUserToMessage,
+      userId: session?.user?.id,
+      conversationsLoaded: conversations.length
+    })
+
+    if (!pendingUserToMessage || !session?.user?.id) {
+      console.log('[CREATE CONV] Aborting - missing requirements')
+      return
+    }
+
+    console.log('[CREATE CONV] Starting conversation creation...')
+
     try {
       // Vérifier si une conversation existe déjà avec cet utilisateur
       const existingConv = conversationsRef.current.find(conv =>
@@ -265,13 +263,13 @@ function NewMessagesPage() {
     } finally {
       setPendingUserToMessage(null)
     }
-  }, [pendingUserToMessage, session?.user?.id, isLoading, toastSuccess, toastError])
+  }, [pendingUserToMessage, session?.user?.id, toastSuccess, toastError])
 
   useEffect(() => {
-    if (pendingUserToMessage && session?.user?.id && !isLoading) {
+    if (pendingUserToMessage && session?.user?.id) {
       createConversationWithIntro()
     }
-  }, [createConversationWithIntro])
+  }, [createConversationWithIntro, pendingUserToMessage, session?.user?.id])
 
   // Debounce pour la recherche
   useEffect(() => {
@@ -615,7 +613,7 @@ function NewMessagesPage() {
           <div className="h-full min-h-0 rounded-xl sm:rounded-2xl bg-white/5 border border-white/10">
             <>
               {/* Desktop: Split View */}
-              <div className="hidden lg:flex h-full min-h-0">
+              {!isMobile && <div className="flex h-full min-h-0">
                   <div className="w-1/3 border-r border-gray-700/50">
                     <ConversationList
                       conversations={conversations}
@@ -636,7 +634,6 @@ function NewMessagesPage() {
                           userId={session?.user?.id || ''}
                           partnerId={(activeConversation.participants.find((p:any)=> p.id!== (session?.user?.id||''))|| activeConversation.participants[0])?.id}
                           partnerName={(activeConversation.participants.find((p:any)=> p.id!== (session?.user?.id||''))|| activeConversation.participants[0])?.stageName || (activeConversation.participants.find((p:any)=> p.id!== (session?.user?.id||''))|| activeConversation.participants[0])?.name}
-                          isActive={isDesktop}
                         />
                       </div>
                       {/* Composeur intégré pour desktop */}
@@ -698,9 +695,9 @@ function NewMessagesPage() {
                     </div>
                   )}
                 </div>
-              </div>
+              </div>}
               {/* Mobile: Single View */}
-              <div className="lg:hidden h-full min-h-0">
+              {isMobile && <div className="h-full min-h-0">
                   {activeConversation ? (
                     <div className="h-full min-h-0">
                       <E2EEThread
@@ -709,7 +706,6 @@ function NewMessagesPage() {
                         userId={session?.user?.id || ''}
                         partnerId={(activeConversation.participants.find((p:any)=> p.id!== (session?.user?.id||''))|| activeConversation.participants[0])?.id}
                         partnerName={(activeConversation.participants.find((p:any)=> p.id!== (session?.user?.id||''))|| activeConversation.participants[0])?.stageName || (activeConversation.participants.find((p:any)=> p.id!== (session?.user?.id||''))|| activeConversation.participants[0])?.name}
-                        isActive={!isDesktop}
                       />
                     </div>
                 ) : (
@@ -742,7 +738,7 @@ function NewMessagesPage() {
                     )}
                   </div>
                 )}
-              </div>
+              </div>}
             </>
           </div>
         </div>

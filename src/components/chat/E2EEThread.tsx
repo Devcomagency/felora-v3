@@ -21,7 +21,7 @@ function extractUrls(text: string): string[] {
   return text.match(urlRegex) || []
 }
 
-export default function E2EEThread({ conversationId, userId, partnerId, partnerName, isActive = true }: { conversationId: string; userId: string; partnerId: string; partnerName?: string; isActive?: boolean }) {
+export default function E2EEThread({ conversationId, userId, partnerId, partnerName }: { conversationId: string; userId: string; partnerId: string; partnerName?: string }) {
   const [envelopes, setEnvelopes] = useState<Envelope[]>([])
   const [loadingHistory, setLoadingHistory] = useState(true)
   const [mediaCache, setMediaCache] = useState<Record<string, { url: string; mime: string }>>({})
@@ -233,21 +233,32 @@ export default function E2EEThread({ conversationId, userId, partnerId, partnerN
 
   // SSE (with catch-up after last known timestamp) - SE CONNECTE UNE SEULE FOIS
   useEffect(() => {
-    if (loadingHistory || !isActive) return
+    console.log('[SSE INIT] Tentative de connexion SSE...', { loadingHistory, conversationId })
+    if (loadingHistory) {
+      console.log('[SSE INIT] BLOQUÉ par loadingHistory')
+      return
+    }
 
-
+    console.log('[SSE] Connexion SSE en cours...')
     esRef.current?.close()
     const es = new EventSource(`/api/e2ee/messages/sse?conversationId=${encodeURIComponent(conversationId)}`, {
       withCredentials: true
     })
 
+    es.onopen = () => {
+      console.log('[SSE] ✅ Connexion SSE établie !')
+    }
+
     es.onmessage = (evt) => {
+      console.log('[SSE] 📨 Message reçu:', evt.data)
       try {
         const data = JSON.parse(evt.data)
+        console.log('[SSE] Type:', data.type)
 
         // Gérer les messages
         if (data.type === 'message') {
           const env: Envelope = data
+          console.log('[SSE] Message envelope reçu:', env.id, env.messageId)
 
           // Ajouter le message (remplacera l'optimiste si existe)
           addEnvelopeUnique(env)
@@ -325,11 +336,11 @@ export default function E2EEThread({ conversationId, userId, partnerId, partnerN
     return () => {
       es.close()
     }
-  }, [conversationId, loadingHistory, isActive])
+  }, [conversationId, loadingHistory])
 
   // Polling de secours léger toutes les 30 secondes (uniquement pour les statuts si SSE échoue)
   useEffect(() => {
-    if (!conversationId || !userId || !isActive) return
+    if (!conversationId || !userId) return
     const interval = setInterval(async () => {
       try {
         const res = await fetch(`/api/e2ee/messages/history?conversationId=${encodeURIComponent(conversationId)}`, {
@@ -351,7 +362,7 @@ export default function E2EEThread({ conversationId, userId, partnerId, partnerN
       }
     }, 30000) // Toutes les 30 secondes (fallback uniquement)
     return () => clearInterval(interval)
-  }, [conversationId, userId, isActive])
+  }, [conversationId, userId])
 
   // Helpers for UTF-8 safe base64
   const b64EncodeUtf8 = (str: string) => {
@@ -398,8 +409,8 @@ export default function E2EEThread({ conversationId, userId, partnerId, partnerN
 
         // Pour les messages entrants, décrypter avec la session Signal
         if (sess) {
-          try {
-            const plain = await decrypt(sess, env.cipherText)
+        try {
+          const plain = await decrypt(sess, env.cipherText)
             updates[cacheKey] = plain
           } catch {
             // Fallback: essayer de décoder en base64 simple
@@ -417,7 +428,7 @@ export default function E2EEThread({ conversationId, userId, partnerId, partnerN
             if (decoded && !decoded.startsWith('[attachment:')) {
               updates[cacheKey] = decoded
             }
-          } catch {}
+        } catch {}
         }
       }
       if (Object.keys(updates).length) setTextCache(prev => ({ ...prev, ...updates }))
@@ -595,6 +606,7 @@ export default function E2EEThread({ conversationId, userId, partnerId, partnerN
 
         if (data?.message) {
           const newEnvelope = data.message
+          console.log('[SEND] Nouveau envelope reçu:', { id: newEnvelope.id, messageId: newEnvelope.messageId, tempId: `temp-${messageId}` })
           
           // CRITICAL: S'assurer que senderUserId est défini
           if (!newEnvelope.senderUserId) {
@@ -602,9 +614,14 @@ export default function E2EEThread({ conversationId, userId, partnerId, partnerN
           }
           
           // Remplacer le message optimiste par le vrai message de la DB
-          setEnvelopes(prev => prev.map(e => 
-            e.id === `temp-${messageId}` ? newEnvelope : e
-          ))
+          setEnvelopes(prev => {
+            console.log('[SEND] Remplacement optimiste - avant:', prev.length, 'IDs:', prev.map(e => e.id).slice(-3))
+            const updated = prev.map(e => 
+              e.id === `temp-${messageId}` ? newEnvelope : e
+            )
+            console.log('[SEND] Remplacement optimiste - après:', updated.length, 'IDs:', updated.map(e => e.id).slice(-3))
+            return updated
+          })
           
           updateMessageStatus(messageId, 'sent')
           
@@ -699,8 +716,8 @@ export default function E2EEThread({ conversationId, userId, partnerId, partnerN
     try {
       const dec = b64DecodeUtf8(env.cipherText)
       if (dec && !dec.startsWith('[attachment:')) {
-        return dec
-      }
+      return dec
+    }
     } catch {}
 
     // Si tout échoue, afficher un message de chargement

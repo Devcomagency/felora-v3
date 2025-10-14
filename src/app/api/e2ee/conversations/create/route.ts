@@ -6,6 +6,7 @@ import { jwtVerify } from 'jose'
 
 export async function POST(request: NextRequest) {
   try {
+    // Force recompilation
     console.log('[API DEBUG] Creating conversation - Headers:', request.headers.get('cookie'))
     console.log('[API DEBUG] Request headers:', Object.fromEntries(request.headers.entries()))
     
@@ -127,17 +128,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Utilisateur non trouvé' }, { status: 404 })
     }
 
-    // Seuls les clients peuvent initier des conversations avec les escortes
-    if (currentUser.role !== 'CLIENT') {
-      return NextResponse.json({
-        error: 'Seuls les clients peuvent initier des conversations'
-      }, { status: 403 })
-    }
+    // Vérifier que les rôles sont compatibles pour une conversation
+    // CLIENT peut contacter ESCORT et vice-versa
+    console.log('[API DEBUG] Rôles détectés:', {
+      currentUserRole: currentUser.role,
+      targetUserRole: targetUser.role
+    })
 
-    // Vérifier que l'utilisateur cible est une escorte
-    if (targetUser.role !== 'ESCORT') {
+    const isValidConversation =
+      (currentUser.role === 'CLIENT' && targetUser.role === 'ESCORT') ||
+      (currentUser.role === 'ESCORT' && targetUser.role === 'CLIENT')
+
+    console.log('[API DEBUG] isValidConversation:', isValidConversation)
+
+    if (!isValidConversation) {
       return NextResponse.json({
-        error: 'Vous ne pouvez contacter que des escortes'
+        error: 'Conversations uniquement entre clients et escortes'
       }, { status: 403 })
     }
 

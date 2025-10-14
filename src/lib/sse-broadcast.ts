@@ -61,20 +61,29 @@ class SSEBroadcaster {
    * Diffuse un événement à tous les clients d'une conversation
    */
   broadcast(conversationId: string, event: SSEEvent) {
+    console.log('[SSE BROADCASTER] Tentative de broadcast:', { conversationId, eventType: event.type, totalConversations: this.clients.size })
     const clients = this.clients.get(conversationId)
-    if (!clients || clients.length === 0) return
+    console.log('[SSE BROADCASTER] Clients trouvés pour cette conversation:', clients?.length || 0)
+    
+    if (!clients || clients.length === 0) {
+      console.log('[SSE BROADCASTER] AUCUN client connecté, broadcast annulé')
+      return
+    }
 
     const eventData = `data: ${JSON.stringify(event)}\n\n`
     const encoder = new TextEncoder()
 
     // Diffuser à tous les clients connectés
+    let successCount = 0
     for (const client of clients) {
       try {
         client.controller.enqueue(encoder.encode(eventData))
+        successCount++
       } catch (error) {
-        // Client déconnecté, ignoré
+        console.error('[SSE BROADCASTER] Erreur lors de l\'envoi au client:', error)
       }
     }
+    console.log('[SSE BROADCASTER] ✅ Message diffusé à', successCount, 'client(s)')
   }
 
   /**
