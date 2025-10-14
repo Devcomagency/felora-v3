@@ -137,13 +137,13 @@ export default function StaticNavBar() {
       items.push({ id: 'messages', icon: MessageCircle, label: 'Messages', href: '/messages', active: pathname === '/messages' })
     }
 
+    // Profil: visible uniquement pour ESCORT et CLUB
     if (role === 'ESCORT') {
       items.push({ id: 'profile', icon: User, label: 'Profil', href: '/dashboard-escort/profil', active: pathname?.startsWith('/dashboard-escort') })
     } else if (role === 'CLUB') {
       items.push({ id: 'profile', icon: User, label: 'Profil', href: '/club/profile', active: pathname?.startsWith('/club') })
-    } else {
-      items.push({ id: 'profile', icon: User, label: 'Profil', href: '/profile', active: pathname?.startsWith('/profile') })
     }
+    // ✅ Pas d'onglet profil pour les clients/non-connectés
 
     return items
   })()
