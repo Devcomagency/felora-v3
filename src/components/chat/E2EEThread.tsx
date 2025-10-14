@@ -771,9 +771,9 @@ export default function E2EEThread({ conversationId, userId, partnerId, partnerN
         await Promise.all(batch.map(async (env) => {
         try {
 
-          const urlObj = new URL(String(env.attachmentUrl), window.location.origin)
-          const safePath = urlObj.pathname.split('/').pop() || ''
-          const resp = await fetch(`/api/e2ee/attachments/get?path=${encodeURIComponent(safePath)}&conversationId=${encodeURIComponent(conversationId)}`)
+          // Passer l'URL complète pour que le serveur puisse fetcher depuis R2 en production
+          const attachmentUrl = String(env.attachmentUrl)
+          const resp = await fetch(`/api/e2ee/attachments/get?path=${encodeURIComponent(attachmentUrl)}&conversationId=${encodeURIComponent(conversationId)}`)
 
           if (!resp.ok) {
             throw new Error(`Erreur fetch: ${resp.status} ${resp.statusText}`)

@@ -50,23 +50,34 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
     }
 
-    // Si c'est une URL complète (R2/CDN), rediriger vers elle
+    // Si c'est une URL complète (R2/CDN), fetch depuis R2
     if (path.startsWith('http://') || path.startsWith('https://')) {
-      // Fetch depuis R2 et retourner le contenu
-      const response = await fetch(path)
-      if (!response.ok) {
-        return NextResponse.json({ error: 'Fichier introuvable sur R2' }, { status: 404 })
-      }
-      
-      const buffer = await response.arrayBuffer()
-      
-      return new Response(buffer, {
-        headers: {
-          'Content-Type': 'application/octet-stream',
-          'Content-Length': buffer.byteLength.toString(),
-          'Cache-Control': 'public, max-age=31536000', // 1 an pour les fichiers chiffrés
+      console.log('[E2EE GET] Fetching from R2:', path.substring(0, 80))
+      try {
+        const response = await fetch(path)
+        if (!response.ok) {
+          console.error('[E2EE GET] R2 fetch failed:', response.status, response.statusText)
+          return NextResponse.json({ 
+            error: `Fichier introuvable sur R2 (${response.status})` 
+          }, { status: 404 })
         }
-      })
+        
+        const buffer = await response.arrayBuffer()
+        console.log('[E2EE GET] ✅ Fichier récupéré depuis R2:', buffer.byteLength, 'bytes')
+        
+        return new Response(buffer, {
+          headers: {
+            'Content-Type': 'application/octet-stream',
+            'Content-Length': buffer.byteLength.toString(),
+            'Cache-Control': 'public, max-age=31536000', // 1 an pour les fichiers chiffrés
+          }
+        })
+      } catch (error) {
+        console.error('[E2EE GET] Erreur fetch R2:', error)
+        return NextResponse.json({ 
+          error: `Erreur lors du fetch R2: ${error instanceof Error ? error.message : 'Unknown'}` 
+        }, { status: 500 })
+      }
     }
 
     // Sinon, c'est un fichier local (développement)
@@ -75,6 +86,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Nom de fichier invalide' }, { status: 400 })
     }
 
+    console.log('[E2EE GET] Lecture locale:', filename)
     const uploadDir = join(process.cwd(), 'tmp', 'e2ee-attachments')
     const filepath = join(uploadDir, filename)
 

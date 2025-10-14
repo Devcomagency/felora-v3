@@ -242,7 +242,8 @@ export class MediaStorage {
         throw new Error('Cloudflare R2 configuration missing')
       }
 
-      const { S3Client, PutObjectCommand } = await import('@aws-sdk/client-s3')
+      const { S3Client, PutObjectCommand, GetObjectCommand } = await import('@aws-sdk/client-s3')
+      const { getSignedUrl } = await import('@aws-sdk/s3-request-presigner')
 
       const s3 = new S3Client({
         region: 'auto',
@@ -256,17 +257,24 @@ export class MediaStorage {
 
       const key = `e2ee/${filename}`
 
+      console.log('[R2 UPLOAD] Uploading:', key)
       await s3.send(new PutObjectCommand({
         Bucket: bucketName,
         Key: key,
         Body: buffer,
         ContentType: 'application/octet-stream',
       }))
+      console.log('[R2 UPLOAD] ✅ Upload réussi')
 
-      // Construire l'URL publique du CDN
-      const cdnUrl = `${process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL || 'https://media.felora.ch'}/${key}`
-
-      return { url: cdnUrl, success: true, key }
+      // Générer une URL signée valide 7 jours (fichiers E2EE, pas de problème de longévité)
+      const signedUrl = await getSignedUrl(
+        s3 as any, 
+        new GetObjectCommand({ Bucket: bucketName, Key: key }) as any, 
+        { expiresIn: 60 * 60 * 24 * 7 } // 7 jours
+      )
+      
+      console.log('[R2 UPLOAD] ✅ URL signée générée (expires in 7 days)')
+      return { url: signedUrl, success: true, key }
     } catch (error) {
       console.error('❌ R2 E2EE upload failed:', error)
       return {
