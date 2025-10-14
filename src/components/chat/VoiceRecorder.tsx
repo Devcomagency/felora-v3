@@ -18,16 +18,36 @@ export default function VoiceRecorder({ onSend, onCancel }: VoiceRecorderProps) 
   const [duration, setDuration] = useState(0)
   const [currentTime, setCurrentTime] = useState(0)
   const [error, setError] = useState<string | null>(null)
+  const [isInitializing, setIsInitializing] = useState(false)
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const audioChunksRef = useRef<Blob[]>([])
   const audioRef = useRef<HTMLAudioElement>(null)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
+  const streamRef = useRef<MediaStream | null>(null)
+  const audioBlobUrlRef = useRef<string | null>(null)
 
+  // Cleanup complet quand le composant se démonte
   useEffect(() => {
     return () => {
+      // Arrêter l'intervalle
       if (intervalRef.current) {
         clearInterval(intervalRef.current)
+      }
+
+      // Arrêter le MediaRecorder
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+        mediaRecorderRef.current.stop()
+      }
+
+      // Libérer le stream audio
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop())
+      }
+
+      // Révoquer l'URL du blob audio
+      if (audioBlobUrlRef.current) {
+        URL.revokeObjectURL(audioBlobUrlRef.current)
       }
     }
   }, [])
@@ -35,9 +55,34 @@ export default function VoiceRecorder({ onSend, onCancel }: VoiceRecorderProps) 
   const startRecording = async () => {
     try {
       setError(null)
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-      
-      const mediaRecorder = new MediaRecorder(stream)
+      setIsInitializing(true)
+
+      // Libérer le stream précédent s'il existe
+      if (streamRef.current) {
+        console.log('[VoiceRecorder] Libération du stream précédent')
+        streamRef.current.getTracks().forEach(track => track.stop())
+        streamRef.current = null
+      }
+
+      // Attendre un peu pour être sûr que tout est libéré
+      await new Promise(resolve => setTimeout(resolve, 100))
+
+      console.log('[VoiceRecorder] Demande accès microphone...')
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
+        }
+      })
+      streamRef.current = stream
+      console.log('[VoiceRecorder] Microphone OK, tracks:', stream.getTracks().map(t => t.kind))
+
+      setIsInitializing(false)
+
+      const mediaRecorder = new MediaRecorder(stream, {
+        mimeType: 'audio/webm;codecs=opus'
+      })
       mediaRecorderRef.current = mediaRecorder
       audioChunksRef.current = []
 
@@ -48,11 +93,23 @@ export default function VoiceRecorder({ onSend, onCancel }: VoiceRecorderProps) 
       }
 
       mediaRecorder.onstop = () => {
+        console.log('[VoiceRecorder] MediaRecorder stopped, chunks:', audioChunksRef.current.length)
         const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' })
         setRecordedAudio(audioBlob)
-        
-        // Arrêter tous les tracks pour libérer le microphone
-        stream.getTracks().forEach(track => track.stop())
+
+        // Le stream est déjà libéré dans stopRecording()
+        // On remet juste la ref à null
+        streamRef.current = null
+        mediaRecorderRef.current = null
+      }
+
+      mediaRecorder.onerror = (event) => {
+        console.error('MediaRecorder error:', event)
+        setError('Erreur lors de l\'enregistrement')
+        setIsRecording(false)
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current)
+        }
       }
 
       mediaRecorder.start()
@@ -67,16 +124,30 @@ export default function VoiceRecorder({ onSend, onCancel }: VoiceRecorderProps) 
     } catch (err) {
       console.error('Erreur lors de l\'accès au microphone:', err)
       setError('Impossible d\'accéder au microphone')
+      setIsInitializing(false)
     }
   }
 
   const stopRecording = () => {
     if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop()
+      // Arrêter l'enregistrement
+      if (mediaRecorderRef.current.state !== 'inactive') {
+        mediaRecorderRef.current.stop()
+      }
       setIsRecording(false)
-      
+
+      // Arrêter l'intervalle
       if (intervalRef.current) {
         clearInterval(intervalRef.current)
+        intervalRef.current = null
+      }
+
+      // Libérer immédiatement le stream (ne pas attendre onstop)
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => {
+          track.stop()
+          console.log('[VoiceRecorder] Track arrêté:', track.kind, track.id)
+        })
       }
     }
   }
@@ -94,6 +165,12 @@ export default function VoiceRecorder({ onSend, onCancel }: VoiceRecorderProps) 
   }
 
   const deleteRecording = () => {
+    // Révoquer l'URL du blob précédent
+    if (audioBlobUrlRef.current) {
+      URL.revokeObjectURL(audioBlobUrlRef.current)
+      audioBlobUrlRef.current = null
+    }
+
     setRecordedAudio(null)
     setDuration(0)
     setCurrentTime(0)
@@ -103,6 +180,12 @@ export default function VoiceRecorder({ onSend, onCancel }: VoiceRecorderProps) 
   const sendRecording = () => {
     if (recordedAudio) {
       onSend(recordedAudio)
+
+      // Cleanup après envoi
+      if (audioBlobUrlRef.current) {
+        URL.revokeObjectURL(audioBlobUrlRef.current)
+        audioBlobUrlRef.current = null
+      }
     }
   }
 
@@ -190,11 +273,12 @@ export default function VoiceRecorder({ onSend, onCancel }: VoiceRecorderProps) 
                       onMouseLeave={stopRecording}
                       onTouchStart={startRecording}
                       onTouchEnd={stopRecording}
-                      className="px-4 sm:px-6 md:px-8 py-2 sm:py-3 md:py-4 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-lg sm:rounded-xl font-medium hover:scale-105 transition-all duration-200 active:scale-95 text-xs sm:text-sm md:text-base"
+                      disabled={isInitializing}
+                      className="px-4 sm:px-6 md:px-8 py-2 sm:py-3 md:py-4 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-lg sm:rounded-xl font-medium hover:scale-105 transition-all duration-200 active:scale-95 text-xs sm:text-sm md:text-base disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <Mic size={16} className="sm:w-5 sm:h-5 md:w-6 md:h-6 mr-1 sm:mr-2 inline" />
-                      <span className="hidden sm:inline">Enregistrer</span>
-                      <span className="sm:hidden">Rec</span>
+                      <span className="hidden sm:inline">{isInitializing ? 'Initialisation...' : 'Enregistrer'}</span>
+                      <span className="sm:hidden">{isInitializing ? '...' : 'Rec'}</span>
                     </button>
                   ) : (
                     <button
@@ -239,7 +323,18 @@ export default function VoiceRecorder({ onSend, onCancel }: VoiceRecorderProps) 
 
                 <audio
                   ref={audioRef}
-                  src={recordedAudio ? URL.createObjectURL(recordedAudio) : undefined}
+                  src={(() => {
+                    if (recordedAudio) {
+                      // Révoquer l'ancienne URL si elle existe
+                      if (audioBlobUrlRef.current) {
+                        URL.revokeObjectURL(audioBlobUrlRef.current)
+                      }
+                      // Créer et stocker la nouvelle URL
+                      audioBlobUrlRef.current = URL.createObjectURL(recordedAudio)
+                      return audioBlobUrlRef.current
+                    }
+                    return undefined
+                  })()}
                   onEnded={() => setIsPlaying(false)}
                   onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)}
                 />
