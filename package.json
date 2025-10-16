@@ -104,6 +104,8 @@
     "@types/react-dom": "^19",
     "@types/uuid": "^10.0.0",
     "autoprefixer": "^10.4.21",
+    "browserslist": "^4.26.3",
+    "caniuse-lite": "^1.0.30001751",
     "eslint": "^9",
     "eslint-config-next": "15.4.6",
     "postcss": "^8.5.6",
