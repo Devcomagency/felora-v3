@@ -1,6 +1,7 @@
 'use client'
 
 import { Camera, Video, Upload, X } from 'lucide-react'
+import { useEffect, useRef } from 'react'
 
 interface CameraProProps {
   onCapture?: (file: File) => void
@@ -10,9 +11,32 @@ interface CameraProProps {
 
 /**
  * Composant de capture média via caméra native
- * Propose 3 méthodes : Vidéo, Photo, Upload fichier
+ * Si mode fourni : ouvre DIRECTEMENT la caméra (pas d'écran Studio)
+ * Si pas de mode : affiche l'écran Studio avec choix Photo/Vidéo/Upload
  */
 export default function CameraCapturePro({ onCapture, onClose, mode = 'video' }: CameraProProps) {
+  const autoTriggered = useRef(false)
+
+  // Auto-trigger caméra si mode fourni depuis le footer
+  useEffect(() => {
+    if (mode && onCapture && !autoTriggered.current) {
+      autoTriggered.current = true
+
+      const input = document.createElement('input')
+      input.type = 'file'
+      input.accept = mode === 'video' ? 'video/*' : 'image/*'
+      input.capture = 'environment'
+      input.onchange = (e: any) => {
+        const file = e.target.files?.[0]
+        if (file) {
+          onCapture(file)
+        }
+      }
+      // Déclencher l'ouverture automatiquement
+      setTimeout(() => input.click(), 100)
+    }
+  }, [mode, onCapture])
+
   return (
     <div className="fixed inset-0 z-50 bg-black">
       {/* Header avec bouton fermer */}

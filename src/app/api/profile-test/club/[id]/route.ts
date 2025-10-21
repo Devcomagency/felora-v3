@@ -213,13 +213,14 @@ export async function GET(
           languages: services?.languages || [],
           services: services?.services || [],
           media: media
-            .filter((m: any) => m.pos >= 2) // Ne prendre que les médias de publication (pos 2+), pas les médias de profil (pos 0, 1)
+            .filter((m: any) => m.pos === 0 || m.pos >= 2) // Inclure la photo de couverture (pos 0) ET les médias de publication (pos 2+)
             .map((m: any) => ({
               type: m.type.toLowerCase() as 'image' | 'video',
               url: m.url.startsWith('/uploads/')
                 ? `http://localhost:3000${m.url}` // Ajouter le domaine pour les uploads locaux
                 : m.url, // Utiliser les vraies URLs (pas de mock)
-              thumb: m.thumbUrl || null // Use null instead of undefined for Zod
+              thumb: m.thumbUrl || null, // Use null instead of undefined for Zod
+              pos: m.pos // Ajouter la position pour debug
             })),
           contact: {
             phone: details?.phone || club.user?.phoneE164 || null,

@@ -7,7 +7,7 @@ import { ArrowLeft, Star, BadgeCheck } from 'lucide-react'
 import ProfileHeader from '../../../../../packages/ui/profile-test/ProfileHeader'
 import ActionsBar from '../../../../../packages/ui/profile-test/ActionsBar'
 import MediaFeedWithGallery from '../../../../../packages/ui/profile-test/MediaFeedWithGallery'
-import { ProfileClientUnified } from '@/components/ProfileClientUnified'
+import { ClubProfileModal } from '@/components/ClubProfileModal'
 
 interface ClubProfile {
   id: string
@@ -95,6 +95,103 @@ function ProfileSkeleton() {
   )
 }
 
+// Fonction pour calculer la disponibilité du club basée sur les horaires d'ouverture
+function calculateClubAvailability(workingHours?: string) {
+  if (!workingHours) {
+    return { available: false, schedule: 'Horaires non disponibles' }
+  }
+
+  try {
+    const hours = typeof workingHours === 'string' ? JSON.parse(workingHours) : workingHours
+    const now = new Date()
+    const currentDay = now.getDay() // 0 = Dimanche, 1 = Lundi, etc.
+    const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
+
+    // Mapping des jours
+    const dayMapping: Record<number, string> = {
+      0: 'dimanche',
+      1: 'lundi',
+      2: 'mardi',
+      3: 'mercredi',
+      4: 'jeudi',
+      5: 'vendredi',
+      6: 'samedi'
+    }
+
+    const todayKey = dayMapping[currentDay]
+    const todaySchedule = hours[todayKey]
+
+    if (!todaySchedule || todaySchedule.closed) {
+      // Trouver le prochain jour ouvert
+      for (let i = 1; i <= 7; i++) {
+        const nextDayIndex = (currentDay + i) % 7
+        const nextDayKey = dayMapping[nextDayIndex]
+        const nextDaySchedule = hours[nextDayKey]
+
+        if (nextDaySchedule && !nextDaySchedule.closed) {
+          const dayNames: Record<string, string> = {
+            'lundi': 'lundi',
+            'mardi': 'mardi',
+            'mercredi': 'mercredi',
+            'jeudi': 'jeudi',
+            'vendredi': 'vendredi',
+            'samedi': 'samedi',
+            'dimanche': 'dimanche'
+          }
+          return {
+            available: false,
+            schedule: `Fermé - Ouvre ${dayNames[nextDayKey]} à ${nextDaySchedule.open}`
+          }
+        }
+      }
+      return { available: false, schedule: 'Fermé' }
+    }
+
+    // Vérifier si on est dans les horaires d'ouverture
+    const openTime = todaySchedule.open
+    const closeTime = todaySchedule.close
+
+    if (currentTime >= openTime && currentTime <= closeTime) {
+      return {
+        available: true,
+        schedule: `Ouvert jusqu'à ${closeTime}`
+      }
+    } else if (currentTime < openTime) {
+      return {
+        available: false,
+        schedule: `Ouvre aujourd'hui à ${openTime}`
+      }
+    } else {
+      // Trouver le prochain jour ouvert
+      for (let i = 1; i <= 7; i++) {
+        const nextDayIndex = (currentDay + i) % 7
+        const nextDayKey = dayMapping[nextDayIndex]
+        const nextDaySchedule = hours[nextDayKey]
+
+        if (nextDaySchedule && !nextDaySchedule.closed) {
+          const dayNames: Record<string, string> = {
+            'lundi': 'lundi',
+            'mardi': 'mardi',
+            'mercredi': 'mercredi',
+            'jeudi': 'jeudi',
+            'vendredi': 'vendredi',
+            'samedi': 'samedi',
+            'dimanche': 'dimanche'
+          }
+          return {
+            available: false,
+            schedule: `Fermé - Ouvre ${dayNames[nextDayKey]} à ${nextDaySchedule.open}`
+          }
+        }
+      }
+      return { available: false, schedule: 'Fermé' }
+    }
+  } catch (error) {
+    console.error('Error parsing working hours:', error)
+    return { available: false, schedule: 'Horaires non disponibles' }
+  }
+}
+
 export default function ClubProfileTestPage() {
   const { data: session } = useSession()
   const [profile, setProfile] = useState<ClubProfile | null>(null)
@@ -104,12 +201,13 @@ export default function ClubProfileTestPage() {
   const [activeTab, setActiveTab] = useState<'public' | 'private'>('public')
   const [totalReactions, setTotalReactions] = useState(0)
   const [showDetailModal, setShowDetailModal] = useState(false)
+  const [showContactModal, setShowContactModal] = useState(false)
   const [isFollowing, setIsFollowing] = useState(false)
   const [isLiked, setIsLiked] = useState(false)
   const [isSaved, setIsSaved] = useState(false)
   const [isFavorite, setIsFavorite] = useState(false)
   const [guestId, setGuestId] = useState<string | null>(null)
-  
+
   const router = useRouter()
 
   // Générer un guestId si pas de session
@@ -239,13 +337,9 @@ export default function ClubProfileTestPage() {
     }, 500) // Délai de 500ms pour éviter les appels multiples
   }, [resolvedId])
 
-  const handleMessage = useCallback((profileId: string) => {
-    try {
-      router.push(`/messages?to=${encodeURIComponent(profileId)}`)
-    } catch {
-      router.push('/messages')
-    }
-  }, [router])
+  const handleContact = useCallback(() => {
+    setShowContactModal(true)
+  }, [])
 
   const handleShare = useCallback(() => {
     if (navigator.share) {
@@ -372,30 +466,39 @@ export default function ClubProfileTestPage() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      {/* Header style TikTok */}
-      <div className="fixed top-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-b border-white/5" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
-        <div className="flex items-center justify-between p-4">
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => router.back()}
-              className="w-10 h-10 flex items-center justify-center hover:bg-white/10 rounded-full transition-colors"
-              title="Retour à la recherche"
-            >
-              <ArrowLeft size={24} className="text-white" />
-            </button>
-          </div>
+      {/* Boutons flottants par-dessus la photo - sans fond */}
+      <div className="fixed top-0 left-0 right-0 z-[100]" style={{ paddingTop: 'env(safe-area-inset-top, 0px)', pointerEvents: 'none' }}>
+        <div className="flex items-center justify-between p-4" style={{ pointerEvents: 'auto' }}>
+          <button
+            onClick={() => {
+              console.log('🔙 Bouton retour cliqué')
+              router.back()
+            }}
+            className="w-10 h-10 flex items-center justify-center bg-black/40 backdrop-blur-md hover:bg-black/60 rounded-full transition-colors shadow-lg relative"
+            title="Retour"
+            style={{ zIndex: 101 }}
+          >
+            <ArrowLeft size={22} className="text-white" />
+          </button>
 
-          <div className="text-center">
-            <h1 className="text-lg font-bold">{profile.name}</h1>
-          </div>
-
-          {/* Placeholder to keep the title centered */}
-          <div className="w-10 h-10" />
+          <button
+            onClick={() => {
+              console.log('🔧 Menu cliqué')
+              /* TODO: Menu */
+            }}
+            className="w-10 h-10 flex items-center justify-center bg-black/40 backdrop-blur-md hover:bg-black/60 rounded-full transition-colors shadow-lg relative"
+            title="Menu"
+            style={{ zIndex: 101 }}
+          >
+            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
         </div>
       </div>
 
-      {/* Contenu principal avec padding-top pour header fixe + safe-area (~72px) */}
-      <div className="pt-0" style={{ paddingTop: 'calc(72px + env(safe-area-inset-top, 0px))' }}>
+      {/* Contenu principal sans padding - la photo monte jusqu'en haut */}
+      <div>
         {/* Séparation des médias : media[0] = photo de profil, media[1-5] = posts feed */}
         {(() => {
           const profilePhoto = profile.media && profile.media.length > 0 ? profile.media[0] : null
@@ -407,17 +510,21 @@ export default function ClubProfileTestPage() {
               }))
             : []
 
+          // Calculer la disponibilité du club en temps réel
+          const clubAvailability = calculateClubAvailability(profile.workingHours)
+
           return (
             <>
               <ProfileHeader
                 name={profile.name}
                 city={profile.city}
                 avatar={profilePhoto?.url || profile.avatar}
+                coverPhoto={profilePhoto?.url || profile.avatar} // Photo de couverture pour le design moderne
                 verified={profile.verified}
                 premium={profile.premium}
                 online={false}
                 age={undefined}
-                languages={profile.languages || []}
+                languages={[]} // Vide pour les clubs (on affiche le site web à la place)
                 services={profile.services}
                 stats={{
                   likes: profile.stats?.likes || 0,
@@ -426,10 +533,12 @@ export default function ClubProfileTestPage() {
                   views: profile.stats?.views || 0
                 }}
                 availability={{
-                  available: true
+                  available: clubAvailability.available,
+                  schedule: clubAvailability.schedule
                 }}
                 description={profile.description}
                 mediaCount={Array.isArray(feedMedia) ? feedMedia.length : 0}
+                website={profile.contact?.website} // Afficher le site web pour les clubs
               />
 
               <ActionsBar
@@ -438,7 +547,7 @@ export default function ClubProfileTestPage() {
                 isLiked={isLiked}
                 isSaved={isSaved}
                 onFollow={handleFollow}
-                onMessage={handleMessage}
+                onMessage={handleContact}
                 onGift={async () => {}} // Clubs don't have gifts
                 onLike={handleLike}
                 onSave={handleSave}
@@ -449,6 +558,8 @@ export default function ClubProfileTestPage() {
                 onFavoriteToggle={() => handleFavoriteToggle()}
                 contact={undefined}
                 profileName={profile.name}
+                showGift={false} // Masquer le bouton cadeau pour les clubs
+                showMessage={false} // Masquer le bouton message standard pour les clubs
               />
 
               <MediaFeedWithGallery
@@ -462,18 +573,113 @@ export default function ClubProfileTestPage() {
                 onReactionChange={handleReactionChange}
                 onUpdateMedia={async () => {}} // TODO: Implement for clubs
                 onDeleteMedia={async () => {}} // TODO: Implement for clubs
+                showPremiumTab={false} // Clubs ont Public et Privé, mais pas Premium
               />
             </>
           )
         })()}
       </div>
 
-      {/* Modal Premium Unifié */}
+      {/* Modal Voir Plus */}
       {showDetailModal && (
-        <ProfileClientUnified
+        <ClubProfileModal
           profileId={resolvedId}
+          profileData={profile || undefined}
           onClose={handleCloseModal}
         />
+      )}
+
+      {/* Modal Contact */}
+      {showContactModal && profile && (
+        <div className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-gradient-to-br from-gray-900 via-black to-gray-900 rounded-2xl border border-gray-800 max-w-md w-full p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-white">Contact {profile.name}</h2>
+              <button
+                onClick={() => setShowContactModal(false)}
+                className="p-2 hover:bg-gray-800 rounded-full transition-colors text-gray-400 hover:text-white"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {/* Téléphone */}
+              {profile.contact?.phone && (
+                <a
+                  href={`tel:${profile.contact.phone}`}
+                  className="flex items-center gap-4 p-4 bg-green-500/10 rounded-lg border border-green-500/20 hover:bg-green-500/20 transition-colors group"
+                >
+                  <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center group-hover:bg-green-500/30 transition-colors">
+                    <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-sm text-gray-400">Téléphone</div>
+                    <div className="text-green-300 font-medium font-mono">{profile.contact.phone}</div>
+                  </div>
+                </a>
+              )}
+
+              {/* Email */}
+              {profile.contact?.email && (
+                <a
+                  href={`mailto:${profile.contact.email}`}
+                  className="flex items-center gap-4 p-4 bg-purple-500/10 rounded-lg border border-purple-500/20 hover:bg-purple-500/20 transition-colors group"
+                >
+                  <div className="w-12 h-12 rounded-full bg-purple-500/20 flex items-center justify-center group-hover:bg-purple-500/30 transition-colors">
+                    <svg className="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-sm text-gray-400">Email</div>
+                    <div className="text-purple-300 font-medium truncate">{profile.contact.email}</div>
+                  </div>
+                </a>
+              )}
+
+              {/* Adresse */}
+              {profile.location?.address && (
+                <div className="flex items-start gap-4 p-4 bg-blue-500/10 rounded-lg border border-blue-500/20">
+                  <div className="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+                    <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-sm text-gray-400 mb-1">Adresse</div>
+                    <div className="text-blue-300 font-medium">{profile.location.address}</div>
+                  </div>
+                </div>
+              )}
+
+              {/* Site web */}
+              {profile.contact?.website && (
+                <a
+                  href={profile.contact.website}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-4 p-4 bg-cyan-500/10 rounded-lg border border-cyan-500/20 hover:bg-cyan-500/20 transition-colors group"
+                >
+                  <div className="w-12 h-12 rounded-full bg-cyan-500/20 flex items-center justify-center group-hover:bg-cyan-500/30 transition-colors">
+                    <svg className="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-sm text-gray-400">Site web</div>
+                    <div className="text-cyan-300 font-medium truncate">{profile.contact.website}</div>
+                  </div>
+                </a>
+              )}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )

@@ -40,6 +40,7 @@ interface MediaFeedWithGalleryProps {
   onEditMedia?: (mediaUrl: string, index: number) => void
   onUpdateMedia?: (mediaUrl: string, updates: Partial<MediaItem>) => Promise<void>
   hideTabsHeader?: boolean
+  showPremiumTab?: boolean // Pour cacher l'onglet Premium (clubs n'ont pas de premium)
 }
 
 const EMOJI_REACTIONS = ['❤️', '😍', '🔥', '🥵', '😈', '💋', '🤤', '😘', '🫦', '🔞']
@@ -162,7 +163,7 @@ function MediaPlayer({ id, type, url, thumb, poster, index, isActive, profileId,
           )}
         </button>
 
-        <div className="absolute bottom-3 right-3">
+        <div className="absolute bottom-2 right-2">
           <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-black/70 backdrop-blur-sm text-white text-xs">
             <Flame className="w-4 h-4 text-violet-300" />
             <span>{(stats?.total ?? 0) + (optimisticDelta || 0)}</span>
@@ -199,7 +200,7 @@ function MediaPlayer({ id, type, url, thumb, poster, index, isActive, profileId,
         )}
       </button>
 
-      <div className="absolute bottom-3 right-3">
+      <div className="absolute bottom-2 right-2">
         <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-black/70 backdrop-blur-sm text-white text-xs">
           <Flame className="w-4 h-4 text-violet-300" />
           <span>{(stats?.total ?? 0) + (optimisticDelta || 0)}</span>
@@ -211,13 +212,13 @@ function MediaPlayer({ id, type, url, thumb, poster, index, isActive, profileId,
   )
 }
 
-export default function MediaFeedWithGallery({ 
-  media, 
+export default function MediaFeedWithGallery({
+  media,
   profileId,
   profileName = '',
-  userId, 
-  onLike, 
-  onSave, 
+  userId,
+  onLike,
+  onSave,
   onReactionChange,
   className = '',
   privateEnabled = false,
@@ -225,7 +226,8 @@ export default function MediaFeedWithGallery({
   onDeleteMedia,
   onEditMedia,
   onUpdateMedia,
-  hideTabsHeader = false
+  hideTabsHeader = false,
+  showPremiumTab = true
 }: MediaFeedWithGalleryProps) {
   const router = useRouter()
   
@@ -393,17 +395,19 @@ export default function MediaFeedWithGallery({
               <span className="text-sm font-medium">Public</span>
               <span className="ml-1 text-xs">({publicContent.length})</span>
             </button>
-            <button
-              onClick={() => setActiveTab('premium')}
-              className={`flex-1 py-3 text-center transition-all ${
-                activeTab === 'premium'
-                  ? 'border-b-2 border-white text-white'
-                  : 'text-gray-400'
-              }`}
-            >
-              <span className="text-sm font-medium">Premium 👑</span>
-              <span className="ml-1 text-xs">({premiumContent.length})</span>
-            </button>
+            {showPremiumTab && (
+              <button
+                onClick={() => setActiveTab('premium')}
+                className={`flex-1 py-3 text-center transition-all ${
+                  activeTab === 'premium'
+                    ? 'border-b-2 border-white text-white'
+                    : 'text-gray-400'
+                }`}
+              >
+                <span className="text-sm font-medium">Premium 👑</span>
+                <span className="ml-1 text-xs">({premiumContent.length})</span>
+              </button>
+            )}
             {viewerIsOwner && (
               <button
                 onClick={() => setActiveTab('private')}

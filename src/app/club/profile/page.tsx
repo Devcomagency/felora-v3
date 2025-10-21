@@ -81,7 +81,7 @@ export default function ClubProfilePage() {
     return () => { cancelled = true }
   }, [])
 
-  // Charger un résumé médias (5/5 requis) pour afficher un pill dans les onglets
+  // Charger un résumé médias (1 photo de profil obligatoire uniquement)
   useEffect(() => {
     let cancelled = false
     ;(async () => {
@@ -91,13 +91,9 @@ export default function ClubProfilePage() {
         const items: Array<{ pos?: number|null; type:'IMAGE'|'VIDEO' }> = Array.isArray(j?.items) ? j.items : []
         const byPos = new Map<number, { type:'IMAGE'|'VIDEO' }>()
         for (const m of items) if (typeof m.pos === 'number') byPos.set(m.pos!, { type: (m as any).type })
-        const okProfile = byPos.get(0)?.type === 'IMAGE'  // Photo de profil (IMAGE requis)
-        const okFooter = byPos.get(1)?.type === 'IMAGE'   // Photo footer (IMAGE requis)
-        const okPub1 = byPos.has(2)                       // Média publication 1 (IMAGE ou VIDEO)
-        const okPub2 = byPos.has(3)                       // Média publication 2 (IMAGE ou VIDEO)
-        const okPub3 = byPos.has(4)                       // Média publication 3 (IMAGE ou VIDEO)
-        const count = [okProfile, okFooter, okPub1, okPub2, okPub3].filter(Boolean).length
-        if (!cancelled) setMediaCount({ count, ok: count === 5 })
+        const okProfile = byPos.get(0)?.type === 'IMAGE'  // Photo de profil (IMAGE requis) - pos 0
+        const count = okProfile ? 1 : 0
+        if (!cancelled) setMediaCount({ count, ok: count === 1 })
       } catch {}
     })()
     return () => { cancelled = true }
@@ -282,7 +278,7 @@ export default function ClubProfilePage() {
               </button>
             </div>
             <div className="text-sm text-white/70">
-              Informations: {infoRequiredCount}/3 • Médias: {mediaCount.count}/5
+              Informations: {infoRequiredCount}/3 • Médias: {mediaCount.count}/1
             </div>
           </div>
         </div>
@@ -297,9 +293,9 @@ export default function ClubProfilePage() {
               className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white"
             >
               <option value="info">Informations</option>
-              <option value="horaires">Horaires</option>
-              <option value="services">Services</option>
               <option value="medias">Médias</option>
+              <option value="services">Services</option>
+              <option value="horaires">Horaires</option>
             </select>
           </div>
           <div className="hidden sm:flex space-x-1 bg-gray-800/40 backdrop-blur-sm border border-gray-700/50 rounded-xl p-1 overflow-x-auto scrollbar-hide">
@@ -317,15 +313,17 @@ export default function ClubProfilePage() {
               </span>
             </button>
             <button
-              onClick={() => setActiveTab('horaires')}
-              className={`flex-1 min-w-[180px] sm:min-w-0 flex items-center justify-center space-x-2 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
-                activeTab === 'horaires'
+              onClick={() => setActiveTab('medias')}
+              className={`flex-1 min-w-[160px] sm:min-w-0 flex items-center justify-center space-x-2 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
+                activeTab === 'medias'
                   ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg'
                   : 'text-gray-400 hover:text-gray-300 hover:bg-gray-700/30'
               }`}
             >
-              <Clock className="w-4 h-4" />
-              <span>Horaires</span>
+              <span>Médias</span>
+              <span className={`text-xs px-2 py-0.5 rounded-full ${mediaCount.ok ? 'bg-emerald-600/30 text-emerald-300' : 'bg-yellow-600/30 text-yellow-300'}`}>
+                {mediaCount.count}/1
+              </span>
             </button>
             <button
               onClick={() => setActiveTab('services')}
@@ -339,17 +337,15 @@ export default function ClubProfilePage() {
               <span className="bg-gray-600 text-xs px-2 py-0.5 rounded-full">Optionnel</span>
             </button>
             <button
-              onClick={() => setActiveTab('medias')}
-              className={`flex-1 min-w-[160px] sm:min-w-0 flex items-center justify-center space-x-2 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
-                activeTab === 'medias'
+              onClick={() => setActiveTab('horaires')}
+              className={`flex-1 min-w-[180px] sm:min-w-0 flex items-center justify-center space-x-2 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
+                activeTab === 'horaires'
                   ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg'
                   : 'text-gray-400 hover:text-gray-300 hover:bg-gray-700/30'
               }`}
             >
-              <span>Médias</span>
-              <span className={`text-xs px-2 py-0.5 rounded-full ${mediaCount.ok ? 'bg-emerald-600/30 text-emerald-300' : 'bg-yellow-600/30 text-yellow-300'}`}>
-                {mediaCount.count}/5
-              </span>
+              <Clock className="w-4 h-4" />
+              <span>Horaires</span>
             </button>
           </div>
         </div>
@@ -737,11 +733,7 @@ function ClubMediaGrid() {
   const [error, setError] = useState<string | null>(null)
 
   const mediaSlots = [
-    { pos: 0, label: 'Photo de profil', type: 'IMAGE' as const, required: true, inPublications: false },
-    { pos: 1, label: 'Photo du footer', type: 'IMAGE' as const, required: true, inPublications: false },
-    { pos: 2, label: 'Média publication 1', type: 'BOTH' as const, required: true, inPublications: true },
-    { pos: 3, label: 'Média publication 2', type: 'BOTH' as const, required: true, inPublications: true },
-    { pos: 4, label: 'Média publication 3', type: 'BOTH' as const, required: true, inPublications: true },
+    { pos: 0, label: 'Photo de couverture', type: 'IMAGE' as const, required: true, inPublications: false },
   ]
 
   // Charger les médias existants
@@ -752,7 +744,7 @@ function ClubMediaGrid() {
         const r = await fetch('/api/clubs/media/my?page=1&pageSize=50', { cache: 'no-store' })
         const j = await r.json()
         const items: Array<{ pos?: number | null; type: 'IMAGE' | 'VIDEO'; url?: string }> = Array.isArray(j?.items) ? j.items : []
-        const validMedia = items.filter(item => typeof item.pos === 'number' && item.pos >= 0 && item.pos <= 4)
+        const validMedia = items.filter(item => typeof item.pos === 'number' && item.pos === 0)
         if (!cancelled) setMedia(validMedia as Array<{ pos: number; type: 'IMAGE' | 'VIDEO'; url?: string }>)
       } catch (e) {
         if (!cancelled) setError('Erreur de chargement des médias')
@@ -838,7 +830,7 @@ function ClubMediaGrid() {
   return (
     <div className="p-6 rounded-2xl bg-gray-900/60 border border-gray-800">
       <h2 className="text-lg font-semibold text-white mb-4">Gestion des médias</h2>
-      <p className="text-white/70 mb-6">5 médias obligatoires : Photo de profil + Photo footer (privées) + 3 médias pour publications (vidéos/photos au choix)</p>
+      <p className="text-white/70 mb-6">1 photo de couverture obligatoire : Cette photo s'affichera en grand sur votre profil public</p>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {mediaSlots.map((slot) => {
@@ -920,31 +912,12 @@ function ClubMediaGrid() {
               </div>
 
               {(!existingMedia || !existingMedia.url) && !isUploading && (
-                <>
-                  {slot.type === 'BOTH' ? (
-                    <div className="flex gap-2 mt-3">
-                      <button
-                        onClick={() => handleFileUpload(slot.pos, 'IMAGE')}
-                        className="flex-1 px-4 py-2 bg-purple-500/20 border border-purple-500/40 text-purple-200 rounded-lg hover:bg-purple-500/30 transition-colors"
-                      >
-                        Photo
-                      </button>
-                      <button
-                        onClick={() => handleFileUpload(slot.pos, 'VIDEO')}
-                        className="flex-1 px-4 py-2 bg-blue-500/20 border border-blue-500/40 text-blue-200 rounded-lg hover:bg-blue-500/30 transition-colors"
-                      >
-                        Vidéo
-                      </button>
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => handleFileUpload(slot.pos, slot.type)}
-                      className="w-full mt-3 px-4 py-2 bg-purple-500/20 border border-purple-500/40 text-purple-200 rounded-lg hover:bg-purple-500/30 transition-colors"
-                    >
-                      Ajouter {slot.type === 'IMAGE' ? 'une photo' : 'une vidéo'}
-                    </button>
-                  )}
-                </>
+                <button
+                  onClick={() => handleFileUpload(slot.pos, slot.type)}
+                  className="w-full mt-3 px-4 py-2 bg-purple-500/20 border border-purple-500/40 text-purple-200 rounded-lg hover:bg-purple-500/30 transition-colors"
+                >
+                  Ajouter {slot.type === 'IMAGE' ? 'une photo' : 'une vidéo'}
+                </button>
               )}
             </div>
           )
