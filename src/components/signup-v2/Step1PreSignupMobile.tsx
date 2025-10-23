@@ -446,20 +446,20 @@ export default function Step1PreSignupMobile({ mode = 'ESCORT', onSubmit }:{ mod
           <button
             onClick={nextStep}
             disabled={loading}
-            className="flex-1 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-medium disabled:opacity-60 flex items-center justify-center gap-2"
+            className="flex-1 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-medium disabled:opacity-60 flex items-center justify-center gap-2 select-none"
           >
             {loading ? (
-              <div className="pointer-events-none flex items-center gap-2">
+              <>
                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 <span>Création...</span>
-              </div>
+              </>
             ) : currentStep === steps.length - 1 ? (
-              <div className="pointer-events-none flex items-center gap-2">
+              <>
                 <Shield size={16} />
                 <span>{mode === 'CLIENT' ? 'Activer mon compte' : 'Choisir mon offre'}</span>
-              </div>
+              </>
             ) : (
-              <span className="pointer-events-none">Suivant</span>
+              <span>Suivant</span>
             )}
           </button>
         </div>

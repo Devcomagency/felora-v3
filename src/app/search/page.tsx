@@ -398,56 +398,6 @@ function SearchContent() {
         <MapPin size={24} className="text-white" aria-hidden="true" />
       </button>
 
-      {/* Bottom Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 max-w-[500px] mx-auto bg-black/90 backdrop-blur-xl border-t border-white/5 z-50">
-        <div className="flex items-center justify-around px-4 py-3">
-          <button
-            onClick={() => router.push('/')}
-            className="flex flex-col items-center gap-1 p-2 hover:bg-white/5 rounded-xl transition-all duration-300"
-            aria-label="Retour à l'accueil"
-          >
-            <Home size={24} className="text-white/70" aria-hidden="true" />
-            <span className="text-xs text-white/60">Accueil</span>
-          </button>
-
-          <button
-            onClick={() => router.push('/search')}
-            className="flex flex-col items-center gap-1 p-2 hover:bg-white/5 rounded-xl transition-all duration-300"
-            aria-label="Page de recherche actuelle"
-            aria-current="page"
-          >
-            <Search size={24} className="text-pink-500" aria-hidden="true" />
-            <span className="text-xs text-pink-500">Recherche</span>
-          </button>
-
-          <button
-            onClick={() => router.push('/test-media-simple')}
-            className="relative w-14 h-14 rounded-2xl gradient-pink-purple shadow-lg shadow-pink-500/25 flex items-center justify-center btn-glow"
-            aria-label="Ajouter du contenu"
-          >
-            <Plus size={28} className="text-white" aria-hidden="true" />
-          </button>
-
-          <button
-            onClick={() => router.push('/messages')}
-            className="flex flex-col items-center gap-1 p-2 hover:bg-white/5 rounded-xl transition-all duration-300"
-            aria-label="Accéder aux messages"
-          >
-            <MessageSquare size={24} className="text-white/70" aria-hidden="true" />
-            <span className="text-xs text-white/60">Messages</span>
-          </button>
-
-          <button
-            onClick={() => router.push('/profile')}
-            className="flex flex-col items-center gap-1 p-2 hover:bg-white/5 rounded-xl transition-all duration-300"
-            aria-label="Voir mon profil"
-          >
-            <User size={24} className="text-white/70" aria-hidden="true" />
-            <span className="text-xs text-white/60">Profil</span>
-          </button>
-        </div>
-      </div>
-
       {/* Modal de filtres simplifié */}
       <SearchFiltersSimple
         filters={activeSection === 'escorts' ? escortsFilters : clubsFilters}

@@ -6,6 +6,7 @@ import HeaderFixed from './HeaderClient'
 import { EscortDashboardProvider } from '@/contexts/EscortDashboardContext'
 import EscortQuickActionsBar from '@/components/dashboard-v2/EscortQuickActionsBar'
 import MobileBottomNav from '@/components/dashboard-v2/MobileBottomNav'
+import EscortTopNav from '@/components/dashboard-v2/escort/EscortTopNav'
 
 export const metadata: Metadata = {
   title: 'Dashboard Escort (v2) — Felora',
@@ -25,13 +26,13 @@ export default async function EscortV2Layout({ children }: { children: React.Rea
   return (
     <div className="fel-v2 min-h-screen bg-black text-white">
       <div className="sticky top-0 z-40 bg-black/70 backdrop-blur border-b border-white/10">
-        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="py-3 border-b border-white/5 flex items-center justify-between gap-3">
             <div className="text-sm text-white/60">Dashboard Escort v2 (sandbox)</div>
           </div>
-          <nav className="flex items-center gap-1 text-sm">
-            <a href="/dashboard-escort/profil" className="px-3 py-1.5 rounded-lg hover:bg-white/10">Mon profil</a>
-          </nav>
+
+          {/* Onglets de navigation */}
+          <EscortTopNav />
         </div>
       </div>
       <EscortDashboardProvider>

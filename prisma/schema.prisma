@@ -893,3 +893,48 @@ enum ReactionType {
   WOW
   SMILE
 }
+
+// ============================================
+// CLUB-ESCORT LINKING SYSTEM
+// ============================================
+
+model ClubEscortInvitation {
+  id         String                    @id @default(cuid())
+  clubId     String                    // ID du club qui invite
+  escortId   String                    // ID de l'escort invitée
+  status     ClubEscortInvitationStatus @default(PENDING)
+  message    String?                   // Message d'invitation optionnel
+  sentAt     DateTime                  @default(now())
+  respondedAt DateTime?                // Date de réponse
+  expiresAt  DateTime                  // Date d'expiration de l'invitation (7 jours)
+  createdAt  DateTime                  @default(now())
+  updatedAt  DateTime                  @updatedAt
+
+  @@unique([clubId, escortId]) // Un club ne peut envoyer qu'une seule invitation à une escort à la fois
+  @@index([escortId, status])   // Index pour récupérer les invitations d'une escort
+  @@index([clubId, status])     // Index pour récupérer les invitations d'un club
+  @@map("club_escort_invitations")
+}
+
+model ClubEscortLink {
+  id         String   @id @default(cuid())
+  clubId     String   // ID du club
+  escortId   String   // ID de l'escort
+  position   Int?     // Position dans la liste (pour l'ordre d'affichage)
+  joinedAt   DateTime @default(now())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([clubId, escortId]) // Une escort ne peut être liée qu'une fois à un club
+  @@index([clubId])             // Index pour récupérer les escorts d'un club
+  @@index([escortId])           // Index pour récupérer les clubs d'une escort
+  @@map("club_escort_links")
+}
+
+enum ClubEscortInvitationStatus {
+  PENDING   // En attente de réponse
+  ACCEPTED  // Acceptée
+  DECLINED  // Refusée
+  EXPIRED   // Expirée
+  CANCELLED // Annulée par le club
+}

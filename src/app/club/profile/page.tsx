@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState, useTransition, useRef, useCallback } from
 import { Building, MapPin, Clock, Globe, Save, Eye, Upload, X, Plus } from 'lucide-react'
 import AddressAutocomplete from '@/components/ui/AddressAutocomplete'
 import HorairesPanel from '@/components/dashboard/HorairesPanel'
+import ClubTopNav from '@/components/dashboard-v2/club/ClubTopNav'
 
 type Club = {
   id: string
@@ -249,8 +250,9 @@ export default function ClubProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white p-6">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen bg-black text-white">
+      <ClubTopNav />
+      <div className="max-w-6xl mx-auto p-6">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white mb-2">Profil Club</h1>

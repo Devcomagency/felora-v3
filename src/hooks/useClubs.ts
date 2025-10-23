@@ -170,17 +170,15 @@ export function useClubs(): UseClubsReturn {
     await fetchClubs(true)
   }, [fetchClubs])
 
-  // Effect pour charger les clubs quand les filtres changent
+  // Effect pour charger les clubs quand les filtres changent (incluant le montage initial)
+  const categoriesKey = filters.categories?.join(',') || ''
   useEffect(() => {
+    console.log('[useClubs] Filters changed, fetching clubs:', filters)
     setOffset(0)
     setHasMore(true)
     fetchClubs(true)
-  }, [filters])
-
-  // Effect pour charger les clubs au montage
-  useEffect(() => {
-    fetchClubs(true)
-  }, [])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters.q, filters.city, filters.canton, filters.sort, filters.establishmentType, categoriesKey])
 
   return {
     clubs,

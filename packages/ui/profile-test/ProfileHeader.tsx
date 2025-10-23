@@ -249,13 +249,26 @@ export default function ProfileHeader({
           {/* Description courte placée sous l'âge et au-dessus des langues */}
           {description && (
             <div className="mt-1">
-              <p className={`text-sm text-white/85 leading-relaxed ${!showFullDescription ? 'line-clamp-2 md:line-clamp-5' : ''}`}>
+              <p
+                className="text-sm text-white/85 leading-relaxed"
+                style={{
+                  display: '-webkit-box',
+                  WebkitLineClamp: showFullDescription ? 'unset' : 5,
+                  WebkitBoxOrient: 'vertical',
+                  overflow: showFullDescription ? 'visible' : 'hidden'
+                }}
+              >
                 {description}
               </p>
-              {description.length > 150 && (
+              {description.length > 200 && (
                 <button
-                  onClick={() => setShowFullDescription(!showFullDescription)}
-                  className="mt-2 text-pink-400 hover:text-pink-300 text-xs font-medium transition-colors inline-flex items-center gap-1"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    setShowFullDescription(!showFullDescription)
+                  }}
+                  className="mt-2 text-pink-400 hover:text-pink-300 text-xs font-medium transition-colors inline-flex items-center gap-1 relative z-50"
+                  style={{ pointerEvents: 'auto' }}
                 >
                   {showFullDescription ? 'Voir moins' : 'Voir plus'}
                   <svg
@@ -272,23 +285,8 @@ export default function ProfileHeader({
           )}
         </div>
 
-        {/* Site web (pour les clubs) OU Langues (pour les escorts) */}
-        {website ? (
-          <a
-            href={website}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-3 py-2 bg-white/5 hover:bg-white/10 rounded-lg border border-white/10 hover:border-white/20 transition-all group max-w-full"
-          >
-            <svg className="w-4 h-4 text-cyan-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-            </svg>
-            <span className="text-gray-300 text-sm truncate">{website.replace(/^https?:\/\//, '').replace(/\/$/, '')}</span>
-            <svg className="w-3.5 h-3.5 text-gray-400 group-hover:text-white transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-            </svg>
-          </a>
-        ) : languages.length > 0 ? (
+        {/* Langues (pour les escorts uniquement, pas pour les clubs) */}
+        {!website && languages.length > 0 ? (
           <div>
             <h4 className="text-white font-medium mb-2 text-sm">Langues</h4>
             <div className="flex flex-wrap gap-2">
@@ -303,28 +301,6 @@ export default function ProfileHeader({
             </div>
           </div>
         ) : null}
-
-        {/* Services avec design amélioré */}
-        {services.length > 0 && (
-          <div>
-            <h4 className="text-white font-medium mb-2 text-sm">Services</h4>
-            <div className="flex flex-wrap gap-1.5">
-              {services.slice(0, 6).map((service, index) => (
-                <span
-                  key={index}
-                  className="px-2 py-1 bg-white/10 rounded-lg text-xs border border-white/10 text-gray-300"
-                >
-                  {service}
-                </span>
-              ))}
-              {services.length > 6 && (
-                <span className="px-2 py-1 bg-white/5 rounded-lg text-xs border border-white/5 text-gray-500">
-                  +{services.length - 6} autres
-                </span>
-              )}
-            </div>
-          </div>
-        )}
 
         {/* Statut de disponibilité temps réel + bouton Agenda - Affiche seulement si agenda activé */}
         {(realTimeAvailability || availability || showAgendaPill) && (

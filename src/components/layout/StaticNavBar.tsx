@@ -32,7 +32,17 @@ export default function StaticNavBar() {
   const [hasNotifications, setHasNotifications] = useState(false)
   const [unreadConversations, setUnreadConversations] = useState(0)
   const [showCreateMenu, setShowCreateMenu] = useState(false)
+  const [isMobile, setIsMobile] = useState(true)
 
+  // Détecter si on est sur mobile ou desktop
+  useEffect(() => {
+    const checkIfMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    checkIfMobile()
+    window.addEventListener('resize', checkIfMobile)
+    return () => window.removeEventListener('resize', checkIfMobile)
+  }, [])
 
   // Charger la langue sauvegardée
   useEffect(() => {
@@ -126,7 +136,28 @@ export default function StaticNavBar() {
         id: 'create',
         icon: Plus,
         label: 'Créer',
-        onClick: () => setShowCreateMenu(!showCreateMenu),
+        onClick: () => {
+          // Sur desktop : ouvrir directement l'upload
+          if (!isMobile) {
+            const input = document.createElement('input')
+            input.type = 'file'
+            input.accept = 'image/*,video/*'
+            input.onchange = (e: any) => {
+              const file = e.target.files?.[0]
+              if (file) {
+                const url = URL.createObjectURL(file)
+                sessionStorage.setItem('upload-file-url', url)
+                sessionStorage.setItem('upload-file-name', file.name)
+                sessionStorage.setItem('upload-file-type', file.type)
+                router.push('/camera?mode=upload')
+              }
+            }
+            input.click()
+          } else {
+            // Sur mobile : afficher le menu avec les 3 options
+            setShowCreateMenu(!showCreateMenu)
+          }
+        },
         active: pathname === '/camera',
         special: true
       })
@@ -220,8 +251,8 @@ export default function StaticNavBar() {
               className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
             />
 
-            {/* Boutons en arc de cercle */}
-            <div className="fixed bottom-20 left-0 right-0 z-50 flex justify-center" data-create-menu>
+            {/* Boutons en arc de cercle - Visible uniquement sur mobile (< 768px) */}
+            <div className="md:hidden fixed bottom-20 left-0 right-0 z-50 flex justify-center" data-create-menu>
               <div className="relative">
                 {/* Bouton Photo (gauche) */}
                 <motion.button

@@ -7,10 +7,12 @@ import { ArrowLeft, Star, BadgeCheck } from 'lucide-react'
 import ProfileHeader from '../../../../../packages/ui/profile-test/ProfileHeader'
 import ActionsBar from '../../../../../packages/ui/profile-test/ActionsBar'
 import MediaFeedWithGallery from '../../../../../packages/ui/profile-test/MediaFeedWithGallery'
+import ClubEscortsSection from '../../../../../packages/ui/profile-test/ClubEscortsSection'
 import { ClubProfileModal } from '@/components/ClubProfileModal'
 
 interface ClubProfile {
   id: string
+  dbId?: string // ID de la base de données (pour les API internes)
   name: string
   handle?: string
   avatar?: string
@@ -207,6 +209,8 @@ export default function ClubProfileTestPage() {
   const [isSaved, setIsSaved] = useState(false)
   const [isFavorite, setIsFavorite] = useState(false)
   const [guestId, setGuestId] = useState<string | null>(null)
+  const [linkedEscorts, setLinkedEscorts] = useState<any[]>([])
+  const [escortsLoading, setEscortsLoading] = useState(true)
 
   const router = useRouter()
 
@@ -403,6 +407,33 @@ export default function ClubProfileTestPage() {
     }
   }, [profile, calculateTotalReactions])
 
+  // Charger les escorts liées au club
+  useEffect(() => {
+    if (!profile?.dbId) return
+
+    async function fetchLinkedEscorts() {
+      try {
+        setEscortsLoading(true)
+        console.log('[CLUB PROFILE] Fetching escorts for clubId:', profile.dbId)
+        const response = await fetch(`/api/clubs/${profile.dbId}/escorts`)
+        const data = await response.json()
+
+        console.log('[CLUB PROFILE] Escorts response:', data)
+
+        if (data.success && data.data) {
+          setLinkedEscorts(data.data)
+          console.log('[CLUB PROFILE] Linked escorts:', data.data)
+        }
+      } catch (error) {
+        console.error('Error fetching linked escorts:', error)
+      } finally {
+        setEscortsLoading(false)
+      }
+    }
+
+    fetchLinkedEscorts()
+  }, [profile?.dbId])
+
   // Fetch profile data
   useEffect(() => {
     if (!resolvedId) return
@@ -560,6 +591,13 @@ export default function ClubProfileTestPage() {
                 profileName={profile.name}
                 showGift={false} // Masquer le bouton cadeau pour les clubs
                 showMessage={false} // Masquer le bouton message standard pour les clubs
+                website={profile.contact?.website} // Ajouter le site web pour les clubs
+              />
+
+              {/* Section des escorts liées au club */}
+              <ClubEscortsSection
+                escorts={linkedEscorts}
+                isLoading={escortsLoading}
               />
 
               <MediaFeedWithGallery

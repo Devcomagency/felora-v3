@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Map, { Marker, Popup, ViewStateChangeEvent } from 'react-map-gl/maplibre'
-import { MapPin } from 'lucide-react'
+import { MapPin, SlidersHorizontal } from 'lucide-react'
 import useSWR from 'swr'
 import Supercluster from 'supercluster'
 import 'maplibre-gl/dist/maplibre-gl.css'
@@ -18,6 +18,7 @@ type EscortData = {
   city: string
   services?: string[]
   languages?: string[]
+  category?: string
   verified: boolean
   isActive: boolean
 }
@@ -36,110 +37,11 @@ type ClusterFeature = {
   }
 }
 
-// Demo data - 8 escorts in Swiss cities
-const DEMO_ESCORTS: EscortData[] = [
-  {
-    id: '1',
-    name: 'Amélie',
-    lat: 46.2044,
-    lng: 6.1432,
-    avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b547?w=150',
-    city: 'Genève',
-    services: ['escorte', 'massage'],
-    languages: ['français', 'anglais'],
-    verified: true,
-    isActive: true
-  },
-  {
-    id: '2', 
-    name: 'Sofia',
-    lat: 46.5197,
-    lng: 6.6323,
-    avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150',
-    city: 'Lausanne',
-    services: ['vip', 'massage'],
-    languages: ['français', 'italien'],
-    verified: true,
-    isActive: true
-  },
-  {
-    id: '3',
-    name: 'Emma',
-    lat: 47.3769,
-    lng: 8.5417,
-    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
-    city: 'Zurich',
-    services: ['escorte', 'bdsm'],
-    languages: ['allemand', 'anglais'],
-    verified: false,
-    isActive: true
-  },
-  {
-    id: '4',
-    name: 'Lisa',
-    lat: 46.9481,
-    lng: 7.4474,
-    avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150',
-    city: 'Berne',
-    services: ['massage', 'vip'],
-    languages: ['allemand', 'français'],
-    verified: true,
-    isActive: true
-  },
-  {
-    id: '5',
-    name: 'Valentina',
-    lat: 46.2044,
-    lng: 6.1532,
-    avatar: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=150',
-    city: 'Genève',
-    services: ['escorte', 'vip'],
-    languages: ['italien', 'français'],
-    verified: true,
-    isActive: false
-  },
-  {
-    id: '6',
-    name: 'Marina',
-    lat: 47.3669,
-    lng: 8.5500,
-    avatar: 'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=150',
-    city: 'Zurich',
-    services: ['massage'],
-    languages: ['allemand'],
-    verified: false,
-    isActive: true
-  },
-  {
-    id: '7',
-    name: 'Camille',
-    lat: 46.5297,
-    lng: 6.6423,
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
-    city: 'Lausanne',
-    services: ['escorte', 'bdsm'],
-    languages: ['français', 'anglais'],
-    verified: true,
-    isActive: true
-  },
-  {
-    id: '8',
-    name: 'Isabella',
-    lat: 47.3869,
-    lng: 8.5317,
-    avatar: 'https://images.unsplash.com/photo-1488716820095-cbe80883c496?w=150',
-    city: 'Zurich',
-    services: ['vip', 'massage'],
-    languages: ['italien', 'allemand'],
-    verified: true,
-    isActive: true
-  }
-]
 
 // Fetcher for SWR
 const fetcher = async (url: string) => {
   const controller = new AbortController()
-  const timeoutId = setTimeout(() => controller.abort(), 10000)
+  const timeoutId = setTimeout(() => controller.abort(), 30000)
   
   try {
     const res = await fetch(url, { 
@@ -207,18 +109,15 @@ export default function MapTest() {
   // 🎯 RÉCUPÉRER LE PROFIL ESCORT CONNECTÉ
   useEffect(() => {
     const fetchCurrentUserProfile = async () => {
-      console.log('🔍 [CARTE] Tentative de récupération du profil escort...')
       try {
         const response = await fetch('/api/me/escort-profile')
-        console.log('🔍 [CARTE] Réponse API:', response.status, response.ok)
-        
+
         if (response.ok) {
           const profile = await response.json()
-          console.log('🔍 [CARTE] Données profil reçues:', profile)
-          
+
           if (profile && profile.latitude && profile.longitude) {
             const escortData: EscortData = {
-              id: profile.escortId || 'FIXED_ID', // FORCER LE RECHARGEMENT DU CACHE
+              id: profile.escortId || 'FIXED_ID',
               name: profile.stageName || 'Mon Profil',
               lat: profile.latitude,
               lng: profile.longitude,
@@ -229,64 +128,42 @@ export default function MapTest() {
               isActive: profile.status === 'ACTIVE'
             }
             setCurrentUserProfile(escortData)
-            console.log('✅ [CARTE] Profil escort connecté chargé:', escortData)
-          } else {
-            console.log('⚠️ [CARTE] Profil sans coordonnées:', profile)
           }
-        } else {
-          console.log('❌ [CARTE] Erreur API profil:', response.status, response.statusText)
         }
       } catch (error) {
-        console.log('❌ [CARTE] Erreur récupération profil:', error)
+        // Silent fail - l'utilisateur n'est peut-être pas escort
       }
     }
-    
+
     fetchCurrentUserProfile()
   }, [])
 
   // 🎯 ÉCOUTER LES ÉVÉNEMENTS D'ADRESSE CHANGÉE POUR SYNCHRONISER LA CARTE
   useEffect(() => {
     const handleAddressChanged = (event: any) => {
-      console.log('📡 [CARTE] Événement addressChanged reçu:', event.detail)
-      const { coordinates, address } = event.detail
-      
+      const { coordinates } = event.detail
+
       if (coordinates && coordinates.lat && coordinates.lng) {
-        console.log('🗺️ [CARTE] Mise à jour de la carte depuis le dashboard:', coordinates)
-        
         // Mettre à jour la vue de la carte
-        setViewState(prev => {
-          const newViewState = {
-            ...prev,
-            latitude: coordinates.lat,
-            longitude: coordinates.lng,
-            zoom: Math.max(prev.zoom, 15) // Zoom plus proche pour une adresse spécifique
-          }
-          console.log('🗺️ [CARTE] Nouveau viewState:', newViewState)
-          return newViewState
-        })
-        
+        setViewState(prev => ({
+          ...prev,
+          latitude: coordinates.lat,
+          longitude: coordinates.lng,
+          zoom: Math.max(prev.zoom, 15)
+        }))
+
         // 🎯 METTRE À JOUR LE PROFIL ESCORT CONNECTÉ
         if (currentUserProfile) {
-          setCurrentUserProfile(prev => {
-            const updatedProfile = prev ? {
-              ...prev,
-              lat: coordinates.lat,
-              lng: coordinates.lng
-            } : null
-            console.log('👤 [CARTE] Profil escort mis à jour:', updatedProfile)
-            return updatedProfile
-          })
-        } else {
-          console.log('⚠️ [CARTE] Pas de profil escort connecté à mettre à jour')
+          setCurrentUserProfile(prev => prev ? {
+            ...prev,
+            lat: coordinates.lat,
+            lng: coordinates.lng
+          } : null)
         }
-        
+
         // Mettre à jour l'URL pour refléter la nouvelle position
         const newCenter = `${coordinates.lat},${coordinates.lng}`
-        const newUrl = `/map?center=${newCenter}&zoom=15`
-        console.log('🔗 [CARTE] Mise à jour URL:', newUrl)
-        router.push(newUrl, { scroll: false })
-      } else {
-        console.log('⚠️ [CARTE] Coordonnées invalides dans l\'événement:', coordinates)
+        router.push(`/map?center=${newCenter}&zoom=15`, { scroll: false })
       }
     }
 
@@ -295,34 +172,24 @@ export default function MapTest() {
       if (event.key === 'felora_address_update' && event.newValue) {
         try {
           const eventData = JSON.parse(event.newValue)
-          console.log('📡 [CARTE] Événement storage reçu (entre onglets):', eventData)
-          
-          // Traiter comme un événement addressChanged
-          const fakeEvent = { detail: eventData }
-          handleAddressChanged(fakeEvent)
-          
-          // Nettoyer le localStorage après traitement
+          handleAddressChanged({ detail: eventData })
           localStorage.removeItem('felora_address_update')
-          console.log('🧹 [CARTE] localStorage nettoyé après traitement')
         } catch (error) {
-          console.log('❌ [CARTE] Erreur parsing storage event:', error)
           localStorage.removeItem('felora_address_update')
         }
       }
     }
 
-    console.log('🎧 [CARTE] Ajout des listeners addressChanged et storage')
     window.addEventListener('addressChanged', handleAddressChanged)
     window.addEventListener('storage', handleStorageChange)
-    
+
     return () => {
-      console.log('🎧 [CARTE] Suppression des listeners')
       window.removeEventListener('addressChanged', handleAddressChanged)
       window.removeEventListener('storage', handleStorageChange)
     }
   }, [router, currentUserProfile])
   const [search, setSearch] = useState('')
-  const [selectedServices, setSelectedServices] = useState<string[]>([])
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [userLocation, setUserLocation] = useState<{latitude: number, longitude: number} | null>(null)
   const [geoError, setGeoError] = useState<string | null>(null)
   const [isLocating, setIsLocating] = useState(false)
@@ -343,7 +210,9 @@ export default function MapTest() {
     {
       revalidateOnFocus: false,
       revalidateOnReconnect: false,
-      shouldRetryOnError: false,
+      shouldRetryOnError: true,
+      errorRetryCount: 2,
+      errorRetryInterval: 3000,
       keepPreviousData: true
     }
   )
@@ -359,6 +228,7 @@ export default function MapTest() {
       city: escort.city || 'Suisse',
       services: escort.services || [],
       languages: escort.languages || [],
+      category: escort.category || null,
       verified: escort.isVerifiedBadge || false,
       isActive: escort.isActive || true,
       isCurrentUser: false // Marquer comme profil d'un autre utilisateur
@@ -366,27 +236,21 @@ export default function MapTest() {
 
     // 🎯 GÉRER LE PROFIL ESCORT CONNECTÉ
     if (currentUserProfile) {
-      // Vérifier si le profil connecté est déjà dans la liste de l'API
-      const existingIndex = apiEscorts.findIndex(escort => escort.id === currentUserProfile.id)
-      
+      const existingIndex = apiEscorts.findIndex((escort: any) => escort.id === currentUserProfile.id)
+
       if (existingIndex >= 0) {
-        // Remplacer le profil existant par celui du profil connecté (avec coordonnées à jour)
         apiEscorts[existingIndex] = {
           ...currentUserProfile,
-          isCurrentUser: true // Marquer comme profil connecté
+          isCurrentUser: true
         }
-        console.log('🔄 [CARTE] Profil connecté remplacé dans la liste API')
       } else {
-        // Ajouter le profil connecté s'il n'est pas dans la liste
         apiEscorts.unshift({
           ...currentUserProfile,
-          isCurrentUser: true // Marquer comme profil connecté
+          isCurrentUser: true
         })
-        console.log('➕ [CARTE] Profil connecté ajouté à la liste')
       }
     }
 
-    console.log('📊 [CARTE] Total profils affichés:', apiEscorts.length)
     return apiEscorts
   }, [data, currentUserProfile])
 
@@ -394,27 +258,55 @@ export default function MapTest() {
   const filteredEscorts = useMemo(() => {
     let result = allEscorts
 
+    // Filtre par recherche textuelle
     if (search.trim()) {
       const query = search.toLowerCase()
-      result = result.filter(escort => 
+      result = result.filter((escort: EscortData) =>
         escort.name.toLowerCase().includes(query) ||
         escort.city.toLowerCase().includes(query) ||
-        (escort.services || []).some(service => service.toLowerCase().includes(query))
+        (escort.services || []).some((service: string) => service.toLowerCase().includes(query))
       )
     }
 
-    if (selectedServices.length > 0) {
-      result = result.filter(escort =>
-        selectedServices.some(service =>
-          (escort.services || []).some(escortService =>
-            escortService.toLowerCase().includes(service.toLowerCase())
-          )
-        )
-      )
+    // Filtre par catégories - Utiliser le champ category de l'API
+    if (selectedCategories.length > 0) {
+      result = result.filter((escort: EscortData) => {
+        // Si le profil a un champ category défini, l'utiliser directement
+        if (escort.category) {
+          return selectedCategories.includes(escort.category)
+        }
+
+        // Sinon, fallback sur l'analyse des services (pour compatibilité)
+        const escortServices = (escort.services || []).map((s: string) => s.toLowerCase())
+
+        return selectedCategories.some((category: string) => {
+          // Mapping des catégories vers les services de l'API
+          switch(category) {
+            case 'escort':
+              return escortServices.some((s: string) =>
+                s.includes('escort') || s.includes('gfe') || s.includes('accompagnement')
+              )
+            case 'masseuse_erotique':
+              return escortServices.some((s: string) =>
+                s.includes('massage') || s.includes('body to body') || s.includes('relaxation')
+              )
+            case 'dominatrice_bdsm':
+              return escortServices.some((s: string) =>
+                s.includes('bdsm') || s.includes('domination') || s.includes('fétichisme') || s.includes('soumission')
+              )
+            case 'transsexuel':
+              return escortServices.some((s: string) =>
+                s.includes('trans') || s.includes('shemale') || s.includes('transsexuel')
+              )
+            default:
+              return false
+          }
+        })
+      })
     }
 
     return result
-  }, [allEscorts, search, selectedServices])
+  }, [allEscorts, search, selectedCategories])
 
   // Create supercluster
   const supercluster = useMemo(() => {
@@ -425,7 +317,7 @@ export default function MapTest() {
       minPoints: 2
     })
 
-    const points = filteredEscorts.map(escort => ({
+    const points = filteredEscorts.map((escort: EscortData) => ({
       type: 'Feature' as const,
       properties: {
         cluster: false,
@@ -457,7 +349,7 @@ export default function MapTest() {
   const visibleCount = useMemo(() => {
     if (!bounds) return filteredEscorts.length
     const [west, south, east, north] = bounds
-    return filteredEscorts.filter(e => (
+    return filteredEscorts.filter((e: EscortData) => (
       e.lng >= west && e.lng <= east && e.lat >= south && e.lat <= north
     )).length
   }, [bounds, filteredEscorts])
@@ -558,7 +450,7 @@ export default function MapTest() {
       },
       {
         enableHighAccuracy: true,
-        timeout: 10000,
+        timeout: 30000,
         maximumAge: 60000
       }
     )
@@ -624,136 +516,26 @@ export default function MapTest() {
       `}</style>
       
       <div className="relative w-full h-screen bg-felora-void overflow-hidden">
-      {/* Header */}
-      <div 
-        className="fixed top-0 left-0 right-0 z-50 p-4"
+      {/* Back Button - Top Left */}
+      <button
+        onClick={() => router.back()}
+        className="fixed top-4 left-4 z-50 w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110"
         style={{
-          background: 'rgba(13, 13, 13, 0.95)',
+          background: 'rgba(13, 13, 13, 0.7)',
           backdropFilter: 'blur(20px)',
-          border: '1px solid rgba(255, 255, 255, 0.08)'
+          border: '1px solid rgba(255, 255, 255, 0.15)',
+          color: 'white',
+          boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)'
         }}
+        aria-label="Retour"
       >
-        <div className="flex items-center justify-between">
-          {/* Back Button */}
-          <button
-            onClick={() => router.back()}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl"
-            style={{
-              background: 'rgba(255, 255, 255, 0.05)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              color: 'white'
-            }}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="m15 18-6-6 6-6"/>
-            </svg>
-            Retour
-          </button>
-
-          {/* Title */}
-          <h1 
-            className="text-lg font-bold"
-            style={{
-              background: 'linear-gradient(135deg, #FF6B9D 0%, #B794F6 50%, #4FD1C7 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent'
-            }}
-          >
-            Carte Suisse
-          </h1>
-
-          {/* Filters Button */}
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className="p-2 rounded-xl"
-            style={{
-              background: showFilters 
-                ? 'rgba(255, 107, 157, 0.2)' 
-                : 'rgba(255, 255, 255, 0.05)',
-              border: showFilters 
-                ? '1px solid rgba(255, 107, 157, 0.4)' 
-                : '1px solid rgba(255, 255, 255, 0.1)',
-              color: showFilters ? '#FF6B9D' : 'white'
-            }}
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
-            </svg>
-          </button>
-        </div>
-
-        {/* Filters Panel */}
-        {showFilters && (
-          <div 
-            className="mt-4 p-4 rounded-xl"
-            style={{
-              background: 'rgba(255, 255, 255, 0.03)',
-              border: '1px solid rgba(255, 255, 255, 0.08)'
-            }}
-          >
-            <div className="flex flex-wrap gap-3">
-              {/* Search */}
-              <input
-                type="text"
-                placeholder="Rechercher..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="flex-1 min-w-[200px] px-3 py-2 rounded-lg"
-                style={{
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  color: 'white'
-                }}
-              />
-
-              {/* Service filters */}
-              {['escorte', 'massage', 'vip', 'bdsm'].map(service => (
-                <button
-                  key={service}
-                  onClick={() => {
-                    setSelectedServices(prev => 
-                      prev.includes(service) 
-                        ? prev.filter(s => s !== service)
-                        : [...prev, service]
-                    )
-                  }}
-                  className="px-3 py-2 rounded-lg text-sm"
-                  style={{
-                    background: selectedServices.includes(service)
-                      ? 'rgba(255, 107, 157, 0.2)'
-                      : 'rgba(255, 255, 255, 0.05)',
-                    border: selectedServices.includes(service)
-                      ? '1px solid rgba(255, 107, 157, 0.4)'
-                      : '1px solid rgba(255, 255, 255, 0.1)',
-                    color: selectedServices.includes(service) ? '#FF6B9D' : 'rgba(255, 255, 255, 0.8)'
-                  }}
-                >
-                  {service}
-                </button>
-              ))}
-
-              {/* Clear */}
-              <button
-                onClick={() => {
-                  setSearch('')
-                  setSelectedServices([])
-                }}
-                className="px-3 py-2 rounded-lg text-sm"
-                style={{
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  color: 'rgba(255, 255, 255, 0.8)'
-                }}
-              >
-                Effacer
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="m15 18-6-6 6-6"/>
+        </svg>
+      </button>
 
       {/* Map Container */}
-      <div className="absolute inset-0" style={{ top: showFilters ? '160px' : '80px' }}>
+      <div className="absolute inset-0" style={{ backgroundColor: '#1A1A1A' }}>
         <Map
           ref={mapRef}
           {...viewState}
@@ -893,8 +675,8 @@ export default function MapTest() {
               closeOnClick={false}
               className="felora-popup"
             >
-              <div 
-                className="p-4 rounded-xl min-w-[320px]"
+              <div
+                className="p-4 rounded-xl w-[90vw] sm:min-w-[320px] max-w-[400px]"
                 style={{
                   background: 'rgba(13, 13, 13, 0.95)',
                   backdropFilter: 'blur(20px)',
@@ -908,6 +690,7 @@ export default function MapTest() {
                     src={selectedEscort.avatar || 'https://picsum.photos/seed/portrait/600/800'}
                     alt={selectedEscort.name}
                     loading="lazy"
+                    decoding="async"
                     style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }}
                   />
                   {selectedEscort.verified && (
@@ -979,8 +762,8 @@ export default function MapTest() {
               closeOnClick={false}
               className="felora-popup"
             >
-              <div 
-                className="p-4 rounded-xl min-w-[320px] max-w-[400px]"
+              <div
+                className="p-4 rounded-xl w-[90vw] sm:min-w-[320px] max-w-[400px]"
                 style={{
                   background: 'rgba(13, 13, 13, 0.95)',
                   backdropFilter: 'blur(20px)',
@@ -1003,9 +786,11 @@ export default function MapTest() {
                       }}
                     >
                       {escort.avatar && (
-                        <img 
-                          src={escort.avatar} 
+                        <img
+                          src={escort.avatar}
                           alt={escort.name}
+                          loading="lazy"
+                          decoding="async"
                           className="w-8 h-8 rounded-full object-cover"
                         />
                       )}
@@ -1054,8 +839,8 @@ export default function MapTest() {
       </div>
 
       {/* Status Bar */}
-      <div 
-        className="fixed bottom-16 left-4 px-3 py-2 rounded-xl text-sm text-white"
+      <div
+        className="fixed bottom-20 left-4 px-3 py-2 rounded-xl text-sm text-white"
         style={{
           // Même couleurs que le bouton "Autour de moi"
           background: 'linear-gradient(135deg, #FF6B9D 0%, #B794F6 100%)',
@@ -1071,13 +856,125 @@ export default function MapTest() {
         {error && ' • Erreur'}
       </div>
 
+      {/* Filters Panel - Juste au-dessus du bouton filtre */}
+      {showFilters && (
+        <div
+          className="fixed right-4 p-4 rounded-xl w-[90vw] max-w-[400px] animate-in slide-in-from-bottom duration-300 z-50"
+          style={{
+            bottom: 'calc(8rem + 68px)', // 8rem = bottom-32 + 68px de marge pour plus d'espace
+            background: 'rgba(13, 13, 13, 0.95)',
+            backdropFilter: 'blur(20px)',
+            border: '1px solid rgba(255, 255, 255, 0.15)',
+            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.6)'
+          }}
+        >
+          <div className="flex flex-col gap-3">
+            {/* Search */}
+            <input
+              type="text"
+              placeholder="Rechercher..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full px-3 py-2 rounded-lg"
+              style={{
+                background: 'rgba(255, 255, 255, 0.05)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                color: 'white'
+              }}
+            />
+
+            {/* Category filters */}
+            <div className="flex flex-col gap-2">
+              {[
+                { value: 'escort', label: 'Escorte' },
+                { value: 'masseuse_erotique', label: 'Masseuse Érotique' },
+                { value: 'dominatrice_bdsm', label: 'Dominatrice BDSM' },
+                { value: 'transsexuel', label: 'Transsexuel' }
+              ].map(category => (
+                <button
+                  key={category.value}
+                  onClick={() => {
+                    setSelectedCategories(prev =>
+                      prev.includes(category.value)
+                        ? prev.filter(c => c !== category.value)
+                        : [...prev, category.value]
+                    )
+                  }}
+                  className="px-3 py-2 rounded-lg text-sm font-medium transition-all"
+                  style={{
+                    background: selectedCategories.includes(category.value)
+                      ? 'linear-gradient(135deg, #FF6B9D 0%, #B794F6 100%)'
+                      : 'rgba(255, 255, 255, 0.05)',
+                    border: selectedCategories.includes(category.value)
+                      ? '1px solid rgba(255, 107, 157, 0.4)'
+                      : '1px solid rgba(255, 255, 255, 0.1)',
+                    color: selectedCategories.includes(category.value) ? 'white' : 'rgba(255, 255, 255, 0.8)'
+                  }}
+                >
+                  {category.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Clear button */}
+            {(search || selectedCategories.length > 0) && (
+              <button
+                onClick={() => {
+                  setSearch('')
+                  setSelectedCategories([])
+                }}
+                className="w-full py-2 rounded-lg text-sm"
+                style={{
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  color: 'rgba(255, 255, 255, 0.8)'
+                }}
+              >
+                Effacer les filtres
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Bouton Filtres - Au-dessus du bouton localisation */}
+      <button
+        onClick={() => setShowFilters(!showFilters)}
+        className="fixed right-4 w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 z-50"
+        style={{
+          bottom: '138px',
+          background: showFilters
+            ? 'linear-gradient(135deg, #FF6B9D 0%, #B794F6 100%)'
+            : 'rgba(13, 13, 13, 0.7)',
+          backdropFilter: 'blur(20px)',
+          border: showFilters
+            ? '1px solid rgba(255, 107, 157, 0.4)'
+            : '1px solid rgba(255, 255, 255, 0.15)',
+          color: 'white',
+          boxShadow: showFilters
+            ? '0 14px 34px rgba(255, 107, 157, 0.4)'
+            : '0 8px 24px rgba(0, 0, 0, 0.3)',
+          width: 52,
+          height: 52
+        }}
+        aria-label="Filtres"
+      >
+        {showFilters ? (
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        ) : (
+          <SlidersHorizontal size={20} />
+        )}
+      </button>
+
       {/* Geolocation Button */}
       <button
         onClick={locateUser}
         disabled={isLocating}
-        className="fixed bottom-16 right-4 w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110"
+        className="fixed bottom-20 right-4 w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 z-50"
         style={{
-          // Bouton plus visible et coloré selon la charte
           background: 'linear-gradient(135deg, #FF6B9D 0%, #B794F6 100%)',
           backdropFilter: 'blur(18px)',
           border: '1px solid rgba(255, 255, 255, 0.35)',
@@ -1089,7 +986,7 @@ export default function MapTest() {
         title="Voir autour de moi"
       >
         {isLocating ? (
-          <div 
+          <div
             className="w-5 h-5 rounded-full animate-spin"
             style={{
               background: 'linear-gradient(135deg, transparent 0%, transparent 70%, white 70%)',
@@ -1102,8 +999,8 @@ export default function MapTest() {
       </button>
 
       {/* Geolocation Error */}
-      {geoError && (
-        <div 
+      {geoError && !showFilters && (
+        <div
           className="fixed bottom-32 right-4 px-3 py-2 rounded-xl text-sm max-w-[250px]"
           style={{
             background: 'rgba(239, 68, 68, 0.9)',
@@ -1113,7 +1010,7 @@ export default function MapTest() {
           }}
         >
           {geoError}
-          <button 
+          <button
             onClick={() => setGeoError(null)}
             className="ml-2 text-white/80 hover:text-white"
           >

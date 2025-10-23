@@ -21,6 +21,7 @@ export default function MobileBottomNav(){
         { label: 'Mon Profil', href: '/escort/profile', icon: User },
         { label: 'Agenda', href: '/escort/agenda', icon: Calendar },
         { label: 'Médias', href: '/escort/media', icon: Image },
+        { label: 'Mes Clubs', href: '/escort/clubs', icon: Users },
         { label: 'Stats', href: '/escort/stats', icon: BarChart3 },
       ]
     : []

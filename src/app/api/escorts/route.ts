@@ -252,6 +252,7 @@ export async function GET(request: NextRequest) {
           profilePhoto: true,
           languages: true,
           services: true,
+          category: true,
           rate1H: true,
           rate2H: true,
           rateOvernight: true,
@@ -370,6 +371,7 @@ export async function GET(request: NextRequest) {
           isActive: e.status === 'ACTIVE',
           profilePhoto: e.profilePhoto || undefined,
           heroMedia,
+          category: e.category || undefined,
           languages: (() => {
             try {
               const L = JSON.parse(String(e.languages || '[]'))

@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { SEARCH_CONSTANTS } from '@/constants/messaging'
 
 interface SearchFilters {
   q: string
@@ -108,17 +107,6 @@ interface UseSearchReturn {
   refresh: () => void
 }
 
-const DEFAULT_FILTERS: SearchFilters = {
-  q: '',
-  city: '',
-  canton: '',
-  services: [],
-  languages: [],
-  status: '',
-  sort: 'recent',
-  categories: []
-}
-
 export function useSearch(): UseSearchReturn {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -127,27 +115,23 @@ export function useSearch(): UseSearchReturn {
   const [error, setError] = useState<string | null>(null)
   const [hasMore, setHasMore] = useState(true)
   const [total, setTotal] = useState(0)
-  const [filters, setFiltersState] = useState<SearchFilters>(DEFAULT_FILTERS)
   const [nextCursor, setNextCursor] = useState<string | undefined>()
-  
-  const abortControllerRef = useRef<AbortController | null>(null)
-  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-  // Parse URL params on mount
-  useEffect(() => {
-    const urlFilters: SearchFilters = {
-      q: searchParams.get('q') || '',
-      city: searchParams.get('city') || '',
-      canton: searchParams.get('canton') || '',
-      services: searchParams.get('services')?.split(',').filter(Boolean) || [],
-      languages: searchParams.get('languages')?.split(',').filter(Boolean) || [],
-      status: searchParams.get('status') || '',
-      sort: searchParams.get('sort') || 'recent',
-      // Ajouter categories depuis URL
-      categories: searchParams.get('categories')?.split(',').filter(Boolean) || []
-    }
-    setFiltersState(urlFilters)
-  }, [searchParams])
+  const abortControllerRef = useRef<AbortController | null>(null)
+
+  // Parse URL params and initialize filters (synchronously on mount)
+  const initialFilters: SearchFilters = {
+    q: searchParams.get('q') || '',
+    city: searchParams.get('city') || '',
+    canton: searchParams.get('canton') || '',
+    services: searchParams.get('services')?.split(',').filter(Boolean) || [],
+    languages: searchParams.get('languages')?.split(',').filter(Boolean) || [],
+    status: searchParams.get('status') || '',
+    sort: searchParams.get('sort') || 'recent',
+    categories: searchParams.get('categories')?.split(',').filter(Boolean) || []
+  }
+
+  const [filters, setFiltersState] = useState<SearchFilters>(initialFilters)
 
   // Update URL when filters change
   const updateURL = useCallback((newFilters: SearchFilters) => {
@@ -274,23 +258,12 @@ export function useSearch(): UseSearchReturn {
     }
   }, [buildQueryString])
 
-  // Debounced search
-  const debouncedSearch = useCallback((newFilters: SearchFilters) => {
-    if (debounceTimeoutRef.current) {
-      clearTimeout(debounceTimeoutRef.current)
-    }
-
-    debounceTimeoutRef.current = setTimeout(() => {
-      updateURL(newFilters)
-      fetchEscorts(newFilters, undefined, false)
-    }, SEARCH_CONSTANTS.DEBOUNCE_DELAY)
-  }, [updateURL, fetchEscorts])
-
-  // Set filters with debounce
+  // Set filters (will trigger useEffect)
   const setFilters = useCallback((newFilters: SearchFilters) => {
+    console.log('[useSearch] Setting filters:', newFilters)
     setFiltersState(newFilters)
-    debouncedSearch(newFilters)
-  }, [debouncedSearch])
+    updateURL(newFilters)
+  }, [updateURL])
 
   // Load more results
   const loadMore = useCallback(() => {
@@ -304,19 +277,19 @@ export function useSearch(): UseSearchReturn {
     fetchEscorts(filters, undefined, false)
   }, [filters, fetchEscorts])
 
-  // Initial load
+  // Fetch when filters change
+  const categoriesKey = filters.categories?.join(',') || ''
   useEffect(() => {
+    console.log('[useSearch] Filters changed, fetching escorts:', filters)
     fetchEscorts(filters, undefined, false)
-  }, []) // Only run on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters.q, filters.city, filters.canton, filters.sort, categoriesKey])
 
   // Cleanup
   useEffect(() => {
     return () => {
       if (abortControllerRef.current) {
         abortControllerRef.current.abort()
-      }
-      if (debounceTimeoutRef.current) {
-        clearTimeout(debounceTimeoutRef.current)
       }
     }
   }, [])

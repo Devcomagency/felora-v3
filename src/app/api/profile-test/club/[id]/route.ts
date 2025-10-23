@@ -195,6 +195,7 @@ export async function GET(
         const footerPhoto = media.find((m: any) => m.pos === 1)  // Photo footer
         clubProfile = {
           id: club.handle,
+          dbId: club.id, // ID de la base de données pour les API internes
           name: details?.name || club.companyName || 'Club',
           handle: club.handle,
           avatar: profilePhoto?.url ? (

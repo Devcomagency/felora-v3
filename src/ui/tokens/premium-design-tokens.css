@@ -1,0 +1,293 @@
+/* FELORA Premium Design Tokens - Version 2024 */
+/* Design system sophistiqué et performant */
+
+:root {
+  /* === NEUTRES SOPHISTIQUÉS === */
+  --felora-void: #0A0A0A;           /* Fond principal plus doux */
+  --felora-surface: #1A1A1A;        /* Surfaces avec plus de contraste */
+  --felora-panel: #242424;          /* Panneaux plus lisibles */
+  --felora-border: #404040;         /* Bordures plus visibles */
+  --felora-muted: #8B8B8B;          /* Texte secondaire lisible */
+  --felora-text: #FFFFFF;           /* Texte principal */
+  --felora-text-secondary: #CCCCCC; /* Texte secondaire */
+  --felora-text-tertiary: #999999;  /* Texte tertiaire */
+  
+  /* === ACCENTS RAFFINÉS === */
+  --felora-primary: #E91E63;        /* Rose sophistiqué */
+  --felora-primary-light: #F48FB1;  /* Rose clair */
+  --felora-primary-dark: #C2185B;   /* Rose foncé */
+  --felora-secondary: #9C27B0;      /* Violet élégant */
+  --felora-secondary-light: #BA68C8; /* Violet clair */
+  --felora-secondary-dark: #7B1FA2;  /* Violet foncé */
+  --felora-accent: #00BCD4;         /* Cyan moderne */
+  --felora-accent-light: #4DD0E1;   /* Cyan clair */
+  --felora-accent-dark: #0097A7;    /* Cyan foncé */
+  
+  /* === ÉTATS === */
+  --felora-success: #4CAF50;        /* Vert professionnel */
+  --felora-success-light: #81C784;  /* Vert clair */
+  --felora-warning: #FF9800;        /* Orange chaleureux */
+  --felora-warning-light: #FFB74D;  /* Orange clair */
+  --felora-danger: #F44336;         /* Rouge d'alerte */
+  --felora-danger-light: #EF5350;   /* Rouge clair */
+  
+  /* === GRADIENTS SUBTILS === */
+  --felora-grad-primary: linear-gradient(135deg, #E91E63 0%, #9C27B0 100%);
+  --felora-grad-secondary: linear-gradient(135deg, #00BCD4 0%, #9C27B0 100%);
+  --felora-grad-surface: linear-gradient(135deg, #1A1A1A 0%, #242424 100%);
+  --felora-grad-text: linear-gradient(135deg, #E91E63 0%, #9C27B0 100%);
+  
+  /* === TYPOGRAPHIE PREMIUM === */
+  --felora-font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --felora-font-display: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  
+  /* Hiérarchie typographique */
+  --felora-text-xs: 12px;
+  --felora-text-sm: 14px;
+  --felora-text-base: 16px;
+  --felora-text-lg: 18px;
+  --felora-text-xl: 20px;
+  --felora-text-2xl: 24px;
+  --felora-text-3xl: 32px;
+  --felora-text-4xl: 40px;
+  
+  /* Poids de police */
+  --felora-font-light: 300;
+  --felora-font-normal: 400;
+  --felora-font-medium: 500;
+  --felora-font-semibold: 600;
+  --felora-font-bold: 700;
+  
+  /* === ESPACEMENT (base 8) === */
+  --felora-sp-1: 4px;
+  --felora-sp-2: 8px;
+  --felora-sp-3: 12px;
+  --felora-sp-4: 16px;
+  --felora-sp-5: 20px;
+  --felora-sp-6: 24px;
+  --felora-sp-8: 32px;
+  --felora-sp-10: 40px;
+  --felora-sp-12: 48px;
+  --felora-sp-16: 64px;
+  --felora-sp-20: 80px;
+  --felora-sp-24: 96px;
+  
+  /* === RAYONS === */
+  --felora-radius-sm: 6px;
+  --felora-radius-md: 8px;
+  --felora-radius-lg: 12px;
+  --felora-radius-xl: 16px;
+  --felora-radius-2xl: 24px;
+  --felora-radius-full: 9999px;
+  
+  /* === OMBRES SOPHISTIQUÉES === */
+  --felora-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --felora-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
+  --felora-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.15);
+  --felora-shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.2);
+  --felora-shadow-xl: 0 16px 64px rgba(0, 0, 0, 0.25);
+  --felora-shadow-2xl: 0 32px 128px rgba(0, 0, 0, 0.3);
+  
+  /* Ombres colorées subtiles */
+  --felora-shadow-primary: 0 8px 32px rgba(233, 30, 99, 0.15);
+  --felora-shadow-secondary: 0 8px 32px rgba(156, 39, 176, 0.15);
+  --felora-shadow-accent: 0 8px 32px rgba(0, 188, 212, 0.15);
+  
+  /* === EFFETS GLASSMORPHISM RÉDUITS === */
+  --felora-glass: rgba(255, 255, 255, 0.05);
+  --felora-glass-border: rgba(255, 255, 255, 0.1);
+  --felora-glass-blur: 8px;
+  --felora-glass-strong: rgba(255, 255, 255, 0.08);
+  --felora-glass-strong-border: rgba(255, 255, 255, 0.15);
+  
+  /* === TRANSITIONS LÉGÈRES === */
+  --felora-transition-fast: 150ms ease-out;
+  --felora-transition-normal: 200ms ease-out;
+  --felora-transition-slow: 300ms ease-out;
+  
+  /* === Z-INDEX === */
+  --felora-z-dropdown: 1000;
+  --felora-z-sticky: 1020;
+  --felora-z-fixed: 1030;
+  --felora-z-modal-backdrop: 1040;
+  --felora-z-modal: 1050;
+  --felora-z-popover: 1060;
+  --felora-z-tooltip: 1070;
+  --felora-z-toast: 1080;
+}
+
+/* === UTILITAIRES GLASSMORPHISM === */
+.glass-card {
+  background: var(--felora-glass);
+  backdrop-filter: blur(var(--felora-glass-blur));
+  -webkit-backdrop-filter: blur(var(--felora-glass-blur));
+  border: 1px solid var(--felora-glass-border);
+  border-radius: var(--felora-radius-lg);
+  box-shadow: var(--felora-shadow-md);
+}
+
+.glass-card-strong {
+  background: var(--felora-glass-strong);
+  backdrop-filter: blur(var(--felora-glass-blur));
+  -webkit-backdrop-filter: blur(var(--felora-glass-blur));
+  border: 1px solid var(--felora-glass-strong-border);
+  border-radius: var(--felora-radius-lg);
+  box-shadow: var(--felora-shadow-lg);
+}
+
+/* === BOUTONS PREMIUM === */
+.btn-primary {
+  background: var(--felora-grad-primary);
+  color: white;
+  border: none;
+  border-radius: var(--felora-radius-md);
+  padding: var(--felora-sp-3) var(--felora-sp-6);
+  font-weight: var(--felora-font-medium);
+  font-size: var(--felora-text-sm);
+  transition: all var(--felora-transition-normal);
+  box-shadow: var(--felora-shadow-sm);
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--felora-shadow-primary);
+}
+
+.btn-secondary {
+  background: var(--felora-surface);
+  color: var(--felora-text);
+  border: 1px solid var(--felora-border);
+  border-radius: var(--felora-radius-md);
+  padding: var(--felora-sp-3) var(--felora-sp-6);
+  font-weight: var(--felora-font-medium);
+  font-size: var(--felora-text-sm);
+  transition: all var(--felora-transition-normal);
+}
+
+.btn-secondary:hover {
+  background: var(--felora-panel);
+  border-color: var(--felora-primary);
+  color: var(--felora-primary);
+}
+
+.btn-glass {
+  background: var(--felora-glass);
+  backdrop-filter: blur(var(--felora-glass-blur));
+  -webkit-backdrop-filter: blur(var(--felora-glass-blur));
+  border: 1px solid var(--felora-glass-border);
+  color: var(--felora-text);
+  border-radius: var(--felora-radius-md);
+  padding: var(--felora-sp-3) var(--felora-sp-6);
+  font-weight: var(--felora-font-medium);
+  font-size: var(--felora-text-sm);
+  transition: all var(--felora-transition-normal);
+}
+
+.btn-glass:hover {
+  background: var(--felora-glass-strong);
+  border-color: var(--felora-glass-strong-border);
+}
+
+/* === TEXTE GRADIENT === */
+.gradient-text {
+  background: var(--felora-grad-text);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: var(--felora-font-semibold);
+}
+
+/* === ANIMATIONS LÉGÈRES === */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.3s ease-out;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-out;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.2s ease-out;
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 768px) {
+  :root {
+    --felora-sp-6: 16px;
+    --felora-sp-8: 24px;
+    --felora-sp-10: 32px;
+    --felora-sp-12: 40px;
+  }
+}
+
+/* === ACCESSIBILITÉ === */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (prefers-contrast: high) {
+  :root {
+    --felora-border: #FFFFFF40;
+    --felora-muted: #FFFFFF80;
+    --felora-text-secondary: #FFFFFFCC;
+  }
+}
+
+/* === FOCUS STYLES === */
+.focus-ring:focus-visible {
+  outline: 2px solid var(--felora-primary);
+  outline-offset: 2px;
+}
+
+/* === SCROLLBAR CUSTOM === */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--felora-surface);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--felora-border);
+  border-radius: var(--felora-radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--felora-muted);
+}
