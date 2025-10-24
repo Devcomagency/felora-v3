@@ -7,21 +7,27 @@ type Theme = 'current' | 'premium' | 'neon' | 'luxury' | 'minimal' | 'sunset' | 
 
 const THEMES = {
   premium: {
-    name: '✨ Premium Purple',
+    name: '💎 Premium Flat',
     vars: {
-      '--felora-void': '#0F0B1A',           // Fond très sombre mais pas noir pur
-      '--felora-surface': 'rgba(139, 92, 246, 0.03)', // Surface ultra subtile
-      '--felora-panel': 'rgba(139, 92, 246, 0.06)',   // Panel légèrement plus visible
-      '--felora-text': '#F5F3FF',           // Texte blanc-violet très léger
-      '--felora-text-secondary': '#C4B5FD', // Violet clair pour le secondaire
-      '--felora-text-tertiary': '#A78BFA',  // Violet moyen pour tertiary
-      '--felora-primary': '#8B5CF6',        // Violet principal élégant
-      '--felora-secondary': '#A78BFA',      // Violet plus clair
-      '--felora-accent': '#C4B5FD',         // Accent très léger
-      '--felora-success': '#34D399',        // Vert premium
-      '--felora-warning': '#FBBF24',        // Jaune premium
-      '--felora-border': 'rgba(139, 92, 246, 0.08)', // Bordure très discrète
-      '--felora-grad-primary': 'linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%)', // Gradient violet doux
+      '--felora-void': '#0A0A0F',           // Noir profond élégant
+      '--felora-surface': 'rgba(255, 255, 255, 0.03)', // Surface ultra-subtile
+      '--felora-panel': 'rgba(255, 255, 255, 0.05)',   // Panel léger
+      '--felora-text': '#FEFEFE',           // Blanc cassé
+      '--felora-text-secondary': '#E5E5E7', // Gris très clair
+      '--felora-text-tertiary': '#9E9EA7',  // Gris moyen
+      '--felora-primary': '#FF6B9D',        // Rose électrique Felora
+      '--felora-secondary': '#B794F6',      // Violet Felora
+      '--felora-accent': '#4FD1C7',         // Turquoise Felora
+      '--felora-success': '#10B981',        // Vert
+      '--felora-warning': '#F59E0B',        // Orange
+      '--felora-border': 'rgba(255, 255, 255, 0.08)', // Bordure subtile
+      '--felora-grad-primary': '#FF6B9D',   // Pas de dégradé, couleur pleine
+      '--felora-grad-secondary': 'rgba(255, 255, 255, 0.04)',
+      '--felora-glow': 'rgba(255, 107, 157, 0.4)',
+      '--felora-shadow-sm': '0 2px 8px rgba(0, 0, 0, 0.12)',
+      '--felora-shadow-md': '0 8px 32px rgba(0, 0, 0, 0.2)',
+      '--felora-shadow-lg': '0 20px 60px rgba(0, 0, 0, 0.3)',
+      '--felora-shadow-glow': '0 0 40px rgba(255, 107, 157, 0.3)',
     }
   },
   current: {
@@ -151,90 +157,286 @@ export default function DesignTestPage() {
         body {
           background: var(--felora-void);
           color: var(--felora-text);
-          font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+          font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif;
           margin: 0;
           padding: 0;
-          transition: background-color 0.3s ease, color 0.3s ease;
+          transition: background-color 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
+          text-rendering: optimizeLegibility;
         }
 
         * {
           box-sizing: border-box;
         }
 
+        /* Texture de grain subtile pour effet premium */
+        body::after {
+          content: '';
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+          opacity: 0.015;
+          pointer-events: none;
+          z-index: 1;
+        }
+
+        /* Glass Card - Design Premium Flat épuré */
         .glass-card {
+          position: relative;
           background: var(--felora-surface);
-          backdrop-filter: blur(40px);
+          backdrop-filter: blur(60px) saturate(180%);
           border: 1px solid var(--felora-border);
-          border-radius: 24px;
-          transition: all 0.3s ease;
+          border-radius: 32px;
+          transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+          overflow: hidden;
+          box-shadow:
+            0 1px 2px rgba(0, 0, 0, 0.05),
+            0 4px 16px rgba(0, 0, 0, 0.1),
+            0 20px 60px rgba(0, 0, 0, 0.15),
+            inset 0 1px 0 rgba(255, 255, 255, 0.04);
+        }
+
+        /* Ligne lumineuse en haut - couleur primaire */
+        .glass-card::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 1px;
+          background: var(--felora-primary);
+          opacity: 0;
+          transition: opacity 0.5s ease;
+        }
+
+        /* Glow au hover */
+        .glass-card::after {
+          content: '';
+          position: absolute;
+          inset: -1px;
+          background: var(--felora-primary);
+          opacity: 0;
+          border-radius: 32px;
+          filter: blur(20px);
+          z-index: -1;
+          transition: opacity 0.5s ease;
         }
 
         .glass-card:hover {
           background: var(--felora-panel);
-          border-color: rgba(139, 92, 246, 0.15);
-          transform: translateY(-2px);
+          border-color: rgba(255, 107, 157, 0.3);
+          transform: translateY(-6px);
+          box-shadow:
+            0 2px 4px rgba(0, 0, 0, 0.05),
+            0 12px 32px rgba(0, 0, 0, 0.15),
+            0 32px 80px rgba(255, 107, 157, 0.2),
+            0 0 0 1px rgba(255, 107, 157, 0.1),
+            inset 0 1px 0 rgba(255, 255, 255, 0.06);
+        }
+
+        .glass-card:hover::before {
+          opacity: 0.4;
+        }
+
+        .glass-card:hover::after {
+          opacity: 0.08;
         }
 
         .glass-card-strong {
+          position: relative;
           background: var(--felora-panel);
-          backdrop-filter: blur(60px);
-          border: 1px solid var(--felora-border);
-          border-radius: 32px;
+          backdrop-filter: blur(100px) saturate(200%);
+          border: 1.5px solid var(--felora-border);
+          border-radius: 48px;
+          box-shadow:
+            0 2px 4px rgba(0, 0, 0, 0.03),
+            0 12px 32px rgba(0, 0, 0, 0.12),
+            0 32px 80px rgba(0, 0, 0, 0.2),
+            0 0 100px rgba(255, 107, 157, 0.08),
+            inset 0 2px 0 rgba(255, 255, 255, 0.06),
+            inset 0 -1px 0 rgba(255, 107, 157, 0.1);
+          overflow: hidden;
+        }
+
+        /* Ligne top colorée */
+        .glass-card-strong::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 2px;
+          background: var(--felora-primary);
+          opacity: 0.3;
+        }
+
+        /* Effet de brillance subtile */
+        .glass-card-strong::after {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: -100%;
+          width: 50%;
+          height: 100%;
+          background: linear-gradient(90deg,
+            transparent,
+            rgba(255, 255, 255, 0.03),
+            transparent
+          );
+          animation: shimmer 8s infinite;
+          pointer-events: none;
+        }
+
+        @keyframes shimmer {
+          0%, 100% { left: -100%; }
+          50% { left: 200%; }
         }
 
         .gradient-text {
-          background: var(--felora-grad-primary);
-          -webkit-background-clip: text;
-          background-clip: text;
-          -webkit-text-fill-color: transparent;
+          color: var(--felora-primary);
           font-weight: 700;
-          letter-spacing: -0.02em;
+          letter-spacing: -0.04em;
+          position: relative;
+          text-shadow: 0 0 30px rgba(255, 107, 157, 0.4);
         }
 
+        /* Boutons Premium Flat - Couleur pleine */
         .btn-primary {
+          position: relative;
           background: var(--felora-primary);
           color: white;
-          padding: 14px 32px;
-          border-radius: 16px;
+          padding: 18px 48px;
+          border-radius: 24px;
           font-weight: 600;
           font-size: 15px;
           border: none;
           cursor: pointer;
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          letter-spacing: -0.01em;
+          transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+          letter-spacing: -0.02em;
+          box-shadow:
+            0 1px 2px rgba(0, 0, 0, 0.05),
+            0 4px 16px rgba(255, 107, 157, 0.3),
+            0 16px 48px rgba(255, 107, 157, 0.4),
+            0 0 0 1px rgba(255, 107, 157, 0.2),
+            inset 0 1px 0 rgba(255, 255, 255, 0.2),
+            inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+          overflow: hidden;
+        }
+
+        /* Effet de brillance animé */
+        .btn-primary::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: -100%;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(90deg,
+            transparent,
+            rgba(255, 255, 255, 0.3),
+            transparent
+          );
+          transition: left 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .btn-primary:hover::before {
+          left: 100%;
+        }
+
+        /* Glow sur hover */
+        .btn-primary::after {
+          content: '';
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          width: 0%;
+          height: 0%;
+          background: radial-gradient(circle, rgba(255, 255, 255, 0.2), transparent 70%);
+          transform: translate(-50%, -50%);
+          opacity: 0;
+          transition: all 0.5s ease;
+        }
+
+        .btn-primary:hover::after {
+          width: 150%;
+          height: 150%;
+          opacity: 1;
         }
 
         .btn-primary:hover {
-          background: var(--felora-secondary);
-          transform: translateY(-2px);
-          box-shadow: 0 12px 40px rgba(139, 92, 246, 0.25);
+          background: #FF5A8F;
+          transform: translateY(-4px) scale(1.02);
+          box-shadow:
+            0 2px 4px rgba(0, 0, 0, 0.05),
+            0 8px 24px rgba(255, 107, 157, 0.4),
+            0 24px 72px rgba(255, 107, 157, 0.6),
+            0 0 0 1px rgba(255, 107, 157, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.3),
+            inset 0 -1px 0 rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-primary:active {
+          transform: translateY(-2px) scale(1.01);
         }
 
         .btn-secondary {
+          position: relative;
           background: transparent;
           color: var(--felora-text);
-          padding: 14px 32px;
-          border-radius: 16px;
-          font-weight: 500;
+          padding: 18px 48px;
+          border-radius: 24px;
+          font-weight: 600;
           font-size: 15px;
           border: 1.5px solid var(--felora-border);
           cursor: pointer;
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          letter-spacing: -0.01em;
+          transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+          letter-spacing: -0.02em;
+          backdrop-filter: blur(30px);
+          overflow: hidden;
+          box-shadow:
+            0 1px 2px rgba(0, 0, 0, 0.05),
+            0 4px 12px rgba(0, 0, 0, 0.05),
+            inset 0 1px 0 rgba(255, 255, 255, 0.03);
+        }
+
+        .btn-secondary::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: var(--felora-surface);
+          opacity: 0;
+          transition: opacity 0.5s ease;
+        }
+
+        .btn-secondary:hover::before {
+          opacity: 1;
         }
 
         .btn-secondary:hover {
-          background: var(--felora-surface);
           border-color: var(--felora-primary);
+          transform: translateY(-4px);
+          box-shadow:
+            0 2px 4px rgba(0, 0, 0, 0.05),
+            0 8px 24px rgba(255, 107, 157, 0.15),
+            0 20px 60px rgba(255, 107, 157, 0.1),
+            inset 0 1px 0 rgba(255, 255, 255, 0.06);
+        }
+
+        .btn-secondary:active {
           transform: translateY(-2px);
         }
 
         .btn-glass {
-          background: var(--felora-surface);
-          backdrop-filter: blur(10px);
+          position: relative;
+          background: rgba(124, 58, 237, 0.04);
+          backdrop-filter: blur(20px);
           color: var(--felora-text-secondary);
-          padding: 10px 20px;
-          border-radius: 12px;
+          padding: 12px 24px;
+          border-radius: 16px;
           font-weight: 500;
           font-size: 14px;
           border: 1px solid var(--felora-border);
@@ -246,9 +448,10 @@ export default function DesignTestPage() {
         }
 
         .btn-glass:hover {
-          background: var(--felora-panel);
+          background: rgba(124, 58, 237, 0.08);
           border-color: var(--felora-primary);
           color: var(--felora-text);
+          transform: translateY(-2px);
         }
 
         .focus-ring:focus {
@@ -272,34 +475,87 @@ export default function DesignTestPage() {
           }
         }
 
-        /* Amélioration de la typographie */
+        /* Amélioration de la typographie premium */
         h1, h2, h3, h4, h5, h6 {
-          letter-spacing: -0.02em;
+          letter-spacing: -0.03em;
           font-weight: 700;
+          line-height: 1.2;
         }
 
         p {
           letter-spacing: -0.01em;
-          line-height: 1.6;
+          line-height: 1.7;
+          font-weight: 400;
+        }
+
+        /* Animation d'apparition avec glow */
+        @keyframes fadeInUpGlow {
+          from {
+            opacity: 0;
+            transform: translateY(40px);
+            filter: blur(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+            filter: blur(0);
+          }
+        }
+
+        /* Effet de particules lumineuses en fond - Couleurs Felora */
+        body::before {
+          content: '';
+          position: fixed;
+          top: -50%;
+          left: -50%;
+          width: 200%;
+          height: 200%;
+          background: radial-gradient(circle at 20% 50%, rgba(255, 107, 157, 0.06) 0%, transparent 50%),
+                      radial-gradient(circle at 80% 80%, rgba(183, 148, 246, 0.05) 0%, transparent 50%),
+                      radial-gradient(circle at 40% 20%, rgba(79, 209, 199, 0.04) 0%, transparent 50%);
+          pointer-events: none;
+          z-index: 0;
+          animation: float 20s ease-in-out infinite;
+        }
+
+        @keyframes float {
+          0%, 100% { transform: translate(0, 0); }
+          33% { transform: translate(30px, -30px); }
+          66% { transform: translate(-20px, 20px); }
+        }
+
+        /* Assurer que le contenu est au-dessus du fond */
+        body > div {
+          position: relative;
+          z-index: 1;
         }
       `}</style>
 
       <div className="min-h-screen" style={{ background: 'var(--felora-void)' }}>
         {/* Header Premium avec Sélecteur de Thème */}
         <header className="sticky top-0 z-50" style={{
-          background: 'rgba(15, 11, 26, 0.8)',
+          background: 'rgba(10, 6, 20, 0.7)',
           borderBottom: '1px solid var(--felora-border)',
-          backdropFilter: 'blur(40px)'
+          backdropFilter: 'blur(60px) saturate(180%)',
+          boxShadow: '0 4px 24px rgba(0, 0, 0, 0.1), inset 0 -1px 0 rgba(124, 58, 237, 0.1)'
         }}>
           <div className="max-w-7xl mx-auto px-8 py-6">
             <div className="flex items-center justify-between flex-wrap gap-6">
-              <div className="flex items-center space-x-4">
-                <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: 'var(--felora-primary)' }}>
-                  <span className="text-2xl">✨</span>
+              <div className="flex items-center space-x-5">
+                <div
+                  className="w-14 h-14 rounded-3xl flex items-center justify-center relative"
+                  style={{
+                    background: 'var(--felora-primary)',
+                    boxShadow: '0 8px 24px rgba(255, 107, 157, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)'
+                  }}
+                >
+                  <span className="text-3xl">💎</span>
                 </div>
                 <div>
-                  <h1 className="text-2xl font-bold gradient-text">Design Test Lab</h1>
-                  <p className="text-sm" style={{ color: 'var(--felora-text-tertiary)' }}>Comparez les chartes graphiques</p>
+                  <h1 className="text-2xl font-bold gradient-text mb-1">Felora Design Lab</h1>
+                  <p className="text-sm font-medium" style={{ color: 'var(--felora-text-tertiary)' }}>
+                    Premium Flat Edition
+                  </p>
                 </div>
               </div>
 
@@ -308,13 +564,18 @@ export default function DesignTestPage() {
                   <button
                     key={themeKey}
                     onClick={() => setSelectedTheme(themeKey)}
-                    className={`px-5 py-2.5 rounded-xl font-medium text-sm transition-all ${
-                      selectedTheme === themeKey ? 'scale-105' : ''
+                    className={`px-5 py-3 rounded-2xl font-semibold text-sm transition-all ${
+                      selectedTheme === themeKey ? 'scale-105' : 'hover:scale-102'
                     }`}
                     style={{
-                      background: selectedTheme === themeKey ? 'var(--felora-primary)' : 'transparent',
+                      background: selectedTheme === themeKey
+                        ? 'var(--felora-primary)'
+                        : 'var(--felora-surface)',
                       color: selectedTheme === themeKey ? 'white' : 'var(--felora-text-secondary)',
-                      border: '1px solid var(--felora-border)',
+                      border: `1px solid ${selectedTheme === themeKey ? 'transparent' : 'var(--felora-border)'}`,
+                      boxShadow: selectedTheme === themeKey
+                        ? '0 4px 16px rgba(255, 107, 157, 0.4)'
+                        : 'none',
                     }}
                   >
                     {THEMES[themeKey].name}

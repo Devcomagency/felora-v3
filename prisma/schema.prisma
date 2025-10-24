@@ -688,6 +688,16 @@ model MediaAccess {
   @@map("media_access")
 }
 
+model MediaView {
+  id        String   @id @default(cuid())
+  mediaId   String
+  timestamp DateTime @default(now())
+  userAgent String?
+  ipHash    String?
+
+  @@map("media_views")
+}
+
 model MediaOrder {
   id        String   @id @default(cuid())
   escortId  String

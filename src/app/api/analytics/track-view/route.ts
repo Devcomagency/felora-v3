@@ -6,33 +6,64 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     console.log('[ANALYTICS DEBUG] Received:', body)
 
-    const { profileId, profileType } = body
+    // Support des deux formats : ancien (profileId/profileType) et nouveau (targetId/viewType)
+    const { 
+      profileId, 
+      profileType, 
+      targetId, 
+      viewType 
+    } = body
 
-    if (!profileId || !profileType) {
-      console.log('[ANALYTICS DEBUG] Missing params:', { profileId, profileType })
+    // Déterminer les paramètres finaux
+    const finalTargetId = targetId || profileId
+    const finalViewType = viewType || profileType
+
+    if (!finalTargetId || !finalViewType) {
+      console.log('[ANALYTICS DEBUG] Missing params:', { finalTargetId, finalViewType })
       return NextResponse.json({ error: 'Paramètres manquants' }, { status: 400 })
     }
 
-    if (profileType === 'escort') {
-      // Incrémenter les vues du profil escort
+    console.log('[ANALYTICS DEBUG] Processing view:', { finalTargetId, finalViewType })
+
+    // Traitement selon le type de vue
+    if (finalViewType === 'escort' || finalViewType === 'profile') {
+      // Vues de profil escort
       await prisma.escortProfile.update({
-        where: { id: profileId },
+        where: { id: finalTargetId },
         data: {
           views: {
             increment: 1
           }
         }
       })
-    } else if (profileType === 'club') {
-      // Incrémenter les vues du profil club
+      console.log('[ANALYTICS DEBUG] ✅ Escort profile view tracked')
+    } else if (finalViewType === 'club') {
+      // Vues de profil club
       await prisma.clubProfile.update({
-        where: { id: profileId },
+        where: { id: finalTargetId },
         data: {
           views: {
             increment: 1
           }
         }
       })
+      console.log('[ANALYTICS DEBUG] ✅ Club profile view tracked')
+    } else if (finalViewType === 'media') {
+      // Vues de média - créer une entrée dans la table media_views
+      try {
+        await prisma.mediaView.create({
+          data: {
+            mediaId: finalTargetId,
+            timestamp: new Date()
+          }
+        })
+        console.log('[ANALYTICS DEBUG] ✅ Media view tracked')
+      } catch (mediaError) {
+        // Si la table n'existe pas encore, on log mais on continue
+        console.log('[ANALYTICS DEBUG] ⚠️ Media view table not ready, skipping:', mediaError)
+      }
+    } else {
+      console.log('[ANALYTICS DEBUG] ⚠️ Unknown view type:', finalViewType)
     }
 
     return NextResponse.json({ success: true })
