@@ -7,27 +7,24 @@ type Theme = 'current' | 'premium' | 'neon' | 'luxury' | 'minimal' | 'sunset' | 
 
 const THEMES = {
   premium: {
-    name: '💎 Premium Flat',
+    name: '💎 Premium Pro',
     vars: {
-      '--felora-void': '#0A0A0F',           // Noir profond élégant
-      '--felora-surface': 'rgba(255, 255, 255, 0.03)', // Surface ultra-subtile
-      '--felora-panel': 'rgba(255, 255, 255, 0.05)',   // Panel léger
-      '--felora-text': '#FEFEFE',           // Blanc cassé
-      '--felora-text-secondary': '#E5E5E7', // Gris très clair
-      '--felora-text-tertiary': '#9E9EA7',  // Gris moyen
-      '--felora-primary': '#FF6B9D',        // Rose électrique Felora
+      '--felora-void': '#0B0B0F',           // Noir avec nuance
+      '--felora-surface': 'rgba(255, 255, 255, 0.06)', // Surface VISIBLE (6% au lieu de 3%)
+      '--felora-panel': 'rgba(255, 255, 255, 0.10)',   // Panel clairement visible (10%)
+      '--felora-elevated': 'rgba(255, 255, 255, 0.14)', // Élevé (pour hover)
+      '--felora-text': '#FFFFFF',           // Blanc PUR (contraste max)
+      '--felora-text-secondary': '#B4B4B8', // Gris MOYEN (pas trop clair)
+      '--felora-text-tertiary': '#6E6E73',  // Gris FONCÉ (hiérarchie claire)
+      '--felora-primary': '#FF6B9D',        // Rose Felora
       '--felora-secondary': '#B794F6',      // Violet Felora
       '--felora-accent': '#4FD1C7',         // Turquoise Felora
-      '--felora-success': '#10B981',        // Vert
-      '--felora-warning': '#F59E0B',        // Orange
-      '--felora-border': 'rgba(255, 255, 255, 0.08)', // Bordure subtile
-      '--felora-grad-primary': '#FF6B9D',   // Pas de dégradé, couleur pleine
-      '--felora-grad-secondary': 'rgba(255, 255, 255, 0.04)',
-      '--felora-glow': 'rgba(255, 107, 157, 0.4)',
-      '--felora-shadow-sm': '0 2px 8px rgba(0, 0, 0, 0.12)',
-      '--felora-shadow-md': '0 8px 32px rgba(0, 0, 0, 0.2)',
-      '--felora-shadow-lg': '0 20px 60px rgba(0, 0, 0, 0.3)',
-      '--felora-shadow-glow': '0 0 40px rgba(255, 107, 157, 0.3)',
+      '--felora-success': '#34D399',        // Vert moderne
+      '--felora-warning': '#FBBF24',        // Jaune moderne
+      '--felora-border': 'rgba(255, 255, 255, 0.12)', // Bordure VISIBLE (12% au lieu de 8%)
+      '--felora-border-strong': 'rgba(255, 255, 255, 0.18)', // Bordure accentuée
+      '--felora-grad-primary': '#FF6B9D',
+      '--felora-glow': 'rgba(255, 107, 157, 0.5)',
     }
   },
   current: {
@@ -184,23 +181,23 @@ export default function DesignTestPage() {
           z-index: 1;
         }
 
-        /* Glass Card - Design Premium Flat épuré */
+        /* Glass Card - VRAIMENT Premium avec lumière */
         .glass-card {
           position: relative;
           background: var(--felora-surface);
-          backdrop-filter: blur(60px) saturate(180%);
+          backdrop-filter: blur(24px) saturate(180%);
           border: 1px solid var(--felora-border);
-          border-radius: 32px;
-          transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+          border-radius: 20px;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
           overflow: hidden;
           box-shadow:
-            0 1px 2px rgba(0, 0, 0, 0.05),
-            0 4px 16px rgba(0, 0, 0, 0.1),
-            0 20px 60px rgba(0, 0, 0, 0.15),
-            inset 0 1px 0 rgba(255, 255, 255, 0.04);
+            0 1px 2px rgba(0, 0, 0, 0.06),
+            0 4px 12px rgba(0, 0, 0, 0.1),
+            0 12px 24px rgba(0, 0, 0, 0.08),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
         }
 
-        /* Ligne lumineuse en haut - couleur primaire */
+        /* Lumière du haut VISIBLE */
         .glass-card::before {
           content: '';
           position: absolute;
@@ -208,70 +205,69 @@ export default function DesignTestPage() {
           left: 0;
           right: 0;
           height: 1px;
-          background: var(--felora-primary);
-          opacity: 0;
-          transition: opacity 0.5s ease;
+          background: linear-gradient(90deg,
+            transparent,
+            rgba(255, 255, 255, 0.4) 50%,
+            transparent
+          );
         }
 
         /* Glow au hover */
         .glass-card::after {
           content: '';
           position: absolute;
-          inset: -1px;
+          inset: -2px;
           background: var(--felora-primary);
           opacity: 0;
-          border-radius: 32px;
+          border-radius: 20px;
           filter: blur(20px);
           z-index: -1;
-          transition: opacity 0.5s ease;
+          transition: opacity 0.3s ease;
         }
 
         .glass-card:hover {
-          background: var(--felora-panel);
-          border-color: rgba(255, 107, 157, 0.3);
-          transform: translateY(-6px);
+          background: var(--felora-elevated);
+          border-color: rgba(255, 107, 157, 0.4);
+          transform: translateY(-2px);
           box-shadow:
-            0 2px 4px rgba(0, 0, 0, 0.05),
-            0 12px 32px rgba(0, 0, 0, 0.15),
-            0 32px 80px rgba(255, 107, 157, 0.2),
-            0 0 0 1px rgba(255, 107, 157, 0.1),
-            inset 0 1px 0 rgba(255, 255, 255, 0.06);
-        }
-
-        .glass-card:hover::before {
-          opacity: 0.4;
+            0 2px 4px rgba(0, 0, 0, 0.06),
+            0 8px 20px rgba(0, 0, 0, 0.12),
+            0 20px 40px rgba(255, 107, 157, 0.15),
+            inset 0 1px 0 rgba(255, 255, 255, 0.15);
         }
 
         .glass-card:hover::after {
-          opacity: 0.08;
+          opacity: 0.12;
         }
 
         .glass-card-strong {
           position: relative;
           background: var(--felora-panel);
-          backdrop-filter: blur(100px) saturate(200%);
-          border: 1.5px solid var(--felora-border);
-          border-radius: 48px;
+          backdrop-filter: blur(40px) saturate(200%);
+          border: 1.5px solid var(--felora-border-strong);
+          border-radius: 32px;
           box-shadow:
-            0 2px 4px rgba(0, 0, 0, 0.03),
-            0 12px 32px rgba(0, 0, 0, 0.12),
-            0 32px 80px rgba(0, 0, 0, 0.2),
-            0 0 100px rgba(255, 107, 157, 0.08),
-            inset 0 2px 0 rgba(255, 255, 255, 0.06),
-            inset 0 -1px 0 rgba(255, 107, 157, 0.1);
+            0 2px 4px rgba(0, 0, 0, 0.06),
+            0 8px 20px rgba(0, 0, 0, 0.1),
+            0 20px 48px rgba(0, 0, 0, 0.12),
+            0 0 60px rgba(255, 107, 157, 0.08),
+            inset 0 1px 0 rgba(255, 255, 255, 0.12);
           overflow: hidden;
         }
 
-        /* Ligne top colorée */
+        /* Ligne top colorée VISIBLE */
         .glass-card-strong::before {
           content: '';
           position: absolute;
           top: 0;
           left: 0;
           right: 0;
-          height: 2px;
-          background: var(--felora-primary);
-          opacity: 0.3;
+          height: 1px;
+          background: linear-gradient(90deg,
+            rgba(255, 107, 157, 0.3),
+            rgba(255, 107, 157, 0.6) 50%,
+            rgba(255, 107, 157, 0.3)
+          );
         }
 
         /* Effet de brillance subtile */
@@ -284,7 +280,7 @@ export default function DesignTestPage() {
           height: 100%;
           background: linear-gradient(90deg,
             transparent,
-            rgba(255, 255, 255, 0.03),
+            rgba(255, 255, 255, 0.04),
             transparent
           );
           animation: shimmer 8s infinite;
@@ -299,31 +295,29 @@ export default function DesignTestPage() {
         .gradient-text {
           color: var(--felora-primary);
           font-weight: 700;
-          letter-spacing: -0.04em;
+          letter-spacing: -0.03em;
           position: relative;
-          text-shadow: 0 0 30px rgba(255, 107, 157, 0.4);
+          text-shadow: 0 0 40px rgba(255, 107, 157, 0.5);
         }
 
-        /* Boutons Premium Flat - Couleur pleine */
+        /* Boutons Premium - Pro Quality */
         .btn-primary {
           position: relative;
           background: var(--felora-primary);
           color: white;
-          padding: 18px 48px;
-          border-radius: 24px;
+          padding: 16px 40px;
+          border-radius: 16px;
           font-weight: 600;
           font-size: 15px;
           border: none;
           cursor: pointer;
-          transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
-          letter-spacing: -0.02em;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          letter-spacing: -0.01em;
           box-shadow:
-            0 1px 2px rgba(0, 0, 0, 0.05),
-            0 4px 16px rgba(255, 107, 157, 0.3),
-            0 16px 48px rgba(255, 107, 157, 0.4),
-            0 0 0 1px rgba(255, 107, 157, 0.2),
-            inset 0 1px 0 rgba(255, 255, 255, 0.2),
-            inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+            0 1px 2px rgba(0, 0, 0, 0.08),
+            0 4px 12px rgba(255, 107, 157, 0.4),
+            0 12px 32px rgba(255, 107, 157, 0.3),
+            inset 0 1px 0 rgba(255, 255, 255, 0.25);
           overflow: hidden;
         }
 
@@ -369,47 +363,45 @@ export default function DesignTestPage() {
 
         .btn-primary:hover {
           background: #FF5A8F;
-          transform: translateY(-4px) scale(1.02);
+          transform: translateY(-2px);
           box-shadow:
-            0 2px 4px rgba(0, 0, 0, 0.05),
-            0 8px 24px rgba(255, 107, 157, 0.4),
-            0 24px 72px rgba(255, 107, 157, 0.6),
-            0 0 0 1px rgba(255, 107, 157, 0.4),
-            inset 0 1px 0 rgba(255, 255, 255, 0.3),
-            inset 0 -1px 0 rgba(0, 0, 0, 0.15);
+            0 2px 4px rgba(0, 0, 0, 0.08),
+            0 8px 20px rgba(255, 107, 157, 0.5),
+            0 20px 48px rgba(255, 107, 157, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.3);
         }
 
         .btn-primary:active {
-          transform: translateY(-2px) scale(1.01);
+          transform: translateY(0px);
         }
 
         .btn-secondary {
           position: relative;
-          background: transparent;
+          background: var(--felora-surface);
           color: var(--felora-text);
-          padding: 18px 48px;
-          border-radius: 24px;
+          padding: 16px 40px;
+          border-radius: 16px;
           font-weight: 600;
           font-size: 15px;
           border: 1.5px solid var(--felora-border);
           cursor: pointer;
-          transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
-          letter-spacing: -0.02em;
-          backdrop-filter: blur(30px);
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          letter-spacing: -0.01em;
+          backdrop-filter: blur(20px);
           overflow: hidden;
           box-shadow:
-            0 1px 2px rgba(0, 0, 0, 0.05),
-            0 4px 12px rgba(0, 0, 0, 0.05),
-            inset 0 1px 0 rgba(255, 255, 255, 0.03);
+            0 1px 2px rgba(0, 0, 0, 0.06),
+            0 2px 8px rgba(0, 0, 0, 0.08),
+            inset 0 1px 0 rgba(255, 255, 255, 0.06);
         }
 
         .btn-secondary::before {
           content: '';
           position: absolute;
           inset: 0;
-          background: var(--felora-surface);
+          background: var(--felora-panel);
           opacity: 0;
-          transition: opacity 0.5s ease;
+          transition: opacity 0.3s ease;
         }
 
         .btn-secondary:hover::before {
@@ -418,16 +410,16 @@ export default function DesignTestPage() {
 
         .btn-secondary:hover {
           border-color: var(--felora-primary);
-          transform: translateY(-4px);
+          transform: translateY(-2px);
           box-shadow:
-            0 2px 4px rgba(0, 0, 0, 0.05),
-            0 8px 24px rgba(255, 107, 157, 0.15),
-            0 20px 60px rgba(255, 107, 157, 0.1),
-            inset 0 1px 0 rgba(255, 255, 255, 0.06);
+            0 2px 4px rgba(0, 0, 0, 0.06),
+            0 4px 16px rgba(255, 107, 157, 0.15),
+            0 12px 32px rgba(255, 107, 157, 0.1),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
         }
 
         .btn-secondary:active {
-          transform: translateY(-2px);
+          transform: translateY(0px);
         }
 
         .btn-glass {
@@ -477,15 +469,24 @@ export default function DesignTestPage() {
 
         /* Amélioration de la typographie premium */
         h1, h2, h3, h4, h5, h6 {
-          letter-spacing: -0.03em;
+          letter-spacing: -0.02em;
           font-weight: 700;
-          line-height: 1.2;
+          line-height: 1.15;
         }
 
         p {
-          letter-spacing: -0.01em;
-          line-height: 1.7;
+          letter-spacing: -0.005em;
+          line-height: 1.6;
           font-weight: 400;
+        }
+
+        /* Augmenter le contraste du texte */
+        h1, h2 {
+          color: var(--felora-text);
+        }
+
+        h3, h4, h5, h6 {
+          color: var(--felora-text-secondary);
         }
 
         /* Animation d'apparition avec glow */

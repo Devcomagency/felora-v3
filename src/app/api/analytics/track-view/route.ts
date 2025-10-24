@@ -6,30 +6,20 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     console.log('[ANALYTICS DEBUG] Received:', body)
 
-    // Support des deux formats : ancien (profileId/profileType) et nouveau (targetId/viewType)
-    const { 
-      profileId, 
-      profileType, 
-      targetId, 
-      viewType 
-    } = body
+    const { profileId, profileType } = body
 
-    // Déterminer les paramètres finaux
-    const finalTargetId = targetId || profileId
-    const finalViewType = viewType || profileType
-
-    if (!finalTargetId || !finalViewType) {
-      console.log('[ANALYTICS DEBUG] Missing params:', { finalTargetId, finalViewType })
+    if (!profileId || !profileType) {
+      console.log('[ANALYTICS DEBUG] Missing params:', { profileId, profileType })
       return NextResponse.json({ error: 'Paramètres manquants' }, { status: 400 })
     }
 
-    console.log('[ANALYTICS DEBUG] Processing view:', { finalTargetId, finalViewType })
+    console.log('[ANALYTICS DEBUG] Processing profile view:', { profileId, profileType })
 
-    // Traitement selon le type de vue
-    if (finalViewType === 'escort' || finalViewType === 'profile') {
+    // Traitement selon le type de profil
+    if (profileType === 'escort') {
       // Vues de profil escort
       await prisma.escortProfile.update({
-        where: { id: finalTargetId },
+        where: { id: profileId },
         data: {
           views: {
             increment: 1
@@ -37,10 +27,10 @@ export async function POST(request: NextRequest) {
         }
       })
       console.log('[ANALYTICS DEBUG] ✅ Escort profile view tracked')
-    } else if (finalViewType === 'club') {
+    } else if (profileType === 'club') {
       // Vues de profil club
       await prisma.clubProfile.update({
-        where: { id: finalTargetId },
+        where: { id: profileId },
         data: {
           views: {
             increment: 1
@@ -48,22 +38,8 @@ export async function POST(request: NextRequest) {
         }
       })
       console.log('[ANALYTICS DEBUG] ✅ Club profile view tracked')
-    } else if (finalViewType === 'media') {
-      // Vues de média - créer une entrée dans la table media_views
-      try {
-        await prisma.mediaView.create({
-          data: {
-            mediaId: finalTargetId,
-            timestamp: new Date()
-          }
-        })
-        console.log('[ANALYTICS DEBUG] ✅ Media view tracked')
-      } catch (mediaError) {
-        // Si la table n'existe pas encore, on log mais on continue
-        console.log('[ANALYTICS DEBUG] ⚠️ Media view table not ready, skipping:', mediaError)
-      }
     } else {
-      console.log('[ANALYTICS DEBUG] ⚠️ Unknown view type:', finalViewType)
+      console.log('[ANALYTICS DEBUG] ⚠️ Unknown profile type:', profileType)
     }
 
     return NextResponse.json({ success: true })

@@ -6,7 +6,6 @@ import { ArrowLeft, Heart, Play, Crown, Smile, Share, MoreVertical, Flag, Edit, 
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import useReactions, { ReactionType } from '../../../src/hooks/useReactions'
-import { useMediaViews } from '../../../src/hooks/useMediaViews'
 import { useMediaInteractions } from '../../../src/hooks/useProfileInteractions'
 import ReactionBar from '../../../src/components/reactions/ReactionBar'
 import { stableMediaId } from '@/lib/reactions/stableMediaId'
@@ -80,7 +79,6 @@ function MediaPlayer({ id, type, url, thumb, poster, index, isActive, profileId,
   const mediaId = useMemo(() => stableMediaId({ rawId: null, profileId, url }), [id, profileId, url])
   
   const { stats, userHasLiked, userReactions, toggleReaction } = useReactions(mediaId, effectiveUserId, refreshTrigger)
-  const { viewCount } = useMediaViews(mediaId)
   
 
   const trackMediaView = useCallback(async (mediaUrl: string, mediaIndex: number) => {
@@ -168,7 +166,7 @@ function MediaPlayer({ id, type, url, thumb, poster, index, isActive, profileId,
         <div className="absolute bottom-2 right-2">
           <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-black/70 backdrop-blur-sm text-white text-xs">
             <Flame className="w-4 h-4 text-violet-300" />
-            <span>{viewCount}</span>
+            <span>{(stats?.total ?? 0) + (optimisticDelta || 0)}</span>
           </div>
         </div>
 
@@ -205,7 +203,7 @@ function MediaPlayer({ id, type, url, thumb, poster, index, isActive, profileId,
       <div className="absolute bottom-2 right-2">
         <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-black/70 backdrop-blur-sm text-white text-xs">
           <Flame className="w-4 h-4 text-violet-300" />
-          <span>{viewCount}</span>
+          <span>{(stats?.total ?? 0) + (optimisticDelta || 0)}</span>
         </div>
       </div>
 
