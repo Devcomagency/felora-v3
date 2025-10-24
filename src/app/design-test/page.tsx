@@ -10,11 +10,11 @@ const THEMES = {
   premium: {
     name: 'Premium Pro',
     vars: {
-      // === COULEURS DE BASE ===
-      '--felora-void': '#0B0B0F',           // Noir avec nuance
-      '--felora-surface': 'rgba(255, 255, 255, 0.06)', // Surface VISIBLE (6% au lieu de 3%)
-      '--felora-panel': 'rgba(255, 255, 255, 0.10)',   // Panel clairement visible (10%)
-      '--felora-elevated': 'rgba(255, 255, 255, 0.14)', // Élevé (pour hover)
+      // === COULEURS PREMIUM RENFORCÉES ===
+      '--felora-void': '#0A0A0E',           // Noir plus profond
+      '--felora-surface': 'rgba(255, 255, 255, 0.15)', // Surface FORTEMENT visible (15%)
+      '--felora-panel': 'rgba(255, 255, 255, 0.22)',   // Panel très visible (22%)
+      '--felora-elevated': 'rgba(255, 255, 255, 0.30)', // Élevé premium (30%)
       '--felora-text': '#FFFFFF',           // Blanc PUR (contraste max)
       '--felora-text-secondary': '#B4B4B8', // Gris MOYEN (pas trop clair)
       '--felora-text-tertiary': '#6E6E73',  // Gris FONCÉ (hiérarchie claire)
@@ -23,10 +23,12 @@ const THEMES = {
       '--felora-accent': '#4FD1C7',         // Turquoise Felora
       '--felora-success': '#34D399',        // Vert moderne
       '--felora-warning': '#FBBF24',        // Jaune moderne
-      '--felora-border': 'rgba(255, 255, 255, 0.12)', // Bordure VISIBLE (12% au lieu de 8%)
-      '--felora-border-strong': 'rgba(255, 255, 255, 0.18)', // Bordure accentuée
+      '--felora-border': 'rgba(255, 255, 255, 0.25)', // Bordure FORTEMENT visible (25%)
+      '--felora-border-strong': 'rgba(255, 255, 255, 0.35)', // Bordure accentuée premium
       '--felora-grad-primary': '#FF6B9D',
-      '--felora-glow': 'rgba(255, 107, 157, 0.5)',
+      '--felora-glow': 'rgba(255, 107, 157, 0.8)', // Glow RENFORCÉ (80%)
+      '--felora-glow-secondary': 'rgba(183, 148, 246, 0.6)', // Glow violet
+      '--felora-glow-accent': 'rgba(79, 209, 199, 0.5)', // Glow turquoise
       
       // === TOKENS DE DESIGN ===
       // Espacement - HIÉRARCHIE AMÉLIORÉE
@@ -244,13 +246,19 @@ export default function DesignTestPage() {
         /* Glass Card - OPTIMISÉ pour la performance */
         .glass-card {
           position: relative;
-          background: var(--felora-surface);
-          backdrop-filter: blur(20px) saturate(150%);
+          background: linear-gradient(135deg, 
+            var(--felora-surface) 0%, 
+            rgba(255, 255, 255, 0.05) 50%, 
+            var(--felora-panel) 100%);
+          backdrop-filter: blur(24px) saturate(200%);
           border: 1px solid var(--felora-border);
           border-radius: var(--radius-2xl);
           transition: var(--transition-normal);
           overflow: hidden;
-          box-shadow: var(--shadow-md);
+          box-shadow: 
+            var(--shadow-lg),
+            0 0 0 1px rgba(255, 255, 255, 0.05),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
           will-change: transform;
           transform: translateZ(0);
         }
@@ -273,17 +281,22 @@ export default function DesignTestPage() {
           border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
         }
 
-        /* Glow au hover */
+        /* Glow DRAMATIQUE au hover */
         .glass-card::after {
           content: '';
           position: absolute;
-          inset: -2px;
-          background: var(--felora-primary);
+          inset: -4px;
+          background: linear-gradient(45deg, 
+            var(--felora-glow) 0%, 
+            var(--felora-glow-secondary) 25%, 
+            var(--felora-glow-accent) 50%, 
+            var(--felora-glow-secondary) 75%, 
+            var(--felora-glow) 100%);
           opacity: 0;
-          border-radius: 20px;
-          filter: blur(20px);
+          border-radius: 24px;
+          filter: blur(16px);
           z-index: -1;
-          transition: opacity 0.3s ease;
+          transition: opacity var(--transition-normal);
         }
 
         .glass-card:hover {
@@ -294,7 +307,7 @@ export default function DesignTestPage() {
         }
 
         .glass-card:hover::after {
-          opacity: 0.2;
+          opacity: 0.8;
         }
 
         /* Reflets supplémentaires au hover */
@@ -358,31 +371,50 @@ export default function DesignTestPage() {
         }
 
         .gradient-text {
-          background: linear-gradient(135deg, #FF6B9D 0%, #B794F6 50%, #4FD1C7 100%);
+          background: linear-gradient(135deg, 
+            #FF6B9D 0%, 
+            #FF8E9B 15%, 
+            #B794F6 35%, 
+            #9B7EDB 50%, 
+            #4FD1C7 70%, 
+            #2DD4BF 85%, 
+            #FF6B9D 100%);
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
           background-clip: text;
-          font-weight: 700;
-          letter-spacing: -0.03em;
+          font-weight: 800;
+          letter-spacing: -0.05em;
           position: relative;
-          text-shadow: 0 0 60px rgba(255, 107, 157, 0.6);
-          filter: drop-shadow(0 0 20px rgba(255, 107, 157, 0.3));
+          text-shadow: 0 0 80px rgba(255, 107, 157, 0.8);
+          filter: drop-shadow(0 0 30px rgba(255, 107, 157, 0.5));
+          background-size: 200% 200%;
+          animation: gradientShift 3s ease-in-out infinite;
+        }
+
+        @keyframes gradientShift {
+          0%, 100% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
         }
 
         /* Boutons Premium - OPTIMISÉS */
         .btn-primary {
           position: relative;
-          background: var(--felora-primary);
+          background: linear-gradient(135deg, 
+            #FF6B9D 0%, 
+            #FF8E9B 50%, 
+            #B794F6 100%);
           color: white;
           padding: var(--space-4) var(--space-10);
           border-radius: var(--radius-xl);
-          font-weight: 600;
+          font-weight: 700;
           font-size: var(--text-sm);
-          border: none;
+          border: 1px solid rgba(255, 255, 255, 0.2);
           cursor: pointer;
           transition: var(--transition-normal);
           letter-spacing: -0.01em;
-          box-shadow: var(--shadow-md), var(--shadow-glow);
+          box-shadow: 
+            0 8px 32px rgba(255, 107, 157, 0.6),
+            0 0 0 1px rgba(255, 255, 255, 0.1);
           overflow: hidden;
           will-change: transform;
           transform: translateZ(0);
@@ -1032,17 +1064,20 @@ export default function DesignTestPage() {
             </div>
           </section>
 
-          {/* Statement Element - ÉLÉMENT PHARE */}
+          {/* Statement Element - ULTRA-PREMIUM */}
           <section className="mb-40">
             <div className="glass-card-strong p-24 text-center relative overflow-hidden" style={{
-              background: 'linear-gradient(135deg, var(--felora-panel) 0%, rgba(255, 107, 157, 0.1) 50%, var(--felora-elevated) 100%)',
-              border: '2px solid rgba(255, 107, 157, 0.3)'
+              background: 'linear-gradient(135deg, var(--felora-panel) 0%, rgba(255, 107, 157, 0.15) 25%, rgba(183, 148, 246, 0.1) 50%, rgba(79, 209, 199, 0.1) 75%, var(--felora-elevated) 100%)',
+              border: '3px solid rgba(255, 107, 157, 0.5)',
+              boxShadow: '0 20px 60px rgba(255, 107, 157, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1)'
             }}>
-              {/* Effet de particules en arrière-plan */}
-              <div className="absolute inset-0 opacity-20">
-                <div className="absolute top-10 left-10 w-32 h-32 rounded-full bg-felora-primary blur-3xl"></div>
-                <div className="absolute bottom-10 right-10 w-40 h-40 rounded-full bg-felora-secondary blur-3xl"></div>
-                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-24 h-24 rounded-full bg-felora-accent blur-2xl"></div>
+              {/* Effet de particules ULTRA-PREMIUM */}
+              <div className="absolute inset-0 opacity-30">
+                <div className="absolute top-10 left-10 w-40 h-40 rounded-full bg-felora-primary blur-3xl animate-pulse"></div>
+                <div className="absolute bottom-10 right-10 w-48 h-48 rounded-full bg-felora-secondary blur-3xl animate-pulse" style={{animationDelay: '1s'}}></div>
+                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full bg-felora-accent blur-2xl animate-pulse" style={{animationDelay: '2s'}}></div>
+                <div className="absolute top-20 right-20 w-24 h-24 rounded-full bg-felora-success blur-2xl animate-pulse" style={{animationDelay: '0.5s'}}></div>
+                <div className="absolute bottom-20 left-20 w-28 h-28 rounded-full bg-felora-warning blur-2xl animate-pulse" style={{animationDelay: '1.5s'}}></div>
               </div>
               
               <div className="relative z-10">
