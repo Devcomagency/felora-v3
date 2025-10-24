@@ -29,7 +29,7 @@ const THEMES = {
       '--felora-glow': 'rgba(255, 107, 157, 0.5)',
       
       // === TOKENS DE DESIGN ===
-      // Espacement
+      // Espacement - HIÉRARCHIE AMÉLIORÉE
       '--space-1': '0.25rem',    // 4px
       '--space-2': '0.5rem',     // 8px
       '--space-3': '0.75rem',    // 12px
@@ -38,10 +38,12 @@ const THEMES = {
       '--space-6': '1.5rem',     // 24px
       '--space-8': '2rem',       // 32px
       '--space-10': '2.5rem',    // 40px
-      '--space-12': '3rem',      // 48px
+      '--space-12': '3rem',      // 48px - Petite section
       '--space-16': '4rem',      // 64px
-      '--space-20': '5rem',      // 80px
+      '--space-20': '5rem',      // 80px - Section normale
       '--space-24': '6rem',      // 96px
+      '--space-32': '8rem',      // 128px - Section importante
+      '--space-40': '10rem',     // 160px - Hero section
       
       // Typographie
       '--text-xs': '0.75rem',    // 12px
@@ -253,19 +255,22 @@ export default function DesignTestPage() {
           transform: translateZ(0);
         }
 
-        /* Lumière du haut VISIBLE */
+        /* Lumière du haut ENHANCED avec reflets */
         .glass-card::before {
           content: '';
           position: absolute;
           top: 0;
           left: 0;
           right: 0;
-          height: 1px;
+          height: 2px;
           background: linear-gradient(90deg,
             transparent,
-            rgba(255, 255, 255, 0.4) 50%,
+            rgba(255, 255, 255, 0.6) 30%,
+            rgba(255, 107, 157, 0.4) 50%,
+            rgba(255, 255, 255, 0.6) 70%,
             transparent
           );
+          border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
         }
 
         /* Glow au hover */
@@ -289,7 +294,18 @@ export default function DesignTestPage() {
         }
 
         .glass-card:hover::after {
-          opacity: 0.12;
+          opacity: 0.2;
+        }
+
+        /* Reflets supplémentaires au hover */
+        .glass-card:hover::before {
+          background: linear-gradient(90deg,
+            transparent,
+            rgba(255, 255, 255, 0.8) 30%,
+            rgba(255, 107, 157, 0.6) 50%,
+            rgba(255, 255, 255, 0.8) 70%,
+            transparent
+          );
         }
 
         .glass-card-strong {
@@ -342,11 +358,15 @@ export default function DesignTestPage() {
         }
 
         .gradient-text {
-          color: var(--felora-primary);
+          background: linear-gradient(135deg, #FF6B9D 0%, #B794F6 50%, #4FD1C7 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
           font-weight: 700;
           letter-spacing: -0.03em;
           position: relative;
-          text-shadow: 0 0 40px rgba(255, 107, 157, 0.5);
+          text-shadow: 0 0 60px rgba(255, 107, 157, 0.6);
+          filter: drop-shadow(0 0 20px rgba(255, 107, 157, 0.3));
         }
 
         /* Boutons Premium - OPTIMISÉS */
@@ -657,14 +677,32 @@ export default function DesignTestPage() {
           100% { background-position: -200% 0; }
         }
 
-        /* Hover micro-interactions */
+        /* Hover micro-interactions ENHANCED */
         .glass-card {
           cursor: pointer;
+          transition: all var(--transition-normal);
         }
 
         .glass-card:active {
           transform: scale(0.98);
           transition: var(--transition-fast);
+        }
+
+        /* Transitions sur tous les éléments interactifs */
+        h1, h2, h3, h4, h5, h6 {
+          transition: color var(--transition-normal);
+        }
+
+        p, span, div {
+          transition: color var(--transition-normal);
+        }
+
+        /* Glow enhanced au hover */
+        .glass-card:hover {
+          box-shadow: 
+            var(--shadow-lg), 
+            0 0 40px rgba(255, 107, 157, 0.4),
+            0 0 80px rgba(183, 148, 246, 0.2);
         }
 
         /* Button press feedback */
@@ -762,7 +800,7 @@ export default function DesignTestPage() {
 
         <main className="container py-16">
           {/* Palette de couleurs */}
-          <section className="mb-20">
+          <section className="mb-32">
             <h3 className="text-xl font-semibold mb-8" style={{ color: 'var(--felora-text-secondary)' }}>
               Palette • {THEMES[selectedTheme].name}
             </h3>
@@ -789,11 +827,11 @@ export default function DesignTestPage() {
           </section>
 
           {/* Hero Section */}
-          <section className="mb-20">
+          <section className="mb-40">
             <h3 className="text-xl font-semibold mb-8" style={{ color: 'var(--felora-text-secondary)' }}>
               Hero Section
             </h3>
-            <div className="glass-card-strong p-16 text-center">
+            <div className="glass-card-strong p-24 text-center">
               <h2 className="text-6xl font-bold mb-6 gradient-text">
                 Bienvenue sur Felora
               </h2>
@@ -812,14 +850,14 @@ export default function DesignTestPage() {
           </section>
 
           {/* Cards Grid */}
-          <section className="mb-20">
+          <section className="mb-32">
             <h3 className="text-xl font-semibold mb-8" style={{ color: 'var(--felora-text-secondary)' }}>
               Composants Premium
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-8">
               
               {/* Card 1 - Profil */}
-              <div className="glass-card p-6 animate-fade-in-up">
+              <div className="glass-card p-8 animate-fade-in-up">
                 <div className="flex items-center mb-4">
                   <div className="w-12 h-12 rounded-full bg-felora-primary mr-4"></div>
                   <div>
@@ -846,7 +884,7 @@ export default function DesignTestPage() {
               </div>
 
               {/* Card 2 - Statistiques */}
-              <div className="glass-card p-6 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+              <div className="glass-card p-8 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
                 <h4 className="font-semibold mb-4">Statistiques</h4>
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
@@ -877,7 +915,7 @@ export default function DesignTestPage() {
               </div>
 
               {/* Card 3 - Actions */}
-              <div className="glass-card p-6 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+              <div className="glass-card p-8 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
                 <h4 className="font-semibold mb-4">Actions Rapides</h4>
                 <div className="space-y-3">
                   <button className="w-full btn-primary flex items-center justify-center">
@@ -989,6 +1027,49 @@ export default function DesignTestPage() {
                 <div className="text-3xl font-bold text-felora-accent mb-2">A+</div>
                 <div className="text-sm" style={{ color: 'var(--felora-text-secondary)' }}>
                   Accessibilité
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Statement Element - ÉLÉMENT PHARE */}
+          <section className="mb-40">
+            <div className="glass-card-strong p-24 text-center relative overflow-hidden" style={{
+              background: 'linear-gradient(135deg, var(--felora-panel) 0%, rgba(255, 107, 157, 0.1) 50%, var(--felora-elevated) 100%)',
+              border: '2px solid rgba(255, 107, 157, 0.3)'
+            }}>
+              {/* Effet de particules en arrière-plan */}
+              <div className="absolute inset-0 opacity-20">
+                <div className="absolute top-10 left-10 w-32 h-32 rounded-full bg-felora-primary blur-3xl"></div>
+                <div className="absolute bottom-10 right-10 w-40 h-40 rounded-full bg-felora-secondary blur-3xl"></div>
+                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-24 h-24 rounded-full bg-felora-accent blur-2xl"></div>
+              </div>
+              
+              <div className="relative z-10">
+                <h2 className="text-7xl font-black mb-8 gradient-text" style={{
+                  background: 'linear-gradient(135deg, #FF6B9D 0%, #B794F6 50%, #4FD1C7 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  textShadow: '0 0 60px rgba(255, 107, 157, 0.5)'
+                }}>
+                  DESIGN SYSTEM
+                </h2>
+                <h3 className="text-4xl font-bold mb-6" style={{ color: 'var(--felora-text)' }}>
+                  Premium Pro Edition
+                </h3>
+                <p className="text-2xl mb-12 max-w-4xl mx-auto leading-relaxed" style={{ color: 'var(--felora-text-secondary)' }}>
+                  Un système de design complet, optimisé pour la performance, 
+                  avec des micro-interactions sophistiquées et une accessibilité parfaite.
+                </p>
+                <div className="flex gap-6 justify-center flex-wrap">
+                  <button className="btn-primary text-lg px-8 py-4">
+                    <Sparkles size={20} className="mr-2" />
+                    Découvrir
+                  </button>
+                  <button className="btn-secondary text-lg px-8 py-4">
+                    <Heart size={20} className="mr-2" />
+                    Tester
+                  </button>
                 </div>
               </div>
             </div>
