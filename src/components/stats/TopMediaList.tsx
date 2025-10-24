@@ -19,10 +19,16 @@ export default function TopMediaList({ items, loading, onExport, onBoost }:{ ite
           <div key={m.id} className="flex items-center gap-3 p-3 rounded-xl border border-white/10 hover:bg-white/5">
             <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white text-sm font-bold">{m.rank}</div>
             <div className="w-12 h-12 rounded-lg overflow-hidden bg-white/10 relative">
-              {isVideoThumb ? (
-                <video src={m.thumb} poster="/api/placeholder/48x48" className="w-full h-full object-cover" muted playsInline />
+              {m.thumb ? (
+                isVideoThumb ? (
+                  <video src={m.thumb} poster="/api/placeholder/48x48" className="w-full h-full object-cover" muted playsInline />
+                ) : (
+                  <Image src={m.thumb} alt={m.title} fill sizes="48px" className="object-cover" loading="lazy" />
+                )
               ) : (
-                <Image src={m.thumb} alt={m.title} fill sizes="48px" className="object-cover" loading="lazy" />
+                <div className="w-full h-full bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center">
+                  <span className="text-white/60 text-xs">?</span>
+                </div>
               )}
             </div>
             <div className="flex-1">

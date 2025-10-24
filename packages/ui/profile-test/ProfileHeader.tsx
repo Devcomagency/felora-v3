@@ -166,7 +166,7 @@ export default function ProfileHeader({
               <div className="relative">
                 <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-pink-500 via-purple-500 to-blue-500 p-0.5">
                   <img
-                    src={avatar || '/placeholder-avatar.jpg'}
+                    src={avatar || '/logo-principal.png'}
                     alt={name}
                     className="w-full h-full rounded-full object-cover border-2 border-black"
                   />

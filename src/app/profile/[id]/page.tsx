@@ -229,7 +229,7 @@ export default function EscortProfilePage() {
           userId: data.userId, // AJOUT: userId pour isOwner check
           name: data.stageName || 'Escort',
           stageName: data.stageName,
-          avatar: normalizedMedia?.[0]?.url,
+          avatar: normalizedMedia?.[0]?.url || '/logo-principal.png',
           city: data.city,
           age: data.age || undefined,
           languages: data.languages || [],

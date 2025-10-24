@@ -1,94 +1,114 @@
-/**
- * Script pour corriger les URLs "undefined/profiles/..." en base de données
- * Remplace "undefined" par "https://media.felora.ch"
- */
-
 const { PrismaClient } = require('@prisma/client')
+
 const prisma = new PrismaClient()
 
 async function fixUndefinedUrls() {
-  console.log('🔍 Recherche des URLs corrompues...\n')
-
-  // 1. Vérifier EscortProfile.profilePhoto
-  const escortsWithBadUrls = await prisma.escortProfile.findMany({
-    where: {
-      profilePhoto: {
-        startsWith: 'undefined/'
+  console.log('🔍 Recherche des URLs avec "undefined"...')
+  
+  try {
+    // 1. Vérifier les profils escort avec des URLs undefined
+    const escortProfiles = await prisma.escortProfile.findMany({
+      where: {
+        OR: [
+          { profilePhoto: { contains: 'undefined' } },
+          { galleryPhotos: { contains: 'undefined' } }
+        ]
+      },
+      select: {
+        id: true,
+        stageName: true,
+        profilePhoto: true,
+        galleryPhotos: true
       }
-    },
-    select: {
-      id: true,
-      stageName: true,
-      profilePhoto: true
-    }
-  })
-
-  console.log(`📸 Profils escortes avec URLs corrompues : ${escortsWithBadUrls.length}`)
-  escortsWithBadUrls.forEach(escort => {
-    console.log(`  - ${escort.stageName}: ${escort.profilePhoto}`)
-  })
-
-  // 2. Vérifier Media.url
-  const mediaWithBadUrls = await prisma.media.findMany({
-    where: {
-      url: {
-        startsWith: 'undefined/'
+    })
+    
+    console.log(`📊 Trouvé ${escortProfiles.length} profils escort avec des URLs undefined`)
+    
+    for (const profile of escortProfiles) {
+      console.log(`\n🔧 Correction du profil: ${profile.stageName} (${profile.id})`)
+      
+      // Corriger profilePhoto
+      if (profile.profilePhoto && profile.profilePhoto.includes('undefined')) {
+        console.log(`  ❌ ProfilePhoto undefined: ${profile.profilePhoto}`)
+        // Remplacer undefined par l'URL correcte
+        const correctedPhoto = profile.profilePhoto.replace('undefined/', 'https://media.felora.ch/')
+        console.log(`  ✅ Corrigé vers: ${correctedPhoto}`)
+        
+        await prisma.escortProfile.update({
+          where: { id: profile.id },
+          data: { profilePhoto: correctedPhoto }
+        })
       }
-    },
-    select: {
-      id: true,
-      url: true,
-      type: true
+      
+      // Corriger galleryPhotos
+      if (profile.galleryPhotos && profile.galleryPhotos.includes('undefined')) {
+        console.log(`  ❌ GalleryPhotos contient undefined`)
+        try {
+          const galleryData = JSON.parse(profile.galleryPhotos)
+          let corrected = false
+          
+          if (Array.isArray(galleryData)) {
+            const correctedGallery = galleryData.map(item => {
+              if (item.url && item.url.includes('undefined')) {
+                corrected = true
+                return {
+                  ...item,
+                  url: item.url.replace('undefined/', 'https://media.felora.ch/')
+                }
+              }
+              return item
+            })
+            
+            if (corrected) {
+              console.log(`  ✅ GalleryPhotos corrigé`)
+              await prisma.escortProfile.update({
+                where: { id: profile.id },
+                data: { galleryPhotos: JSON.stringify(correctedGallery) }
+              })
+            }
+          }
+        } catch (error) {
+          console.log(`  ⚠️ Erreur parsing galleryPhotos: ${error.message}`)
+        }
+      }
     }
-  })
-
-  console.log(`\n🎬 Médias avec URLs corrompues : ${mediaWithBadUrls.length}`)
-  mediaWithBadUrls.forEach(media => {
-    console.log(`  - ${media.type}: ${media.url}`)
-  })
-
-  // 3. Demander confirmation
-  if (escortsWithBadUrls.length === 0 && mediaWithBadUrls.length === 0) {
-    console.log('\n✅ Aucune URL corrompue trouvée !')
+    
+    // 2. Vérifier la table Media
+    const mediaItems = await prisma.media.findMany({
+      where: {
+        url: { contains: 'undefined' }
+      },
+      select: {
+        id: true,
+        url: true,
+        ownerId: true,
+        ownerType: true
+      }
+    })
+    
+    console.log(`\n📊 Trouvé ${mediaItems.length} médias avec des URLs undefined`)
+    
+    for (const media of mediaItems) {
+      console.log(`\n🔧 Correction du média: ${media.id}`)
+      console.log(`  ❌ URL undefined: ${media.url}`)
+      
+      const correctedUrl = media.url.replace('undefined/', 'https://media.felora.ch/')
+      console.log(`  ✅ Corrigé vers: ${correctedUrl}`)
+      
+      await prisma.media.update({
+        where: { id: media.id },
+        data: { url: correctedUrl }
+      })
+    }
+    
+    console.log('\n✅ Correction terminée!')
+    
+  } catch (error) {
+    console.error('❌ Erreur:', error)
+  } finally {
     await prisma.$disconnect()
-    return
   }
-
-  console.log('\n🔧 Correction des URLs...')
-
-  // 4. Corriger EscortProfile
-  let fixedEscorts = 0
-  for (const escort of escortsWithBadUrls) {
-    const newUrl = escort.profilePhoto.replace('undefined/', 'https://media.felora.ch/')
-    await prisma.escortProfile.update({
-      where: { id: escort.id },
-      data: { profilePhoto: newUrl }
-    })
-    console.log(`  ✓ ${escort.stageName}: ${newUrl}`)
-    fixedEscorts++
-  }
-
-  // 5. Corriger Media
-  let fixedMedia = 0
-  for (const media of mediaWithBadUrls) {
-    const newUrl = media.url.replace('undefined/', 'https://media.felora.ch/')
-    await prisma.media.update({
-      where: { id: media.id },
-      data: { url: newUrl }
-    })
-    console.log(`  ✓ Media ${media.id}: ${newUrl}`)
-    fixedMedia++
-  }
-
-  console.log(`\n✅ Correction terminée !`)
-  console.log(`   - Profils corrigés : ${fixedEscorts}`)
-  console.log(`   - Médias corrigés : ${fixedMedia}`)
-
-  await prisma.$disconnect()
 }
 
+// Exécuter le script
 fixUndefinedUrls()
-  .catch((error) => {
-    console.error('❌ Erreur:', error)
-    process.exit(1)
-  })

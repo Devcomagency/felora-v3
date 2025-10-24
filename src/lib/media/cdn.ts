@@ -4,7 +4,10 @@
  */
 
 // URL publique du CDN Cloudflare R2
-const CDN_BASE_URL = process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL || 'https://media.felora.ch'
+// Note: On utilise NEXT_PUBLIC_ pour le client ET sans préfixe pour le serveur
+const CDN_BASE_URL = process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL ||
+                     process.env.CLOUDFLARE_R2_PUBLIC_URL ||
+                     'https://media.felora.ch'
 
 /**
  * Construit une URL CDN complète pour un média

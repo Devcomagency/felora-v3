@@ -11,6 +11,35 @@ import { rateLimit, getClientIdentifier } from '../../../../../../packages/core/
 
 const prisma = new PrismaClient()
 
+/**
+ * Construit l'URL complète d'un média
+ * - URLs complètes (http/https) : retournées telles quelles
+ * - Chemins R2 (/profiles/, /uploads/, /clubs/) : préfixés avec le domaine R2
+ * - Autres chemins (ex: /icons/) : retournés tels quels (fichiers locaux)
+ */
+function buildMediaUrl(url: string | null | undefined): string | null {
+  if (!url) return null
+
+  // Si c'est déjà une URL complète (http ou https), on la retourne telle quelle
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url
+  }
+
+  // Chemins R2 : on ajoute le domaine R2
+  const R2_PATHS = ['/profiles/', '/uploads/', '/clubs/', '/media/']
+  const isR2Path = R2_PATHS.some(prefix => url.startsWith(prefix))
+
+  if (isR2Path) {
+    const R2_PUBLIC_URL = process.env.CLOUDFLARE_R2_PUBLIC_URL ||
+                          process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL ||
+                          'https://media.felora.ch'
+    return `${R2_PUBLIC_URL}${url}`
+  }
+
+  // Autres chemins (fichiers locaux comme /icons/) : retourner tel quel
+  return url
+}
+
 // Simple memory cache for profiles (5 minute TTL)
 const profileCache = new Map<string, { data: any; expires: number }>()
 const CACHE_TTL = 5 * 60 * 1000 // 5 minutes

@@ -11,6 +11,35 @@ import { rateLimit, getClientIdentifier } from '../../../../../../packages/core/
 
 const prisma = new PrismaClient()
 
+/**
+ * Construit l'URL complète d'un média
+ * - URLs complètes (http/https) : retournées telles quelles
+ * - Chemins R2 (/profiles/, /uploads/, /clubs/) : préfixés avec le domaine R2
+ * - Autres chemins (ex: /icons/) : retournés tels quels (fichiers locaux)
+ */
+function buildMediaUrl(url: string | null | undefined): string | null {
+  if (!url) return null
+
+  // Si c'est déjà une URL complète (http ou https), on la retourne telle quelle
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url
+  }
+
+  // Chemins R2 : on ajoute le domaine R2
+  const R2_PATHS = ['/profiles/', '/uploads/', '/clubs/', '/media/']
+  const isR2Path = R2_PATHS.some(prefix => url.startsWith(prefix))
+
+  if (isR2Path) {
+    const R2_PUBLIC_URL = process.env.CLOUDFLARE_R2_PUBLIC_URL ||
+                          process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL ||
+                          'https://media.felora.ch'
+    return `${R2_PUBLIC_URL}${url}`
+  }
+
+  // Autres chemins (fichiers locaux comme /icons/) : retourner tel quel
+  return url
+}
+
 // Simple memory cache for profiles (5 minute TTL)
 const profileCache = new Map<string, { data: any; expires: number }>()
 const CACHE_TTL = 5 * 60 * 1000 // 5 minutes
@@ -198,16 +227,8 @@ export async function GET(
           dbId: club.id, // ID de la base de données pour les API internes
           name: details?.name || club.companyName || 'Club',
           handle: club.handle,
-          avatar: profilePhoto?.url ? (
-            profilePhoto.url.startsWith('/uploads/')
-              ? `http://localhost:3000${profilePhoto.url}`
-              : profilePhoto.url
-          ) : details?.avatarUrl || null, // Utiliser la photo de profil (pos 0) ou fallback
-          footerMedia: footerPhoto?.url ? (
-            footerPhoto.url.startsWith('/uploads/')
-              ? `http://localhost:3000${footerPhoto.url}`
-              : footerPhoto.url
-          ) : null, // Média footer (pos 1)
+          avatar: buildMediaUrl(profilePhoto?.url) || details?.avatarUrl || null,
+          footerMedia: buildMediaUrl(footerPhoto?.url),
           city: details?.city || null,
           description: details?.description || null,
           verified: club.verified || false,
@@ -217,10 +238,8 @@ export async function GET(
             .filter((m: any) => m.pos === 0 || m.pos >= 2) // Inclure la photo de couverture (pos 0) ET les médias de publication (pos 2+)
             .map((m: any) => ({
               type: m.type.toLowerCase() as 'image' | 'video',
-              url: m.url.startsWith('/uploads/')
-                ? `http://localhost:3000${m.url}` // Ajouter le domaine pour les uploads locaux
-                : m.url, // Utiliser les vraies URLs (pas de mock)
-              thumb: m.thumbUrl || null, // Use null instead of undefined for Zod
+              url: buildMediaUrl(m.url),
+              thumb: buildMediaUrl(m.thumbUrl),
               pos: m.pos // Ajouter la position pour debug
             })),
           contact: {
