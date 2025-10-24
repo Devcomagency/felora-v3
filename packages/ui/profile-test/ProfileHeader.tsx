@@ -3,6 +3,7 @@
 import React, { useMemo, useState } from 'react'
 import { Star, Crown, MapPin } from 'lucide-react'
 import { normalizeScheduleData } from '@/lib/availability-calculator'
+import { validateMediaUrl } from '@/lib/media/enhanced-cdn'
 
 interface ProfileHeaderProps {
   name: string
@@ -166,7 +167,7 @@ export default function ProfileHeader({
               <div className="relative">
                 <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-pink-500 via-purple-500 to-blue-500 p-0.5">
                   <img
-                    src={avatar || '/logo-principal.png'}
+                    src={validateMediaUrl(avatar, 'avatar')}
                     alt={name}
                     className="w-full h-full rounded-full object-cover border-2 border-black"
                   />

@@ -1,74 +1,339 @@
 'use client'
 
 import { useState } from 'react'
-import { Heart, Star, MessageCircle, Share2, MoreHorizontal, Settings, User, Bell, Search, Plus } from 'lucide-react'
+import { Heart, Star, MessageCircle, Share2, MoreHorizontal, Plus } from 'lucide-react'
+
+type Theme = 'current' | 'premium' | 'neon' | 'luxury' | 'minimal' | 'sunset' | 'ocean';
+
+const THEMES = {
+  premium: {
+    name: '✨ Premium Purple',
+    vars: {
+      '--felora-void': '#0F0B1A',           // Fond très sombre mais pas noir pur
+      '--felora-surface': 'rgba(139, 92, 246, 0.03)', // Surface ultra subtile
+      '--felora-panel': 'rgba(139, 92, 246, 0.06)',   // Panel légèrement plus visible
+      '--felora-text': '#F5F3FF',           // Texte blanc-violet très léger
+      '--felora-text-secondary': '#C4B5FD', // Violet clair pour le secondaire
+      '--felora-text-tertiary': '#A78BFA',  // Violet moyen pour tertiary
+      '--felora-primary': '#8B5CF6',        // Violet principal élégant
+      '--felora-secondary': '#A78BFA',      // Violet plus clair
+      '--felora-accent': '#C4B5FD',         // Accent très léger
+      '--felora-success': '#34D399',        // Vert premium
+      '--felora-warning': '#FBBF24',        // Jaune premium
+      '--felora-border': 'rgba(139, 92, 246, 0.08)', // Bordure très discrète
+      '--felora-grad-primary': 'linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%)', // Gradient violet doux
+    }
+  },
+  current: {
+    name: 'Actuel (Felora)',
+    vars: {
+      '--felora-void': '#000000',
+      '--felora-surface': 'rgba(255, 255, 255, 0.05)',
+      '--felora-panel': 'rgba(255, 255, 255, 0.08)',
+      '--felora-text': '#FFFFFF',
+      '--felora-text-secondary': '#E5E5E5',
+      '--felora-text-tertiary': '#A0A0A0',
+      '--felora-primary': '#FF6B9D',
+      '--felora-secondary': '#B794F6',
+      '--felora-accent': '#4FD1C7',
+      '--felora-success': '#10B981',
+      '--felora-warning': '#F59E0B',
+      '--felora-border': 'rgba(255, 255, 255, 0.1)',
+      '--felora-grad-primary': 'linear-gradient(135deg, #FF6B9D 0%, #B794F6 50%, #4FD1C7 100%)',
+    }
+  },
+  neon: {
+    name: 'Neon Cyberpunk',
+    vars: {
+      '--felora-void': '#0a0e27',
+      '--felora-surface': 'rgba(255, 0, 255, 0.1)',
+      '--felora-panel': 'rgba(0, 255, 255, 0.15)',
+      '--felora-text': '#00ffff',
+      '--felora-text-secondary': '#ff00ff',
+      '--felora-text-tertiary': '#8b5cf6',
+      '--felora-primary': '#00ffff',
+      '--felora-secondary': '#ff00ff',
+      '--felora-accent': '#ffff00',
+      '--felora-success': '#00ff00',
+      '--felora-warning': '#ff6600',
+      '--felora-border': 'rgba(0, 255, 255, 0.3)',
+      '--felora-grad-primary': 'linear-gradient(135deg, #00ffff 0%, #ff00ff 50%, #ffff00 100%)',
+    }
+  },
+  luxury: {
+    name: 'Luxury Gold',
+    vars: {
+      '--felora-void': '#1a1410',
+      '--felora-surface': 'rgba(212, 175, 55, 0.08)',
+      '--felora-panel': 'rgba(212, 175, 55, 0.12)',
+      '--felora-text': '#faf9f6',
+      '--felora-text-secondary': '#e8dcc4',
+      '--felora-text-tertiary': '#b8a888',
+      '--felora-primary': '#d4af37',
+      '--felora-secondary': '#b8860b',
+      '--felora-accent': '#ffd700',
+      '--felora-success': '#00a86b',
+      '--felora-warning': '#ff8c00',
+      '--felora-border': 'rgba(212, 175, 55, 0.2)',
+      '--felora-grad-primary': 'linear-gradient(135deg, #d4af37 0%, #ffd700 50%, #b8860b 100%)',
+    }
+  },
+  minimal: {
+    name: 'Minimal Monochrome',
+    vars: {
+      '--felora-void': '#ffffff',
+      '--felora-surface': '#f5f5f5',
+      '--felora-panel': '#eeeeee',
+      '--felora-text': '#000000',
+      '--felora-text-secondary': '#4a4a4a',
+      '--felora-text-tertiary': '#888888',
+      '--felora-primary': '#000000',
+      '--felora-secondary': '#333333',
+      '--felora-accent': '#666666',
+      '--felora-success': '#2d7a4d',
+      '--felora-warning': '#d97706',
+      '--felora-border': '#dddddd',
+      '--felora-grad-primary': 'linear-gradient(135deg, #000000 0%, #333333 50%, #666666 100%)',
+    }
+  },
+  sunset: {
+    name: 'Sunset Vibes',
+    vars: {
+      '--felora-void': '#1a0f2e',
+      '--felora-surface': 'rgba(255, 107, 107, 0.08)',
+      '--felora-panel': 'rgba(255, 142, 60, 0.12)',
+      '--felora-text': '#fff5e6',
+      '--felora-text-secondary': '#ffd4a3',
+      '--felora-text-tertiary': '#d4a574',
+      '--felora-primary': '#ff6b6b',
+      '--felora-secondary': '#ff8e3c',
+      '--felora-accent': '#ffd93d',
+      '--felora-success': '#6bcf7f',
+      '--felora-warning': '#f59e42',
+      '--felora-border': 'rgba(255, 107, 107, 0.2)',
+      '--felora-grad-primary': 'linear-gradient(135deg, #ff6b6b 0%, #ff8e3c 50%, #ffd93d 100%)',
+    }
+  },
+  ocean: {
+    name: 'Ocean Deep',
+    vars: {
+      '--felora-void': '#0a1628',
+      '--felora-surface': 'rgba(59, 130, 246, 0.08)',
+      '--felora-panel': 'rgba(14, 165, 233, 0.12)',
+      '--felora-text': '#e0f2fe',
+      '--felora-text-secondary': '#bae6fd',
+      '--felora-text-tertiary': '#7dd3fc',
+      '--felora-primary': '#3b82f6',
+      '--felora-secondary': '#0ea5e9',
+      '--felora-accent': '#06b6d4',
+      '--felora-success': '#14b8a6',
+      '--felora-warning': '#f59e0b',
+      '--felora-border': 'rgba(59, 130, 246, 0.2)',
+      '--felora-grad-primary': 'linear-gradient(135deg, #3b82f6 0%, #0ea5e9 50%, #06b6d4 100%)',
+    }
+  }
+};
 
 export default function DesignTestPage() {
+  const [selectedTheme, setSelectedTheme] = useState<Theme>('current')
   const [isLiked, setIsLiked] = useState(false)
-  const [isFollowing, setIsFollowing] = useState(false)
+
+  const theme = THEMES[selectedTheme];
 
   return (
     <>
-      {/* Import des nouveaux tokens */}
+      {/* Style dynamique basé sur le thème sélectionné */}
       <style jsx global>{`
-        @import '../ui/tokens/premium-design-tokens.css';
-        
+        :root {
+          ${Object.entries(theme.vars).map(([key, value]) => `${key}: ${value};`).join('\n          ')}
+        }
+
         body {
           background: var(--felora-void);
           color: var(--felora-text);
-          font-family: var(--felora-font-primary);
+          font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
           margin: 0;
           padding: 0;
+          transition: background-color 0.3s ease, color 0.3s ease;
         }
-        
+
         * {
           box-sizing: border-box;
+        }
+
+        .glass-card {
+          background: var(--felora-surface);
+          backdrop-filter: blur(20px);
+          border: 1px solid var(--felora-border);
+          border-radius: 16px;
+        }
+
+        .glass-card-strong {
+          background: var(--felora-panel);
+          backdrop-filter: blur(30px);
+          border: 1px solid var(--felora-border);
+          border-radius: 20px;
+        }
+
+        .gradient-text {
+          background: var(--felora-grad-primary);
+          -webkit-background-clip: text;
+          background-clip: text;
+          -webkit-text-fill-color: transparent;
+        }
+
+        .btn-primary {
+          background: var(--felora-grad-primary);
+          color: white;
+          padding: 12px 24px;
+          border-radius: 12px;
+          font-weight: 600;
+          border: none;
+          cursor: pointer;
+          transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .btn-primary:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+
+        .btn-secondary {
+          background: var(--felora-surface);
+          color: var(--felora-text);
+          padding: 12px 24px;
+          border-radius: 12px;
+          font-weight: 600;
+          border: 2px solid var(--felora-primary);
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+
+        .btn-secondary:hover {
+          background: var(--felora-panel);
+          transform: translateY(-2px);
+        }
+
+        .btn-glass {
+          background: var(--felora-surface);
+          backdrop-filter: blur(10px);
+          color: var(--felora-text);
+          padding: 12px 24px;
+          border-radius: 12px;
+          font-weight: 500;
+          border: 1px solid var(--felora-border);
+          cursor: pointer;
+          transition: all 0.2s ease;
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .btn-glass:hover {
+          background: var(--felora-panel);
+          border-color: var(--felora-primary);
+        }
+
+        .focus-ring:focus {
+          outline: none;
+          border-color: var(--felora-primary);
+          box-shadow: 0 0 0 3px rgba(255, 107, 157, 0.1);
+        }
+
+        .animate-fade-in-up {
+          animation: fadeInUp 0.6s ease-out forwards;
+        }
+
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
         }
       `}</style>
 
       <div className="min-h-screen" style={{ background: 'var(--felora-void)' }}>
-        {/* Header Premium */}
-        <header className="sticky top-0 z-50" style={{ 
-          background: 'var(--felora-surface)', 
+        {/* Header Premium avec Sélecteur de Thème */}
+        <header className="sticky top-0 z-50" style={{
+          background: 'var(--felora-surface)',
           borderBottom: '1px solid var(--felora-border)',
-          backdropFilter: 'blur(8px)'
+          backdropFilter: 'blur(20px)'
         }}>
           <div className="max-w-6xl mx-auto px-6 py-4">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between flex-wrap gap-4">
               <div className="flex items-center space-x-4">
                 <div className="w-10 h-10 rounded-full" style={{ background: 'var(--felora-grad-primary)' }}></div>
-                <h1 className="text-2xl font-bold gradient-text">Felora Premium</h1>
+                <div>
+                  <h1 className="text-2xl font-bold gradient-text">Design Test Lab</h1>
+                  <p className="text-sm" style={{ color: 'var(--felora-text-tertiary)' }}>Testez différentes chartes graphiques</p>
+                </div>
               </div>
-              
-              <div className="flex items-center space-x-4">
-                <button className="p-2 rounded-lg hover:bg-felora-panel transition-colors">
-                  <Search size={20} />
-                </button>
-                <button className="p-2 rounded-lg hover:bg-felora-panel transition-colors">
-                  <Bell size={20} />
-                </button>
-                <button className="p-2 rounded-lg hover:bg-felora-panel transition-colors">
-                  <Settings size={20} />
-                </button>
-                <div className="w-8 h-8 rounded-full bg-felora-primary"></div>
+
+              <div className="flex items-center gap-3 flex-wrap">
+                {(Object.keys(THEMES) as Theme[]).map((themeKey) => (
+                  <button
+                    key={themeKey}
+                    onClick={() => setSelectedTheme(themeKey)}
+                    className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${
+                      selectedTheme === themeKey ? 'scale-105' : ''
+                    }`}
+                    style={{
+                      background: selectedTheme === themeKey ? 'var(--felora-grad-primary)' : 'var(--felora-panel)',
+                      color: selectedTheme === themeKey ? 'white' : 'var(--felora-text)',
+                      border: selectedTheme === themeKey ? 'none' : '1px solid var(--felora-border)',
+                    }}
+                  >
+                    {THEMES[themeKey].name}
+                  </button>
+                ))}
               </div>
             </div>
           </div>
         </header>
 
         <main className="max-w-6xl mx-auto px-6 py-8">
+          {/* Palette de couleurs */}
+          <section className="mb-12">
+            <h3 className="text-2xl font-semibold mb-6">Palette de couleurs - {THEMES[selectedTheme].name}</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+              {Object.entries(theme.vars).map(([varName, value]) => {
+                const colorName = varName.replace('--felora-', '').replace(/-/g, ' ');
+                return (
+                  <div key={varName} className="glass-card p-4">
+                    <div
+                      className="w-full h-24 rounded-lg mb-3"
+                      style={{
+                        background: value,
+                        border: '1px solid var(--felora-border)'
+                      }}
+                    />
+                    <p className="text-sm font-semibold mb-1 capitalize">{colorName}</p>
+                    <p className="text-xs font-mono" style={{ color: 'var(--felora-text-tertiary)' }}>
+                      {value}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+
           {/* Hero Section */}
           <section className="mb-12">
-            <div className="glass-card-strong p-8 text-center">
-              <h2 className="text-4xl font-bold mb-4 gradient-text">
-                Nouveau Design Premium
+            <h3 className="text-2xl font-semibold mb-6">Hero Section</h3>
+            <div className="glass-card-strong p-12 text-center">
+              <h2 className="text-5xl font-bold mb-4 gradient-text">
+                Bienvenue sur Felora
               </h2>
-              <p className="text-lg mb-6" style={{ color: 'var(--felora-text-secondary)' }}>
-                Découvrez notre nouvelle charte graphique sophistiquée et performante
+              <p className="text-xl mb-8" style={{ color: 'var(--felora-text-secondary)' }}>
+                La plateforme premium suisse de rencontres d'élite
               </p>
-              <div className="flex gap-4 justify-center">
+              <div className="flex gap-4 justify-center flex-wrap">
                 <button className="btn-primary">
-                  Commencer
+                  Commencer maintenant
                 </button>
                 <button className="btn-secondary">
                   En savoir plus

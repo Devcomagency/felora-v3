@@ -16,6 +16,7 @@ import { AboutSection, RatesSection, AvailabilitySection, PhysicalDetailsSection
 import { CommentsSection } from '../../../components/comments/CommentsSection'
 import { AvailabilityStatus as AvailabilityStatusType, ScheduleData } from '@/lib/availability-calculator'
 import { updateMediaWithErrorHandling, deleteMediaWithErrorHandling } from '@/lib/mediaManagement'
+import { validateMediaUrl } from '@/lib/media/enhanced-cdn'
 
 interface EscortProfile {
   id: string
@@ -229,7 +230,7 @@ export default function EscortProfilePage() {
           userId: data.userId, // AJOUT: userId pour isOwner check
           name: data.stageName || 'Escort',
           stageName: data.stageName,
-          avatar: normalizedMedia?.[0]?.url || '/logo-principal.png',
+          avatar: validateMediaUrl(normalizedMedia?.[0]?.url, 'avatar'),
           city: data.city,
           age: data.age || undefined,
           languages: data.languages || [],
