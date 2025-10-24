@@ -141,11 +141,13 @@ export default function ClientFeedPage({ initialItems, initialCursor }: ClientFe
         }
       `}</style>
       
-      {items.map((item) => {
+      {items.map((item, index) => {
         const mediaId = stableMediaId({ rawId: item.id, profileId: item.author.id, url: item.url })
         const initialTotal = initialTotals[mediaId]
+        // Clé composite pour garantir l'unicité : authorId + mediaId + index
+        const uniqueKey = `${item.author.id}-${item.id}-${index}`
         return (
-          <section key={item.id} className="feed-item snap-start">
+          <section key={uniqueKey} className="feed-item snap-start">
             <VideoFeedCard item={item} initialTotal={initialTotal} />
           </section>
         )

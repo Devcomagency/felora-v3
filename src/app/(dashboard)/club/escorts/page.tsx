@@ -260,8 +260,8 @@ export default function ClubEscortsPage() {
             {/* Onglet Escorts liées */}
             {activeTab === 'linked' && (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                {linkedEscorts.map(escort => (
-                  <div key={escort.id} className="rounded-xl overflow-hidden bg-gray-900/60 border border-gray-800 group relative">
+                {linkedEscorts.map((escort, index) => (
+                  <div key={`escort-${escort.id}-${index}`} className="rounded-xl overflow-hidden bg-gray-900/60 border border-gray-800 group relative">
                     <div className="aspect-square bg-black/30">
                       <img
                         src={escort.avatar || 'https://placehold.co/400x400?text=Escort'}

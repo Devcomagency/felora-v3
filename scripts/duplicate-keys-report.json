@@ -1,0 +1,156 @@
+[
+  {
+    "file": "/Users/nordinehasnaoui/Desktop/projets/felora-v3/src/app/(dashboard)/club/escorts/page.tsx",
+    "line": 308,
+    "content": "key={invitation.id}",
+    "issue": "Clé potentiellement dupliquée: key={invitation.id}",
+    "suggestion": "Utiliser une clé composite avec index: key={`${invitation.id}-${index}`}"
+  },
+  {
+    "file": "/Users/nordinehasnaoui/Desktop/projets/felora-v3/src/app/(dashboard)/club/escorts/page.tsx",
+    "line": 308,
+    "content": "key={invitation.id}",
+    "issue": "Clé potentiellement dupliquée: key={invitation.id}",
+    "suggestion": "Utiliser une clé composite avec index: key={`${invitation.id}-${index}`}"
+  },
+  {
+    "file": "/Users/nordinehasnaoui/Desktop/projets/felora-v3/src/app/(dashboard)/club/escorts/page.tsx",
+    "line": 435,
+    "content": "key={escort.id}",
+    "issue": "Clé potentiellement dupliquée: key={escort.id}",
+    "suggestion": "Utiliser une clé composite avec index: key={`${escort.id}-${index}`}"
+  },
+  {
+    "file": "/Users/nordinehasnaoui/Desktop/projets/felora-v3/src/app/(dashboard)/club/escorts/page.tsx",
+    "line": 435,
+    "content": "key={escort.id}",
+    "issue": "Clé potentiellement dupliquée: key={escort.id}",
+    "suggestion": "Utiliser une clé composite avec index: key={`${escort.id}-${index}`}"
+  },
+  {
+    "file": "/Users/nordinehasnaoui/Desktop/projets/felora-v3/src/app/(dashboard)/club/media/ManagerV2.tsx",
+    "line": 90,
+    "content": "<div key={m.id} className=\"group rounded-xl overflow-hidden border border-white/10 bg-white/5\">",
+    "issue": "Clé potentiellement dupliquée: key={m.id}",
+    "suggestion": "Utiliser une clé composite avec index: key={`${m.id}-${index}`}"
+  },
+  {
+    "file": "/Users/nordinehasnaoui/Desktop/projets/felora-v3/src/app/(dashboard)/club/media/ManagerV2.tsx",
+    "line": 90,
+    "content": "<div key={m.id} className=\"group rounded-xl overflow-hidden border border-white/10 bg-white/5\">",
+    "issue": "Clé potentiellement dupliquée: key={m.id}",
+    "suggestion": "Utiliser une clé composite avec index: key={`${m.id}-${index}`}"
+  },
+  {
+    "file": "/Users/nordinehasnaoui/Desktop/projets/felora-v3/src/app/(dashboard)/club/wallet/page.tsx",
+    "line": 25,
+    "content": "<div key={t.id} className=\"py-3 flex items-center justify-between\">",
+    "issue": "Clé potentiellement dupliquée: key={t.id}",
+    "suggestion": "Utiliser une clé composite avec index: key={`${t.id}-${index}`}"
+  },
+  {
+    "file": "/Users/nordinehasnaoui/Desktop/projets/felora-v3/src/app/(dashboard)/club/wallet/page.tsx",
+    "line": 25,
+    "content": "<div key={t.id} className=\"py-3 flex items-center justify-between\">",
+    "issue": "Clé potentiellement dupliquée: key={t.id}",
+    "suggestion": "Utiliser une clé composite avec index: key={`${t.id}-${index}`}"
+  },
+  {
+    "file": "/Users/nordinehasnaoui/Desktop/projets/felora-v3/src/app/(dashboard)/escort/clubs/page.tsx",
+    "line": 178,
+    "content": "key={invitation.id}",
+    "issue": "Clé potentiellement dupliquée: key={invitation.id}",
+    "suggestion": "Utiliser une clé composite avec index: key={`${invitation.id}-${index}`}"
+  },
+  {
+    "file": "/Users/nordinehasnaoui/Desktop/projets/felora-v3/src/app/(dashboard)/escort/clubs/page.tsx",
+    "line": 178,
+    "content": "key={invitation.id}",
+    "issue": "Clé potentiellement dupliquée: key={invitation.id}",
+    "suggestion": "Utiliser une clé composite avec index: key={`${invitation.id}-${index}`}"
+  },
+  {
+    "file": "/Users/nordinehasnaoui/Desktop/projets/felora-v3/src/app/(dashboard)/escort/clubs/page.tsx",
+    "line": 252,
+    "content": "key={invitation.id}",
+    "issue": "Clé potentiellement dupliquée: key={invitation.id}",
+    "suggestion": "Utiliser une clé composite avec index: key={`${invitation.id}-${index}`}"
+  },
+  {
+    "file": "/Users/nordinehasnaoui/Desktop/projets/felora-v3/src/app/(dashboard)/escort/clubs/page.tsx",
+    "line": 252,
+    "content": "key={invitation.id}",
+    "issue": "Clé potentiellement dupliquée: key={invitation.id}",
+    "suggestion": "Utiliser une clé composite avec index: key={`${invitation.id}-${index}`}"
+  },
+  {
+    "file": "/Users/nordinehasnaoui/Desktop/projets/felora-v3/src/app/(dashboard)/escort/clubs/page.tsx",
+    "line": 303,
+    "content": "key={club.id}",
+    "issue": "Clé potentiellement dupliquée: key={club.id}",
+    "suggestion": "Utiliser une clé composite avec index: key={`${club.id}-${index}`}"
+  },
+  {
+    "file": "/Users/nordinehasnaoui/Desktop/projets/felora-v3/src/app/(dashboard)/escort/clubs/page.tsx",
+    "line": 303,
+    "content": "key={club.id}",
+    "issue": "Clé potentiellement dupliquée: key={club.id}",
+    "suggestion": "Utiliser une clé composite avec index: key={`${club.id}-${index}`}"
+  },
+  {
+    "file": "/Users/nordinehasnaoui/Desktop/projets/felora-v3/src/app/admin/reports/page.tsx",
+    "line": 66,
+    "content": "<tr key={r.id} className=\"border-t border-white/10\">",
+    "issue": "Clé potentiellement dupliquée: key={r.id}",
+    "suggestion": "Utiliser une clé composite avec index: key={`${r.id}-${index}`}"
+  },
+  {
+    "file": "/Users/nordinehasnaoui/Desktop/projets/felora-v3/src/app/admin/reports/page.tsx",
+    "line": 66,
+    "content": "<tr key={r.id} className=\"border-t border-white/10\">",
+    "issue": "Clé potentiellement dupliquée: key={r.id}",
+    "suggestion": "Utiliser une clé composite avec index: key={`${r.id}-${index}`}"
+  },
+  {
+    "file": "/Users/nordinehasnaoui/Desktop/projets/felora-v3/src/app/dashboard-escort/statistiques/page.tsx",
+    "line": 298,
+    "content": "<div key={m.id} className=\"flex items-center gap-3 p-3 rounded-xl border border-white/10 hover:bg-white/5\">",
+    "issue": "Clé potentiellement dupliquée: key={m.id}",
+    "suggestion": "Utiliser une clé composite avec index: key={`${m.id}-${index}`}"
+  },
+  {
+    "file": "/Users/nordinehasnaoui/Desktop/projets/felora-v3/src/app/dashboard-escort/statistiques/page.tsx",
+    "line": 298,
+    "content": "<div key={m.id} className=\"flex items-center gap-3 p-3 rounded-xl border border-white/10 hover:bg-white/5\">",
+    "issue": "Clé potentiellement dupliquée: key={m.id}",
+    "suggestion": "Utiliser une clé composite avec index: key={`${m.id}-${index}`}"
+  },
+  {
+    "file": "/Users/nordinehasnaoui/Desktop/projets/felora-v3/src/app/dashboard-escort/statistiques/page.tsx",
+    "line": 538,
+    "content": "<tr key={tx.id} className=\"border-t border-white/5\">",
+    "issue": "Clé potentiellement dupliquée: key={tx.id}",
+    "suggestion": "Utiliser une clé composite avec index: key={`${tx.id}-${index}`}"
+  },
+  {
+    "file": "/Users/nordinehasnaoui/Desktop/projets/felora-v3/src/app/dashboard-escort/statistiques/page.tsx",
+    "line": 538,
+    "content": "<tr key={tx.id} className=\"border-t border-white/5\">",
+    "issue": "Clé potentiellement dupliquée: key={tx.id}",
+    "suggestion": "Utiliser une clé composite avec index: key={`${tx.id}-${index}`}"
+  },
+  {
+    "file": "/Users/nordinehasnaoui/Desktop/projets/felora-v3/src/components/signup-v2/Step2Plan.tsx",
+    "line": 84,
+    "content": "<button key={p.id} onClick={()=>onSelect(p)} className={`relative block w-full h-full glass-card rounded-2xl p-5 border ${p.popular ? 'border-pink-400/40' : 'border-white/10'} hover:border-pink-400/60 transition-colors text-left`}>",
+    "issue": "Clé potentiellement dupliquée: key={p.id}",
+    "suggestion": "Utiliser une clé composite avec index: key={`${p.id}-${index}`}"
+  },
+  {
+    "file": "/Users/nordinehasnaoui/Desktop/projets/felora-v3/src/components/signup-v2/Step2Plan.tsx",
+    "line": 84,
+    "content": "<button key={p.id} onClick={()=>onSelect(p)} className={`relative block w-full h-full glass-card rounded-2xl p-5 border ${p.popular ? 'border-pink-400/40' : 'border-white/10'} hover:border-pink-400/60 transition-colors text-left`}>",
+    "issue": "Clé potentiellement dupliquée: key={p.id}",
+    "suggestion": "Utiliser une clé composite avec index: key={`${p.id}-${index}`}"
+  }
+]

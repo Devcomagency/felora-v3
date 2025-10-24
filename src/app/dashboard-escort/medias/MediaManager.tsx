@@ -273,8 +273,8 @@ export default function MediaManager() {
 
       {/* Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {filtered.map(m => (
-          <div key={m.id} className="group rounded-xl overflow-hidden border border-white/10 bg-white/5">
+        {filtered.map((m, index) => (
+          <div key={`${m.id}-${index}`} className="group rounded-xl overflow-hidden border border-white/10 bg-white/5">
             <div className="relative aspect-square bg-black/40">
               {m.type==='VIDEO' ? (
                 <video src={m.url} className="w-full h-full object-cover" muted playsInline />

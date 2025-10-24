@@ -135,7 +135,7 @@ const THEMES = {
 };
 
 export default function DesignTestPage() {
-  const [selectedTheme, setSelectedTheme] = useState<Theme>('current')
+  const [selectedTheme, setSelectedTheme] = useState<Theme>('premium')
   const [isLiked, setIsLiked] = useState(false)
 
   const theme = THEMES[selectedTheme];
@@ -163,16 +163,23 @@ export default function DesignTestPage() {
 
         .glass-card {
           background: var(--felora-surface);
-          backdrop-filter: blur(20px);
+          backdrop-filter: blur(40px);
           border: 1px solid var(--felora-border);
-          border-radius: 16px;
+          border-radius: 24px;
+          transition: all 0.3s ease;
+        }
+
+        .glass-card:hover {
+          background: var(--felora-panel);
+          border-color: rgba(139, 92, 246, 0.15);
+          transform: translateY(-2px);
         }
 
         .glass-card-strong {
           background: var(--felora-panel);
-          backdrop-filter: blur(30px);
+          backdrop-filter: blur(60px);
           border: 1px solid var(--felora-border);
-          border-radius: 20px;
+          border-radius: 32px;
         }
 
         .gradient-text {
@@ -180,50 +187,59 @@ export default function DesignTestPage() {
           -webkit-background-clip: text;
           background-clip: text;
           -webkit-text-fill-color: transparent;
+          font-weight: 700;
+          letter-spacing: -0.02em;
         }
 
         .btn-primary {
-          background: var(--felora-grad-primary);
+          background: var(--felora-primary);
           color: white;
-          padding: 12px 24px;
-          border-radius: 12px;
+          padding: 14px 32px;
+          border-radius: 16px;
           font-weight: 600;
+          font-size: 15px;
           border: none;
           cursor: pointer;
-          transition: transform 0.2s ease, box-shadow 0.2s ease;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          letter-spacing: -0.01em;
         }
 
         .btn-primary:hover {
+          background: var(--felora-secondary);
           transform: translateY(-2px);
-          box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+          box-shadow: 0 12px 40px rgba(139, 92, 246, 0.25);
         }
 
         .btn-secondary {
-          background: var(--felora-surface);
+          background: transparent;
           color: var(--felora-text);
-          padding: 12px 24px;
-          border-radius: 12px;
-          font-weight: 600;
-          border: 2px solid var(--felora-primary);
+          padding: 14px 32px;
+          border-radius: 16px;
+          font-weight: 500;
+          font-size: 15px;
+          border: 1.5px solid var(--felora-border);
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          letter-spacing: -0.01em;
         }
 
         .btn-secondary:hover {
-          background: var(--felora-panel);
+          background: var(--felora-surface);
+          border-color: var(--felora-primary);
           transform: translateY(-2px);
         }
 
         .btn-glass {
           background: var(--felora-surface);
           backdrop-filter: blur(10px);
-          color: var(--felora-text);
-          padding: 12px 24px;
+          color: var(--felora-text-secondary);
+          padding: 10px 20px;
           border-radius: 12px;
           font-weight: 500;
+          font-size: 14px;
           border: 1px solid var(--felora-border);
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
           display: inline-flex;
           align-items: center;
           gap: 8px;
@@ -232,59 +248,73 @@ export default function DesignTestPage() {
         .btn-glass:hover {
           background: var(--felora-panel);
           border-color: var(--felora-primary);
+          color: var(--felora-text);
         }
 
         .focus-ring:focus {
           outline: none;
           border-color: var(--felora-primary);
-          box-shadow: 0 0 0 3px rgba(255, 107, 157, 0.1);
+          box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1);
         }
 
         .animate-fade-in-up {
-          animation: fadeInUp 0.6s ease-out forwards;
+          animation: fadeInUp 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
         }
 
         @keyframes fadeInUp {
           from {
             opacity: 0;
-            transform: translateY(20px);
+            transform: translateY(30px);
           }
           to {
             opacity: 1;
             transform: translateY(0);
           }
         }
+
+        /* Amélioration de la typographie */
+        h1, h2, h3, h4, h5, h6 {
+          letter-spacing: -0.02em;
+          font-weight: 700;
+        }
+
+        p {
+          letter-spacing: -0.01em;
+          line-height: 1.6;
+        }
       `}</style>
 
       <div className="min-h-screen" style={{ background: 'var(--felora-void)' }}>
         {/* Header Premium avec Sélecteur de Thème */}
         <header className="sticky top-0 z-50" style={{
-          background: 'var(--felora-surface)',
+          background: 'rgba(15, 11, 26, 0.8)',
           borderBottom: '1px solid var(--felora-border)',
-          backdropFilter: 'blur(20px)'
+          backdropFilter: 'blur(40px)'
         }}>
-          <div className="max-w-6xl mx-auto px-6 py-4">
-            <div className="flex items-center justify-between flex-wrap gap-4">
+          <div className="max-w-7xl mx-auto px-8 py-6">
+            <div className="flex items-center justify-between flex-wrap gap-6">
               <div className="flex items-center space-x-4">
-                <div className="w-10 h-10 rounded-full" style={{ background: 'var(--felora-grad-primary)' }}></div>
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: 'var(--felora-primary)' }}>
+                  <span className="text-2xl">✨</span>
+                </div>
                 <div>
                   <h1 className="text-2xl font-bold gradient-text">Design Test Lab</h1>
-                  <p className="text-sm" style={{ color: 'var(--felora-text-tertiary)' }}>Testez différentes chartes graphiques</p>
+                  <p className="text-sm" style={{ color: 'var(--felora-text-tertiary)' }}>Comparez les chartes graphiques</p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 flex-wrap">
+              <div className="flex items-center gap-2 flex-wrap">
                 {(Object.keys(THEMES) as Theme[]).map((themeKey) => (
                   <button
                     key={themeKey}
                     onClick={() => setSelectedTheme(themeKey)}
-                    className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${
+                    className={`px-5 py-2.5 rounded-xl font-medium text-sm transition-all ${
                       selectedTheme === themeKey ? 'scale-105' : ''
                     }`}
                     style={{
-                      background: selectedTheme === themeKey ? 'var(--felora-grad-primary)' : 'var(--felora-panel)',
-                      color: selectedTheme === themeKey ? 'white' : 'var(--felora-text)',
-                      border: selectedTheme === themeKey ? 'none' : '1px solid var(--felora-border)',
+                      background: selectedTheme === themeKey ? 'var(--felora-primary)' : 'transparent',
+                      color: selectedTheme === themeKey ? 'white' : 'var(--felora-text-secondary)',
+                      border: '1px solid var(--felora-border)',
                     }}
                   >
                     {THEMES[themeKey].name}
@@ -295,25 +325,27 @@ export default function DesignTestPage() {
           </div>
         </header>
 
-        <main className="max-w-6xl mx-auto px-6 py-8">
+        <main className="max-w-7xl mx-auto px-8 py-16">
           {/* Palette de couleurs */}
-          <section className="mb-12">
-            <h3 className="text-2xl font-semibold mb-6">Palette de couleurs - {THEMES[selectedTheme].name}</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          <section className="mb-20">
+            <h3 className="text-xl font-semibold mb-8" style={{ color: 'var(--felora-text-secondary)' }}>
+              Palette • {THEMES[selectedTheme].name}
+            </h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
               {Object.entries(theme.vars).map(([varName, value]) => {
                 const colorName = varName.replace('--felora-', '').replace(/-/g, ' ');
                 return (
-                  <div key={varName} className="glass-card p-4">
+                  <div key={varName} className="glass-card p-5">
                     <div
-                      className="w-full h-24 rounded-lg mb-3"
+                      className="w-full h-28 rounded-2xl mb-4"
                       style={{
                         background: value,
                         border: '1px solid var(--felora-border)'
                       }}
                     />
-                    <p className="text-sm font-semibold mb-1 capitalize">{colorName}</p>
+                    <p className="text-sm font-medium mb-2 capitalize" style={{ color: 'var(--felora-text)' }}>{colorName}</p>
                     <p className="text-xs font-mono" style={{ color: 'var(--felora-text-tertiary)' }}>
-                      {value}
+                      {value.length > 30 ? value.substring(0, 30) + '...' : value}
                     </p>
                   </div>
                 );
@@ -322,16 +354,18 @@ export default function DesignTestPage() {
           </section>
 
           {/* Hero Section */}
-          <section className="mb-12">
-            <h3 className="text-2xl font-semibold mb-6">Hero Section</h3>
-            <div className="glass-card-strong p-12 text-center">
-              <h2 className="text-5xl font-bold mb-4 gradient-text">
+          <section className="mb-20">
+            <h3 className="text-xl font-semibold mb-8" style={{ color: 'var(--felora-text-secondary)' }}>
+              Hero Section
+            </h3>
+            <div className="glass-card-strong p-16 text-center">
+              <h2 className="text-6xl font-bold mb-6 gradient-text">
                 Bienvenue sur Felora
               </h2>
-              <p className="text-xl mb-8" style={{ color: 'var(--felora-text-secondary)' }}>
+              <p className="text-xl mb-12 max-w-2xl mx-auto" style={{ color: 'var(--felora-text-secondary)' }}>
                 La plateforme premium suisse de rencontres d'élite
               </p>
-              <div className="flex gap-4 justify-center flex-wrap">
+              <div className="flex gap-5 justify-center flex-wrap">
                 <button className="btn-primary">
                   Commencer maintenant
                 </button>
@@ -343,9 +377,11 @@ export default function DesignTestPage() {
           </section>
 
           {/* Cards Grid */}
-          <section className="mb-12">
-            <h3 className="text-2xl font-semibold mb-6">Composants Premium</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <section className="mb-20">
+            <h3 className="text-xl font-semibold mb-8" style={{ color: 'var(--felora-text-secondary)' }}>
+              Composants Premium
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               
               {/* Card 1 - Profil */}
               <div className="glass-card p-6 animate-fade-in-up">

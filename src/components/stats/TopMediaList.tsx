@@ -13,10 +13,10 @@ export default function TopMediaList({ items, loading, onExport, onBoost }:{ ite
         <button onClick={onExport} className="text-xs text-white/70 hover:text-white flex items-center gap-1"><Download size={14}/> Export CSV</button>
       </div>
       <div className="space-y-2">
-        {items.map(m => {
+        {items.map((m, index) => {
           const isVideoThumb = /(\.mp4|\.webm|\.mov)(\?.*)?$/i.test(m.thumb)
           return (
-          <div key={m.id} className="flex items-center gap-3 p-3 rounded-xl border border-white/10 hover:bg-white/5">
+          <div key={`${m.id}-${index}`} className="flex items-center gap-3 p-3 rounded-xl border border-white/10 hover:bg-white/5">
             <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white text-sm font-bold">{m.rank}</div>
             <div className="w-12 h-12 rounded-lg overflow-hidden bg-white/10 relative">
               {m.thumb ? (
