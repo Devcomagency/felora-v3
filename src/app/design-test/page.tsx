@@ -1,14 +1,16 @@
 'use client'
 
 import { useState } from 'react'
-import { Heart, Star, MessageCircle, Share2, MoreHorizontal, Plus } from 'lucide-react'
+import { Heart, Star, MessageCircle, Share2, MoreHorizontal, Plus, Sparkles } from 'lucide-react'
+import Image from 'next/image'
 
 type Theme = 'current' | 'premium' | 'neon' | 'luxury' | 'minimal' | 'sunset' | 'ocean';
 
 const THEMES = {
   premium: {
-    name: '💎 Premium Pro',
+    name: 'Premium Pro',
     vars: {
+      // === COULEURS DE BASE ===
       '--felora-void': '#0B0B0F',           // Noir avec nuance
       '--felora-surface': 'rgba(255, 255, 255, 0.06)', // Surface VISIBLE (6% au lieu de 3%)
       '--felora-panel': 'rgba(255, 255, 255, 0.10)',   // Panel clairement visible (10%)
@@ -25,6 +27,62 @@ const THEMES = {
       '--felora-border-strong': 'rgba(255, 255, 255, 0.18)', // Bordure accentuée
       '--felora-grad-primary': '#FF6B9D',
       '--felora-glow': 'rgba(255, 107, 157, 0.5)',
+      
+      // === TOKENS DE DESIGN ===
+      // Espacement
+      '--space-1': '0.25rem',    // 4px
+      '--space-2': '0.5rem',     // 8px
+      '--space-3': '0.75rem',    // 12px
+      '--space-4': '1rem',       // 16px
+      '--space-5': '1.25rem',    // 20px
+      '--space-6': '1.5rem',     // 24px
+      '--space-8': '2rem',       // 32px
+      '--space-10': '2.5rem',    // 40px
+      '--space-12': '3rem',      // 48px
+      '--space-16': '4rem',      // 64px
+      '--space-20': '5rem',      // 80px
+      '--space-24': '6rem',      // 96px
+      
+      // Typographie
+      '--text-xs': '0.75rem',    // 12px
+      '--text-sm': '0.875rem',   // 14px
+      '--text-base': '1rem',     // 16px
+      '--text-lg': '1.125rem',   // 18px
+      '--text-xl': '1.25rem',    // 20px
+      '--text-2xl': '1.5rem',    // 24px
+      '--text-3xl': '1.875rem',  // 30px
+      '--text-4xl': '2.25rem',   // 36px
+      '--text-5xl': '3rem',      // 48px
+      '--text-6xl': '3.75rem',   // 60px
+      
+      // Rayons de bordure
+      '--radius-sm': '0.375rem',  // 6px
+      '--radius-md': '0.5rem',    // 8px
+      '--radius-lg': '0.75rem',   // 12px
+      '--radius-xl': '1rem',      // 16px
+      '--radius-2xl': '1.5rem',   // 24px
+      '--radius-3xl': '2rem',     // 32px
+      '--radius-full': '9999px',  // Rond complet
+      
+      // Ombres optimisées
+      '--shadow-sm': '0 1px 2px rgba(0, 0, 0, 0.05)',
+      '--shadow-md': '0 4px 6px rgba(0, 0, 0, 0.07)',
+      '--shadow-lg': '0 10px 15px rgba(0, 0, 0, 0.1)',
+      '--shadow-xl': '0 20px 25px rgba(0, 0, 0, 0.1)',
+      '--shadow-glow': '0 0 20px rgba(255, 107, 157, 0.3)',
+      
+      // Transitions
+      '--transition-fast': '0.15s cubic-bezier(0.4, 0, 0.2, 1)',
+      '--transition-normal': '0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+      '--transition-slow': '0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+      
+      // Z-index
+      '--z-dropdown': '1000',
+      '--z-sticky': '1020',
+      '--z-fixed': '1030',
+      '--z-modal': '1040',
+      '--z-popover': '1050',
+      '--z-tooltip': '1060',
     }
   },
   current: {
@@ -181,20 +239,18 @@ export default function DesignTestPage() {
           z-index: 1;
         }
 
-        /* Glass Card - VRAIMENT Premium avec lumière */
+        /* Glass Card - OPTIMISÉ pour la performance */
         .glass-card {
           position: relative;
           background: var(--felora-surface);
-          backdrop-filter: blur(24px) saturate(180%);
+          backdrop-filter: blur(20px) saturate(150%);
           border: 1px solid var(--felora-border);
-          border-radius: 20px;
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          border-radius: var(--radius-2xl);
+          transition: var(--transition-normal);
           overflow: hidden;
-          box-shadow:
-            0 1px 2px rgba(0, 0, 0, 0.06),
-            0 4px 12px rgba(0, 0, 0, 0.1),
-            0 12px 24px rgba(0, 0, 0, 0.08),
-            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+          box-shadow: var(--shadow-md);
+          will-change: transform;
+          transform: translateZ(0);
         }
 
         /* Lumière du haut VISIBLE */
@@ -229,11 +285,7 @@ export default function DesignTestPage() {
           background: var(--felora-elevated);
           border-color: rgba(255, 107, 157, 0.4);
           transform: translateY(-2px);
-          box-shadow:
-            0 2px 4px rgba(0, 0, 0, 0.06),
-            0 8px 20px rgba(0, 0, 0, 0.12),
-            0 20px 40px rgba(255, 107, 157, 0.15),
-            inset 0 1px 0 rgba(255, 255, 255, 0.15);
+          box-shadow: var(--shadow-lg), var(--shadow-glow);
         }
 
         .glass-card:hover::after {
@@ -243,16 +295,13 @@ export default function DesignTestPage() {
         .glass-card-strong {
           position: relative;
           background: var(--felora-panel);
-          backdrop-filter: blur(40px) saturate(200%);
+          backdrop-filter: blur(24px) saturate(180%);
           border: 1.5px solid var(--felora-border-strong);
-          border-radius: 32px;
-          box-shadow:
-            0 2px 4px rgba(0, 0, 0, 0.06),
-            0 8px 20px rgba(0, 0, 0, 0.1),
-            0 20px 48px rgba(0, 0, 0, 0.12),
-            0 0 60px rgba(255, 107, 157, 0.08),
-            inset 0 1px 0 rgba(255, 255, 255, 0.12);
+          border-radius: var(--radius-3xl);
+          box-shadow: var(--shadow-xl), var(--shadow-glow);
           overflow: hidden;
+          will-change: transform;
+          transform: translateZ(0);
         }
 
         /* Ligne top colorée VISIBLE */
@@ -300,25 +349,23 @@ export default function DesignTestPage() {
           text-shadow: 0 0 40px rgba(255, 107, 157, 0.5);
         }
 
-        /* Boutons Premium - Pro Quality */
+        /* Boutons Premium - OPTIMISÉS */
         .btn-primary {
           position: relative;
           background: var(--felora-primary);
           color: white;
-          padding: 16px 40px;
-          border-radius: 16px;
+          padding: var(--space-4) var(--space-10);
+          border-radius: var(--radius-xl);
           font-weight: 600;
-          font-size: 15px;
+          font-size: var(--text-sm);
           border: none;
           cursor: pointer;
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          transition: var(--transition-normal);
           letter-spacing: -0.01em;
-          box-shadow:
-            0 1px 2px rgba(0, 0, 0, 0.08),
-            0 4px 12px rgba(255, 107, 157, 0.4),
-            0 12px 32px rgba(255, 107, 157, 0.3),
-            inset 0 1px 0 rgba(255, 255, 255, 0.25);
+          box-shadow: var(--shadow-md), var(--shadow-glow);
           overflow: hidden;
+          will-change: transform;
+          transform: translateZ(0);
         }
 
         /* Effet de brillance animé */
@@ -364,11 +411,7 @@ export default function DesignTestPage() {
         .btn-primary:hover {
           background: #FF5A8F;
           transform: translateY(-2px);
-          box-shadow:
-            0 2px 4px rgba(0, 0, 0, 0.08),
-            0 8px 20px rgba(255, 107, 157, 0.5),
-            0 20px 48px rgba(255, 107, 157, 0.4),
-            inset 0 1px 0 rgba(255, 255, 255, 0.3);
+          box-shadow: var(--shadow-lg), var(--shadow-glow);
         }
 
         .btn-primary:active {
@@ -379,20 +422,19 @@ export default function DesignTestPage() {
           position: relative;
           background: var(--felora-surface);
           color: var(--felora-text);
-          padding: 16px 40px;
-          border-radius: 16px;
+          padding: var(--space-4) var(--space-10);
+          border-radius: var(--radius-xl);
           font-weight: 600;
-          font-size: 15px;
+          font-size: var(--text-sm);
           border: 1.5px solid var(--felora-border);
           cursor: pointer;
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          transition: var(--transition-normal);
           letter-spacing: -0.01em;
           backdrop-filter: blur(20px);
           overflow: hidden;
-          box-shadow:
-            0 1px 2px rgba(0, 0, 0, 0.06),
-            0 2px 8px rgba(0, 0, 0, 0.08),
-            inset 0 1px 0 rgba(255, 255, 255, 0.06);
+          box-shadow: var(--shadow-sm);
+          will-change: transform;
+          transform: translateZ(0);
         }
 
         .btn-secondary::before {
@@ -411,11 +453,7 @@ export default function DesignTestPage() {
         .btn-secondary:hover {
           border-color: var(--felora-primary);
           transform: translateY(-2px);
-          box-shadow:
-            0 2px 4px rgba(0, 0, 0, 0.06),
-            0 4px 16px rgba(255, 107, 157, 0.15),
-            0 12px 32px rgba(255, 107, 157, 0.1),
-            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+          box-shadow: var(--shadow-md), var(--shadow-glow);
         }
 
         .btn-secondary:active {
@@ -427,16 +465,18 @@ export default function DesignTestPage() {
           background: rgba(124, 58, 237, 0.04);
           backdrop-filter: blur(20px);
           color: var(--felora-text-secondary);
-          padding: 12px 24px;
-          border-radius: 16px;
+          padding: var(--space-3) var(--space-6);
+          border-radius: var(--radius-xl);
           font-weight: 500;
-          font-size: 14px;
+          font-size: var(--text-sm);
           border: 1px solid var(--felora-border);
           cursor: pointer;
-          transition: all 0.3s ease;
+          transition: var(--transition-normal);
           display: inline-flex;
           align-items: center;
-          gap: 8px;
+          gap: var(--space-2);
+          will-change: transform;
+          transform: translateZ(0);
         }
 
         .btn-glass:hover {
@@ -446,11 +486,61 @@ export default function DesignTestPage() {
           transform: translateY(-2px);
         }
 
+        /* === ACCESSIBILITÉ COMPLÈTE === */
         .focus-ring:focus {
           outline: none;
           border-color: var(--felora-primary);
           box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1);
         }
+
+        .focus-ring:focus-visible {
+          outline: 2px solid var(--felora-primary);
+          outline-offset: 2px;
+        }
+
+        /* Reduced motion support */
+        @media (prefers-reduced-motion: reduce) {
+          * {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+          }
+          
+          .glass-card:hover {
+            transform: none;
+          }
+          
+          .btn-primary:hover,
+          .btn-secondary:hover,
+          .btn-glass:hover {
+            transform: none;
+          }
+        }
+
+        /* High contrast support */
+        @media (prefers-contrast: high) {
+          .glass-card {
+            border-width: 2px;
+            background: rgba(255, 255, 255, 0.1);
+          }
+          
+          .btn-primary {
+            border: 2px solid var(--felora-primary);
+          }
+        }
+
+        /* Container system responsive */
+        .container {
+          width: 100%;
+          margin: 0 auto;
+          padding: 0 var(--space-4);
+        }
+
+        @media (min-width: 640px) { .container { max-width: 640px; } }
+        @media (min-width: 768px) { .container { max-width: 768px; } }
+        @media (min-width: 1024px) { .container { max-width: 1024px; } }
+        @media (min-width: 1280px) { .container { max-width: 1280px; } }
+        @media (min-width: 1536px) { .container { max-width: 1536px; } }
 
         .animate-fade-in-up {
           animation: fadeInUp 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
@@ -530,6 +620,82 @@ export default function DesignTestPage() {
           position: relative;
           z-index: 1;
         }
+
+        /* === MICRO-INTERACTIONS PREMIUM === */
+        
+        /* Loading states */
+        .loading {
+          position: relative;
+          overflow: hidden;
+        }
+
+        .loading::after {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: -100%;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+          animation: loading 1.5s infinite;
+        }
+
+        @keyframes loading {
+          0% { left: -100%; }
+          100% { left: 100%; }
+        }
+
+        /* Skeleton loading */
+        .skeleton {
+          background: linear-gradient(90deg, var(--felora-surface) 25%, var(--felora-panel) 50%, var(--felora-surface) 75%);
+          background-size: 200% 100%;
+          animation: skeleton 1.5s infinite;
+        }
+
+        @keyframes skeleton {
+          0% { background-position: 200% 0; }
+          100% { background-position: -200% 0; }
+        }
+
+        /* Hover micro-interactions */
+        .glass-card {
+          cursor: pointer;
+        }
+
+        .glass-card:active {
+          transform: scale(0.98);
+          transition: var(--transition-fast);
+        }
+
+        /* Button press feedback */
+        .btn-primary:active,
+        .btn-secondary:active,
+        .btn-glass:active {
+          transform: scale(0.95);
+          transition: var(--transition-fast);
+        }
+
+        /* Smooth scroll behavior */
+        html {
+          scroll-behavior: smooth;
+        }
+
+        /* Focus trap for accessibility */
+        .focus-trap:focus-within {
+          outline: 2px solid var(--felora-primary);
+          outline-offset: 2px;
+        }
+
+        /* Improved text selection */
+        ::selection {
+          background: var(--felora-primary);
+          color: white;
+        }
+
+        ::-moz-selection {
+          background: var(--felora-primary);
+          color: white;
+        }
       `}</style>
 
       <div className="min-h-screen" style={{ background: 'var(--felora-void)' }}>
@@ -540,22 +706,28 @@ export default function DesignTestPage() {
           backdropFilter: 'blur(60px) saturate(180%)',
           boxShadow: '0 4px 24px rgba(0, 0, 0, 0.1), inset 0 -1px 0 rgba(124, 58, 237, 0.1)'
         }}>
-          <div className="max-w-7xl mx-auto px-8 py-6">
+          <div className="container py-6">
             <div className="flex items-center justify-between flex-wrap gap-6">
               <div className="flex items-center space-x-5">
                 <div
-                  className="w-14 h-14 rounded-3xl flex items-center justify-center relative"
+                  className="w-14 h-14 rounded-2xl flex items-center justify-center relative overflow-hidden"
                   style={{
                     background: 'var(--felora-primary)',
                     boxShadow: '0 8px 24px rgba(255, 107, 157, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)'
                   }}
                 >
-                  <span className="text-3xl">💎</span>
+                  <Image
+                    src="/logo-principal.png"
+                    alt="Felora"
+                    width={40}
+                    height={40}
+                    className="object-contain"
+                  />
                 </div>
                 <div>
                   <h1 className="text-2xl font-bold gradient-text mb-1">Felora Design Lab</h1>
                   <p className="text-sm font-medium" style={{ color: 'var(--felora-text-tertiary)' }}>
-                    Premium Flat Edition
+                    Premium Pro Edition
                   </p>
                 </div>
               </div>
@@ -565,7 +737,7 @@ export default function DesignTestPage() {
                   <button
                     key={themeKey}
                     onClick={() => setSelectedTheme(themeKey)}
-                    className={`px-5 py-3 rounded-2xl font-semibold text-sm transition-all ${
+                    className={`px-5 py-3 rounded-2xl font-semibold text-sm transition-all flex items-center gap-2 ${
                       selectedTheme === themeKey ? 'scale-105' : 'hover:scale-102'
                     }`}
                     style={{
@@ -579,6 +751,7 @@ export default function DesignTestPage() {
                         : 'none',
                     }}
                   >
+                    {themeKey === 'premium' && <Sparkles size={16} />}
                     {THEMES[themeKey].name}
                   </button>
                 ))}
@@ -587,13 +760,13 @@ export default function DesignTestPage() {
           </div>
         </header>
 
-        <main className="max-w-7xl mx-auto px-8 py-16">
+        <main className="container py-16">
           {/* Palette de couleurs */}
           <section className="mb-20">
             <h3 className="text-xl font-semibold mb-8" style={{ color: 'var(--felora-text-secondary)' }}>
               Palette • {THEMES[selectedTheme].name}
             </h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4 sm:gap-6">
               {Object.entries(theme.vars).map(([varName, value]) => {
                 const colorName = varName.replace('--felora-', '').replace(/-/g, ' ');
                 return (
@@ -643,7 +816,7 @@ export default function DesignTestPage() {
             <h3 className="text-xl font-semibold mb-8" style={{ color: 'var(--felora-text-secondary)' }}>
               Composants Premium
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-8">
               
               {/* Card 1 - Profil */}
               <div className="glass-card p-6 animate-fade-in-up">
@@ -799,7 +972,7 @@ export default function DesignTestPage() {
           {/* Performance Indicators */}
           <section className="mb-12">
             <h3 className="text-2xl font-semibold mb-6">Indicateurs de Performance</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               <div className="glass-card p-6 text-center">
                 <div className="text-3xl font-bold gradient-text mb-2">95%</div>
                 <div className="text-sm" style={{ color: 'var(--felora-text-secondary)' }}>
@@ -820,6 +993,85 @@ export default function DesignTestPage() {
               </div>
             </div>
           </section>
+
+          {/* Micro-interactions Demo */}
+          <section className="mb-12">
+            <h3 className="text-2xl font-semibold mb-6">Micro-interactions Premium</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              
+              {/* Loading States */}
+              <div className="glass-card p-6">
+                <h4 className="font-semibold mb-4">Loading States</h4>
+                <div className="space-y-4">
+                  <div className="skeleton h-4 rounded w-3/4"></div>
+                  <div className="skeleton h-4 rounded w-1/2"></div>
+                  <div className="skeleton h-4 rounded w-5/6"></div>
+                </div>
+                <div className="mt-4">
+                  <button className="btn-primary loading w-full">
+                    Chargement...
+                  </button>
+                </div>
+              </div>
+
+              {/* Interactive Elements */}
+              <div className="glass-card p-6">
+                <h4 className="font-semibold mb-4">Éléments Interactifs</h4>
+                <div className="space-y-3">
+                  <button className="btn-glass w-full text-left">
+                    <Heart size={16} className="mr-2" />
+                    Interaction 1
+                  </button>
+                  <button className="btn-glass w-full text-left">
+                    <Star size={16} className="mr-2" />
+                    Interaction 2
+                  </button>
+                  <button className="btn-glass w-full text-left">
+                    <MessageCircle size={16} className="mr-2" />
+                    Interaction 3
+                  </button>
+                </div>
+              </div>
+
+              {/* Accessibility Demo */}
+              <div className="glass-card p-6 focus-trap">
+                <h4 className="font-semibold mb-4">Accessibilité</h4>
+                <div className="space-y-3">
+                  <input 
+                    type="text" 
+                    className="w-full px-3 py-2 rounded-lg border focus-ring"
+                    style={{ 
+                      background: 'var(--felora-surface)', 
+                      borderColor: 'var(--felora-border)',
+                      color: 'var(--felora-text)'
+                    }}
+                    placeholder="Focus avec Tab"
+                  />
+                  <button className="btn-secondary w-full focus-ring">
+                    Bouton accessible
+                  </button>
+                  <div className="text-xs" style={{ color: 'var(--felora-text-tertiary)' }}>
+                    Utilisez Tab pour naviguer
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Responsive Grid Demo */}
+          <section className="mb-12">
+            <h3 className="text-2xl font-semibold mb-6">Grille Responsive</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 sm:gap-4">
+              {Array.from({ length: 12 }, (_, i) => (
+                <div key={i} className="glass-card p-4 text-center">
+                  <div className="text-sm font-medium">Item {i + 1}</div>
+                  <div className="text-xs mt-1" style={{ color: 'var(--felora-text-tertiary)' }}>
+                    Responsive
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
         </main>
 
         {/* Footer */}
@@ -827,7 +1079,7 @@ export default function DesignTestPage() {
           background: 'var(--felora-surface)', 
           borderTop: '1px solid var(--felora-border)' 
         }}>
-          <div className="max-w-6xl mx-auto px-6 text-center">
+          <div className="container text-center">
             <p style={{ color: 'var(--felora-text-tertiary)' }}>
               © 2024 Felora Premium Design System
             </p>
