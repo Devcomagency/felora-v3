@@ -172,13 +172,307 @@ const StarRating = ({
   )
 }
 
+// Composant pour l'onglet Mes Clubs
+function MyClubsTab() {
+  const [invitations, setInvitations] = useState<any[]>([])
+  const [clubs, setClubs] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [subTab, setSubTab] = useState<'invitations' | 'clubs'>('invitations')
+
+  useEffect(() => {
+    loadData()
+  }, [])
+
+  const loadData = async () => {
+    try {
+      setLoading(true)
+
+      // Charger les invitations reçues
+      const invRes = await fetch('/api/club-escort-invitations?type=received')
+      const invData = await invRes.json()
+      if (invData.success) {
+        setInvitations(invData.data || [])
+      }
+
+      // Charger les clubs liés
+      const clubsRes = await fetch('/api/escort/my-clubs')
+      const clubsData = await clubsRes.json()
+      if (clubsData.success) {
+        setClubs(clubsData.data || [])
+      }
+    } catch (error) {
+      console.error('Error loading clubs data:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleInvitation = async (invitationId: string, action: 'accept' | 'decline') => {
+    try {
+      const res = await fetch(`/api/club-escort-invitations/${invitationId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action })
+      })
+
+      const data = await res.json()
+      if (data.success) {
+        loadData()
+      }
+    } catch (error) {
+      console.error('Error handling invitation:', error)
+    }
+  }
+
+  const handleRemoveClub = async (linkId: string, clubName: string) => {
+    if (!confirm(`Voulez-vous vraiment quitter ${clubName} ?`)) return
+
+    try {
+      const res = await fetch(`/api/club-escort-links/${linkId}`, {
+        method: 'DELETE'
+      })
+
+      const data = await res.json()
+      if (data.success) {
+        loadData()
+      }
+    } catch (error) {
+      console.error('Error removing club:', error)
+    }
+  }
+
+  const pendingInvitations = invitations.filter(inv => inv.status === 'PENDING')
+  const processedInvitations = invitations.filter(inv => inv.status !== 'PENDING')
+
+  return (
+    <div className="bg-gray-800/30 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6">
+      {/* Header avec onglets */}
+      <div className="flex items-center gap-4 mb-6">
+        <button
+          onClick={() => setSubTab('invitations')}
+          className={`px-4 py-2 rounded-lg transition-colors text-sm font-medium ${
+            subTab === 'invitations'
+              ? 'bg-purple-600 text-white'
+              : 'bg-gray-700/50 text-gray-400 hover:text-white'
+          }`}
+        >
+          Invitations ({pendingInvitations.length})
+        </button>
+        <button
+          onClick={() => setSubTab('clubs')}
+          className={`px-4 py-2 rounded-lg transition-colors text-sm font-medium ${
+            subTab === 'clubs'
+              ? 'bg-purple-600 text-white'
+              : 'bg-gray-700/50 text-gray-400 hover:text-white'
+          }`}
+        >
+          Mes clubs ({clubs.length})
+        </button>
+      </div>
+
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="animate-spin text-purple-400" size={32} />
+        </div>
+      ) : (
+        <>
+          {/* Onglet Invitations */}
+          {subTab === 'invitations' && (
+            <div className="space-y-3">
+              {pendingInvitations.length > 0 ? (
+                pendingInvitations.map((inv) => (
+                  <div
+                    key={inv.id}
+                    className="flex items-center gap-4 p-4 bg-gradient-to-r from-purple-500/10 to-pink-500/10 rounded-lg border border-purple-500/20"
+                  >
+                    {/* Avatar */}
+                    <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-700 flex-shrink-0">
+                      {inv.club?.avatar ? (
+                        <img
+                          src={inv.club.avatar}
+                          alt={inv.club.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-gray-400">
+                          <BadgeCheck size={20} />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="text-white font-medium text-lg truncate">
+                        {inv.club?.name || 'Club'}
+                      </div>
+                      <div className="text-sm text-gray-400">
+                        Invitation reçue le {new Date(inv.sentAt).toLocaleDateString('fr-FR')}
+                      </div>
+                      {inv.message && (
+                        <div className="text-sm text-gray-300 mt-1 italic line-clamp-2">
+                          "{inv.message}"
+                        </div>
+                      )}
+                      <div className="text-xs text-gray-500 mt-1">
+                        Expire le {new Date(inv.expiresAt).toLocaleDateString('fr-FR')}
+                      </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex gap-2 flex-shrink-0">
+                      <button
+                        onClick={() => handleInvitation(inv.id, 'accept')}
+                        className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors text-sm font-medium"
+                      >
+                        <CheckCircle2 size={18} />
+                        Accepter
+                      </button>
+                      <button
+                        onClick={() => handleInvitation(inv.id, 'decline')}
+                        className="flex items-center gap-2 px-4 py-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors text-sm font-medium"
+                      >
+                        <X size={18} />
+                        Refuser
+                      </button>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center text-gray-400 py-12">
+                  <Clock size={48} className="mx-auto mb-4 opacity-50" />
+                  <p className="text-lg">Aucune invitation en attente</p>
+                  <p className="text-sm mt-2">
+                    Les clubs peuvent vous inviter à apparaître sur leur profil
+                  </p>
+                </div>
+              )}
+
+              {/* Historique des invitations traitées */}
+              {processedInvitations.length > 0 && (
+                <div className="mt-8">
+                  <h3 className="text-white font-semibold mb-3">Historique</h3>
+                  <div className="space-y-2">
+                    {processedInvitations.map((inv) => (
+                      <div
+                        key={inv.id}
+                        className="flex items-center gap-4 p-3 bg-gray-700/30 rounded-lg border border-gray-600/50"
+                      >
+                        <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-700 flex-shrink-0">
+                          {inv.club?.avatar ? (
+                            <img
+                              src={inv.club.avatar}
+                              alt={inv.club.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-gray-400">
+                              <BadgeCheck size={16} />
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex-1">
+                          <div className="text-white text-sm font-medium">
+                            {inv.club?.name || 'Club'}
+                          </div>
+                          <div className="text-xs text-gray-400">
+                            {new Date(inv.sentAt).toLocaleDateString('fr-FR')}
+                          </div>
+                        </div>
+
+                        <div>
+                          {inv.status === 'ACCEPTED' && (
+                            <span className="text-green-400 text-sm">✓ Acceptée</span>
+                          )}
+                          {inv.status === 'DECLINED' && (
+                            <span className="text-red-400 text-sm">✗ Refusée</span>
+                          )}
+                          {inv.status === 'EXPIRED' && (
+                            <span className="text-gray-400 text-sm">⏱ Expirée</span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Onglet Mes Clubs */}
+          {subTab === 'clubs' && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {clubs.length > 0 ? (
+                clubs.map((club) => (
+                  <div
+                    key={club.id}
+                    className="rounded-xl overflow-hidden bg-gray-700/30 border border-gray-600/50 hover:border-purple-500/50 transition-all"
+                  >
+                    {/* Header avec image */}
+                    <div className="aspect-video bg-gradient-to-br from-purple-500/20 to-pink-500/20 relative">
+                      {club.avatar ? (
+                        <img
+                          src={club.avatar}
+                          alt={club.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <BadgeCheck size={48} className="text-gray-500" />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Info */}
+                    <div className="p-4">
+                      <h3 className="text-white font-semibold text-lg mb-1 truncate">{club.name}</h3>
+                      <p className="text-gray-400 text-sm mb-3">@{club.handle}</p>
+
+                      {/* Actions */}
+                      <div className="flex gap-2">
+                        <a
+                          href={`/profile-test/club/${club.handle}`}
+                          target="_blank"
+                          className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-purple-500/20 text-purple-300 rounded-lg hover:bg-purple-500/30 transition-colors text-sm font-medium"
+                        >
+                          <ExternalLink size={14} />
+                          Voir profil
+                        </a>
+                        <button
+                          onClick={() => handleRemoveClub(club.linkId, club.name)}
+                          className="px-3 py-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors"
+                          title="Quitter le club"
+                        >
+                          <X size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="col-span-full text-center text-gray-400 py-12">
+                  <BadgeCheck size={48} className="mx-auto mb-4 opacity-50" />
+                  <p className="text-lg">Vous n'êtes affiliée à aucun club</p>
+                  <p className="text-sm mt-2">
+                    Acceptez une invitation pour apparaître sur le profil d'un club
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  )
+}
+
 export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly?: boolean }) {
   const router = useRouter()
-  const [activeTab, setActiveTab] = useState('media')
+  const [activeTab, setActiveTab] = useState('basic')
   const fileInputsRef = useRef<Array<HTMLInputElement | null>>([])
   const [draggingIndex, setDraggingIndex] = useState<number | null>(null)
   const [mandatoryMedia, setMandatoryMedia] = useState<Array<{ file?: File; preview?: string; id?: string; uploading?: boolean }>>(
-    () => Array.from({ length: 4 }, () => ({ file: undefined, preview: undefined, id: undefined, uploading: false }))
+    () => Array.from({ length: 1 }, () => ({ file: undefined, preview: undefined, id: undefined, uploading: false }))
   )
   // Prix toujours visibles; plus de repli
   const [saving, setSaving] = useState(false)
@@ -200,8 +494,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
   const [selectedMediaForBulk, setSelectedMediaForBulk] = useState<Set<number>>(new Set()) // Bulk management
   const [selectionMode, setSelectionMode] = useState(false) // Mode sélection multiple
   const [customPrices, setCustomPrices] = useState<Array<{ id: string; label: string; duration: string; price: number }>>([]) // Custom pricing
-  const [blockedCantons, setBlockedCantons] = useState<Set<string>>(new Set()) // Cantons bloqués
-  const [blockedCities, setBlockedCities] = useState<Set<string>>(new Set()) // Villes bloquées
+  const [blockedCountries, setBlockedCountries] = useState<Set<string>>(new Set()) // Pays bloqués
   // Charger les médias existants (positions 1-6)
   useEffect(() => {
     let cancelled = false
@@ -210,14 +503,14 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
         const res = await fetch('/api/profile/unified/me', { cache: 'no-store', credentials: 'include' })
         const j = await res.json().catch(() => ({}))
         const gallery = j?.profile?.galleryPhotos
-        const slots = Array.from({ length: 4 }, () => ({ file: undefined as File|undefined, preview: undefined as string|undefined, id: undefined as string|undefined, uploading: false }))
+        const slots = Array.from({ length: 1 }, () => ({ file: undefined as File|undefined, preview: undefined as string|undefined, id: undefined as string|undefined, uploading: false }))
         if (gallery) {
           let arr: any[] = []
           try { arr = Array.isArray(gallery) ? gallery : JSON.parse(gallery) } catch { arr = [] }
           for (const it of arr) {
             const s = Number(it?.slot)
-            // Ne charger que les 4 premiers slots (0-3)
-            if (Number.isFinite(s) && s >= 0 && s < 4 && it?.url) {
+            // Ne charger que le premier slot (photo de profil)
+            if (Number.isFinite(s) && s === 0 && it?.url) {
               slots[s] = { file: undefined, preview: String(it.url), id: String(it.id || `slot-${s}`), uploading: false }
             }
           }
@@ -225,6 +518,14 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
         // N'écrase pas si aucun média serveur (évite d'annuler un upload en cours)
         const serverCount = slots.filter(s => !!s.preview).length
         if (!cancelled && serverCount > 0) setMandatoryMedia(slots)
+
+        // Charger les pays bloqués
+        if (j?.profile?.blockedCountries) {
+          const blocked = Array.isArray(j.profile.blockedCountries)
+            ? j.profile.blockedCountries
+            : JSON.parse(j.profile.blockedCountries || '[]')
+          if (!cancelled) setBlockedCountries(new Set(blocked))
+        }
       } catch (e) {
         // ignore erreurs silencieusement
       }
@@ -267,7 +568,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
         return
       }
       const tab = searchParams.get('tab')
-      if (tab && ['media','basic','appearance','services','pricing','agenda'].includes(tab)) {
+      if (tab && ['basic','appearance','services','pricing','agenda','clubs'].includes(tab)) {
         setActiveTab(tab)
       }
     } catch {}
@@ -521,22 +822,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
           logger.warn('[DASHBOARD] Error parsing customPrices:', error)
         }
 
-        // 🆕 Charger le blocage géographique
-        try {
-          if (p.geoBlocking) {
-            const parsed = typeof p.geoBlocking === 'string' ? JSON.parse(p.geoBlocking) : p.geoBlocking
-            if (parsed.blockedCantons && Array.isArray(parsed.blockedCantons)) {
-              setBlockedCantons(new Set(parsed.blockedCantons))
-              logger.log('🌍 [GEO BLOCKING] Cantons bloqués chargés:', parsed.blockedCantons)
-            }
-            if (parsed.blockedCities && Array.isArray(parsed.blockedCities)) {
-              setBlockedCities(new Set(parsed.blockedCities))
-              logger.log('🌍 [GEO BLOCKING] Villes bloquées chargées:', parsed.blockedCities)
-            }
-          }
-        } catch (error) {
-          logger.warn('[DASHBOARD] Error parsing geoBlocking:', error)
-        }
+        // Ce code n'est plus nécessaire - le blocage géographique est chargé dans le premier useEffect
 
       } catch {}
     })()
@@ -545,13 +831,12 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
 
 
   const tabs = [
-    { key: 'media', label: 'Médias', icon: Image, description: 'Photos et vidéos (obligatoire)' },
     { key: 'basic', label: 'Informations de base', icon: User, description: 'Profil général (obligatoire)' },
     { key: 'appearance', label: 'Apparence physique', icon: Eye, description: 'Caractéristiques physiques' },
     { key: 'services', label: 'Clientèle & Services', icon: Heart, description: 'Groupes + tags' },
     { key: 'pricing', label: 'Tarifs & Paiements', icon: Clock, description: 'Prix et horaires' },
     { key: 'agenda', label: 'Agenda', icon: Calendar, description: 'Disponibilités & absences' },
-    // Onglet Préférences retiré sur demande
+    { key: 'clubs', label: 'Mes Clubs', icon: BadgeCheck, description: 'Clubs partenaires & invitations' },
   ]
 
   const updateProfileData = (field: string, value: any) => {
@@ -719,8 +1004,8 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
   // Checks & completion
   const requiredChecks = useMemo(() => {
     const checks: Array<{ key: string; label: string; ok: boolean; targetTab: string }> = []
-    const mediasOk = mandatoryMedia.filter(m => !!m.preview).length === 4
-    checks.push({ key: 'medias', label: '4 médias requis', ok: mediasOk, targetTab: 'media' })
+    const mediasOk = mandatoryMedia.filter(m => !!m.preview).length === 1
+    checks.push({ key: 'medias', label: 'Photo de profil', ok: mediasOk, targetTab: 'basic' })
     checks.push({ key: 'stageName', label: 'Pseudo', ok: !!profileData.stageName, targetTab: 'basic' })
     checks.push({ key: 'age', label: 'Âge', ok: profileData.age !== undefined && profileData.age > 0, targetTab: 'basic' })
     checks.push({ key: 'description', label: 'Description (≥ 200 car.)', ok: (profileData.description||'').trim().length >= 200, targetTab: 'basic' })
@@ -827,7 +1112,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
   // 🆕 Auto-save quand les tarifs personnalisés ou le blocage géo change
   useEffect(() => {
     triggerAutoSave()
-  }, [customPrices, blockedCantons, blockedCities])
+  }, [customPrices, blockedCountries])
 
   const triggerAutoSave = () => {
     if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current)
@@ -1022,16 +1307,10 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
         logger.log('💰 [CUSTOM PRICING] Ajout customPrices:', customPrices)
       }
 
-      // 🆕 Blocage géographique
-      if (blockedCantons.size > 0 || blockedCities.size > 0) {
-        payload.geoBlocking = JSON.stringify({
-          blockedCantons: Array.from(blockedCantons),
-          blockedCities: Array.from(blockedCities)
-        })
-        logger.log('🌍 [GEO BLOCKING] Ajout blocage géographique:', {
-          cantons: Array.from(blockedCantons),
-          cities: Array.from(blockedCities)
-        })
+      // 🆕 Blocage géographique par pays
+      if (blockedCountries.size > 0) {
+        payload.blockedCountries = safeStringify(Array.from(blockedCountries))
+        logger.log('🌍 [GEO BLOCKING] Ajout blocage pays:', Array.from(blockedCountries))
       }
 
       const timeSlotsJson = scheduleToJson()
@@ -1226,6 +1505,11 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
         }
       }
 
+      // Pays bloqués
+      if (blockedCountries.size > 0) {
+        payload.blockedCountries = safeStringify(Array.from(blockedCountries))
+      }
+
       const ok = await doSave(payload, false)
       if (ok) {
         // actualiser le snapshot après sauvegarde
@@ -1271,58 +1555,6 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
         </div>
       )}
 
-      {/* Boutons d'action */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        {/* 🆕 Bouton "Voir comme un client" */}
-        <button
-          onClick={() => {
-            // Récupérer l'ID escort depuis l'API ou session
-            fetch('/api/profile/unified/me', { credentials: 'include' })
-              .then(res => res.json())
-              .then(data => {
-                if (data?.profile?.id) {
-                  window.open(`/escort/${data.profile.id}`, '_blank')
-                } else {
-                  setSaveMsg({ type: 'error', text: 'Profil non trouvé. Sauvegardez d\'abord.' })
-                  setTimeout(() => setSaveMsg(null), 3000)
-                }
-              })
-              .catch(() => {
-                setSaveMsg({ type: 'error', text: 'Erreur lors de l\'ouverture du profil' })
-                setTimeout(() => setSaveMsg(null), 3000)
-              })
-          }}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all bg-white/5 hover:bg-white/10 text-white border border-white/20 hover:border-white/40"
-        >
-          <ExternalLink className="w-4 h-4" />
-          <span className="hidden sm:inline">Voir comme un client</span>
-          <span className="sm:hidden">Aperçu</span>
-        </button>
-
-        <button
-          onClick={manualSave}
-          disabled={saving}
-          className={`
-            inline-flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all
-            ${saving
-              ? 'bg-gray-600/50 text-gray-400 cursor-not-allowed'
-              : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105'
-            }
-          `}
-        >
-          {saving ? (
-            <>
-              <Loader2 className="w-4 h-4 animate-spin" />
-              Sauvegarde...
-            </>
-          ) : (
-            <>
-              <Save className="w-4 h-4" />
-              Sauvegarder les modifications
-            </>
-          )}
-        </button>
-      </div>
       {/* Checklist obligatoire (pills) */}
       <div className="flex flex-wrap gap-2">
         {requiredChecks.map(c => (
@@ -1381,111 +1613,16 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
 
       {/* Contenu des onglets */}
       <div className="bg-gray-800/30 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6">
-        {activeTab === 'media' && (
+        {activeTab === 'basic' && (
           <div>
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h3 className="text-xl font-bold text-white">Médias (4 requis)</h3>
-                <div className="text-xs text-orange-300 mt-1">⚠️ 4 médias requis pour activer le profil (1 photo de profil + 3 médias)</div>
-                <div className="text-xs text-purple-300">Astuce : les profils avec vidéo sont 3× plus vus.</div>
-              </div>
-              {/* 🆕 Boutons de gestion en bulk */}
-              <div className="flex items-center gap-2">
-                {!selectionMode ? (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSelectionMode(true)
-                      setSelectedMediaForBulk(new Set())
-                    }}
-                    className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all bg-gray-700 hover:bg-gray-600 text-white border border-gray-600"
-                  >
-                    <CheckCircle2 className="w-4 h-4" />
-                    Sélectionner
-                  </button>
-                ) : (
-                  <>
-                    <span className="text-sm text-gray-400">
-                      {selectedMediaForBulk.size} sélectionné{selectedMediaForBulk.size > 1 ? 's' : ''}
-                    </span>
-                    {selectedMediaForBulk.size > 0 && (
-                      <button
-                        type="button"
-                        onClick={async () => {
-                          if (!confirm(`Supprimer ${selectedMediaForBulk.size} média(s) ?`)) return
-
-                          const failures: number[] = []
-                          for (const idx of Array.from(selectedMediaForBulk)) {
-                            const media = mandatoryMedia[idx]
-                            if (media?.id) {
-                              try {
-                                const isProfile = idx === 0
-                                const resp = await fetch('/api/escort/media/delete', {
-                                  method: 'DELETE',
-                                  headers: { 'Content-Type': 'application/json' },
-                                  credentials: 'include',
-                                  body: JSON.stringify({ mediaId: media.id, type: isProfile ? 'profile' : 'gallery' })
-                                })
-                                const data = await resp.json().catch(() => ({}))
-                                if (!resp.ok || !data?.success) {
-                                  failures.push(idx + 1)
-                                }
-                              } catch {
-                                failures.push(idx + 1)
-                              }
-                            }
-                          }
-
-                          // Mettre à jour l'état
-                          setMandatoryMedia(prev => {
-                            const next = [...prev]
-                            selectedMediaForBulk.forEach(idx => {
-                              if (next[idx]?.preview) {
-                                try { URL.revokeObjectURL(next[idx]!.preview as string) } catch {}
-                              }
-                              next[idx] = { file: undefined, preview: undefined, id: undefined, uploading: false }
-                            })
-                            return next
-                          })
-
-                          setSelectedMediaForBulk(new Set())
-                          setSelectionMode(false)
-
-                          if (failures.length > 0) {
-                            setSaveMsg({ type: 'error', text: `Échec suppression slots: ${failures.join(', ')}` })
-                          } else {
-                            setSaveMsg({ type: 'success', text: `${selectedMediaForBulk.size} média(s) supprimé(s)` })
-                          }
-                          setTimeout(() => setSaveMsg(null), 3000)
-                        }}
-                        className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-500/30"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                        Supprimer sélection
-                      </button>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSelectionMode(false)
-                        setSelectedMediaForBulk(new Set())
-                      }}
-                      className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all bg-gray-700 hover:bg-gray-600 text-white border border-gray-600"
-                    >
-                      <X className="w-4 h-4" />
-                      Annuler
-                    </button>
-                  </>
-                )}
-              </div>
+            <div className="mb-4">
+              <h3 className="text-xl font-bold text-white">Photo de profil</h3>
+              <div className="text-xs text-orange-300 mt-1">⚠️ 1 photo de profil obligatoire</div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-              {/* 4 médias obligatoires : 1 photo de profil + 3 médias libres */}
+            <div className="max-w-md mx-auto">
+              {/* 1 photo de profil obligatoire */}
               {[
-                { n: 1, label: 'Photo de profil', accept: 'image/*', note: 'Obligatoire - Photo uniquement' },
-                { n: 2, label: 'Média 1', accept: 'image/*,video/*', note: 'Photo ou vidéo au choix' },
-                { n: 3, label: 'Média 2', accept: 'image/*,video/*', note: 'Photo ou vidéo au choix' },
-                { n: 4, label: 'Média 3', accept: 'image/*,video/*', note: 'Photo ou vidéo au choix' }
+                { n: 1, label: 'Photo de profil', accept: 'image/*', note: 'Obligatoire - Photo uniquement' }
               ].map((slot, idx) => {
                 const media = mandatoryMedia[idx]
                 // Détection vidéo : vérifier le type du fichier, pas le slot.accept
@@ -1647,33 +1784,6 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                     }}
                   >
                     {/* 🆕 Checkbox overlay en mode sélection */}
-                    {selectionMode && media?.id && (
-                      <div
-                        className="absolute top-2 right-2 z-10"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          setSelectedMediaForBulk(prev => {
-                            const next = new Set(prev)
-                            if (next.has(idx)) {
-                              next.delete(idx)
-                            } else {
-                              next.add(idx)
-                            }
-                            return next
-                          })
-                        }}
-                      >
-                        <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center cursor-pointer transition-all ${
-                          selectedMediaForBulk.has(idx)
-                            ? 'bg-purple-500 border-purple-500'
-                            : 'bg-gray-700 border-gray-500 hover:border-purple-400'
-                        }`}>
-                          {selectedMediaForBulk.has(idx) && (
-                            <CheckCircle2 className="w-4 h-4 text-white" />
-                          )}
-                        </div>
-                      </div>
-                    )}
                     {/* Header slot */}
                     <div className="flex items-center justify-between mb-1">
                       <div className="flex items-center gap-2">
@@ -1780,12 +1890,11 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                 )
               })}
             </div>
-          </div>
-        )}
 
-        {activeTab === 'basic' && (
-          <div>
-            <h3 className="text-xl font-bold text-white mb-6">Informations de base (obligatoire)</h3>
+            {/* Séparateur */}
+            <div className="my-8 border-t border-gray-700"></div>
+
+            <h3 className="text-xl font-bold text-white mb-6">Informations de base</h3>
             <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
@@ -1880,46 +1989,32 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                 </div>
               </div>
 
-              {/* Localisation - Design Moderne */}
-              <div className="bg-gradient-to-br from-purple-500/10 via-blue-500/5 to-transparent border border-purple-500/20 rounded-2xl p-6">
-                {/* Header avec icône */}
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500/20 to-blue-500/20 rounded-2xl flex items-center justify-center">
-                    <MapPin className="text-purple-400" size={24} />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-xl font-bold text-white">Localisation</h3>
-                    <p className="text-sm text-gray-400">
-                      Définissez votre position pour apparaître sur la carte
-                    </p>
-                  </div>
-                  <span className="inline-flex items-center text-[11px] px-3 py-1 rounded-full bg-purple-500/20 text-purple-200 border border-purple-500/30">
-                    Obligatoire
-                  </span>
+              {/* Localisation - Design Compact Premium */}
+              <div className="p-6 bg-gray-800/40 rounded-xl border border-gray-700/50">
+                <div className="flex items-center gap-2 mb-6">
+                  <MapPin className="text-purple-400" size={20} />
+                  <h4 className="text-lg font-semibold text-white">Localisation</h4>
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-red-500/20 text-red-300 border border-red-500/30">Requis</span>
                 </div>
-                
-                {/* Contenu avec étapes */}
-                <div className="space-y-6">
-                  {/* Étape 1: Canton */}
-                  <div className="space-y-2">
-                    <label className="flex items-center gap-3 text-sm font-medium text-gray-300">
-                      <span className="w-6 h-6 bg-purple-500/20 rounded-full flex items-center justify-center text-xs text-purple-400 font-bold">1</span>
-                      Canton
-                      <span className="text-red-400">*</span>
+
+                {/* Grille compacte */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Canton */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Canton <span className="text-red-400">*</span>
                     </label>
                     <select
                       value={profileData.canton || ''}
                       onChange={(e) => {
                         const code = e.target.value
                         updateProfileData('canton', code)
-                        // Réinitialiser ville si la ville actuelle n'appartient pas au canton choisi
                         const allowed = CITY_BY_CANTON[code] || []
                         if (profileData.city && !allowed.includes(profileData.city)) {
                           updateProfileData('city', '')
                         }
                       }}
-                      className={`w-full px-4 py-3 bg-gray-800/50 border rounded-xl text-white text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500/50 transition-all ${!profileData.canton ? 'border-red-500/50' : 'border-gray-600/50'}`}
-                      aria-invalid={!profileData.canton}
+                      className={`w-full px-4 py-3 bg-gray-700/50 border rounded-xl text-white focus:border-purple-500 focus:outline-none ${!profileData.canton ? 'border-red-500/50' : 'border-gray-600/50'}`}
                     >
                       <option value="">Sélectionner</option>
                       <option value="GE">Genève</option>
@@ -1929,16 +2024,12 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                       <option value="BE">Berne</option>
                       <option value="BS">Bâle</option>
                     </select>
-                    {!profileData.canton && (
-                      <div className="text-[11px] text-red-400 mt-1">Champ requis</div>
-                    )}
                   </div>
-                  {/* Étape 2: Ville */}
-                  <div className="space-y-2">
-                    <label className="flex items-center gap-3 text-sm font-medium text-gray-300">
-                      <span className="w-6 h-6 bg-purple-500/20 rounded-full flex items-center justify-center text-xs text-purple-400 font-bold">2</span>
-                      Ville principale
-                      <span className="text-red-400">*</span>
+
+                  {/* Ville */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Ville <span className="text-red-400">*</span>
                     </label>
                     <input
                       list="city-list"
@@ -1947,19 +2038,14 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                       onChange={(e) => {
                         const v = e.target.value
                         updateProfileData('city', v)
-                        // Détecter canton automatiquement si non choisi
                         if (!profileData.canton) {
                           const code = detectCantonFromCity(v)
                           if (code) updateProfileData('canton', code)
                         }
                       }}
                       placeholder="ex: Genève"
-                      className={`w-full px-4 py-3 bg-gray-800/50 border rounded-xl text-white text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500/50 transition-all ${!profileData.city ? 'border-red-500/50' : 'border-gray-600/50'}`}
-                      aria-invalid={!profileData.city}
+                      className={`w-full px-4 py-3 bg-gray-700/50 border rounded-xl text-white focus:border-purple-500 focus:outline-none ${!profileData.city ? 'border-red-500/50' : 'border-gray-600/50'}`}
                     />
-                    {!profileData.city && (
-                      <div className="text-[11px] text-red-400 mt-1">Champ requis</div>
-                    )}
                     <datalist id="city-list">
                       {((CITY_BY_CANTON[profileData.canton || ''] || []).length > 0
                         ? CITY_BY_CANTON[profileData.canton || '']
@@ -1970,15 +2056,12 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                     </datalist>
                   </div>
                 </div>
-                  {/* Étape 3: Adresse complète */}
-                  <div className="space-y-3">
-                    <label className="flex items-center gap-3 text-sm font-medium text-gray-300">
-                      <span className="w-6 h-6 bg-purple-500/20 rounded-full flex items-center justify-center text-xs text-purple-400 font-bold">3</span>
-                      Adresse complète avec géolocalisation
-                      <span className="text-red-400">*</span>
-                    </label>
-                    <div className="space-y-2">
-                      <p className="text-xs text-gray-400">Obligatoire pour l'affichage sur la carte</p>
+
+                {/* Adresse complète */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Adresse complète <span className="text-red-400">*</span>
+                  </label>
                   <AddressAutocomplete
                     value={profileData.address || ''}
                     onChange={(address, coordinates) => {
@@ -1997,97 +2080,60 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                     cantonName={profileData.canton ? CANTON_MAP[profileData.canton] : undefined}
                     city={profileData.city || undefined}
                     onAddressSelect={(address) => {
-                      // Déduire ville depuis le label
                       const parts = address.address.split(', ')
                       if (parts.length >= 2) {
                         const cityPart = parts[parts.length - 1]
-                        // ex: "1204 Genève" → enlever code postal
                         const cityName = cityPart.replace(/^\d+\s+/, '')
                         if (cityName) updateProfileData('city', cityName)
-                        // Déduire canton si possible
                         const code = detectCantonFromCity(cityName)
                         if (code) updateProfileData('canton', code)
                       }
                     }}
                   />
-                  
-                  {/* Validateur d'adresse */}
+
                   {profileData.address && (
                     <AddressValidator
                       address={profileData.address}
                       coordinates={profileData.coordinates}
                     />
                   )}
-                  
-                  {/* 🎯 PRÉVISUALISATION AUTOMATIQUE - S'AFFICHE DÈS QU'ON A ADRESSE + COORDONNÉES */}
-                  {profileData.address && profileData.coordinates ? (
+
+                  {/* Carte + Confidentialité (compact) */}
+                  {profileData.address && profileData.coordinates && (
                     <div className="mt-4 space-y-3">
-                      {/* Coordonnées GPS */}
-                      <div className="text-xs text-green-400">
-                        📍 Coordonnées GPS: {profileData.coordinates.lat.toFixed(6)}, {profileData.coordinates.lng.toFixed(6)}
-                      </div>
-                      
-                      {/* Mini-carte de prévisualisation - TOUJOURS VISIBLE */}
                       <LocationPreviewMap
                         coordinates={profileData.coordinates}
                         address={profileData.address}
                         privacy={profileData.addressPrivacy}
                       />
-                    </div>
-                  ) : profileData.address ? (
-                    <div className="mt-4 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
-                      <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 border-2 border-yellow-500/30 border-t-yellow-500 rounded-full animate-spin"></div>
-                        <span className="text-xs text-yellow-400">
-                          Recherche des coordonnées GPS...
-                        </span>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="mt-2 text-[11px] text-red-400">
-                      Adresse et coordonnées GPS requis
-                    </div>
-                  )}
 
-                  {/* Option de confidentialité de l'adresse */}
-                  {profileData.address && profileData.coordinates && (
-                    <div className="mt-4 p-3 bg-gray-800/50 rounded-lg border border-gray-700/50">
-                      <label className="block text-sm font-medium text-gray-300 mb-3">
-                        🔒 Confidentialité de l'adresse
-                      </label>
-                      <div className="space-y-2">
-                        <label className="flex items-start gap-3 cursor-pointer p-2 rounded-lg hover:bg-gray-700/30">
+                      {/* Confidentialité en ligne */}
+                      <div className="flex items-center gap-3 p-3 bg-gray-800/30 rounded-lg border border-gray-700/30">
+                        <label className="flex items-center gap-2 flex-1 cursor-pointer">
                           <input
                             type="radio"
                             name="addressPrivacy"
                             value="precise"
                             checked={profileData.addressPrivacy === 'precise'}
                             onChange={(e) => updateProfileData('addressPrivacy', e.target.value as 'precise' | 'approximate')}
-                            className="mt-1"
+                            className="text-purple-500"
                           />
-                          <div>
-                            <div className="text-sm text-white font-medium">Adresse précise</div>
-                            <div className="text-xs text-gray-400">Les clients voient l'adresse exacte</div>
-                          </div>
+                          <span className="text-sm text-white">Précise</span>
                         </label>
-                        <label className="flex items-start gap-3 cursor-pointer p-2 rounded-lg hover:bg-gray-700/30">
+                        <label className="flex items-center gap-2 flex-1 cursor-pointer">
                           <input
                             type="radio"
                             name="addressPrivacy"
                             value="approximate"
                             checked={profileData.addressPrivacy === 'approximate'}
                             onChange={(e) => updateProfileData('addressPrivacy', e.target.value as 'precise' | 'approximate')}
-                            className="mt-1"
+                            className="text-purple-500"
                           />
-                          <div>
-                            <div className="text-sm text-white font-medium">Zone approximative</div>
-                            <div className="text-xs text-gray-400">Affichage dans un rayon de 150m pour préserver votre confidentialité</div>
-                          </div>
+                          <span className="text-sm text-white">Approximative (±150m)</span>
                         </label>
                       </div>
                     </div>
                   )}
-                  </div>
                 </div>
               </div>
 
@@ -2146,128 +2192,67 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                 </div>
               </div>
 
-              {/* 🆕 Blocage géographique */}
-              <div className="bg-gradient-to-br from-red-500/10 via-orange-500/5 to-transparent border border-red-500/20 rounded-2xl p-6">
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="w-12 h-12 bg-gradient-to-br from-red-500/20 to-orange-500/20 rounded-2xl flex items-center justify-center">
-                    <ShieldCheck className="text-red-400" size={24} />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-xl font-bold text-white">Blocage géographique</h3>
-                    <p className="text-sm text-gray-400">
-                      Cachez votre profil dans certaines zones pour préserver votre anonymat
-                    </p>
-                  </div>
-                  <span className="inline-flex items-center text-[11px] px-3 py-1 rounded-full bg-orange-500/20 text-orange-200 border border-orange-500/30">
-                    Optionnel
-                  </span>
+              {/* Blocage géographique - Design Premium Compact */}
+              <div className="p-6 bg-gray-800/40 rounded-xl border border-gray-700/50">
+                <div className="flex items-center gap-2 mb-6">
+                  <ShieldCheck className="text-red-400" size={20} />
+                  <h4 className="text-lg font-semibold text-white">Blocage géographique</h4>
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-gray-600/30 text-gray-400 border border-gray-600/30">Optionnel</span>
                 </div>
 
-                <div className="space-y-6">
-                  {/* Bloquer par canton */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-3">
-                      Bloquer certains cantons
-                    </label>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                      {SWISS_CANTONS.map((canton) => {
-                        const isBlocked = blockedCantons.has(canton.code)
-                        return (
-                          <button
-                            key={canton.code}
-                            type="button"
-                            onClick={() => {
-                              setBlockedCantons(prev => {
-                                const next = new Set(prev)
-                                if (next.has(canton.code)) {
-                                  next.delete(canton.code)
-                                } else {
-                                  next.add(canton.code)
-                                }
-                                return next
-                              })
-                            }}
-                            className={`px-3 py-2 rounded-lg text-xs font-medium transition-all ${
-                              isBlocked
-                                ? 'bg-red-500/20 text-red-200 border-2 border-red-500/50'
-                                : 'bg-gray-700/30 text-gray-300 border border-gray-600/50 hover:bg-gray-700/50'
-                            }`}
-                          >
-                            {isBlocked && <X className="w-3 h-3 inline mr-1" />}
-                            {canton.name}
-                          </button>
-                        )
-                      })}
-                    </div>
-                    {blockedCantons.size > 0 && (
-                      <div className="mt-3 text-xs text-orange-300">
-                        {blockedCantons.size} canton{blockedCantons.size > 1 ? 's' : ''} bloqué{blockedCantons.size > 1 ? 's' : ''}
-                      </div>
-                    )}
+                <div className="space-y-4">
+                  <p className="text-sm text-gray-400">Bloquez l'accès à votre profil depuis certains pays</p>
+
+                  {/* Sélection pays */}
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                    {[
+                      { code: 'FR', name: 'France', flag: '🇫🇷' },
+                      { code: 'DE', name: 'Allemagne', flag: '🇩🇪' },
+                      { code: 'IT', name: 'Italie', flag: '🇮🇹' },
+                      { code: 'AT', name: 'Autriche', flag: '🇦🇹' },
+                      { code: 'BE', name: 'Belgique', flag: '🇧🇪' },
+                      { code: 'ES', name: 'Espagne', flag: '🇪🇸' },
+                      { code: 'GB', name: 'Royaume-Uni', flag: '🇬🇧' },
+                      { code: 'NL', name: 'Pays-Bas', flag: '🇳🇱' },
+                      { code: 'PT', name: 'Portugal', flag: '🇵🇹' },
+                      { code: 'PL', name: 'Pologne', flag: '🇵🇱' },
+                      { code: 'RO', name: 'Roumanie', flag: '🇷🇴' },
+                      { code: 'CZ', name: 'Tchéquie', flag: '🇨🇿' },
+                    ].map((country) => {
+                      const isBlocked = blockedCountries.has(country.code)
+                      return (
+                        <button
+                          key={country.code}
+                          type="button"
+                          onClick={() => {
+                            setBlockedCountries(prev => {
+                              const next = new Set(prev)
+                              if (next.has(country.code)) {
+                                next.delete(country.code)
+                              } else {
+                                next.add(country.code)
+                              }
+                              return next
+                            })
+                          }}
+                          className={`px-3 py-2 rounded-lg text-xs font-medium transition-all ${
+                            isBlocked
+                              ? 'bg-red-500/20 text-red-200 border border-red-500/50'
+                              : 'bg-gray-700/50 text-gray-300 border border-gray-600/50 hover:bg-gray-700'
+                          }`}
+                        >
+                          <span className="mr-1">{country.flag}</span>
+                          {country.name}
+                        </button>
+                      )
+                    })}
                   </div>
 
-                  {/* Bloquer par ville */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-3">
-                      Bloquer certaines villes principales
-                    </label>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                      {SWISS_MAJOR_CITIES.slice(0, 12).map((city) => {
-                        const isBlocked = blockedCities.has(city.name)
-                        return (
-                          <button
-                            key={city.name}
-                            type="button"
-                            onClick={() => {
-                              setBlockedCities(prev => {
-                                const next = new Set(prev)
-                                if (next.has(city.name)) {
-                                  next.delete(city.name)
-                                } else {
-                                  next.add(city.name)
-                                }
-                                return next
-                              })
-                            }}
-                            className={`px-3 py-2 rounded-lg text-xs font-medium transition-all ${
-                              isBlocked
-                                ? 'bg-red-500/20 text-red-200 border-2 border-red-500/50'
-                                : 'bg-gray-700/30 text-gray-300 border border-gray-600/50 hover:bg-gray-700/50'
-                            }`}
-                          >
-                            {isBlocked && <X className="w-3 h-3 inline mr-1" />}
-                            {city.name}
-                          </button>
-                        )
-                      })}
+                  {blockedCountries.size > 0 && (
+                    <div className="text-xs text-red-300 bg-red-500/10 px-3 py-2 rounded-lg border border-red-500/20">
+                      {blockedCountries.size} pays bloqué{blockedCountries.size > 1 ? 's' : ''}
                     </div>
-                    {blockedCities.size > 0 && (
-                      <div className="mt-3 text-xs text-orange-300">
-                        {blockedCities.size} ville{blockedCities.size > 1 ? 's' : ''} bloquée{blockedCities.size > 1 ? 's' : ''}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Informations */}
-                  <div className="bg-orange-500/10 border border-orange-500/20 rounded-xl p-4">
-                    <div className="flex items-start gap-3">
-                      <AlertTriangle className="w-5 h-5 text-orange-400 flex-shrink-0 mt-0.5" />
-                      <div className="text-xs text-gray-300 space-y-2">
-                        <p>
-                          <strong className="text-orange-200">Comment ça marche ?</strong>
-                        </p>
-                        <ul className="list-disc list-inside space-y-1 text-gray-400">
-                          <li>Votre profil sera complètement invisible pour les utilisateurs situés dans les zones bloquées</li>
-                          <li>Ils ne vous verront ni dans les résultats de recherche, ni sur la carte</li>
-                          <li>Cette fonction utilise la géolocalisation IP des visiteurs</li>
-                          <li>Vous pouvez modifier ces paramètres à tout moment</li>
-                        </ul>
-                        <p className="text-orange-300 mt-3">
-                          ⚠️ Note : Les données de blocage seront bientôt sauvegardées automatiquement. Fonctionnalité en cours de développement.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -3091,6 +3076,9 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
           </div>
         </div>
       )}
+
+      {/* Onglet Mes Clubs */}
+      {activeTab === 'clubs' && <MyClubsTab />}
 
       {/* Barre d'actions en bas et modale de pause retirées (agenda centralise la pause) */}
     </div>

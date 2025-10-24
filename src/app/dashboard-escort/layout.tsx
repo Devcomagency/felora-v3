@@ -25,16 +25,6 @@ export default async function EscortV2Layout({ children }: { children: React.Rea
 
   return (
     <div className="fel-v2 min-h-screen bg-black text-white">
-      <div className="sticky top-0 z-40 bg-black/70 backdrop-blur border-b border-white/10">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="py-3 border-b border-white/5 flex items-center justify-between gap-3">
-            <div className="text-sm text-white/60">Dashboard Escort v2 (sandbox)</div>
-          </div>
-
-          {/* Onglets de navigation */}
-          <EscortTopNav />
-        </div>
-      </div>
       <EscortDashboardProvider>
         <div className="max-w-6xl mx-auto px-4 py-6 pb-24">
           {/* En-tête fixe (statut + progression + actions) */}

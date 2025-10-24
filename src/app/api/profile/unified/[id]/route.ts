@@ -746,6 +746,14 @@ function transformUpdateData(body: any): Record<string, any> {
   if (body.ageVerified !== undefined) data.ageVerified = body.ageVerified
   if (body.minimumDuration !== undefined) data.minimumDuration = body.minimumDuration
 
+  // Blocage géographique
+  if (body.blockedCountries !== undefined) {
+    data.blockedCountries = typeof body.blockedCountries === 'string'
+      ? body.blockedCountries
+      : JSON.stringify(body.blockedCountries)
+    console.log('📦 [API UNIFIED POST] Ajout blockedCountries:', data.blockedCountries)
+  }
+
   return data
 }
 

@@ -52,19 +52,15 @@ export default function HeaderClient() {
   }
 
   return (
-    <div className="sticky top-[52px] z-30 bg-black/70 backdrop-blur border border-white/10 rounded-xl px-4 py-3 text-sm">
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div className="flex items-center gap-3 flex-wrap">
-          <div className={`px-2.5 py-1 rounded-lg text-xs font-medium border ${status === 'ACTIVE' || status === 'VERIFIED' ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30' : status === 'PAUSED' ? 'bg-yellow-500/15 text-yellow-300 border-yellow-500/30' : 'bg-gray-500/15 text-gray-300 border-gray-500/30'}`}>
-            {loading ? '…' : status === 'ACTIVE' ? 'Actif' : status === 'VERIFIED' ? 'Vérifié' : status === 'PAUSED' ? 'En pause' : 'Inactif'}
-          </div>
-          {/* Progression et vérification retirées du header global */}
+    <div className="bg-black/70 backdrop-blur border border-white/10 rounded-xl px-4 py-3 text-sm">
+      <div className="flex items-center gap-3">
+        <div className={`px-2.5 py-1 rounded-lg text-xs font-medium border ${status === 'ACTIVE' || status === 'VERIFIED' ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30' : status === 'PAUSED' ? 'bg-yellow-500/15 text-yellow-300 border-yellow-500/30' : 'bg-gray-500/15 text-gray-300 border-gray-500/30'}`}>
+          {loading ? '…' : status === 'ACTIVE' ? 'Actif' : status === 'VERIFIED' ? 'Vérifié' : status === 'PAUSED' ? 'En pause' : 'Inactif'}
         </div>
-        {/* Boutons spécifiques retirés du header (Agenda, KYC) */}
+        {loading && (
+          <div className="text-xs text-white/60 flex items-center"><Loader2 size={14} className="animate-spin mr-2"/> Chargement…</div>
+        )}
       </div>
-      {loading && (
-        <div className="mt-2 text-xs text-white/60 flex items-center"><Loader2 size={14} className="animate-spin mr-2"/> Chargement…</div>
-      )}
     </div>
   )
 }
