@@ -1,131 +1,227 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { motion } from 'framer-motion'
-import { Crown, User, Building, Check, BadgeCheck, MessageCircle, Shield, Star } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Crown, User, Building, ArrowRight, Sparkles, Lock, TrendingUp, Users } from 'lucide-react'
 
 type AccountType = 'client' | 'escort' | 'salon'
 
 export default function RegisterPage() {
   const router = useRouter()
+  const [hoveredCard, setHoveredCard] = useState<AccountType | null>(null)
 
   const cards: Array<{
     id: AccountType
     title: string
+    subtitle: string
     description: string
     gradient: string
+    bgGradient: string
     Icon: React.ComponentType<any>
-    features: string[]
+    benefits: string[]
     href: string
+    accentColor: string
     popular?: boolean
   }> = [
     {
       id: 'client',
       title: 'Client',
-      description: 'Recherchez et contactez en toute discrétion',
-      gradient: 'from-teal-400 to-cyan-400',
+      subtitle: 'Accès discret',
+      description: 'Explorez en toute confidentialité',
+      gradient: 'from-cyan-500 to-blue-500',
+      bgGradient: 'from-cyan-500/10 via-blue-500/5 to-transparent',
+      accentColor: '#06B6D4',
       Icon: User,
-      features: ['Navigation privée', 'Messagerie sécurisée', 'Favoris et historique'],
+      benefits: ['Anonymat total', 'Chat sécurisé', 'Profils vérifiés'],
       href: '/register/client'
     },
     {
       id: 'escort',
       title: 'Indépendante',
-      description: 'Créez votre profil premium et recevez des clients',
-      gradient: 'from-pink-500 to-violet-500',
+      subtitle: 'Compte Pro',
+      description: 'Développez votre activité',
+      gradient: 'from-pink-500 via-purple-500 to-violet-600',
+      bgGradient: 'from-pink-500/10 via-purple-500/5 to-transparent',
+      accentColor: '#EC4899',
       Icon: Crown,
-      features: ['Badge vérifié', 'Mise en avant premium', 'Statistiques détaillées'],
-      href: '/register/indepandante',
-      popular: true
+      benefits: ['Badge vérifié', 'Contrôle géographique', 'Visibilité max'],
+      href: '/register/indepandante'
     },
     {
       id: 'salon',
-      title: 'Salon',
-      description: 'Gérez votre établissement et vos profils',
-      gradient: 'from-purple-400 to-fuchsia-500',
+      title: 'Établissement',
+      subtitle: 'Profil Club',
+      description: 'Gérez votre entreprise',
+      gradient: 'from-violet-500 to-purple-600',
+      bgGradient: 'from-violet-500/10 via-purple-500/5 to-transparent',
+      accentColor: '#8B5CF6',
       Icon: Building,
-      features: ['Multi-profils', 'Réservations', 'Statistiques avancées'],
+      benefits: ['Gestion équipe', 'Galerie média', 'Profil premium'],
       href: '/register/salon'
     }
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black via-[#0D0D0D] to-[#1A1A1A] text-white px-6 py-6 flex flex-col">
-      {/* Header */}
-      <div className="max-w-4xl mx-auto text-center mb-6">
-        <div className="mx-auto mb-4">
-          <img
-            src="/logo-principal.png"
-            alt="FELORA"
-            className="w-20 h-20 object-contain mx-auto filter drop-shadow-2xl"
-            style={{ filter: 'drop-shadow(0 0 30px rgba(255,107,157,0.8)) drop-shadow(0 0 60px rgba(183,148,246,0.6))' }}
-          />
-        </div>
-        <h1 className="text-2xl font-extrabold tracking-tight">Rejoignez FELORA</h1>
-        <p className="text-white/70 text-sm mt-1">Choisissez votre type de compte</p>
-        <div className="mt-3 flex items-center justify-center gap-2 text-xs text-white/60">
-          <Shield className="w-3.5 h-3.5 text-teal-300" /> Données protégées
-          <span>•</span>
-          <BadgeCheck className="w-3.5 h-3.5 text-[#4FD1C7]" /> Profil vérifié
-          <span>•</span>
-          <Star className="w-3.5 h-3.5 text-pink-300" /> Premium
-        </div>
-      </div>
+    <div className="relative min-h-screen bg-black text-white overflow-hidden">
+      {/* Background Effects */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/20 via-black to-black" />
+      <div className="absolute inset-0 bg-grid-white/[0.02]" />
 
-      {/* Cards */}
-      <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-4 flex-1">
-        {cards.map((card, idx) => (
-          <motion.button
-            key={card.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: idx * 0.06 }}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => router.push(card.href)}
-            className="group relative text-left rounded-2xl border border-white/10 bg-white/[0.06] hover:bg-white/[0.08] transition-colors overflow-hidden h-fit"
+      {/* Animated gradient orbs */}
+      <div className="absolute top-1/4 -left-48 w-96 h-96 bg-purple-500/30 rounded-full blur-3xl animate-pulse" />
+      <div className="absolute bottom-1/4 -right-48 w-96 h-96 bg-pink-500/30 rounded-full blur-3xl animate-pulse delay-700" />
+
+      <div className="relative z-10 container mx-auto px-4 py-8 flex flex-col min-h-screen">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <motion.div
+            initial={{ scale: 0.5, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.5 }}
+            className="mb-6"
           >
-            {card.popular && (
-              <span className="absolute top-2 right-2 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-gradient-to-r from-pink-500 to-violet-600">Populaire</span>
-            )}
+            <img
+              src="/logo-principal.png"
+              alt="FELORA"
+              className="w-20 h-20 object-contain mx-auto"
+              style={{
+                filter: 'drop-shadow(0 0 40px rgba(255,107,157,0.6)) drop-shadow(0 0 80px rgba(183,148,246,0.4))'
+              }}
+            />
+          </motion.div>
 
-            <div className="p-5">
-              {/* Icon wrapper with gradient */}
-              <div className={`w-12 h-12 rounded-xl grid place-items-center shadow mb-3 bg-gradient-to-r ${card.gradient}`}>
-                <card.Icon className="w-6 h-6 text-white drop-shadow" />
-              </div>
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.2 }}
+          >
+            <h1 className="text-4xl md:text-5xl font-black tracking-tight mb-3 bg-gradient-to-r from-white via-purple-200 to-pink-200 bg-clip-text text-transparent">
+              Bienvenue sur FELORA
+            </h1>
+            <p className="text-white/60 text-sm max-w-md mx-auto">
+              La plateforme premium suisse. Choisissez votre expérience.
+            </p>
+          </motion.div>
+        </div>
 
-              <h3 className="text-lg font-bold mb-1">{card.title}</h3>
-              <p className="text-xs text-white/70 mb-3">{card.description}</p>
+        {/* Cards Grid */}
+        <div className="flex-1 flex items-center justify-center">
+          <div className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6">
+            {cards.map((card, idx) => (
+              <motion.div
+                key={card.id}
+                initial={{ y: 50, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.3 + idx * 0.1 }}
+                onHoverStart={() => setHoveredCard(card.id)}
+                onHoverEnd={() => setHoveredCard(null)}
+                className="relative"
+              >
+                {/* Popular Badge */}
+                {card.popular && (
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ delay: 0.6, type: 'spring' }}
+                    className="absolute -top-3 left-1/2 -translate-x-1/2 z-20"
+                  >
+                    <div className="flex items-center gap-1 px-3 py-1 rounded-full bg-gradient-to-r from-pink-500 to-violet-600 text-white text-xs font-bold shadow-lg shadow-pink-500/50">
+                      <Sparkles className="w-3 h-3" />
+                      Populaire
+                    </div>
+                  </motion.div>
+                )}
 
-              <ul className="space-y-1.5 text-xs text-white/80">
-                {card.features.map((f, i) => (
-                  <li key={i} className="flex items-center gap-2">
-                    <span className={`inline-flex items-center justify-center w-4 h-4 rounded-full text-white text-[10px] bg-gradient-to-r ${card.gradient}`}>
-                      <Check className="w-3 h-3" />
-                    </span>
-                    <span>{f}</span>
-                  </li>
-                ))}
-              </ul>
+                {/* Card */}
+                <button
+                  onClick={() => router.push(card.href)}
+                  className={`group relative w-full h-full rounded-3xl border transition-all duration-500 ${
+                    hoveredCard === card.id
+                      ? 'border-white/30 shadow-2xl scale-105'
+                      : 'border-white/10 hover:border-white/20'
+                  }`}
+                  style={{
+                    background: hoveredCard === card.id
+                      ? `linear-gradient(135deg, ${card.accentColor}15 0%, rgba(0,0,0,0.8) 100%)`
+                      : 'rgba(255,255,255,0.03)'
+                  }}
+                >
+                  {/* Gradient overlay on hover */}
+                  <div className={`absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-br ${card.bgGradient}`} />
 
-              <div className="mt-4">
-                <span className={`inline-block w-full text-center text-xs font-semibold rounded-lg py-2 bg-gradient-to-r ${card.gradient} shadow-lg group-hover:shadow-xl transition-shadow`}>
-                  Continuer comme {card.title}
-                </span>
-              </div>
-            </div>
-          </motion.button>
-        ))}
-      </div>
+                  <div className="relative p-6 lg:p-8 flex flex-col h-full">
+                    {/* Icon */}
+                    <div className="mb-6">
+                      <div className={`inline-flex p-4 rounded-2xl bg-gradient-to-br ${card.gradient} shadow-lg transition-transform group-hover:scale-110 duration-500`}>
+                        <card.Icon className="w-8 h-8 text-white" strokeWidth={2} />
+                      </div>
+                    </div>
 
-      {/* Footer */}
-      <div className="max-w-4xl mx-auto text-center mt-6 text-xs text-white/60">
-        Déjà un compte ?
-        <button onClick={() => router.push('/login')} className="ml-2 text-[#4FD1C7] underline hover:text-teal-300">
-          Se connecter
-        </button>
+                    {/* Content */}
+                    <div className="flex-1">
+                      <div className="mb-1">
+                        <span className={`text-xs font-semibold uppercase tracking-wider bg-gradient-to-r ${card.gradient} bg-clip-text text-transparent`}>
+                          {card.subtitle}
+                        </span>
+                      </div>
+                      <h2 className="text-2xl lg:text-3xl font-bold mb-2 text-white group-hover:text-white transition-colors">
+                        {card.title}
+                      </h2>
+                      <p className="text-white/50 text-sm mb-6 group-hover:text-white/70 transition-colors">
+                        {card.description}
+                      </p>
+
+                      {/* Benefits */}
+                      <ul className="space-y-2 mb-8">
+                        {card.benefits.map((benefit, i) => (
+                          <motion.li
+                            key={i}
+                            initial={{ x: -10, opacity: 0 }}
+                            animate={{ x: 0, opacity: 1 }}
+                            transition={{ delay: 0.5 + idx * 0.1 + i * 0.1 }}
+                            className="flex items-center gap-2 text-sm text-white/70 group-hover:text-white/90 transition-colors"
+                          >
+                            <div className={`w-1.5 h-1.5 rounded-full bg-gradient-to-r ${card.gradient}`} />
+                            {benefit}
+                          </motion.li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    {/* CTA Button */}
+                    <div className={`flex items-center justify-between px-4 py-3 rounded-xl bg-gradient-to-r ${card.gradient} group-hover:shadow-2xl transition-all duration-500`}
+                      style={{
+                        boxShadow: hoveredCard === card.id ? `0 20px 40px ${card.accentColor}40` : 'none'
+                      }}
+                    >
+                      <span className="font-semibold text-white text-sm">Continuer</span>
+                      <ArrowRight className="w-5 h-5 text-white group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  </div>
+                </button>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+
+        {/* Footer */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.8 }}
+          className="text-center mt-8 pb-4"
+        >
+          <div className="text-sm text-white/40">
+            Vous avez déjà un compte ?{' '}
+            <button
+              onClick={() => router.push('/login')}
+              className="text-purple-400 hover:text-purple-300 font-semibold underline underline-offset-4 transition-colors"
+            >
+              Se connecter
+            </button>
+          </div>
+        </motion.div>
       </div>
     </div>
   )
