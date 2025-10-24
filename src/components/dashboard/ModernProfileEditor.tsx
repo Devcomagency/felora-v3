@@ -1544,6 +1544,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
       {/* 🆕 Indicateur de connexion réseau */}
       <NetworkIndicator />
 
+      {/* Messages de sauvegarde */}
       {saveMsg && (
         <div className={`p-3 rounded-xl ${saveMsg.type === 'success' ? 'bg-emerald-500/20 border border-emerald-500/30 text-emerald-300' : 'bg-red-500/20 border border-red-500/30 text-red-300'}`}>
           {saveMsg.text}
@@ -1555,57 +1556,108 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
         </div>
       )}
 
-      {/* Checklist obligatoire (pills) */}
-      <div className="flex flex-wrap gap-2">
-        {requiredChecks.map(c => (
-          <button key={c.key} onClick={()=> setActiveTab(c.targetTab)} className={`text-xs rounded-full px-2.5 py-1 border ${c.ok ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30' : 'bg-white/5 text-white/80 border-white/10 hover:bg-white/10'}`}>
-            {c.ok ? <CheckCircle2 size={12} className="inline mr-1"/> : <AlertTriangle size={12} className="inline mr-1"/>}
-            {c.label}
-          </button>
-        ))}
-      </div>
-      {/* Barre de progression + KYC (profil uniquement) */}
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div className="flex items-center gap-2">
-          <div className="w-40 h-2 bg-white/10 rounded-full overflow-hidden">
-            <div className="h-full bg-gradient-to-r from-purple-500 to-pink-500" style={{ width: `${completionPct}%` }} />
+      {/* Header Premium avec progression et KYC */}
+      <div className="bg-gradient-to-br from-gray-800/60 via-gray-800/40 to-gray-900/60 backdrop-blur-xl border border-gray-700/50 rounded-2xl p-6">
+        {/* Progression */}
+        <div className="flex items-center justify-between gap-4 mb-6">
+          <div className="flex-1">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-sm font-semibold text-white/90">Complétude du profil</h3>
+              <span className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">{completionPct}%</span>
+            </div>
+            <div className="h-3 bg-black/30 rounded-full overflow-hidden border border-white/5">
+              <div
+                className="h-full bg-gradient-to-r from-purple-500 via-pink-500 to-purple-500 transition-all duration-500 ease-out"
+                style={{ width: `${completionPct}%` }}
+              />
+            </div>
           </div>
-          <div className="text-white/80 text-sm">{completionPct}%</div>
+
+          {/* Badge KYC */}
+          <div className="flex-shrink-0">
+            {kycStatus === 'APPROVED' ? (
+              <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500/20 border border-emerald-500/30">
+                <BadgeCheck className="text-emerald-400" size={20} />
+                <span className="text-sm font-medium text-emerald-300">Vérifié</span>
+              </div>
+            ) : kycStatus === 'PENDING' ? (
+              <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-yellow-500/20 border border-yellow-500/30">
+                <Loader2 className="text-yellow-400 animate-spin" size={20} />
+                <span className="text-sm font-medium text-yellow-300">En vérification</span>
+              </div>
+            ) : (
+              <a href="/certification" className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all">
+                <ShieldCheck className="text-white/60" size={20} />
+                <span className="text-sm font-medium text-white/80">Certifier</span>
+              </a>
+            )}
+          </div>
         </div>
-        <div>
-          {kycStatus === 'APPROVED' ? (
-            <span className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-lg bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">Compte vérifié</span>
-          ) : kycStatus === 'PENDING' ? (
-            <span className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-lg bg-yellow-500/15 text-yellow-200 border border-yellow-500/30">Vérification en cours…</span>
-          ) : (
-            <a href="/certification" className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-lg bg-white/5 text-white/80 border border-white/10 hover:bg-white/10">Certifier mon compte</a>
-          )}
-        </div>
+
+        {/* Checklist obligatoire */}
+        {requiredChecks.filter(c => !c.ok).length > 0 && (
+          <div className="pt-4 border-t border-white/5">
+            <div className="flex items-center gap-2 mb-3">
+              <AlertTriangle size={16} className="text-orange-400" />
+              <h4 className="text-sm font-semibold text-white/90">Actions requises ({requiredChecks.filter(c => !c.ok).length})</h4>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {requiredChecks.map(c => (
+                <button
+                  key={c.key}
+                  onClick={()=> setActiveTab(c.targetTab)}
+                  className={`text-xs rounded-full px-3 py-1.5 border transition-all ${
+                    c.ok
+                      ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'
+                      : 'bg-orange-500/10 text-orange-300 border-orange-500/30 hover:bg-orange-500/20'
+                  }`}
+                >
+                  {c.ok ? <CheckCircle2 size={12} className="inline mr-1"/> : <AlertTriangle size={12} className="inline mr-1"/>}
+                  {c.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Navigation par onglets */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
+      {/* Navigation par onglets - Design premium */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         {tabs.map((tab) => {
           const IconComponent = tab.icon
+          const isActive = activeTab === tab.key
           return (
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`p-4 rounded-xl text-left transition-all ${
-                activeTab === tab.key
-                  ? 'bg-gradient-to-r from-purple-500/20 to-pink-500/20 border-purple-500/30 border'
-                  : 'bg-gray-800/30 border border-gray-700/50 hover:border-gray-600'
+              className={`group relative p-4 rounded-2xl text-left transition-all duration-300 ${
+                isActive
+                  ? 'bg-gradient-to-br from-purple-500/30 via-pink-500/20 to-purple-500/30 border-2 border-purple-500/50 shadow-lg shadow-purple-500/20'
+                  : 'bg-gray-800/40 border border-gray-700/50 hover:border-gray-600/70 hover:bg-gray-800/60'
               }`}
             >
-              <div className="flex items-center space-x-2 mb-2">
-                <IconComponent size={18} className={activeTab === tab.key ? 'text-purple-400' : 'text-gray-400'} />
-                <span className={`font-medium text-sm ${
-                  activeTab === tab.key ? 'text-purple-400' : 'text-white'
+              {isActive && (
+                <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-purple-500/10 to-pink-500/10 animate-pulse" />
+              )}
+              <div className="relative">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className={`p-2 rounded-lg transition-all ${
+                    isActive ? 'bg-purple-500/20' : 'bg-gray-700/50 group-hover:bg-gray-700'
+                  }`}>
+                    <IconComponent size={18} className={isActive ? 'text-purple-400' : 'text-gray-400 group-hover:text-gray-300'} />
+                  </div>
+                  <span className={`font-semibold text-sm transition-all ${
+                    isActive ? 'text-white' : 'text-gray-300 group-hover:text-white'
+                  }`}>
+                    {tab.label}
+                  </span>
+                </div>
+                <p className={`text-xs transition-all ${
+                  isActive ? 'text-purple-300/80' : 'text-gray-500 group-hover:text-gray-400'
                 }`}>
-                  {tab.label}
-                </span>
+                  {tab.description}
+                </p>
               </div>
-              <p className="text-xs text-gray-400">{tab.description}</p>
             </button>
           )
         })}
