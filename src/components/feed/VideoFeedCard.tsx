@@ -239,11 +239,11 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
       try { (window as any)?.umami?.track?.('media_view', { mediaId }) } catch {}
     }
     
-    // Charger la vidéo seulement quand elle est visible
-    if (inView && !shouldLoadVideo) {
+    // Charger la vidéo seulement quand elle est visible et que l'URL est valide
+    if (inView && !shouldLoadVideo && item.url && !item.url.includes('undefined')) {
       setShouldLoadVideo(true)
     }
-  }, [handleIntersectingChange, item.id, mediaId, videoRef, shouldLoadVideo])
+  }, [handleIntersectingChange, item.id, mediaId, videoRef, shouldLoadVideo, item.url])
 
   // Actions
   const onReact = useCallback((emoji: string) => {
@@ -365,15 +365,25 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
             onClick={handleVideoClick}
             onLoadStart={() => console.log('🎬 Vidéo en cours de chargement...')}
             onCanPlay={() => console.log('✅ Vidéo prête à être lue')}
-            onError={(e) => console.error('❌ Erreur vidéo:', e)}
+            onError={(e) => {
+              const target = e.target as HTMLVideoElement;
+              const error = target.error;
+              console.error('❌ Erreur vidéo:', {
+                errorCode: error?.code,
+                errorMessage: error?.message,
+                src: target.src,
+                networkState: target.networkState,
+                readyState: target.readyState
+              });
+            }}
           >
             <source src={item.url} type="video/mp4" />
           </video>
         ) : (
           <div 
-            className="w-full h-full cursor-pointer"
+            className="w-full h-full cursor-pointer flex items-center justify-center"
             style={{ 
-              backgroundImage: `url(${item.url})`,
+              backgroundImage: item.url && !item.url.includes('undefined') ? `url(${item.url})` : 'none',
               backgroundColor: '#1a1a1a',
               backgroundSize: 'cover',
               backgroundPosition: 'center center',
@@ -383,7 +393,14 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
               minHeight: '100%'
             }}
             onClick={handleVideoClick}
-          />
+          >
+            {(!item.url || item.url.includes('undefined')) && (
+              <div className="text-center text-white/60">
+                <div className="text-4xl mb-2">🎬</div>
+                <div className="text-sm">Vidéo non disponible</div>
+              </div>
+            )}
+          </div>
         )}
         
         {/* Gradient Overlay */}
