@@ -117,8 +117,15 @@ export async function POST(request: NextRequest) {
     // Générer l'URL pré-signée (valide 1 heure)
     const presignedUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 })
 
-    // URL publique du fichier (après upload) - Utiliser la variable serveur
+    // URL publique du fichier (après upload) - FORCER la valeur correcte
     const baseUrl = process.env.CLOUDFLARE_R2_PUBLIC_URL || process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL || 'https://media.felora.ch'
+    
+    // VALIDATION CRITIQUE - Empêcher les URLs undefined
+    if (!baseUrl || baseUrl === 'undefined' || baseUrl.includes('undefined')) {
+      console.error('❌ ERREUR CRITIQUE: baseUrl invalide:', baseUrl)
+      throw new Error('Configuration CDN invalide - baseUrl undefined')
+    }
+    
     const publicUrl = `${baseUrl}/${key}`
 
     console.log('🔍 DEBUG Presigned URL génération:', {
@@ -126,8 +133,14 @@ export async function POST(request: NextRequest) {
       NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL: process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL,
       baseUrl,
       key,
-      publicUrl
+      publicUrl,
+      isValid: !publicUrl.includes('undefined')
     })
+
+    if (publicUrl.includes('undefined')) {
+      console.error('❌ ERREUR CRITIQUE: publicUrl contient undefined:', publicUrl)
+      throw new Error('URL publique invalide générée')
+    }
 
     console.log('✅ Presigned URL générée:', {
       key,
