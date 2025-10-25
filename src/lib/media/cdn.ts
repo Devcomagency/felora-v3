@@ -13,12 +13,26 @@ const CDN_BASE_URL = process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL ||
  * Construit une URL CDN complète pour un média
  */
 export function buildCdnUrl(path: string): string {
-  // Nettoyer le chemin
-  const cleanPath = path.replace(/^\/+/, '') // Retirer les slashes au début
+  // Si le path est vide ou invalide, retourner un placeholder
+  if (!path || path === 'undefined' || path === 'null') {
+    return '/placeholder-profile.jpg'
+  }
+
+  // Nettoyer le chemin des préfixes invalides
+  let cleanPath = path
+    .replace(/^undefined\//, '')  // Retirer "undefined/" au début
+    .replace(/^null\//, '')       // Retirer "null/" au début
+    .replace(/^\/+/, '')          // Retirer les slashes au début
 
   // Si c'est déjà une URL complète, la retourner
   if (cleanPath.startsWith('http://') || cleanPath.startsWith('https://')) {
     return cleanPath
+  }
+
+  // Vérifier que CDN_BASE_URL est défini
+  if (!CDN_BASE_URL || CDN_BASE_URL === 'undefined') {
+    console.warn('[CDN] CDN_BASE_URL not configured, using fallback')
+    return `/uploads/${cleanPath}`
   }
 
   return `${CDN_BASE_URL}/${cleanPath}`

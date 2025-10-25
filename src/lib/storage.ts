@@ -143,7 +143,6 @@ export class MediaStorage {
 
       // Dynamic import to avoid build errors if SDK not installed in dev
       const { S3Client, PutObjectCommand } = await import('@aws-sdk/client-s3')
-      const { getSignedUrl } = await import('@aws-sdk/s3-request-presigner')
 
       const s3 = new S3Client({
         region: 'auto', // R2 uses 'auto' instead of us-east-1
@@ -176,13 +175,14 @@ export class MediaStorage {
         ContentType: file.type || 'application/octet-stream',
       }))
 
-      // Generate a signed URL valid 7 days for previews
-      const signedUrl = await getSignedUrl(s3 as any, new (await import('@aws-sdk/client-s3')).GetObjectCommand({
-        Bucket: bucketName,
-        Key: key,
-      }) as any, { expiresIn: 60 * 60 * 24 * 7 })
+      // ✅ FIX: Retourner l'URL publique CDN au lieu d'une URL signée temporaire
+      const publicUrl = process.env.CLOUDFLARE_R2_PUBLIC_URL ||
+                        process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL ||
+                        'https://media.felora.ch'
+      const cdnUrl = `${publicUrl}/${key}`
 
-      return { url: signedUrl, success: true, key }
+      console.log('✅ R2 upload success:', { key, cdnUrl })
+      return { url: cdnUrl, success: true, key }
     } catch (error) {
       console.error('❌ R2 upload failed:', {
         name: (error as any)?.name,

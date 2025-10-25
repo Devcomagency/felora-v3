@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import Image from 'next/image'
 import { Heart, Play, MapPin, Star, Eye } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { buildCdnUrl } from '@/lib/media/cdn'
 
 interface EscortCard2025Props {
   escort: {
@@ -54,9 +55,11 @@ export default function EscortCard2025({ escort, onLike, isLiked = false, priori
   }
 
   const getMediaUrl = () => {
-    if (escort.heroMedia?.url) return escort.heroMedia.url
-    if (escort.profilePhoto) return escort.profilePhoto
-    return null
+    const rawUrl = escort.heroMedia?.url || escort.profilePhoto
+    if (!rawUrl) return null
+
+    // buildCdnUrl gère déjà le nettoyage des préfixes "undefined/" et "null/"
+    return buildCdnUrl(rawUrl)
   }
 
   const isVideo = escort.heroMedia?.type === 'VIDEO'

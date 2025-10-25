@@ -92,8 +92,9 @@ export async function POST(request: NextRequest) {
     // Générer l'URL pré-signée (valide 1 heure)
     const presignedUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 })
 
-    // URL publique du fichier (après upload)
-    const publicUrl = `${process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL}/${key}`
+    // URL publique du fichier (après upload) - Utiliser la variable serveur
+    const baseUrl = process.env.CLOUDFLARE_R2_PUBLIC_URL || process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL || 'https://media.felora.ch'
+    const publicUrl = `${baseUrl}/${key}`
 
     console.log('✅ [ESCORT] Presigned URL générée:', { key, publicUrl })
 

@@ -89,7 +89,7 @@ export default function SearchFiltersSimple({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100]"
+            className="fixed inset-0 bg-black/90 backdrop-blur-md z-[100]"
             onClick={onClose}
           />
 
@@ -98,25 +98,41 @@ export default function SearchFiltersSimple({
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="fixed inset-x-4 top-20 max-w-lg mx-auto bg-[#111318] border border-white/10 rounded-2xl shadow-2xl z-[101] max-h-[80vh] overflow-y-auto"
+            className="fixed inset-x-4 top-20 max-w-lg mx-auto rounded-2xl shadow-2xl z-[101] max-h-[80vh] overflow-hidden"
+            style={{
+              background: 'linear-gradient(to bottom right, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03))',
+              backdropFilter: 'blur(40px)',
+              border: '1px solid rgba(255, 255, 255, 0.15)'
+            }}
           >
             {/* Header */}
-            <div className="sticky top-0 bg-[#111318] border-b border-white/10 p-6 flex items-center justify-between z-10">
-              <h2 className="text-xl font-bold text-white">Filtres</h2>
+            <div className="sticky top-0 border-b p-6 flex items-center justify-between z-10"
+              style={{
+                background: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.3))',
+                backdropFilter: 'blur(20px)',
+                borderColor: 'rgba(255, 255, 255, 0.1)'
+              }}
+            >
+              <h2 className="text-xl font-black tracking-tight bg-gradient-to-r from-white via-white/90 to-white/80 bg-clip-text text-transparent">Filtres</h2>
               <button
                 onClick={onClose}
-                className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors"
+                className="w-10 h-10 rounded-full flex items-center justify-center transition-all hover:scale-110"
+                style={{
+                  background: 'linear-gradient(to bottom right, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05))',
+                  backdropFilter: 'blur(20px)',
+                  border: '1px solid rgba(255, 255, 255, 0.2)'
+                }}
                 aria-label="Fermer les filtres"
               >
                 <X size={18} className="text-white" />
               </button>
             </div>
 
-            {/* Content */}
-            <div className="p-6 space-y-6">
+            {/* Content - avec overflow scroll */}
+            <div className="p-6 space-y-6 overflow-y-auto max-h-[calc(80vh-140px)]">
               {/* Catégories */}
               <div>
-                <label className="block text-sm font-medium text-white/80 mb-3">
+                <label className="block text-sm font-bold text-white mb-3">
                   Catégorie
                 </label>
                 <div className="grid grid-cols-2 gap-2">
@@ -124,11 +140,16 @@ export default function SearchFiltersSimple({
                     <button
                       key={category.value}
                       onClick={() => handleCategoryToggle(category.value)}
-                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                      className={`px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
                         (localFilters.categories || []).includes(category.value)
-                          ? 'bg-gradient-to-r from-[#FF6B9D] to-[#B794F6] text-white'
-                          : 'bg-white/5 hover:bg-white/10 text-white/80'
+                          ? 'bg-pink-500/20 text-pink-400 border border-pink-500/50'
+                          : 'text-white/80 border hover:bg-white/5'
                       }`}
+                      style={!(localFilters.categories || []).includes(category.value) ? {
+                        background: 'linear-gradient(to bottom right, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02))',
+                        backdropFilter: 'blur(20px)',
+                        borderColor: 'rgba(255, 255, 255, 0.1)'
+                      } : {}}
                     >
                       {category.label}
                     </button>
@@ -138,31 +159,36 @@ export default function SearchFiltersSimple({
 
               {/* Canton */}
               <div>
-                <label className="block text-sm font-medium text-white/80 mb-2">
+                <label className="block text-sm font-bold text-white mb-2">
                   <MapPin size={16} className="inline mr-2" />
                   Canton
                 </label>
-              <select
-                value={localFilters.canton || ''}
-                onChange={(e) => setLocalFilters({ ...localFilters, canton: e.target.value, city: '' })}
-                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-[#FF6B9D] transition-colors"
-              >
-                <option value="">Tous les cantons</option>
-                {Object.keys(swissLocations).map(canton => (
-                  <option key={canton} value={canton}>
-                    {canton === 'GE' ? 'Genève' :
-                     canton === 'VD' ? 'Vaud' :
-                     canton === 'VS' ? 'Valais' :
-                     canton === 'NE' ? 'Neuchâtel' :
-                     canton === 'FR' ? 'Fribourg' :
-                     canton === 'BE' ? 'Berne' :
-                     canton === 'ZH' ? 'Zurich' :
-                     canton === 'BS' ? 'Basel' :
-                     canton === 'LU' ? 'Lucerne' :
-                     canton === 'TI' ? 'Tessin' : canton}
-                  </option>
-                ))}
-              </select>
+                <select
+                  value={localFilters.canton || ''}
+                  onChange={(e) => setLocalFilters({ ...localFilters, canton: e.target.value, city: '' })}
+                  className="w-full px-4 py-3 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-pink-500/50 transition-all border"
+                  style={{
+                    background: 'linear-gradient(to bottom right, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02))',
+                    backdropFilter: 'blur(20px)',
+                    borderColor: 'rgba(255, 255, 255, 0.1)'
+                  }}
+                >
+                  <option value="" style={{ background: '#1a1a1a' }}>Tous les cantons</option>
+                  {Object.keys(swissLocations).map(canton => (
+                    <option key={canton} value={canton} style={{ background: '#1a1a1a' }}>
+                      {canton === 'GE' ? 'Genève' :
+                       canton === 'VD' ? 'Vaud' :
+                       canton === 'VS' ? 'Valais' :
+                       canton === 'NE' ? 'Neuchâtel' :
+                       canton === 'FR' ? 'Fribourg' :
+                       canton === 'BE' ? 'Berne' :
+                       canton === 'ZH' ? 'Zurich' :
+                       canton === 'BS' ? 'Basel' :
+                       canton === 'LU' ? 'Lucerne' :
+                       canton === 'TI' ? 'Tessin' : canton}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               {/* Ville (si canton sélectionné) */}
@@ -172,17 +198,22 @@ export default function SearchFiltersSimple({
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
                 >
-                  <label className="block text-sm font-medium text-white/80 mb-2">
+                  <label className="block text-sm font-bold text-white mb-2">
                     Ville
                   </label>
                   <select
                     value={localFilters.city || ''}
                     onChange={(e) => setLocalFilters({ ...localFilters, city: e.target.value })}
-                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-[#FF6B9D] transition-colors"
+                    className="w-full px-4 py-3 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-pink-500/50 transition-all border"
+                    style={{
+                      background: 'linear-gradient(to bottom right, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02))',
+                      backdropFilter: 'blur(20px)',
+                      borderColor: 'rgba(255, 255, 255, 0.1)'
+                    }}
                   >
-                    <option value="">Toutes les villes</option>
+                    <option value="" style={{ background: '#1a1a1a' }}>Toutes les villes</option>
                     {swissLocations[localFilters.canton as keyof typeof swissLocations]?.map(city => (
-                      <option key={city} value={city}>{city}</option>
+                      <option key={city} value={city} style={{ background: '#1a1a1a' }}>{city}</option>
                     ))}
                   </select>
                 </motion.div>
@@ -190,34 +221,50 @@ export default function SearchFiltersSimple({
 
               {/* Tri */}
               <div>
-                <label className="block text-sm font-medium text-white/80 mb-2">
+                <label className="block text-sm font-bold text-white mb-2">
                   Trier par
                 </label>
                 <select
                   value={localFilters.sort || 'recent'}
                   onChange={(e) => setLocalFilters({ ...localFilters, sort: e.target.value })}
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-[#FF6B9D] transition-colors"
+                  className="w-full px-4 py-3 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-pink-500/50 transition-all border"
+                  style={{
+                    background: 'linear-gradient(to bottom right, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02))',
+                    backdropFilter: 'blur(20px)',
+                    borderColor: 'rgba(255, 255, 255, 0.1)'
+                  }}
                 >
-                  <option value="recent">Plus récents</option>
-                  <option value="popular">Plus populaires</option>
-                  <option value="rating">Mieux notés</option>
-                  <option value="price-asc">Prix croissant</option>
-                  <option value="price-desc">Prix décroissant</option>
+                  <option value="recent" style={{ background: '#1a1a1a' }}>Plus récents</option>
+                  <option value="popular" style={{ background: '#1a1a1a' }}>Plus populaires</option>
+                  <option value="rating" style={{ background: '#1a1a1a' }}>Mieux notés</option>
+                  <option value="price-asc" style={{ background: '#1a1a1a' }}>Prix croissant</option>
+                  <option value="price-desc" style={{ background: '#1a1a1a' }}>Prix décroissant</option>
                 </select>
               </div>
             </div>
 
             {/* Footer Actions */}
-            <div className="sticky bottom-0 bg-[#111318] border-t border-white/10 p-6 flex gap-3">
+            <div className="sticky bottom-0 border-t p-6 flex gap-3"
+              style={{
+                background: 'linear-gradient(to top, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.5))',
+                backdropFilter: 'blur(20px)',
+                borderColor: 'rgba(255, 255, 255, 0.1)'
+              }}
+            >
               <button
                 onClick={handleReset}
-                className="flex-1 px-6 py-3 bg-white/5 hover:bg-white/10 text-white font-medium rounded-xl transition-colors"
+                className="flex-1 px-6 py-3.5 text-white font-bold rounded-xl transition-all hover:scale-105 border"
+                style={{
+                  background: 'linear-gradient(to bottom right, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02))',
+                  backdropFilter: 'blur(20px)',
+                  borderColor: 'rgba(255, 255, 255, 0.2)'
+                }}
               >
                 Réinitialiser
               </button>
               <button
                 onClick={handleApply}
-                className="flex-1 px-6 py-3 bg-gradient-to-r from-[#FF6B9D] to-[#B794F6] text-white font-medium rounded-xl hover:shadow-lg hover:shadow-pink-500/25 transition-all"
+                className="flex-1 px-6 py-3.5 text-white font-bold rounded-xl transition-all bg-gradient-to-r from-pink-500/20 to-purple-500/20 hover:from-pink-500/30 hover:to-purple-500/30 border border-pink-500/30 hover:border-pink-500/50 shadow-lg hover:shadow-pink-500/20"
               >
                 Appliquer
               </button>

@@ -78,8 +78,9 @@ export async function POST(request: NextRequest) {
       ContentType: mediaFile.type,
     }))
 
-    // URL publique du fichier
-    const publicUrl = `${process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL}/${key}`
+    // URL publique du fichier - Utiliser la variable serveur
+    const baseUrl = process.env.CLOUDFLARE_R2_PUBLIC_URL || process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL || 'https://media.felora.ch'
+    const publicUrl = `${baseUrl}/${key}`
 
     console.log('✅ Fichier uploadé sur R2:', publicUrl)
 

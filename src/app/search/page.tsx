@@ -262,59 +262,117 @@ function SearchContent() {
                 )}
               </button>
               <button
-                onClick={() => router.push('/clubs')}
-                className="relative text-lg font-bold transition-all duration-300 text-white/60 hover:text-white/80"
+                onClick={() => setActiveSection('clubs')}
+                className={`relative text-lg font-bold transition-all duration-300 ${
+                  activeSection === 'clubs'
+                    ? 'text-white'
+                    : 'text-white/60 hover:text-white/80'
+                }`}
                 aria-label="Afficher les clubs et salons"
+                aria-current={activeSection === 'clubs' ? 'page' : undefined}
               >
                 Clubs & Salons
+                {activeSection === 'clubs' && (
+                  <span className="absolute -bottom-2 left-0 w-full h-0.5 bg-gradient-to-r from-[#FF6B9D] to-[#B794F6] rounded-full" />
+                )}
               </button>
             </div>
           </div>
+
+          {/* Filtres par type pour Clubs & Salons */}
+          {activeSection === 'clubs' && (
+            <div className="px-4 pb-4">
+              <div className="flex gap-2 overflow-x-auto scrollbar-hide">
+                {[
+                  { key: '', label: 'Tous' },
+                  { key: 'club', label: 'Clubs' },
+                  { key: 'salon_erotique', label: 'Salons' },
+                  { key: 'institut_massage', label: 'Instituts' },
+                  { key: 'agence_escorte', label: 'Agences' }
+                ].map((type) => (
+                  <button
+                    key={type.key}
+                    onClick={() => setClubsFilters({ ...clubsFilters, establishmentType: type.key })}
+                    className={`flex-shrink-0 px-4 py-2 rounded-xl border transition-all duration-300 ${
+                      clubsFilters.establishmentType === type.key
+                        ? 'bg-pink-500/20 text-pink-400 border-pink-500/50'
+                        : 'border-white/10 text-white/70 hover:text-white hover:bg-white/10'
+                    }`}
+                    style={clubsFilters.establishmentType !== type.key ? {
+                      background: 'linear-gradient(to bottom right, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02))',
+                      backdropFilter: 'blur(20px)'
+                    } : {}}
+                  >
+                    <span className="text-sm font-medium">{type.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Contenu principal */}
         <div className="px-4 pb-24">
-          {/* Section Escortes */}
-          <section ref={escortsSectionRef} className="py-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-black tracking-tight bg-gradient-to-r from-white via-white/90 to-white/80 bg-clip-text text-transparent">Profils Indépendants</h2>
-              {escortsTotal > 0 && (
-                <span className="text-sm text-white/60 font-medium">{escortsTotal} profils</span>
-              )}
-            </div>
+          {/* Section Profils - Affichée si activeSection === 'escorts' */}
+          {activeSection === 'escorts' && (
+            <>
+              <section ref={escortsSectionRef} className="py-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-black tracking-tight bg-gradient-to-r from-white via-white/90 to-white/80 bg-clip-text text-transparent">Profils Indépendants</h2>
+                  {escortsTotal > 0 && (
+                    <span className="text-sm text-white/60 font-medium">{escortsTotal} profils</span>
+                  )}
+                </div>
 
-          {escortsLoading && escorts.length === 0 ? (
-            <div className="grid grid-cols-2 gap-3">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <EscortCardSkeleton key={i} />
-              ))}
-            </div>
-          ) : escortsError ? (
-            <div className="text-center py-12">
-              <p className="text-white/60">{escortsError}</p>
-            </div>
-          ) : escorts.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-white/60">Aucune escorte trouvée</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 gap-3">
-              {escorts.slice(0, 4).map((escort, index) => (
-                <EscortCard2025
-                  key={escort.id}
-                  escort={escort}
-                  onLike={handleLike}
-                  isLiked={likedEscorts.has(escort.id)}
-                  priority={true} // Priorité pour les 4 premières images
-                />
-              ))}
-            </div>
+                {escortsLoading && escorts.length === 0 ? (
+                  <div className="grid grid-cols-2 gap-3">
+                    {Array.from({ length: 4 }).map((_, i) => (
+                      <EscortCardSkeleton key={i} />
+                    ))}
+                  </div>
+                ) : escortsError ? (
+                  <div className="text-center py-12">
+                    <p className="text-white/60">{escortsError}</p>
+                  </div>
+                ) : escorts.length === 0 ? (
+                  <div className="text-center py-12">
+                    <p className="text-white/60">Aucun profil trouvé</p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="grid grid-cols-2 gap-3">
+                      {escorts.map((escort, index) => (
+                        <EscortCard2025
+                          key={escort.id}
+                          escort={escort}
+                          onLike={handleLike}
+                          isLiked={likedEscorts.has(escort.id)}
+                          priority={index < 4}
+                        />
+                      ))}
+                    </div>
+
+                    {/* Bouton charger plus pour escortes */}
+                    {escortsHasMore && (
+                      <div className="flex justify-center mt-6">
+                        <button
+                          onClick={loadMoreEscorts}
+                          disabled={escortsLoading}
+                          className="px-6 py-3.5 text-white font-bold rounded-xl transition-all disabled:opacity-50 bg-gradient-to-r from-pink-500/20 to-purple-500/20 hover:from-pink-500/30 hover:to-purple-500/30 border border-pink-500/30 hover:border-pink-500/50 shadow-lg hover:shadow-pink-500/20"
+                        >
+                          {escortsLoading ? 'Chargement...' : 'Voir plus'}
+                        </button>
+                      </div>
+                    )}
+                  </>
+                )}
+              </section>
+            </>
           )}
 
-        </section>
-
-          {/* Section Clubs & Salons */}
-          <section ref={clubsSectionRef} className="py-6">
+          {/* Section Clubs & Salons - Affichée si activeSection === 'clubs' */}
+          {activeSection === 'clubs' && (
+            <section ref={clubsSectionRef} className="py-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-black tracking-tight bg-gradient-to-r from-white via-white/90 to-white/80 bg-clip-text text-transparent">Clubs & Salons</h2>
               {clubsTotal > 0 && (
@@ -322,78 +380,45 @@ function SearchContent() {
               )}
             </div>
 
-          {clubsLoading && clubs.length === 0 ? (
-            <div className="flex gap-3 overflow-x-auto">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="flex-shrink-0 w-64">
-                  <ClubCardSkeleton />
+              {clubsLoading && clubs.length === 0 ? (
+                <div className="grid grid-cols-1 gap-4">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <ClubCardSkeleton key={i} />
+                  ))}
                 </div>
-              ))}
-            </div>
-          ) : clubsError ? (
-            <div className="text-center py-12">
-              <p className="text-white/60">{clubsError}</p>
-            </div>
-          ) : clubs.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-white/60">Aucun club trouvé</p>
-            </div>
-          ) : (
-            <div className="flex gap-3 overflow-x-auto scrollbar-hide carousel-container">
-              {clubs.map((club) => (
-                <div key={club.id} className="flex-shrink-0 w-64 carousel-item">
-                  <ClubCard
-                    club={club}
-                    onClick={(club) => router.push(`/profile-test/club/${club.handle}`)}
-                  />
+              ) : clubsError ? (
+                <div className="text-center py-12">
+                  <p className="text-white/60">{clubsError}</p>
                 </div>
-              ))}
-              
-              {/* Bouton "Voir tous les clubs" */}
-              <div className="flex-shrink-0 w-64 flex items-center justify-center">
-                <button
-                  onClick={() => router.push('/clubs')}
-                  className="w-full h-full bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl hover:bg-white/10 transition-all duration-300 flex flex-col items-center justify-center text-white/80"
-                >
-                  <Plus size={32} className="mb-2" />
-                  <span className="text-sm font-medium">Voir tous les clubs</span>
-                </button>
-              </div>
-            </div>
-          )}
-        </section>
-
-          {/* Section Escortes - Suite (si plus de 4 escortes) */}
-          {escorts.length > 4 && (
-            <section className="py-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-black tracking-tight bg-gradient-to-r from-white via-white/90 to-white/80 bg-clip-text text-transparent">Plus de profils</h2>
-              </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              {escorts.slice(4).map((escort, index) => (
-                <EscortCard2025
-                  key={escort.id}
-                  escort={escort}
-                  onLike={handleLike}
-                  isLiked={likedEscorts.has(escort.id)}
-                  priority={false} // Pas de priorité pour les suivantes
-                />
-              ))}
-            </div>
-
-              {/* Bouton charger plus pour escortes */}
-              {escortsHasMore && (
-                <div className="flex justify-center mt-6">
-                  <button
-                    onClick={loadMoreEscorts}
-                    disabled={escortsLoading}
-                    className="px-6 py-3.5 text-white font-bold rounded-xl transition-all disabled:opacity-50 bg-gradient-to-r from-pink-500/20 to-purple-500/20 hover:from-pink-500/30 hover:to-purple-500/30 border border-pink-500/30 hover:border-pink-500/50 shadow-lg hover:shadow-pink-500/20"
-                    aria-label={escortsLoading ? 'Chargement en cours' : 'Charger plus de profils'}
-                  >
-                    {escortsLoading ? 'Chargement...' : 'Voir plus'}
-                  </button>
+              ) : clubs.length === 0 ? (
+                <div className="text-center py-12">
+                  <p className="text-white/60">Aucun club trouvé</p>
                 </div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-1 gap-4">
+                    {clubs.map((club) => (
+                      <ClubCard
+                        key={club.id}
+                        club={club}
+                        onClick={(club) => router.push(`/profile-test/club/${club.handle}`)}
+                      />
+                    ))}
+                  </div>
+
+                  {/* Bouton charger plus pour clubs */}
+                  {clubsHasMore && (
+                    <div className="flex justify-center mt-6">
+                      <button
+                        onClick={loadMoreClubs}
+                        disabled={clubsLoading}
+                        className="px-6 py-3.5 text-white font-bold rounded-xl transition-all disabled:opacity-50 bg-gradient-to-r from-pink-500/20 to-purple-500/20 hover:from-pink-500/30 hover:to-purple-500/30 border border-pink-500/30 hover:border-pink-500/50 shadow-lg hover:shadow-pink-500/20"
+                      >
+                        {clubsLoading ? 'Chargement...' : 'Voir plus'}
+                      </button>
+                    </div>
+                  )}
+                </>
               )}
             </section>
           )}
