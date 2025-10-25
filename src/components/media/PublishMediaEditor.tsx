@@ -291,24 +291,33 @@ export default function PublishMediaEditor({
             )}
           </div>
 
-          {/* Bouton Publier */}
+          {/* Bouton Publier - style register page */}
           <button
             onClick={handlePublish}
             disabled={isPublishing}
-            className="w-full py-3 rounded-xl font-bold text-white transition-all duration-300 hover:scale-105 disabled:opacity-60 disabled:hover:scale-100 shadow-lg"
+            className="group relative w-full rounded-xl border transition-all duration-500 hover:scale-[1.02] disabled:opacity-60 disabled:hover:scale-100 border-white/30 shadow-2xl"
             style={{
-              background: 'linear-gradient(to right, #FF6B9D, #B794F6)',
-              boxShadow: '0 8px 24px rgba(255, 107, 157, 0.3)'
+              background: 'linear-gradient(135deg, rgba(255, 107, 157, 0.20) 0%, rgba(183, 148, 246, 0.15) 100%)',
             }}
           >
-            {isPublishing ? (
-              <div className="flex items-center justify-center gap-2">
-                <Loader2 size={20} className="animate-spin" />
-                <span>Publication en cours...</span>
-              </div>
-            ) : (
-              'Publier'
-            )}
+            {/* Gradient overlay on hover */}
+            <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-br from-pink-500/15 via-purple-500/10 to-transparent" />
+
+            <div
+              className="relative py-3.5 px-6 flex items-center justify-center gap-2 font-bold text-white text-base"
+            >
+              {isPublishing ? (
+                <>
+                  <Loader2 size={20} className="animate-spin" />
+                  <span>Publication en cours...</span>
+                </>
+              ) : (
+                <>
+                  <span>Publier</span>
+                  <CheckCircle2 size={20} className="group-hover:scale-110 transition-transform" />
+                </>
+              )}
+            </div>
           </button>
         </div>
       </div>
