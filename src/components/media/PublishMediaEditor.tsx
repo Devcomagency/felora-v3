@@ -265,28 +265,31 @@ export default function PublishMediaEditor({
             {visibility === 'premium' && (
               <div className="mt-2">
                 <label className="block text-white/80 text-xs font-medium mb-1">
-                  Prix (CHF)
+                  Prix en diamants 💎
                 </label>
                 <div className="relative">
                   <input
                     type="number"
                     value={price}
                     onChange={(e) => setPrice(e.target.value)}
-                    placeholder="9.99"
-                    step="0.01"
-                    min="0"
+                    placeholder="100"
+                    step="1"
+                    min="1"
                     disabled={isPublishing}
-                    className="w-full px-3 py-2 rounded-xl text-white text-sm placeholder-white/40 transition-all border focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500/50 disabled:opacity-60"
+                    className="w-full px-3 py-2 pr-16 rounded-xl text-white text-sm placeholder-white/40 transition-all border focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500/50 disabled:opacity-60"
                     style={{
                       background: 'linear-gradient(to bottom right, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02))',
                       backdropFilter: 'blur(20px)',
                       borderColor: 'rgba(255, 255, 255, 0.1)'
                     }}
                   />
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 text-white/60 font-medium pointer-events-none text-xs">
-                    CHF
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 text-yellow-400/90 font-semibold pointer-events-none text-sm flex items-center gap-1">
+                    <span>💎</span>
                   </div>
                 </div>
+                <p className="mt-1 text-[10px] text-white/60">
+                  Les utilisateurs devront payer en diamants pour voir ce contenu
+                </p>
               </div>
             )}
           </div>
