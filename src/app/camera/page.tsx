@@ -257,9 +257,10 @@ function CameraPageContent() {
   }
 
   // Sinon afficher la caméra
-  if (mode === 'photo' || mode === 'video') {
+  if (mode === 'photo' || mode === 'video' || mode === 'upload') {
     return (
       <CameraCapturePro
+        key={Date.now()} // Force remount à chaque navigation pour re-trigger l'input
         mode={mode}
         onClose={() => router.back()}
         onCapture={handleCameraCapture}

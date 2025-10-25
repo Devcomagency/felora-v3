@@ -22,6 +22,7 @@ export default function CameraCapturePro({ onCapture, onClose, mode }: CameraPro
   useEffect(() => {
     if (mode && onCapture && !autoTriggered.current) {
       autoTriggered.current = true
+      console.log('🎬 Auto-trigger upload/camera mode:', mode)
 
       const input = document.createElement('input')
       input.type = 'file'
@@ -42,12 +43,24 @@ export default function CameraCapturePro({ onCapture, onClose, mode }: CameraPro
 
       input.onchange = (e: any) => {
         const file = e.target.files?.[0]
+        console.log('📁 Fichier sélectionné:', file?.name, file?.type, file?.size)
         if (file) {
           onCapture(file)
+        } else {
+          console.log('❌ Aucun fichier sélectionné, retour en arrière')
+          // Si aucun fichier sélectionné, retourner à la page précédente
+          window.history.back()
         }
       }
+
+      // Gérer l'annulation (fermeture du picker sans sélection)
+      input.oncancel = () => {
+        console.log('❌ Upload annulé par l\'utilisateur')
+        window.history.back()
+      }
+
       // Déclencher l'ouverture automatiquement
-      setTimeout(() => input.click(), 50)
+      setTimeout(() => input.click(), 100)
     }
   }, [mode, onCapture])
 
