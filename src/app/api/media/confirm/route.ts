@@ -136,7 +136,31 @@ export async function POST(request: NextRequest) {
 
     // Create media record in database
     const mediaType = uploadSession.contentType.startsWith('video/') ? 'VIDEO' : 'IMAGE'
-    const publicUrl = `${CLOUDFLARE_R2_ENDPOINT}/${CLOUDFLARE_R2_BUCKET}/${key}`
+    
+    // CORRECTION CRITIQUE - Utiliser l'URL publique au lieu de l'endpoint
+    const baseUrl = process.env.CLOUDFLARE_R2_PUBLIC_URL || process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL || 'https://media.felora.ch'
+    
+    // VALIDATION CRITIQUE - Empêcher les URLs undefined
+    if (!baseUrl || baseUrl === 'undefined' || baseUrl.includes('undefined')) {
+      console.error('❌ ERREUR CRITIQUE confirm: baseUrl invalide:', baseUrl)
+      throw new Error('Configuration CDN invalide - baseUrl undefined')
+    }
+    
+    const publicUrl = `${baseUrl}/${key}`
+
+    if (publicUrl.includes('undefined')) {
+      console.error('❌ ERREUR CRITIQUE confirm: publicUrl contient undefined:', publicUrl)
+      throw new Error('URL publique invalide générée')
+    }
+
+    console.log('🔍 DEBUG confirm URL génération:', {
+      CLOUDFLARE_R2_PUBLIC_URL: process.env.CLOUDFLARE_R2_PUBLIC_URL,
+      NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL: process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL,
+      baseUrl,
+      key,
+      publicUrl,
+      isValid: !publicUrl.includes('undefined')
+    })
 
     const media = await prisma.media.create({
       data: {
