@@ -240,30 +240,8 @@ function CameraPageContent() {
     }
   }, [router, toast])
 
-  // Si fichier uploadé depuis sessionStorage
-  if (mode === 'upload' && !capturedMedia) {
-    const fileUrl = sessionStorage.getItem('upload-file-url')
-    const fileName = sessionStorage.getItem('upload-file-name')
-    const fileType = sessionStorage.getItem('upload-file-type')
-
-    if (fileUrl && fileName && fileType) {
-      fetch(fileUrl)
-        .then(res => res.blob())
-        .then(blob => {
-          const file = new File([blob], fileName, { type: fileType })
-          const isVideo = fileType.startsWith('video/')
-          setCapturedMedia({
-            file,
-            previewUrl: fileUrl,
-            type: isVideo ? 'video' : 'image'
-          })
-
-          sessionStorage.removeItem('upload-file-url')
-          sessionStorage.removeItem('upload-file-name')
-          sessionStorage.removeItem('upload-file-type')
-        })
-    }
-  }
+  // Le mode upload est géré directement par CameraCapturePro
+  // qui ouvre l'input file et appelle handleCameraCapture
 
   // Si média capturé, afficher l'éditeur
   if (capturedMedia) {
