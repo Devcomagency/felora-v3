@@ -291,17 +291,19 @@ export default function PublishMediaEditor({
             )}
           </div>
 
-          {/* Bouton Publier - style register page */}
+          {/* Bouton Publier - style register page (plus rose et voyant) */}
           <button
             onClick={handlePublish}
             disabled={isPublishing}
-            className="group relative w-full rounded-xl border transition-all duration-500 hover:scale-[1.02] disabled:opacity-60 disabled:hover:scale-100 border-white/30 shadow-2xl"
+            className="group relative w-full rounded-xl border transition-all duration-500 hover:scale-[1.02] disabled:opacity-60 disabled:hover:scale-100"
             style={{
-              background: 'linear-gradient(135deg, rgba(255, 107, 157, 0.20) 0%, rgba(183, 148, 246, 0.15) 100%)',
+              background: 'linear-gradient(135deg, rgba(255, 107, 157, 0.35) 0%, rgba(236, 72, 153, 0.25) 100%)',
+              borderColor: 'rgba(255, 107, 157, 0.5)',
+              boxShadow: '0 8px 32px rgba(255, 107, 157, 0.4)'
             }}
           >
             {/* Gradient overlay on hover */}
-            <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-br from-pink-500/15 via-purple-500/10 to-transparent" />
+            <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-br from-pink-500/25 via-rose-500/15 to-transparent" />
 
             <div
               className="relative py-3.5 px-6 flex items-center justify-center gap-2 font-bold text-white text-base"
@@ -312,10 +314,7 @@ export default function PublishMediaEditor({
                   <span>Publication en cours...</span>
                 </>
               ) : (
-                <>
-                  <span>Publier</span>
-                  <CheckCircle2 size={20} className="group-hover:scale-110 transition-transform" />
-                </>
+                <span>Publier</span>
               )}
             </div>
           </button>
