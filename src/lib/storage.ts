@@ -180,6 +180,14 @@ export class MediaStorage {
                         process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL ||
                         'https://media.felora.ch'
       
+      console.log('🔍 DEBUG storage.ts URL génération:', {
+        CLOUDFLARE_R2_PUBLIC_URL: process.env.CLOUDFLARE_R2_PUBLIC_URL,
+        NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL: process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL,
+        publicUrl,
+        key,
+        isValid: !publicUrl.includes('undefined')
+      })
+      
       // VALIDATION CRITIQUE - Empêcher les URLs undefined
       if (!publicUrl || publicUrl === 'undefined' || publicUrl.includes('undefined')) {
         console.error('❌ ERREUR CRITIQUE storage.ts: publicUrl invalide:', publicUrl)
