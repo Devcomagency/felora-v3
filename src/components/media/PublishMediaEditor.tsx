@@ -67,7 +67,7 @@ export default function PublishMediaEditor({
       icon: EyeOff,
       gradient: 'from-pink-500 to-rose-500',
       label: 'Privé',
-      description: 'Abonnés uniquement'
+      description: 'Vous seulement'
     },
     {
       value: 'premium' as const,
