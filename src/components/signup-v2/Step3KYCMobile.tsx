@@ -1,7 +1,8 @@
 "use client"
 import { useState } from 'react'
+import { motion } from 'framer-motion'
 import UploadDrop from '@/components/kyc-v2/UploadDrop'
-import { CheckCircle, BadgeCheck, ShieldCheck, AlertCircle, FileText, Camera, Video, User } from 'lucide-react'
+import { CheckCircle, BadgeCheck, ShieldCheck, AlertCircle, FileText, Camera, Video, Shield, Sparkles } from 'lucide-react'
 
 export default function Step3KYCMobile({ userId, role='ESCORT', onSubmitted }:{ userId:string; role:'ESCORT'|'CLUB'|'CLIENT'; onSubmitted:(ok:boolean)=>void }){
   console.log('Step3KYCMobile received userId:', userId, 'role:', role)
@@ -10,7 +11,7 @@ export default function Step3KYCMobile({ userId, role='ESCORT', onSubmitted }:{ 
   const [error, setError] = useState<string|null>(null)
   const [showLater, setShowLater] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
-  
+
   // Requis: recto, verso, selfie papier "FELORA", vidéo de vérification
   const requiredKeys = ['docFrontUrl','docBackUrl','selfieSignUrl','livenessVideoUrl'] as const
   const missing = requiredKeys.filter(k => !docs[k])
@@ -24,14 +25,14 @@ export default function Step3KYCMobile({ userId, role='ESCORT', onSubmitted }:{ 
         setBusy(false)
         return
       }
-      
+
       if (!userId || userId === '') {
         console.error('No userId provided to Step3KYCMobile')
         setError('ID utilisateur manquant - veuillez recharger la page')
         setBusy(false)
         return
       }
-      
+
       // Optimisation: envoyer les clés courtes au lieu des URLs complètes pour éviter payload trop large (erreur 413)
       const extractKey = (url?: string) => {
         if (!url) return undefined
@@ -52,18 +53,18 @@ export default function Step3KYCMobile({ userId, role='ESCORT', onSubmitted }:{ 
 
       console.log('Submitting KYC with optimized data:', optimizedPayload)
       const r = await fetch('/api/kyc-v2/submit', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(optimizedPayload) })
-      
+
       // Lire la réponse une seule fois
       const responseText = await r.text()
       let d
-      
+
       try {
         d = JSON.parse(responseText)
       } catch (jsonError) {
         console.error('Response is not JSON:', r.status, responseText)
         throw new Error(`Erreur serveur ${r.status} - Réponse invalide`)
       }
-      
+
       console.log('KYC submit response:', r.status, d)
 
       if (!r.ok || !d?.ok) {
@@ -79,7 +80,7 @@ export default function Step3KYCMobile({ userId, role='ESCORT', onSubmitted }:{ 
 
         throw new Error(d?.error || `Erreur ${r.status}`)
       }
-      
+
       setShowSuccess(true)
       // Redirection automatique vers le dashboard après 3 secondes
       setTimeout(() => {
@@ -135,105 +136,157 @@ export default function Step3KYCMobile({ userId, role='ESCORT', onSubmitted }:{ 
 
   if (showSuccess) {
     return (
-      <div className="space-y-6">
-        {/* Header mobile-first */}
-        <div className="text-center space-y-4">
-          <div className="flex items-center justify-center gap-3">
-            <div className="w-20 h-20 bg-gradient-to-r from-green-500 to-emerald-500 rounded-2xl flex items-center justify-center animate-pulse">
-              <ShieldCheck className="text-white" size={40} />
+      <div className="space-y-8">
+        {/* Header avec même style que payment */}
+        <motion.div
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.5 }}
+          className="text-center"
+        >
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.5 }}
+            className="mb-6"
+          >
+            <div className="inline-flex p-4 rounded-2xl bg-gradient-to-br from-green-500/20 via-emerald-500/15 to-teal-600/20 border border-green-500/30 shadow-lg shadow-green-500/10">
+              <ShieldCheck className="w-10 h-10 text-green-300" strokeWidth={2} />
             </div>
-          </div>
-          <div>
-            <h2 className="text-white text-2xl sm:text-3xl font-bold mb-2">🎉 Félicitations !</h2>
-            <p className="text-white/70 text-base sm:text-lg max-w-md mx-auto leading-relaxed">
-              Votre vérification d'identité a été soumise avec succès !
+          </motion.div>
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+          >
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-black tracking-tight mb-3 bg-gradient-to-r from-white via-white/90 to-white/80 bg-clip-text text-transparent">
+              🎉 Félicitations !
+            </h1>
+            <p className="text-white/70 text-base md:text-lg max-w-2xl mx-auto font-light">
+              Votre vérification d'identité a été soumise avec succès
+            </p>
+          </motion.div>
+        </motion.div>
+
+        {/* Success card */}
+        <motion.div
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.3 }}
+          className="max-w-2xl mx-auto"
+        >
+          <div className="rounded-2xl bg-gradient-to-br from-green-500/10 via-emerald-500/5 to-transparent border border-green-500/20 p-8 backdrop-blur-xl">
+            <div className="flex items-center justify-center mb-6">
+              <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center">
+                <Sparkles className="w-8 h-8 text-green-400" />
+              </div>
+            </div>
+
+            <h3 className="text-green-400 text-2xl font-bold mb-4 text-center">Prêt à commencer !</h3>
+
+            <div className="space-y-4">
+              <p className="text-green-300 font-semibold text-center">
+                📋 Prochaines étapes :
+              </p>
+              <div className="rounded-xl bg-green-500/10 border border-green-500/20 p-6">
+                <ul className="space-y-3 text-green-200">
+                  <li className="flex items-center gap-3">
+                    <div className="w-2 h-2 bg-green-400 rounded-full flex-shrink-0" />
+                    <span>Finalisez votre profil avec photos et descriptions</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <div className="w-2 h-2 bg-green-400 rounded-full flex-shrink-0" />
+                    <span>Configurez vos tarifs et disponibilités</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <div className="w-2 h-2 bg-green-400 rounded-full flex-shrink-0" />
+                    <span>Votre vérification sera traitée sous 48h</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-center gap-2 mt-6">
+              <div className="w-3 h-3 bg-emerald-400 rounded-full animate-bounce" />
+              <div className="w-3 h-3 bg-emerald-400 rounded-full animate-bounce" style={{animationDelay: '0.1s'}} />
+              <div className="w-3 h-3 bg-emerald-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}} />
+            </div>
+            <p className="text-emerald-300 text-sm font-medium text-center mt-2">
+              Redirection vers votre dashboard...
             </p>
           </div>
-        </div>
-
-        <div className="bg-gradient-to-r from-green-500/10 via-emerald-500/10 to-teal-500/10 border border-green-500/30 rounded-2xl p-6 text-center space-y-4">
-          <div className="flex items-center justify-center mb-4">
-            <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center">
-              <span className="text-3xl">✨</span>
-            </div>
-          </div>
-
-          <h3 className="text-green-400 text-xl font-bold mb-2">Prêt à commencer !</h3>
-
-          <div className="space-y-3 text-sm">
-            <p className="text-green-300">
-              <strong>📋 Prochaines étapes :</strong>
-            </p>
-            <div className="bg-green-500/10 rounded-xl p-4 text-left">
-              <ul className="space-y-2 text-green-200">
-                <li className="flex items-center gap-2">
-                  <span className="w-2 h-2 bg-green-400 rounded-full"></span>
-                  Finalisez votre profil avec photos et descriptions
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="w-2 h-2 bg-green-400 rounded-full"></span>
-                  Configurez vos tarifs et disponibilités
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="w-2 h-2 bg-green-400 rounded-full"></span>
-                  Votre vérification sera traitée sous 48h
-                </li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-center gap-2 text-emerald-300 mt-4">
-            <div className="w-3 h-3 bg-emerald-400 rounded-full animate-bounce"></div>
-            <div className="w-3 h-3 bg-emerald-400 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-            <div className="w-3 h-3 bg-emerald-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
-          </div>
-          <p className="text-emerald-300 text-sm font-medium">
-            Redirection vers votre dashboard...
-          </p>
-        </div>
+        </motion.div>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header mobile-first */}
-      <div className="text-center space-y-4">
-        <div className="flex items-center justify-center gap-3">
-          <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center">
-            <ShieldCheck className="text-white" size={32} />
+    <div className="space-y-8">
+      {/* Header avec même style que payment */}
+      <motion.div
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.5 }}
+        className="text-center"
+      >
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.5 }}
+          className="mb-6"
+        >
+          <div className="inline-flex p-4 rounded-2xl bg-gradient-to-br from-pink-500/20 via-purple-500/15 to-violet-600/20 border border-pink-500/30 shadow-lg shadow-pink-500/10">
+            <ShieldCheck className="w-10 h-10 text-pink-300" strokeWidth={2} />
           </div>
-        </div>
-        <div>
-          <h2 className="text-white text-2xl sm:text-3xl font-bold mb-2">Vérification d'identité</h2>
-          <p className="text-white/70 text-base sm:text-lg max-w-md mx-auto leading-relaxed">
+        </motion.div>
+        <motion.div
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.2, duration: 0.5 }}
+        >
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-black tracking-tight mb-3 bg-gradient-to-r from-white via-white/90 to-white/80 bg-clip-text text-transparent">
+            Vérification d'identité
+          </h1>
+          <p className="text-white/70 text-base md:text-lg max-w-2xl mx-auto font-light">
             Dernière étape pour sécuriser votre compte et commencer à gagner
           </p>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
 
       {/* Documents upload */}
-      <div className="space-y-6">
-        {documentTypes.map((doc) => {
+      <div className="max-w-4xl mx-auto space-y-6">
+        {documentTypes.map((doc, idx) => {
           const Icon = doc.icon
           const isUploaded = !!docs[doc.key]
 
           return (
-            <div key={doc.key} className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
+            <motion.div
+              key={doc.key}
+              initial={{ y: 30, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.3 + idx * 0.1 }}
+              className={`rounded-2xl bg-gradient-to-br transition-all duration-300 border backdrop-blur-xl p-6 ${
+                isUploaded
+                  ? 'from-green-500/10 via-emerald-500/5 to-transparent border-green-500/30'
+                  : 'from-white/5 to-transparent border-white/10'
+              }`}
+            >
               <div className="flex items-start gap-4 mb-4">
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                  isUploaded ? 'bg-green-500/20' : 'bg-white/10'
+                <div className={`w-14 h-14 rounded-xl flex items-center justify-center border transition-all duration-300 ${
+                  isUploaded
+                    ? 'bg-green-500/20 border-green-500/30'
+                    : 'bg-white/10 border-white/20'
                 }`}>
-                  <Icon className={isUploaded ? 'text-green-400' : 'text-white/60'} size={24} />
+                  <Icon className={isUploaded ? 'text-green-400' : 'text-white/60'} size={26} strokeWidth={2} />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-white text-lg font-semibold mb-1">{doc.label}</h3>
+                  <h3 className="text-white text-lg font-bold mb-1">{doc.label}</h3>
                   <p className="text-white/60 text-sm mb-3">{doc.description}</p>
 
                   {isUploaded && (
-                    <div className="flex items-center gap-2 text-green-400 text-sm">
-                      <CheckCircle size={16} />
-                      <span>Document fourni</span>
+                    <div className="flex items-center gap-2 text-green-400 text-sm font-semibold">
+                      <CheckCircle size={18} />
+                      <span>Document fourni ✓</span>
                     </div>
                   )}
                 </div>
@@ -248,91 +301,99 @@ export default function Step3KYCMobile({ userId, role='ESCORT', onSubmitted }:{ 
                 tips={doc.tips}
                 isRequired={true}
               />
-            </div>
+            </motion.div>
           )
         })}
       </div>
 
-      {/* Checklist mobile */}
-      <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
-        <h4 className="text-white/90 font-semibold mb-4 text-lg flex items-center gap-2">
-          <CheckCircle className="text-green-400" size={20} />
-          Checklist des documents
-        </h4>
-        
-        <div className="grid grid-cols-1 gap-4">
-          {documentTypes.map((doc) => {
-            const Icon = doc.icon
-            const isUploaded = !!docs[doc.key]
-            
-            return (
-              <div key={doc.key} className={`flex items-center gap-4 p-4 rounded-xl transition-colors ${
-                isUploaded 
-                  ? 'bg-green-500/10 border border-green-500/20' 
-                  : 'bg-white/5 border border-white/10'
-              }`}>
-                <div className="flex items-center gap-3">
-                  {isUploaded ? (
-                    <BadgeCheck className="text-green-400" size={20} />
-                  ) : (
-                    <div className="w-5 h-5 border-2 border-white/30 rounded-full" />
-                  )}
-                  <Icon className={isUploaded ? 'text-green-400' : 'text-white/60'} size={20} />
+      {/* Progress summary */}
+      <motion.div
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.6 }}
+        className="max-w-2xl mx-auto"
+      >
+        <div className="rounded-2xl bg-gradient-to-br from-white/5 to-transparent border border-white/10 p-6 backdrop-blur-xl">
+          <div className="flex items-center gap-3 mb-4">
+            <CheckCircle className="text-pink-300" size={24} />
+            <h4 className="text-white font-bold text-lg">Progression</h4>
+          </div>
+
+          <div className="space-y-3 mb-6">
+            {documentTypes.map((doc) => {
+              const Icon = doc.icon
+              const isUploaded = !!docs[doc.key]
+
+              return (
+                <div key={doc.key} className={`flex items-center gap-4 p-3 rounded-xl transition-all ${
+                  isUploaded
+                    ? 'bg-green-500/10 border border-green-500/20'
+                    : 'bg-white/5 border border-white/10'
+                }`}>
+                  <div className="flex items-center gap-3">
+                    {isUploaded ? (
+                      <BadgeCheck className="text-green-400" size={22} />
+                    ) : (
+                      <div className="w-5 h-5 border-2 border-white/30 rounded-full" />
+                    )}
+                    <Icon className={isUploaded ? 'text-green-400' : 'text-white/50'} size={20} />
+                  </div>
+                  <div className="flex-1">
+                    <p className={`font-medium text-sm ${isUploaded ? 'text-green-400' : 'text-white/70'}`}>
+                      {doc.label}
+                    </p>
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <p className={`font-medium ${isUploaded ? 'text-green-400' : 'text-white/70'}`}>
-                    {doc.label}
-                  </p>
-                  <p className={`text-sm ${isUploaded ? 'text-green-300' : 'text-white/50'}`}>
-                    {isUploaded ? 'Document fourni' : 'En attente'}
-                  </p>
-                </div>
+              )
+            })}
+          </div>
+
+          {/* Status badge */}
+          <div className="flex items-center justify-center">
+            {isComplete ? (
+              <div className="flex items-center gap-2 px-5 py-2.5 bg-green-500/20 border border-green-500/30 rounded-full">
+                <ShieldCheck className="text-green-400" size={20} />
+                <span className="text-sm font-bold text-green-400">✓ Tous les documents fournis</span>
               </div>
-            )
-          })}
-        </div>
-        
-        {/* Status badges */}
-        <div className="mt-6 pt-4 border-t border-white/10">
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-2">
-              <div className={`w-3 h-3 rounded-full ${isComplete ? 'bg-green-400' : 'bg-orange-400'}`} />
-              <span className="text-sm text-white/80">
-                {isComplete ? 'Tous les documents sont fournis' : `${missing.length} document(s) manquant(s)`}
-              </span>
-            </div>
-            
-            {isComplete && (
-              <div className="flex items-center gap-2 px-4 py-2 bg-green-500/20 border border-green-500/30 rounded-full">
-                <ShieldCheck className="text-green-400" size={16} />
-                <span className="text-sm font-medium text-green-400">Prêt pour validation</span>
-              </div>
-            )}
-            
-            {!isComplete && (
-              <div className="flex items-center gap-2 px-4 py-2 bg-orange-500/20 border border-orange-500/30 rounded-full">
-                <AlertCircle className="text-orange-400" size={16} />
-                <span className="text-sm font-medium text-orange-400">Documents incomplets</span>
+            ) : (
+              <div className="flex items-center gap-2 px-5 py-2.5 bg-orange-500/20 border border-orange-500/30 rounded-full">
+                <AlertCircle className="text-orange-400" size={20} />
+                <span className="text-sm font-bold text-orange-400">{missing.length} document(s) manquant(s)</span>
               </div>
             )}
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Error message */}
       {error && (
-        <div className="flex items-center gap-2 p-4 bg-red-500/20 border border-red-500/30 rounded-xl">
-          <AlertCircle className="text-red-400" size={20} />
-          <span className="text-red-400 text-sm">{error}</span>
-        </div>
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="max-w-2xl mx-auto"
+        >
+          <div className="flex items-center gap-3 p-4 bg-red-500/20 border border-red-500/30 rounded-xl backdrop-blur-xl">
+            <AlertCircle className="text-red-400" size={22} />
+            <span className="text-red-400 text-sm font-medium">{error}</span>
+          </div>
+        </motion.div>
       )}
 
       {/* Action buttons */}
-      <div className="space-y-4">
+      <motion.div
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.7 }}
+        className="max-w-2xl mx-auto space-y-4"
+      >
         <button
           onClick={submit}
           disabled={busy || !isComplete}
-          className="w-full py-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-bold text-lg disabled:opacity-60 flex items-center justify-center gap-2"
+          className={`w-full py-4 rounded-xl font-bold text-lg transition-all flex items-center justify-center gap-2 ${
+            isComplete && !busy
+              ? 'bg-gradient-to-r from-pink-500/20 to-purple-500/20 hover:from-pink-500/30 hover:to-purple-500/30 border border-pink-500/30 hover:border-pink-500/50 text-white shadow-lg hover:shadow-pink-500/20'
+              : 'bg-white/5 border border-white/10 text-white/40 cursor-not-allowed'
+          }`}
         >
           {busy ? (
             <>
@@ -341,7 +402,7 @@ export default function Step3KYCMobile({ userId, role='ESCORT', onSubmitted }:{ 
             </>
           ) : (
             <>
-              <ShieldCheck size={20} />
+              <Shield size={20} />
               Valider la vérification
             </>
           )}
@@ -349,16 +410,20 @@ export default function Step3KYCMobile({ userId, role='ESCORT', onSubmitted }:{ 
 
         <button
           onClick={() => setShowLater(true)}
-          className="w-full py-3 bg-white/10 text-white rounded-xl font-medium hover:bg-white/20 transition-colors"
+          className="w-full py-3 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white/70 hover:text-white rounded-xl font-medium transition-all"
         >
           Compléter plus tard
         </button>
-      </div>
+      </motion.div>
 
       {/* Later modal */}
       {showLater && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 max-w-sm w-full">
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl rounded-2xl p-6 border border-white/20 max-w-sm w-full"
+          >
             <h3 className="text-white text-xl font-bold mb-4">Compléter plus tard</h3>
             <p className="text-white/70 text-sm mb-6">
               Vous pourrez compléter votre vérification d'identité depuis votre tableau de bord.
@@ -366,18 +431,18 @@ export default function Step3KYCMobile({ userId, role='ESCORT', onSubmitted }:{ 
             <div className="flex gap-3">
               <button
                 onClick={() => setShowLater(false)}
-                className="flex-1 py-3 bg-white/10 text-white rounded-xl font-medium hover:bg-white/20 transition-colors"
+                className="flex-1 py-3 bg-white/10 hover:bg-white/15 border border-white/20 text-white rounded-xl font-medium transition-all"
               >
                 Annuler
               </button>
               <button
                 onClick={() => onSubmitted(false)}
-                className="flex-1 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-medium"
+                className="flex-1 py-3 bg-gradient-to-r from-pink-500/20 to-purple-500/20 hover:from-pink-500/30 hover:to-purple-500/30 border border-pink-500/30 text-white rounded-xl font-medium transition-all"
               >
                 Continuer
               </button>
             </div>
-          </div>
+          </motion.div>
         </div>
       )}
     </div>

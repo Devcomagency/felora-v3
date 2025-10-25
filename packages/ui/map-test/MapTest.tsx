@@ -487,12 +487,12 @@ export default function MapTest() {
           padding: 0 !important;
           box-shadow: none !important;
         }
-        
+
         .felora-popup .maplibregl-popup-tip {
           border-top-color: rgba(13, 13, 13, 0.95) !important;
           border-bottom-color: rgba(13, 13, 13, 0.95) !important;
         }
-        
+
         .felora-popup .maplibregl-popup-close-button {
           color: rgba(255, 255, 255, 0.7) !important;
           font-size: 18px !important;
@@ -507,11 +507,23 @@ export default function MapTest() {
           align-items: center !important;
           justify-content: center !important;
         }
-        
+
         .felora-popup .maplibregl-popup-close-button:hover {
           background: rgba(255, 107, 157, 0.2) !important;
           border-color: rgba(255, 107, 157, 0.4) !important;
           color: #FF6B9D !important;
+        }
+
+        /* Masquer les carrés de chargement des tuiles */
+        .maplibregl-canvas-container canvas {
+          background: #1A1A1A !important;
+        }
+
+        /* Transition fluide pour les tuiles */
+        .maplibregl-canvas {
+          image-rendering: auto !important;
+          image-rendering: crisp-edges !important;
+          image-rendering: -webkit-optimize-contrast !important;
         }
       `}</style>
       
@@ -840,9 +852,8 @@ export default function MapTest() {
 
       {/* Status Bar */}
       <div
-        className="fixed bottom-20 left-4 px-3 py-2 rounded-xl text-sm text-white"
+        className="fixed bottom-20 left-4 px-3 py-2 rounded-xl text-sm text-white font-medium"
         style={{
-          // Même couleurs que le bouton "Autour de moi"
           background: 'linear-gradient(135deg, #FF6B9D 0%, #B794F6 100%)',
           backdropFilter: 'blur(16px)',
           border: '1px solid rgba(255, 255, 255, 0.35)',
@@ -851,7 +862,7 @@ export default function MapTest() {
         role="status"
         aria-live="polite"
       >
-        {visibleCount} escort{visibleCount !== 1 ? 's' : ''} visible{visibleCount !== 1 ? 's' : ''}
+        {visibleCount} profil{visibleCount !== 1 ? 's' : ''} visible{visibleCount !== 1 ? 's' : ''}
         {isLoading && ' • Chargement...'}
         {error && ' • Erreur'}
       </div>

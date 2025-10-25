@@ -51,7 +51,7 @@ export default function RegisterPage() {
     {
       id: 'salon',
       title: 'Établissement',
-      subtitle: 'Profil Club',
+      subtitle: 'Gestion Pro',
       description: 'Gérez votre entreprise',
       gradient: 'from-violet-500 to-purple-600',
       bgGradient: 'from-violet-500/10 via-purple-500/5 to-transparent',
@@ -65,41 +65,43 @@ export default function RegisterPage() {
   return (
     <div className="relative min-h-screen bg-black text-white overflow-hidden">
       {/* Background Effects */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/20 via-black to-black" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/10 via-black to-black" />
       <div className="absolute inset-0 bg-grid-white/[0.02]" />
 
       {/* Animated gradient orbs */}
-      <div className="absolute top-1/4 -left-48 w-96 h-96 bg-purple-500/30 rounded-full blur-3xl animate-pulse" />
-      <div className="absolute bottom-1/4 -right-48 w-96 h-96 bg-pink-500/30 rounded-full blur-3xl animate-pulse delay-700" />
+      <div className="absolute top-1/4 -left-48 w-96 h-96 bg-purple-500/15 rounded-full blur-3xl animate-pulse" />
+      <div className="absolute bottom-1/4 -right-48 w-96 h-96 bg-pink-500/15 rounded-full blur-3xl animate-pulse delay-700" />
 
       <div className="relative z-10 container mx-auto px-4 py-8 flex flex-col min-h-screen">
         {/* Header */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-16">
+          {/* Logo */}
           <motion.div
-            initial={{ scale: 0.5, opacity: 0 }}
+            initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.5 }}
-            className="mb-6"
+            className="mb-3"
           >
             <img
               src="/logo-principal.png"
               alt="FELORA"
-              className="w-20 h-20 object-contain mx-auto"
+              className="w-32 h-32 md:w-40 md:h-40 object-contain mx-auto"
               style={{
-                filter: 'drop-shadow(0 0 40px rgba(255,107,157,0.6)) drop-shadow(0 0 80px rgba(183,148,246,0.4))'
+                filter: 'drop-shadow(0 0 30px rgba(255,107,157,0.5)) drop-shadow(0 0 60px rgba(183,148,246,0.3))'
               }}
             />
           </motion.div>
 
+          {/* Title */}
           <motion.div
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.2 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
           >
-            <h1 className="text-4xl md:text-5xl font-black tracking-tight mb-3 bg-gradient-to-r from-white via-purple-200 to-pink-200 bg-clip-text text-transparent">
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-black tracking-tight mb-3 bg-gradient-to-r from-white via-white/90 to-white/80 bg-clip-text text-transparent">
               Bienvenue sur FELORA
             </h1>
-            <p className="text-white/60 text-sm max-w-md mx-auto">
+            <p className="text-white/70 text-base md:text-lg max-w-2xl mx-auto font-light">
               La plateforme premium suisse. Choisissez votre expérience.
             </p>
           </motion.div>
@@ -107,12 +109,12 @@ export default function RegisterPage() {
 
         {/* Cards Grid */}
         <div className="flex-1 flex items-center justify-center">
-          <div className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6">
+          <div className="w-full max-w-6xl space-y-4">
             {cards.map((card, idx) => (
               <motion.div
                 key={card.id}
-                initial={{ y: 50, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
+                initial={{ x: -50, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
                 transition={{ delay: 0.3 + idx * 0.1 }}
                 onHoverStart={() => setHoveredCard(card.id)}
                 onHoverEnd={() => setHoveredCard(null)}
@@ -124,7 +126,7 @@ export default function RegisterPage() {
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
                     transition={{ delay: 0.6, type: 'spring' }}
-                    className="absolute -top-3 left-1/2 -translate-x-1/2 z-20"
+                    className="absolute -top-3 left-8 z-20"
                   >
                     <div className="flex items-center gap-1 px-3 py-1 rounded-full bg-gradient-to-r from-pink-500 to-violet-600 text-white text-xs font-bold shadow-lg shadow-pink-500/50">
                       <Sparkles className="w-3 h-3" />
@@ -136,9 +138,9 @@ export default function RegisterPage() {
                 {/* Card */}
                 <button
                   onClick={() => router.push(card.href)}
-                  className={`group relative w-full h-full rounded-3xl border transition-all duration-500 ${
+                  className={`group relative w-full rounded-2xl border transition-all duration-500 ${
                     hoveredCard === card.id
-                      ? 'border-white/30 shadow-2xl scale-105'
+                      ? 'border-white/30 shadow-2xl scale-[1.02]'
                       : 'border-white/10 hover:border-white/20'
                   }`}
                   style={{
@@ -148,55 +150,69 @@ export default function RegisterPage() {
                   }}
                 >
                   {/* Gradient overlay on hover */}
-                  <div className={`absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-br ${card.bgGradient}`} />
+                  <div className={`absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-br ${card.bgGradient}`} />
 
-                  <div className="relative p-6 lg:p-8 flex flex-col h-full">
+                  <div className="relative p-5 lg:p-6 flex flex-col md:flex-row items-center gap-6">
                     {/* Icon */}
-                    <div className="mb-6">
-                      <div className={`inline-flex p-4 rounded-2xl bg-gradient-to-br ${card.gradient} shadow-lg transition-transform group-hover:scale-110 duration-500`}>
-                        <card.Icon className="w-8 h-8 text-white" strokeWidth={2} />
+                    <div className="shrink-0">
+                      <div
+                        className="inline-flex p-3 lg:p-4 rounded-2xl border shadow-lg transition-transform group-hover:scale-110 duration-500"
+                        style={{
+                          background: `linear-gradient(to bottom right, ${card.accentColor}20, ${card.accentColor}15)`,
+                          borderColor: `${card.accentColor}30`,
+                          boxShadow: `0 4px 12px ${card.accentColor}10`
+                        }}
+                      >
+                        <card.Icon className="w-7 h-7 lg:w-8 lg:h-8" style={{ color: `${card.accentColor}` }} strokeWidth={2} />
                       </div>
                     </div>
 
                     {/* Content */}
-                    <div className="flex-1">
+                    <div className="flex-1 text-center md:text-left">
                       <div className="mb-1">
                         <span className={`text-xs font-semibold uppercase tracking-wider bg-gradient-to-r ${card.gradient} bg-clip-text text-transparent`}>
                           {card.subtitle}
                         </span>
                       </div>
-                      <h2 className="text-2xl lg:text-3xl font-bold mb-2 text-white group-hover:text-white transition-colors">
+                      <h2 className="text-xl lg:text-2xl font-bold mb-1 text-white group-hover:text-white transition-colors">
                         {card.title}
                       </h2>
-                      <p className="text-white/50 text-sm mb-6 group-hover:text-white/70 transition-colors">
+                      <p className="text-white/50 text-sm group-hover:text-white/70 transition-colors">
                         {card.description}
                       </p>
+                    </div>
 
-                      {/* Benefits */}
-                      <ul className="space-y-2 mb-8">
-                        {card.benefits.map((benefit, i) => (
-                          <motion.li
-                            key={i}
-                            initial={{ x: -10, opacity: 0 }}
-                            animate={{ x: 0, opacity: 1 }}
-                            transition={{ delay: 0.5 + idx * 0.1 + i * 0.1 }}
-                            className="flex items-center gap-2 text-sm text-white/70 group-hover:text-white/90 transition-colors"
-                          >
-                            <div className={`w-1.5 h-1.5 rounded-full bg-gradient-to-r ${card.gradient}`} />
-                            {benefit}
-                          </motion.li>
-                        ))}
-                      </ul>
+                    {/* Benefits */}
+                    <div className="hidden lg:flex items-center gap-4">
+                      {card.benefits.map((benefit, i) => (
+                        <motion.div
+                          key={i}
+                          initial={{ scale: 0.8, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          transition={{ delay: 0.5 + idx * 0.1 + i * 0.1 }}
+                          className="flex items-center gap-2 text-xs text-white/70 group-hover:text-white/90 transition-colors"
+                        >
+                          <div className={`w-1.5 h-1.5 rounded-full bg-gradient-to-r ${card.gradient}`} />
+                          {benefit}
+                        </motion.div>
+                      ))}
                     </div>
 
                     {/* CTA Button */}
-                    <div className={`flex items-center justify-between px-4 py-3 rounded-xl bg-gradient-to-r ${card.gradient} group-hover:shadow-2xl transition-all duration-500`}
-                      style={{
-                        boxShadow: hoveredCard === card.id ? `0 20px 40px ${card.accentColor}40` : 'none'
-                      }}
-                    >
-                      <span className="font-semibold text-white text-sm">Continuer</span>
-                      <ArrowRight className="w-5 h-5 text-white group-hover:translate-x-1 transition-transform" />
+                    <div className="shrink-0">
+                      <div
+                        className="flex items-center gap-2 px-5 py-2.5 rounded-xl border transition-all duration-500"
+                        style={{
+                          background: hoveredCard === card.id
+                            ? `linear-gradient(to right, ${card.accentColor}30, ${card.accentColor}20)`
+                            : `linear-gradient(to right, ${card.accentColor}15, ${card.accentColor}10)`,
+                          borderColor: hoveredCard === card.id ? `${card.accentColor}50` : `${card.accentColor}30`,
+                          boxShadow: hoveredCard === card.id ? `0 8px 16px ${card.accentColor}20` : 'none'
+                        }}
+                      >
+                        <span className="font-semibold text-white text-sm">Continuer</span>
+                        <ArrowRight className="w-4 h-4 text-white group-hover:translate-x-1 transition-transform" />
+                      </div>
                     </div>
                   </div>
                 </button>

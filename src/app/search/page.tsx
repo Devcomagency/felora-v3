@@ -187,91 +187,101 @@ function SearchContent() {
   }, [handleScroll])
 
   return (
-    <div className="min-h-screen bg-black text-white max-w-[500px] mx-auto overflow-y-auto">
-      {/* Header fixe avec logo et recherche */}
-      <div className="sticky top-0 z-50 bg-black/95 backdrop-blur-xl border-b border-white/5">
-        {/* Logo Felora */}
-        <div className="text-center py-6 px-4">
-          <h1 className="text-3xl font-bold gradient-text">
-            FELORA
-          </h1>
-          <p className="text-sm text-white/60 mt-1">
-            Découvrez des profils d'exception en Suisse
-          </p>
-        </div>
+    <div className="fixed inset-0 bg-black text-white overflow-hidden">
+      {/* Background Effects */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-pink-900/10 via-black to-black" />
+      <div className="absolute inset-0 bg-grid-white/[0.02]" />
+      <div className="absolute top-1/4 -left-48 w-96 h-96 bg-pink-500/10 rounded-full blur-3xl animate-pulse" />
+      <div className="absolute bottom-1/4 -right-48 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse delay-700" />
 
-        {/* Barre de recherche et filtres */}
-        <div className="px-4 pb-4">
-          <div className="flex gap-3">
-            <div className="flex-1 relative">
-              <Search size={20} className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white/40" aria-hidden="true" />
-              <input
-                type="text"
-                placeholder="Rechercher par nom, ville..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-4 py-4 text-white placeholder-white/40 glass input-focus rounded-2xl"
-                aria-label="Rechercher des escortes ou clubs par nom ou ville"
-              />
+      {/* Main Container avec scroll */}
+      <div className="relative z-10 h-full max-w-[500px] mx-auto overflow-y-auto">
+        {/* Header fixe avec logo et recherche */}
+        <div className="sticky top-0 z-50 backdrop-blur-xl border-b border-white/10" style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.95), rgba(0,0,0,0.8))' }}>
+          {/* Logo Felora */}
+          <div className="text-center py-6 px-4">
+            <h1 className="text-3xl font-black tracking-tight bg-gradient-to-r from-white via-white/90 to-white/80 bg-clip-text text-transparent">
+              FELORA
+            </h1>
+            <p className="text-sm text-white/60 mt-1 font-light">
+              Découvrez des profils d'exception en Suisse
+            </p>
+          </div>
+
+          {/* Barre de recherche et filtres */}
+          <div className="px-4 pb-4">
+            <div className="flex gap-3">
+              <div className="flex-1 relative">
+                <Search size={20} className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white/40" aria-hidden="true" />
+                <input
+                  type="text"
+                  placeholder="Rechercher par nom, ville..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-12 pr-4 py-4 text-white placeholder-white/40 rounded-2xl transition-all border focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500/50"
+                  style={{
+                    background: 'linear-gradient(to bottom right, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02))',
+                    backdropFilter: 'blur(20px)',
+                    borderColor: 'rgba(255, 255, 255, 0.1)'
+                  }}
+                  aria-label="Rechercher des escortes ou clubs par nom ou ville"
+                />
+              </div>
+
+              <button
+                onClick={() => setShowFilters(true)}
+                className="px-4 py-4 rounded-2xl flex items-center justify-center transition-all hover:scale-105"
+                style={{
+                  background: 'linear-gradient(to bottom right, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02))',
+                  backdropFilter: 'blur(20px)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)'
+                }}
+                aria-label="Ouvrir les filtres de recherche"
+              >
+                <SlidersHorizontal size={20} className="text-white/80" aria-hidden="true" />
+              </button>
             </div>
+          </div>
 
-            <button
-              onClick={() => setShowFilters(true)}
-              className="px-4 py-4 glass btn-glow rounded-2xl flex items-center justify-center"
-              aria-label="Ouvrir les filtres de recherche"
-            >
-              <SlidersHorizontal size={20} className="text-white/80" aria-hidden="true" />
-            </button>
+          {/* Navigation entre sections */}
+          <div className="px-4 pb-4">
+            <div className="flex gap-6">
+              <button
+                onClick={() => scrollToSection('escorts')}
+                className={`relative text-lg font-bold transition-all duration-300 ${
+                  activeSection === 'escorts'
+                    ? 'text-white'
+                    : 'text-white/60 hover:text-white/80'
+                }`}
+                aria-label="Afficher les profils"
+                aria-current={activeSection === 'escorts' ? 'page' : undefined}
+              >
+                Profils
+                {activeSection === 'escorts' && (
+                  <span className="absolute -bottom-2 left-0 w-full h-0.5 bg-gradient-to-r from-[#FF6B9D] to-[#B794F6] rounded-full" />
+                )}
+              </button>
+              <button
+                onClick={() => router.push('/clubs')}
+                className="relative text-lg font-bold transition-all duration-300 text-white/60 hover:text-white/80"
+                aria-label="Afficher les clubs et salons"
+              >
+                Clubs & Salons
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Navigation entre sections */}
-        <div className="px-4 pb-4">
-          <div className="flex gap-6">
-            <button
-              onClick={() => scrollToSection('escorts')}
-              className={`relative text-lg font-medium transition-all duration-300 ${
-                activeSection === 'escorts'
-                  ? 'text-white'
-                  : 'text-white/60 hover:text-white/80'
-              }`}
-              aria-label="Afficher les escortes"
-              aria-current={activeSection === 'escorts' ? 'page' : undefined}
-            >
-              Escortes
-              {activeSection === 'escorts' && (
-                <span className="absolute -bottom-2 left-0 w-full h-0.5 bg-gradient-to-r from-[#FF6B9D] to-[#B794F6] rounded-full" />
+        {/* Contenu principal */}
+        <div className="px-4 pb-24">
+          {/* Section Escortes */}
+          <section ref={escortsSectionRef} className="py-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-black tracking-tight bg-gradient-to-r from-white via-white/90 to-white/80 bg-clip-text text-transparent">Profils Indépendants</h2>
+              {escortsTotal > 0 && (
+                <span className="text-sm text-white/60 font-medium">{escortsTotal} profils</span>
               )}
-            </button>
-            <button
-              onClick={() => scrollToSection('clubs')}
-              className={`relative text-lg font-medium transition-all duration-300 ${
-                activeSection === 'clubs'
-                  ? 'text-white'
-                  : 'text-white/60 hover:text-white/80'
-              }`}
-              aria-label="Afficher les clubs et salons"
-              aria-current={activeSection === 'clubs' ? 'page' : undefined}
-            >
-              Clubs & Salons
-              {activeSection === 'clubs' && (
-                <span className="absolute -bottom-2 left-0 w-full h-0.5 bg-gradient-to-r from-[#FF6B9D] to-[#B794F6] rounded-full" />
-              )}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Contenu principal */}
-      <div className="px-4 pb-24">
-        {/* Section Escortes */}
-        <section ref={escortsSectionRef} className="py-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-white">Escortes Indépendantes</h2>
-            {escortsTotal > 0 && (
-              <span className="text-sm text-white/60">{escortsTotal} profils</span>
-            )}
-          </div>
+            </div>
 
           {escortsLoading && escorts.length === 0 ? (
             <div className="grid grid-cols-2 gap-3">
@@ -303,14 +313,14 @@ function SearchContent() {
 
         </section>
 
-        {/* Section Clubs & Salons */}
-        <section ref={clubsSectionRef} className="py-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-white">Clubs & Salons</h2>
-            {clubsTotal > 0 && (
-              <span className="text-sm text-white/60">{clubsTotal} établissements</span>
-            )}
-          </div>
+          {/* Section Clubs & Salons */}
+          <section ref={clubsSectionRef} className="py-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-black tracking-tight bg-gradient-to-r from-white via-white/90 to-white/80 bg-clip-text text-transparent">Clubs & Salons</h2>
+              {clubsTotal > 0 && (
+                <span className="text-sm text-white/60 font-medium">{clubsTotal} établissements</span>
+              )}
+            </div>
 
           {clubsLoading && clubs.length === 0 ? (
             <div className="flex gap-3 overflow-x-auto">
@@ -353,12 +363,12 @@ function SearchContent() {
           )}
         </section>
 
-        {/* Section Escortes - Suite (si plus de 4 escortes) */}
-        {escorts.length > 4 && (
-          <section className="py-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-white">Plus d'escortes</h2>
-            </div>
+          {/* Section Escortes - Suite (si plus de 4 escortes) */}
+          {escorts.length > 4 && (
+            <section className="py-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-black tracking-tight bg-gradient-to-r from-white via-white/90 to-white/80 bg-clip-text text-transparent">Plus de profils</h2>
+              </div>
 
             <div className="grid grid-cols-2 gap-3">
               {escorts.slice(4).map((escort, index) => (
@@ -372,39 +382,46 @@ function SearchContent() {
               ))}
             </div>
 
-            {/* Bouton charger plus pour escortes */}
-            {escortsHasMore && (
-              <div className="flex justify-center mt-6">
-                <button
-                  onClick={loadMoreEscorts}
-                  disabled={escortsLoading}
-                  className="px-6 py-3 gradient-pink-purple text-white font-medium rounded-xl btn-glow disabled:opacity-50"
-                  aria-label={escortsLoading ? 'Chargement en cours' : 'Charger plus d\'escortes'}
-                >
-                  {escortsLoading ? 'Chargement...' : 'Voir plus'}
-                </button>
-              </div>
-            )}
-          </section>
-        )}
+              {/* Bouton charger plus pour escortes */}
+              {escortsHasMore && (
+                <div className="flex justify-center mt-6">
+                  <button
+                    onClick={loadMoreEscorts}
+                    disabled={escortsLoading}
+                    className="px-6 py-3.5 text-white font-bold rounded-xl transition-all disabled:opacity-50 bg-gradient-to-r from-pink-500/20 to-purple-500/20 hover:from-pink-500/30 hover:to-purple-500/30 border border-pink-500/30 hover:border-pink-500/50 shadow-lg hover:shadow-pink-500/20"
+                    aria-label={escortsLoading ? 'Chargement en cours' : 'Charger plus de profils'}
+                  >
+                    {escortsLoading ? 'Chargement...' : 'Voir plus'}
+                  </button>
+                </div>
+              )}
+            </section>
+          )}
+        </div>
+
+        {/* Bouton flottant carte (bas droite) */}
+        <button
+          onClick={() => router.push('/map')}
+          className="fixed bottom-24 right-4 w-14 h-14 rounded-full flex items-center justify-center z-40 hover:scale-110 transition-all duration-300 border shadow-lg"
+          style={{
+            background: 'linear-gradient(to bottom right, rgba(255, 107, 157, 0.15), rgba(183, 148, 246, 0.1))',
+            backdropFilter: 'blur(20px)',
+            borderColor: 'rgba(255, 107, 157, 0.3)',
+            boxShadow: '0 8px 24px rgba(255, 107, 157, 0.2)'
+          }}
+          aria-label="Ouvrir la carte interactive"
+        >
+          <MapPin size={24} className="text-white" aria-hidden="true" />
+        </button>
+
+        {/* Modal de filtres simplifié */}
+        <SearchFiltersSimple
+          filters={activeSection === 'escorts' ? escortsFilters : clubsFilters}
+          onFiltersChange={activeSection === 'escorts' ? handleEscortsFiltersChange : handleClubsFiltersChange}
+          onClose={() => setShowFilters(false)}
+          isOpen={showFilters}
+        />
       </div>
-
-      {/* Bouton flottant carte (bas droite) */}
-      <button
-        onClick={() => router.push('/map')}
-        className="fixed bottom-24 right-4 w-14 h-14 rounded-full bg-gradient-to-r from-[#FF6B9D] to-[#B794F6] shadow-lg shadow-pink-500/25 flex items-center justify-center btn-glow z-40 hover:scale-110 transition-transform duration-300"
-        aria-label="Ouvrir la carte interactive"
-      >
-        <MapPin size={24} className="text-white" aria-hidden="true" />
-      </button>
-
-      {/* Modal de filtres simplifié */}
-      <SearchFiltersSimple
-        filters={activeSection === 'escorts' ? escortsFilters : clubsFilters}
-        onFiltersChange={activeSection === 'escorts' ? handleEscortsFiltersChange : handleClubsFiltersChange}
-        onClose={() => setShowFilters(false)}
-        isOpen={showFilters}
-      />
     </div>
   )
 }
@@ -412,10 +429,16 @@ function SearchContent() {
 // Composant de chargement
 function SearchLoading() {
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center max-w-[500px] mx-auto">
-      <div className="flex flex-col items-center gap-4">
-        <div className="w-12 h-12 border-4 border-white/20 border-t-pink-500 rounded-full animate-spin"></div>
-        <p className="text-white/70">Chargement de la recherche...</p>
+    <div className="fixed inset-0 bg-black flex items-center justify-center overflow-hidden">
+      {/* Background Effects */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-pink-900/10 via-black to-black" />
+      <div className="absolute inset-0 bg-grid-white/[0.02]" />
+      <div className="absolute top-1/4 -left-48 w-96 h-96 bg-pink-500/10 rounded-full blur-3xl animate-pulse" />
+      <div className="absolute bottom-1/4 -right-48 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse delay-700" />
+
+      <div className="relative z-10 flex flex-col items-center gap-4 max-w-[500px] mx-auto">
+        <div className="w-16 h-16 border-4 border-white/10 border-t-pink-500 rounded-full animate-spin"></div>
+        <p className="text-white/70 font-light">Chargement de la recherche...</p>
       </div>
     </div>
   )

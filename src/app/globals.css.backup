@@ -130,27 +130,3 @@ body[data-hide-static-nav="true"] [data-app-shell] {
     height: calc(100vh - max(env(safe-area-inset-top, 0px), env(safe-area-inset-bottom, 0px)));
   }
 }
-
-/* Utility pour cacher les scrollbars tout en gardant la fonctionnalité de scroll */
-@layer utilities {
-  .scrollbar-hide {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
-  }
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;  /* Chrome, Safari and Opera */
-  }
-
-  /* Snap scroll pour carrousel style App Store */
-  .snap-x {
-    scroll-snap-type: x mandatory;
-    -webkit-overflow-scrolling: touch;
-  }
-  .snap-mandatory {
-    scroll-snap-type: x mandatory;
-  }
-  .snap-center {
-    scroll-snap-align: center;
-    scroll-snap-stop: always;
-  }
-}

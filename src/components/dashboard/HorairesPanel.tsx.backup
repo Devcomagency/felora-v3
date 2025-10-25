@@ -167,50 +167,48 @@ export default function HorairesPanel(){
       {!isOpen24_7 && (
         <div className="space-y-4">
           {days.map(({ key, label }) => (
-            <div key={key} className="p-3 sm:p-4 bg-gray-800/40 rounded-lg">
-              <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
-                <div className="w-full sm:w-20 text-sm text-gray-300 font-medium">{label}</div>
+            <div key={key} className="flex items-center gap-4 p-4 bg-gray-800/40 rounded-lg">
+              <div className="w-20 text-sm text-gray-300 font-medium">{label}</div>
 
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={schedule[key].closed}
-                    onChange={e => updateDaySchedule(key, 'closed', e.target.checked)}
-                    className="rounded border-gray-600 bg-gray-800 text-red-600 focus:ring-red-500"
-                  />
-                  <span className="text-xs text-gray-400">Fermé</span>
-                </div>
-
-                {!schedule[key].closed && (
-                  <div className="flex flex-wrap items-center gap-2 sm:gap-2 flex-1">
-                    <div className="flex items-center gap-1.5 sm:gap-2">
-                      <span className="text-xs text-gray-400">De</span>
-                      <input
-                        type="time"
-                        value={schedule[key].open}
-                        onChange={e => updateDaySchedule(key, 'open', e.target.value)}
-                        className="px-2 py-1 bg-gray-700 border border-gray-600 rounded text-white text-sm focus:ring-purple-500 focus:border-purple-500 w-[100px]"
-                      />
-                    </div>
-                    <div className="flex items-center gap-1.5 sm:gap-2">
-                      <span className="text-xs text-gray-400">à</span>
-                      <input
-                        type="time"
-                        value={schedule[key].close}
-                        onChange={e => updateDaySchedule(key, 'close', e.target.value)}
-                        className="px-2 py-1 bg-gray-700 border border-gray-600 rounded text-white text-sm focus:ring-purple-500 focus:border-purple-500 w-[100px]"
-                      />
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => copyToAllDays(key)}
-                      className="text-xs px-2 py-1 bg-purple-600/20 text-purple-300 rounded hover:bg-purple-600/30 transition-colors whitespace-nowrap"
-                    >
-                      Copier à tous
-                    </button>
-                  </div>
-                )}
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={schedule[key].closed}
+                  onChange={e => updateDaySchedule(key, 'closed', e.target.checked)}
+                  className="rounded border-gray-600 bg-gray-800 text-red-600 focus:ring-red-500"
+                />
+                <span className="text-xs text-gray-400">Fermé</span>
               </div>
+
+              {!schedule[key].closed && (
+                <>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-gray-400">De</span>
+                    <input
+                      type="time"
+                      value={schedule[key].open}
+                      onChange={e => updateDaySchedule(key, 'open', e.target.value)}
+                      className="px-2 py-1 bg-gray-700 border border-gray-600 rounded text-white text-sm focus:ring-purple-500 focus:border-purple-500"
+                    />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-gray-400">à</span>
+                    <input
+                      type="time"
+                      value={schedule[key].close}
+                      onChange={e => updateDaySchedule(key, 'close', e.target.value)}
+                      className="px-2 py-1 bg-gray-700 border border-gray-600 rounded text-white text-sm focus:ring-purple-500 focus:border-purple-500"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => copyToAllDays(key)}
+                    className="text-xs px-2 py-1 bg-purple-600/20 text-purple-300 rounded hover:bg-purple-600/30 transition-colors"
+                  >
+                    Copier à tous
+                  </button>
+                </>
+              )}
             </div>
           ))}
         </div>
@@ -220,7 +218,7 @@ export default function HorairesPanel(){
         <button
           onClick={onSave}
           disabled={saving}
-          className="px-4 py-2 rounded-lg bg-[#FF6B9D] hover:bg-[#FF6B9D]/90 text-white disabled:opacity-60 transition-all"
+          className="px-4 py-2 rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 text-white disabled:opacity-60"
         >
           {saving ? 'Sauvegarde…' : 'Enregistrer'}
         </button>

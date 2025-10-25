@@ -42,33 +42,17 @@ function EscortSignupContent(){
   }, [stepParam])
 
   return (
-    <main className="min-h-screen bg-black">
-      {/* Header mobile-first */}
-      <div className="sticky top-0 z-10 bg-black/20 backdrop-blur-sm border-b border-white/10">
-        <div className="max-w-2xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-white text-xl sm:text-2xl font-bold">Inscription Escort</h1>
-              <p className="text-white/60 text-sm">Rejoignez la communauté Felora</p>
-            </div>
-            <div className="text-right ml-16">
-              <div className="text-white/80 text-sm">Étape {step}/3</div>
-              <div className="w-16 h-1 bg-white/20 rounded-full mt-1">
-                <div 
-                  className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full transition-all duration-300"
-                  style={{ width: `${(step / 3) * 100}%` }}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+    <main className="relative min-h-screen bg-black text-white overflow-hidden">
+      {/* Background Effects - same as register page */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-pink-900/10 via-black to-black" />
+      <div className="absolute inset-0 bg-grid-white/[0.02]" />
+      <div className="absolute top-1/4 -left-48 w-96 h-96 bg-pink-500/10 rounded-full blur-3xl animate-pulse" />
+      <div className="absolute bottom-1/4 -right-48 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse delay-700" />
 
       {/* Content */}
-      <div className="max-w-2xl mx-auto px-4 py-6">
-        <Stepper steps={steps} current={step} />
-
+      <div className="relative z-10 container mx-auto px-4 py-8">
       {step === 1 && !routing && (
+        <div className="max-w-2xl mx-auto">
         <Step1PreSignupMobile mode="ESCORT" onSubmit={async (data)=>{
           console.log('🚀 Step1PreSignupMobile onSubmit called with data:', data)
           try {
@@ -97,12 +81,15 @@ function EscortSignupContent(){
             setRouting(false)
           }
         }} />
+        </div>
       )}
-      
+
       {routing && (
-        <div className="glass-card rounded-2xl p-8 border border-white/10 bg-white/5 text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500 mx-auto mb-4"></div>
-          <p className="text-white/80">Création de votre compte...</p>
+        <div className="max-w-2xl mx-auto">
+          <div className="glass-card rounded-2xl p-8 border border-white/10 bg-white/5 text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500 mx-auto mb-4"></div>
+            <p className="text-white/80">Création de votre compte...</p>
+          </div>
         </div>
       )}
 
@@ -115,15 +102,17 @@ function EscortSignupContent(){
       )}
 
       {step === 3 && (
-        <Step3KYCMobile userId={userId} role="ESCORT" onSubmitted={(ok)=>{ 
-          try { if (ok) localStorage.removeItem('felora-signup-userId') } catch {}
-          if (ok) {
-            router.push('/dashboard-escort/statistiques?welcome=1')
-          } else {
-            // Vérifier plus tard: amener au dashboard escort minimal
-            router.push('/dashboard-escort/profil?kyc=deferred')
-          }
-        }} />
+        <div className="max-w-2xl mx-auto">
+          <Step3KYCMobile userId={userId} role="ESCORT" onSubmitted={(ok)=>{
+            try { if (ok) localStorage.removeItem('felora-signup-userId') } catch {}
+            if (ok) {
+              router.push('/dashboard-escort/statistiques?welcome=1')
+            } else {
+              // Vérifier plus tard: amener au dashboard escort minimal
+              router.push('/dashboard-escort/profil?kyc=deferred')
+            }
+          }} />
+        </div>
       )}
       </div>
     </main>

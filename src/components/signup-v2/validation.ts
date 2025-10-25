@@ -97,10 +97,7 @@ export const clientSignupSchema = z.object({
 
 export const clubPreSignupSchema = z.object({
   email: z.string().email(),
-  handle: z.string().min(3).max(24).regex(/^[a-z0-9_\.]+$/i),
   companyName: z.string().min(2, 'Nom de la société requis'),
-  ideNumber: z.string().min(3, 'IDE requis').regex(/^[A-Za-z0-9\-\. ]+$/, 'IDE invalide'),
-  managerName: z.string().min(2, 'Responsable requis'),
   phoneE164: z.string().optional(),
   password: passwordSchema,
   confirm: z.string(),

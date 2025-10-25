@@ -10,13 +10,34 @@ const MapTest = dynamic(() => import('@packages/ui/map-test/MapTest'), {
   loading: () => <MapSkeleton />
 })
 
-// Old map page (V3 original)
+// Old map page (V3 original) - Updated with premium design
 function OldMapPage() {
   return (
-    <div className="min-h-screen bg-black text-white flex items-center justify-center">
-      <div className="text-center">
-        <h1 className="text-2xl font-bold mb-4">Map (Version Originale)</h1>
-        <p className="text-gray-400">Cette page utilise l'ancienne interface V3</p>
+    <div className="fixed inset-0 bg-black text-white overflow-hidden">
+      {/* Background Effects - same as other pages */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-pink-900/10 via-black to-black" />
+      <div className="absolute inset-0 bg-grid-white/[0.02]" />
+      <div className="absolute top-1/4 -left-48 w-96 h-96 bg-pink-500/10 rounded-full blur-3xl animate-pulse" />
+      <div className="absolute bottom-1/4 -right-48 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse delay-700" />
+
+      {/* Content */}
+      <div className="relative z-10 h-full flex items-center justify-center px-4">
+        <div className="text-center max-w-md">
+          <h1 className="text-3xl md:text-4xl font-black tracking-tight mb-3 bg-gradient-to-r from-white via-white/90 to-white/80 bg-clip-text text-transparent">
+            Carte interactive
+          </h1>
+          <p className="text-white/60 text-sm md:text-base font-light mb-8">
+            Fonctionnalité en cours de développement
+          </p>
+
+          {/* Bouton retour - même style que les autres pages */}
+          <button
+            onClick={() => window.location.href = '/'}
+            className="w-full rounded-xl py-3.5 font-bold text-base transition-all bg-gradient-to-r from-pink-500/20 to-purple-500/20 hover:from-pink-500/30 hover:to-purple-500/30 border border-pink-500/30 hover:border-pink-500/50 text-white shadow-lg hover:shadow-pink-500/20"
+          >
+            Retour à l'accueil
+          </button>
+        </div>
       </div>
     </div>
   )
@@ -33,43 +54,24 @@ function NewMapPage() {
 
 function MapSkeleton() {
   return (
-    <div 
-      className="w-full h-screen flex items-center justify-center relative overflow-hidden"
-      style={{
-        background: 'linear-gradient(135deg, var(--felora-void) 0%, var(--felora-void-50) 50%, var(--felora-void) 100%)'
-      }}
-    >
-      {/* Background Pattern */}
-      <div 
-        className="absolute inset-0 opacity-20"
-        style={{
-          background: 'linear-gradient(135deg, var(--felora-aurora-10) 0%, var(--felora-plasma-08) 50%, var(--felora-quantum-06) 100%)'
-        }}
-      />
-      
+    <div className="fixed inset-0 bg-black text-white overflow-hidden">
+      {/* Background Effects - same as other pages */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-pink-900/10 via-black to-black" />
+      <div className="absolute inset-0 bg-grid-white/[0.02]" />
+      <div className="absolute top-1/4 -left-48 w-96 h-96 bg-pink-500/10 rounded-full blur-3xl animate-pulse" />
+      <div className="absolute bottom-1/4 -right-48 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse delay-700" />
+
       {/* Loading Content */}
-      <div className="relative text-center">
-        <div 
-          className="w-16 h-16 rounded-full mb-6 mx-auto animate-spin"
-          style={{
-            background: 'linear-gradient(135deg, var(--felora-aurora) 0%, var(--felora-plasma) 50%, var(--felora-quantum) 100%)',
-            mask: 'radial-gradient(circle at center, transparent 6px, black 8px)'
-          }}
-        />
-        <h2 
-          className="text-2xl font-bold mb-2"
-          style={{
-            background: 'linear-gradient(135deg, var(--felora-aurora) 0%, var(--felora-plasma) 50%, var(--felora-quantum) 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif'
-          }}
-        >
-          Chargement de la carte...
-        </h2>
-        <p className="text-sm" style={{ color: 'var(--felora-silver-70)' }}>
-          Initialisation des données géographiques
-        </p>
+      <div className="relative z-10 h-full flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-white/10 border-t-pink-500 rounded-full animate-spin mx-auto mb-6" />
+          <h2 className="text-2xl md:text-3xl font-black tracking-tight mb-2 bg-gradient-to-r from-white via-white/90 to-white/80 bg-clip-text text-transparent">
+            Chargement de la carte
+          </h2>
+          <p className="text-white/60 text-sm md:text-base font-light">
+            Initialisation des données géographiques...
+          </p>
+        </div>
       </div>
     </div>
   )

@@ -215,9 +215,16 @@ export async function GET(request: NextRequest) {
 
     console.log('[API ESCORTS] WHERE clause built:', JSON.stringify(where, null, 2))
 
-    const orderBy = sort === 'recent'
-      ? { updatedAt: 'desc' as const }
-      : { updatedAt: 'desc' as const }
+    // Tri selon la logique de priorité :
+    // 1. Comptes actifs (availableNow = true) en premier
+    // 2. Comptes actifs mais hors heures (status = ACTIVE) ensuite
+    // 3. Comptes désactivés (status != ACTIVE) à la fin
+    // Puis par date de mise à jour pour chaque groupe
+    const orderBy: any = [
+      { availableNow: 'desc' as const },  // Les "disponibles maintenant" en premier
+      { status: 'desc' as const },         // Puis par statut (ACTIVE > autres)
+      { updatedAt: 'desc' as const }       // Enfin par date de mise à jour
+    ]
 
     console.log('[API ESCORTS] About to query database with limit:', limit, 'offset:', offset)
 
@@ -284,7 +291,7 @@ export async function GET(request: NextRequest) {
           dateOfBirth: true,
           status: true,
         },
-        orderBy: { updatedAt: 'desc' },
+        orderBy,
         take: limit, // Retour à la limite normale
         skip: offset
       })

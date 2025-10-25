@@ -115,11 +115,10 @@ export default function EscortCard2025({ escort, onLike, isLiked = false, priori
 
         {/* Contenu en bas */}
         <div className="absolute bottom-0 left-0 right-0 p-4">
-          {/* Nom et âge */}
+          {/* Nom */}
           <div className="mb-2">
-            <h3 className="text-white font-semibold text-lg leading-tight mb-1">
+            <h3 className="text-white font-bold text-lg leading-tight mb-1">
               {escort.stageName}
-              {escort.age && <span className="text-white/70 font-normal">, {escort.age} ans</span>}
             </h3>
             <div className="flex items-center gap-1 text-white/80 text-sm">
               <MapPin size={12} />
@@ -127,30 +126,12 @@ export default function EscortCard2025({ escort, onLike, isLiked = false, priori
             </div>
           </div>
 
-          {/* Stats et infos */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3 text-white/70 text-xs">
-              {escort.views && escort.views > 0 && (
-                <div className="flex items-center gap-1">
-                  <Eye size={12} />
-                  <span>{escort.views}</span>
-                </div>
-              )}
-              {escort.likes && escort.likes > 0 && (
-                <div className="flex items-center gap-1">
-                  <Heart size={12} />
-                  <span>{escort.likes}</span>
-                </div>
-              )}
+          {/* Badge médias privés */}
+          {(escort.hasPrivatePhotos || escort.hasPrivateVideos) && (
+            <div className="inline-flex px-2.5 py-1 rounded-full bg-gradient-to-r from-pink-500/20 to-purple-500/20 border border-pink-500/30">
+              <span className="text-xs font-medium text-white">🔒 Médias privés</span>
             </div>
-
-            {/* Prix */}
-            {escort.rate1H && (
-              <div className="text-white font-medium text-sm">
-                {escort.rate1H} CHF/h
-              </div>
-            )}
-          </div>
+          )}
         </div>
 
         {/* Effet de hover avec halo rose/violet */}
