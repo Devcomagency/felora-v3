@@ -119,206 +119,200 @@ export default function PublishMediaEditor({
         </div>
       </div>
 
-      {/* Contenu principal */}
-      <div className="relative z-10 h-[calc(100vh-73px)] overflow-y-auto">
-        <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
-          {/* Preview du média */}
-          <div
-            className="rounded-3xl overflow-hidden shadow-2xl transition-all duration-300"
-            style={{
-              background: 'linear-gradient(to bottom right, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03))',
-              backdropFilter: 'blur(20px)',
-              border: '1px solid rgba(255, 255, 255, 0.15)'
-            }}
-          >
-            <div className="aspect-square max-h-[60vh] bg-black/40">
-              {mediaType === 'video' ? (
-                <video
-                  src={mediaUrl}
-                  controls
-                  playsInline
-                  className="w-full h-full object-contain"
-                />
-              ) : (
-                <img
-                  src={mediaUrl}
-                  alt="Preview"
-                  className="w-full h-full object-contain"
-                />
-              )}
-            </div>
-          </div>
-
-          {/* Description */}
-          <div
-            className="rounded-2xl p-5 transition-all duration-300"
-            style={{
-              background: 'linear-gradient(to bottom right, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03))',
-              backdropFilter: 'blur(20px)',
-              border: '1px solid rgba(255, 255, 255, 0.15)'
-            }}
-          >
-            <label className="block text-white/80 text-sm font-medium mb-3">
-              Description
-            </label>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Racontez votre moment..."
-              rows={4}
-              disabled={isPublishing}
-              className="w-full px-4 py-4 rounded-xl text-white placeholder-white/40 resize-none transition-all border focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500/50 disabled:opacity-60"
+      {/* Contenu principal - Layout en 2 colonnes sur desktop */}
+      <div className="relative z-10 h-[calc(100vh-73px)] overflow-hidden">
+        <div className="h-full max-w-6xl mx-auto px-4 py-4">
+          <div className="h-full grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* Colonne gauche: Preview */}
+            <div
+              className="rounded-2xl overflow-hidden shadow-2xl h-full"
               style={{
-                background: 'linear-gradient(to bottom right, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02))',
+                background: 'linear-gradient(to bottom right, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03))',
                 backdropFilter: 'blur(20px)',
-                borderColor: 'rgba(255, 255, 255, 0.1)'
+                border: '1px solid rgba(255, 255, 255, 0.15)'
               }}
-            />
-          </div>
+            >
+              <div className="h-full bg-black/40 flex items-center justify-center">
+                {mediaType === 'video' ? (
+                  <video
+                    src={mediaUrl}
+                    controls
+                    playsInline
+                    className="w-full h-full object-contain"
+                  />
+                ) : (
+                  <img
+                    src={mediaUrl}
+                    alt="Preview"
+                    className="w-full h-full object-contain"
+                  />
+                )}
+              </div>
+            </div>
 
-          {/* Lieu */}
-          <div
-            className="rounded-2xl p-5 transition-all duration-300"
-            style={{
-              background: 'linear-gradient(to bottom right, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03))',
-              backdropFilter: 'blur(20px)',
-              border: '1px solid rgba(255, 255, 255, 0.15)'
-            }}
-          >
-            <label className="block text-white/80 text-sm font-medium mb-3">
-              Lieu (optionnel)
-            </label>
-            <div className="relative">
-              <input
-                type="text"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                placeholder="Genève, Suisse"
-                disabled={isPublishing}
-                className="w-full pl-12 pr-4 py-4 rounded-xl text-white placeholder-white/40 transition-all border focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500/50 disabled:opacity-60"
+            {/* Colonne droite: Formulaire */}
+            <div className="flex flex-col gap-3 overflow-y-auto pr-2">
+              {/* Description + Lieu dans une seule card */}
+              <div
+                className="rounded-2xl p-4"
                 style={{
-                  background: 'linear-gradient(to bottom right, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02))',
+                  background: 'linear-gradient(to bottom right, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03))',
                   backdropFilter: 'blur(20px)',
-                  borderColor: 'rgba(255, 255, 255, 0.1)'
+                  border: '1px solid rgba(255, 255, 255, 0.15)'
                 }}
-              />
-              <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40" size={20} />
-            </div>
-          </div>
+              >
+                {/* Description */}
+                <label className="block text-white/80 text-xs font-medium mb-2">
+                  Description
+                </label>
+                <textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Racontez votre moment..."
+                  rows={2}
+                  disabled={isPublishing}
+                  className="w-full px-3 py-2 rounded-xl text-white text-sm placeholder-white/40 resize-none transition-all border focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500/50 disabled:opacity-60 mb-3"
+                  style={{
+                    background: 'linear-gradient(to bottom right, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02))',
+                    backdropFilter: 'blur(20px)',
+                    borderColor: 'rgba(255, 255, 255, 0.1)'
+                  }}
+                />
 
-          {/* Visibilité */}
-          <div
-            className="rounded-2xl p-5 transition-all duration-300"
-            style={{
-              background: 'linear-gradient(to bottom right, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03))',
-              backdropFilter: 'blur(20px)',
-              border: '1px solid rgba(255, 255, 255, 0.15)'
-            }}
-          >
-            <label className="block text-white/80 text-sm font-medium mb-4">
-              Visibilité
-            </label>
-            <div className="space-y-3">
-              {visibilityOptions.map((option) => {
-                const Icon = option.icon
-                const isSelected = visibility === option.value
-
-                return (
-                  <button
-                    key={option.value}
-                    onClick={() => setVisibility(option.value)}
-                    disabled={isPublishing}
-                    className="w-full"
-                  >
-                    <div
-                      className={`p-4 rounded-xl transition-all duration-300 hover:scale-[1.02] ${
-                        isSelected ? 'ring-2 ring-pink-500/50' : ''
-                      }`}
-                      style={{
-                        background: isSelected
-                          ? 'linear-gradient(to bottom right, rgba(255, 107, 157, 0.15), rgba(183, 148, 246, 0.1))'
-                          : 'linear-gradient(to bottom right, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02))',
-                        backdropFilter: 'blur(20px)',
-                        border: isSelected
-                          ? '1px solid rgba(255, 107, 157, 0.3)'
-                          : '1px solid rgba(255, 255, 255, 0.1)'
-                      }}
-                    >
-                      <div className="flex items-center gap-4">
-                        <div
-                          className={`w-12 h-12 rounded-full flex items-center justify-center bg-gradient-to-r ${option.gradient}`}
-                        >
-                          <Icon size={20} className="text-white" />
-                        </div>
-                        <div className="flex-1 text-left">
-                          <div className="text-white font-semibold text-base">{option.label}</div>
-                          <div className="text-white/60 text-sm">{option.description}</div>
-                        </div>
-                        {isSelected && (
-                          <CheckCircle2 size={24} className="text-pink-500" />
-                        )}
-                      </div>
-                    </div>
-                  </button>
-                )
-              })}
-            </div>
-
-            {/* Prix si premium */}
-            {visibility === 'premium' && (
-              <div className="mt-4">
-                <label className="block text-white/80 text-sm font-medium mb-3">
-                  Prix (CHF)
+                {/* Lieu */}
+                <label className="block text-white/80 text-xs font-medium mb-2">
+                  Lieu (optionnel)
                 </label>
                 <div className="relative">
                   <input
-                    type="number"
-                    value={price}
-                    onChange={(e) => setPrice(e.target.value)}
-                    placeholder="9.99"
-                    step="0.01"
-                    min="0"
+                    type="text"
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
+                    placeholder="Genève, Suisse"
                     disabled={isPublishing}
-                    className="w-full px-4 py-4 rounded-xl text-white placeholder-white/40 transition-all border focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500/50 disabled:opacity-60"
+                    className="w-full pl-10 pr-3 py-2 rounded-xl text-white text-sm placeholder-white/40 transition-all border focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500/50 disabled:opacity-60"
                     style={{
                       background: 'linear-gradient(to bottom right, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02))',
                       backdropFilter: 'blur(20px)',
                       borderColor: 'rgba(255, 255, 255, 0.1)'
                     }}
                   />
-                  <div className="absolute right-4 top-1/2 -translate-y-1/2 text-white/60 font-medium pointer-events-none">
-                    CHF
-                  </div>
+                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" size={16} />
                 </div>
-                <p className="mt-2 text-xs text-white/60">
-                  Les utilisateurs devront payer pour accéder à ce contenu
-                </p>
               </div>
-            )}
+
+              {/* Visibilité */}
+              <div
+                className="rounded-2xl p-4"
+                style={{
+                  background: 'linear-gradient(to bottom right, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03))',
+                  backdropFilter: 'blur(20px)',
+                  border: '1px solid rgba(255, 255, 255, 0.15)'
+                }}
+              >
+                <label className="block text-white/80 text-xs font-medium mb-2">
+                  Visibilité
+                </label>
+                <div className="space-y-2">
+                  {visibilityOptions.map((option) => {
+                    const Icon = option.icon
+                    const isSelected = visibility === option.value
+
+                    return (
+                      <button
+                        key={option.value}
+                        onClick={() => setVisibility(option.value)}
+                        disabled={isPublishing}
+                        className="w-full"
+                      >
+                        <div
+                          className={`p-3 rounded-xl transition-all duration-300 ${
+                            isSelected ? 'ring-1 ring-pink-500/50' : ''
+                          }`}
+                          style={{
+                            background: isSelected
+                              ? 'linear-gradient(to bottom right, rgba(255, 107, 157, 0.15), rgba(183, 148, 246, 0.1))'
+                              : 'linear-gradient(to bottom right, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02))',
+                            backdropFilter: 'blur(20px)',
+                            border: isSelected
+                              ? '1px solid rgba(255, 107, 157, 0.3)'
+                              : '1px solid rgba(255, 255, 255, 0.1)'
+                          }}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div
+                              className={`w-10 h-10 rounded-full flex items-center justify-center bg-gradient-to-r ${option.gradient}`}
+                            >
+                              <Icon size={16} className="text-white" />
+                            </div>
+                            <div className="flex-1 text-left">
+                              <div className="text-white font-semibold text-sm">{option.label}</div>
+                              <div className="text-white/60 text-xs">{option.description}</div>
+                            </div>
+                            {isSelected && (
+                              <CheckCircle2 size={18} className="text-pink-500" />
+                            )}
+                          </div>
+                        </div>
+                      </button>
+                    )
+                  })}
+                </div>
+
+                {/* Prix si premium */}
+                {visibility === 'premium' && (
+                  <div className="mt-3">
+                    <label className="block text-white/80 text-xs font-medium mb-2">
+                      Prix (CHF)
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        value={price}
+                        onChange={(e) => setPrice(e.target.value)}
+                        placeholder="9.99"
+                        step="0.01"
+                        min="0"
+                        disabled={isPublishing}
+                        className="w-full px-3 py-2 rounded-xl text-white text-sm placeholder-white/40 transition-all border focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500/50 disabled:opacity-60"
+                        style={{
+                          background: 'linear-gradient(to bottom right, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02))',
+                          backdropFilter: 'blur(20px)',
+                          borderColor: 'rgba(255, 255, 255, 0.1)'
+                        }}
+                      />
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2 text-white/60 font-medium pointer-events-none text-xs">
+                        CHF
+                      </div>
+                    </div>
+                    <p className="mt-1 text-xs text-white/60">
+                      Les utilisateurs devront payer pour accéder à ce contenu
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Bouton Publier */}
+              <button
+                onClick={handlePublish}
+                disabled={isPublishing}
+                className="w-full py-3 rounded-xl font-bold text-white transition-all duration-300 hover:scale-105 disabled:opacity-60 disabled:hover:scale-100 shadow-lg"
+                style={{
+                  background: 'linear-gradient(to right, #FF6B9D, #B794F6)',
+                  boxShadow: '0 8px 24px rgba(255, 107, 157, 0.3)'
+                }}
+              >
+                {isPublishing ? (
+                  <div className="flex items-center justify-center gap-2">
+                    <Loader2 size={20} className="animate-spin" />
+                    <span>Publication en cours...</span>
+                  </div>
+                ) : (
+                  'Publier'
+                )}
+              </button>
+            </div>
           </div>
-
-          {/* Bouton Publier */}
-          <button
-            onClick={handlePublish}
-            disabled={isPublishing}
-            className="w-full py-4 rounded-xl font-bold text-white transition-all duration-300 hover:scale-105 disabled:opacity-60 disabled:hover:scale-100 shadow-lg"
-            style={{
-              background: 'linear-gradient(to right, #FF6B9D, #B794F6)',
-              boxShadow: '0 8px 24px rgba(255, 107, 157, 0.3)'
-            }}
-          >
-            {isPublishing ? (
-              <div className="flex items-center justify-center gap-2">
-                <Loader2 size={20} className="animate-spin" />
-                <span>Publication en cours...</span>
-              </div>
-            ) : (
-              'Publier'
-            )}
-          </button>
-
-          {/* Espace en bas pour éviter que le bouton soit caché */}
-          <div className="h-24" />
         </div>
       </div>
     </div>
