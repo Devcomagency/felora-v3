@@ -24,17 +24,29 @@ export class MediaStorage {
   async upload(file: File, folder: string = 'general'): Promise<UploadResult> {
     const provider = (process.env.STORAGE_PROVIDER || '').toLowerCase()
     
+    console.log('🔍 DEBUG storage.ts upload():', {
+      provider,
+      NODE_ENV: process.env.NODE_ENV,
+      isProduction: this.isProduction,
+      fileSize: file.size,
+      fileName: file.name,
+      fileType: file.type
+    })
+    
     // FORCE Base64 storage for reliability 
     if (provider === 'base64' || provider === '') {
+      console.log('📦 Storage: Using Base64 (provider:', provider, ')')
       return await this.uploadBase64(file, folder)
     }
     
     if (!this.isProduction || provider === 'local') {
+      console.log('📦 Storage: Using Local (isProduction:', this.isProduction, ', provider:', provider, ')')
       return await this.uploadLocal(file, folder)
     }
     
     // cloud providers (fallback)
     if (provider === 'cloudflare-r2') {
+      console.log('📦 Storage: Using Cloudflare R2 (provider:', provider, ')')
       return await this.uploadToCloud(file, folder)
     }
     
