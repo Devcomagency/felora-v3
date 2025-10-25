@@ -24,11 +24,27 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'publicUrl requis' }, { status: 400 })
     }
 
+    // VALIDATION CRITIQUE - Empêcher les URLs undefined
+    if (publicUrl.includes('undefined')) {
+      console.error('❌ ERREUR CRITIQUE confirm-upload: publicUrl contient undefined:', publicUrl)
+      return NextResponse.json({ 
+        success: false, 
+        error: 'URL publique invalide - contient undefined' 
+      }, { status: 400 })
+    }
+
     console.log('💾 Confirmation upload:', {
       userId: session.user.id,
       publicUrl,
       type,
       visibility
+    })
+
+    console.log('🔍 DEBUG confirm-upload publicUrl:', {
+      publicUrl,
+      containsUndefined: publicUrl.includes('undefined'),
+      length: publicUrl.length,
+      startsWith: publicUrl.substring(0, 20)
     })
 
     // Déterminer le type de profil (escort ou club)
