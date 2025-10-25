@@ -1,8 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { X, MapPin, Eye, EyeOff, Crown, Loader2, CheckCircle2 } from 'lucide-react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { X, MapPin, Eye, EyeOff, Crown, Loader2, CheckCircle2, Image as ImageIcon, Video as VideoIcon, ChevronLeft } from 'lucide-react'
 
 type VisibilityType = 'public' | 'private' | 'premium'
 
@@ -33,6 +32,7 @@ export default function PublishMediaEditor({
   const [price, setPrice] = useState('')
   const [isPublishing, setIsPublishing] = useState(false)
   const [publishSuccess, setPublishSuccess] = useState(false)
+  const [currentStep, setCurrentStep] = useState(0)
 
   const handlePublish = async () => {
     setIsPublishing(true)
@@ -54,266 +54,298 @@ export default function PublishMediaEditor({
     }
   }
 
+  const steps = [
+    { id: 'preview', title: 'Aperçu', icon: mediaType === 'video' ? VideoIcon : ImageIcon },
+    { id: 'description', title: 'Description', icon: Eye },
+    { id: 'visibility', title: 'Visibilité', icon: Shield },
+  ]
+
   const visibilityOptions = [
     {
       value: 'public' as const,
       icon: Eye,
-      gradient: 'from-pink-500 to-rose-500',
+      gradient: 'from-purple-500 to-pink-500',
       label: 'Public',
       description: 'Visible par tous'
     },
     {
       value: 'private' as const,
       icon: EyeOff,
-      gradient: 'from-purple-500 to-violet-500',
+      gradient: 'from-pink-500 to-rose-500',
       label: 'Privé',
       description: 'Abonnés uniquement'
     },
     {
       value: 'premium' as const,
       icon: Crown,
-      gradient: 'from-cyan-500 to-teal-500',
+      gradient: 'from-yellow-500 to-orange-500',
       label: 'Premium',
       description: 'Contenu payant'
     },
   ]
 
+  const nextStep = () => {
+    if (currentStep < 2) {
+      setCurrentStep(currentStep + 1)
+    } else {
+      handlePublish()
+    }
+  }
+
+  const prevStep = () => {
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1)
+    } else {
+      onClose()
+    }
+  }
+
   return (
-    <div className="fixed inset-0 z-50 bg-black text-white overflow-hidden">
+    <main className="relative min-h-screen bg-black text-white overflow-hidden">
       {/* Background Effects */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-pink-900/10 via-black to-black" />
+      <div className="absolute inset-0 bg-grid-white/[0.02]" />
       <div className="absolute top-1/4 -left-48 w-96 h-96 bg-pink-500/10 rounded-full blur-3xl animate-pulse" />
       <div className="absolute bottom-1/4 -right-48 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse delay-700" />
 
-      {/* Main Container */}
-      <div className="relative z-10 h-full max-w-2xl mx-auto flex flex-col">
-        {/* Header */}
-        <div
-          className="sticky top-0 z-20 backdrop-blur-xl border-b border-white/10"
-          style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.95), rgba(0,0,0,0.8))' }}
-        >
-          <div className="flex items-center justify-between p-4">
-            <button
-              onClick={onClose}
-              disabled={isPublishing}
-              className="w-10 h-10 rounded-full flex items-center justify-center transition-all hover:bg-white/10 disabled:opacity-50"
-            >
-              <X size={24} className="text-white" />
-            </button>
-
-            <h2 className="text-xl font-black tracking-tight bg-gradient-to-r from-white via-white/90 to-white/80 bg-clip-text text-transparent">
-              Publier
-            </h2>
-
-            <button
-              onClick={handlePublish}
-              disabled={isPublishing || publishSuccess}
-              className="px-5 py-2.5 rounded-full font-bold transition-all disabled:opacity-50 hover:scale-105"
-              style={{
-                background: isPublishing || publishSuccess
-                  ? 'linear-gradient(to bottom right, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02))'
-                  : 'linear-gradient(to right, #FF6B9D, #B794F6)',
-                boxShadow: '0 8px 24px rgba(255, 107, 157, 0.3)'
-              }}
-            >
-              {publishSuccess ? (
-                <CheckCircle2 size={20} />
-              ) : isPublishing ? (
-                <Loader2 size={20} className="animate-spin" />
-              ) : (
-                'Publier'
-              )}
-            </button>
-          </div>
-        </div>
-
-        {/* Content Area */}
-        <div className="flex-1 overflow-y-auto pb-safe">
-          <div className="p-4 sm:p-6 space-y-6">
-            {/* Preview Media */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.3 }}
-              className="relative rounded-3xl overflow-hidden shadow-2xl"
-              style={{
-                background: 'linear-gradient(to bottom right, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03))',
-                backdropFilter: 'blur(20px)',
-                border: '1px solid rgba(255, 255, 255, 0.15)'
-              }}
-            >
-              <div className="aspect-[9/16] sm:aspect-video">
+      {/* Content */}
+      <div className="relative z-10 container mx-auto px-4 py-8">
+        <div className="max-w-2xl mx-auto space-y-6">
+          {/* Header */}
+          <div className="text-center space-y-4">
+            <div className="flex items-center justify-center gap-3">
+              <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center">
                 {mediaType === 'video' ? (
-                  <video
-                    src={mediaUrl}
-                    controls
-                    playsInline
-                    className="w-full h-full object-cover"
-                  />
+                  <VideoIcon className="text-white" size={32} />
                 ) : (
-                  <img
-                    src={mediaUrl}
-                    alt="Preview"
-                    className="w-full h-full object-cover"
-                  />
+                  <ImageIcon className="text-white" size={32} />
                 )}
               </div>
-            </motion.div>
+            </div>
+            <div>
+              <h2 className="text-white text-2xl sm:text-3xl font-bold mb-2">
+                Publier votre {mediaType === 'video' ? 'vidéo' : 'photo'}
+              </h2>
+              <p className="text-white/70 text-base sm:text-lg max-w-md mx-auto leading-relaxed">
+                Ajoutez les détails et partagez votre contenu
+              </p>
+            </div>
+          </div>
 
-            {/* Description */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: 0.1 }}
-            >
-              <label className="block text-sm font-bold mb-2 text-white/80">
-                Description
-              </label>
-              <textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Racontez votre moment..."
-                rows={4}
-                className="w-full px-4 py-3 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-pink-500/50 transition-all placeholder-white/40 text-white"
-                style={{
-                  background: 'linear-gradient(to bottom right, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02))',
-                  backdropFilter: 'blur(20px)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)'
-                }}
-                disabled={isPublishing}
-              />
-            </motion.div>
+          {/* Progress indicator */}
+          <div className="flex items-center justify-center space-x-2 mb-8">
+            {steps.map((step, index) => {
+              const Icon = step.icon
+              const isActive = index === currentStep
+              const isCompleted = index < currentStep
 
-            {/* Location */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: 0.2 }}
-            >
-              <label className="flex items-center text-sm font-bold mb-2 text-white/80">
-                <MapPin size={16} className="mr-1.5" />
-                Lieu (optionnel)
-              </label>
-              <input
-                type="text"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                placeholder="Genève, Suisse"
-                className="w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500/50 transition-all placeholder-white/40 text-white"
-                style={{
-                  background: 'linear-gradient(to bottom right, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02))',
-                  backdropFilter: 'blur(20px)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)'
-                }}
-                disabled={isPublishing}
-              />
-            </motion.div>
+              return (
+                <div key={step.id} className="flex items-center">
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
+                    isCompleted ? 'bg-green-500' : isActive ? 'bg-purple-500' : 'bg-white/20'
+                  }`}>
+                    <Icon size={20} className={`${isCompleted || isActive ? 'text-white' : 'text-white/60'}`} />
+                  </div>
+                  {index < steps.length - 1 && (
+                    <div className={`w-8 h-0.5 mx-2 ${isCompleted ? 'bg-green-500' : 'bg-white/20'}`} />
+                  )}
+                </div>
+              )
+            })}
+          </div>
 
-            {/* Visibility */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: 0.3 }}
-            >
-              <label className="block text-sm font-bold mb-3 text-white/80">
-                Visibilité du contenu
-              </label>
-              <div className="grid grid-cols-3 gap-2 sm:gap-3">
-                {visibilityOptions.map((option) => {
-                  const Icon = option.icon
-                  const isSelected = visibility === option.value
-                  return (
-                    <button
-                      key={option.value}
-                      onClick={() => setVisibility(option.value)}
-                      disabled={isPublishing}
-                      className="relative p-3 sm:p-4 rounded-xl transition-all hover:scale-105 disabled:opacity-50"
-                      style={{
-                        background: isSelected
-                          ? 'linear-gradient(to bottom right, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05))'
-                          : 'linear-gradient(to bottom right, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02))',
-                        backdropFilter: 'blur(20px)',
-                        border: isSelected ? '2px solid' : '1px solid rgba(255, 255, 255, 0.1)',
-                        borderImage: isSelected ? `linear-gradient(135deg, ${option.gradient === 'from-pink-500 to-rose-500' ? '#FF6B9D, #FF6B9D' : option.gradient === 'from-purple-500 to-violet-500' ? '#B794F6, #B794F6' : '#4FD1C7, #4FD1C7'}) 1` : undefined
-                      }}
-                    >
-                      <div className={`mx-auto mb-1.5 sm:mb-2 w-fit p-2 rounded-full bg-gradient-to-r ${option.gradient}`}>
-                        <Icon size={18} className="text-white" />
-                      </div>
-                      <div className="text-xs sm:text-sm font-bold text-white">{option.label}</div>
-                      <div className="text-[10px] sm:text-xs text-white/60 mt-0.5">{option.description}</div>
-                    </button>
-                  )
-                })}
+          {/* Step content */}
+          <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
+            {/* Step 0: Preview */}
+            {currentStep === 0 && (
+              <div className="space-y-6">
+                <div className="text-center">
+                  <h3 className="text-white text-xl font-semibold mb-2">Aperçu du média</h3>
+                  <p className="text-white/70 text-sm">
+                    Vérifiez que votre {mediaType === 'video' ? 'vidéo' : 'photo'} est bien cadrée
+                  </p>
+                </div>
+
+                <div className="relative rounded-xl overflow-hidden bg-black/40">
+                  <div className="aspect-video max-h-[400px]">
+                    {mediaType === 'video' ? (
+                      <video
+                        src={mediaUrl}
+                        controls
+                        playsInline
+                        className="w-full h-full object-contain"
+                      />
+                    ) : (
+                      <img
+                        src={mediaUrl}
+                        alt="Preview"
+                        className="w-full h-full object-contain"
+                      />
+                    )}
+                  </div>
+                </div>
               </div>
-            </motion.div>
+            )}
 
-            {/* Price (si premium) */}
-            <AnimatePresence>
-              {visibility === 'premium' && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <label className="block text-sm font-bold mb-2 text-white/80">
-                    Prix (CHF)
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="number"
-                      value={price}
-                      onChange={(e) => setPrice(e.target.value)}
-                      placeholder="9.99"
-                      step="0.01"
-                      min="0"
-                      className="w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all placeholder-white/40 text-white"
-                      style={{
-                        background: 'linear-gradient(to bottom right, rgba(79, 209, 199, 0.1), rgba(79, 209, 199, 0.05))',
-                        backdropFilter: 'blur(20px)',
-                        border: '1px solid rgba(79, 209, 199, 0.3)'
-                      }}
-                      disabled={isPublishing}
+            {/* Step 1: Description */}
+            {currentStep === 1 && (
+              <div className="space-y-6">
+                <div className="text-center">
+                  <h3 className="text-white text-xl font-semibold mb-2">Description et lieu</h3>
+                  <p className="text-white/70 text-sm">
+                    Ajoutez une description pour attirer l'attention
+                  </p>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-white/80 text-sm font-medium mb-2">Description</label>
+                    <textarea
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      placeholder="Racontez votre moment..."
+                      rows={5}
+                      className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-4 text-white placeholder-white/50 text-base resize-none focus:outline-none focus:ring-2 focus:ring-purple-500/50"
                     />
-                    <div className="absolute right-4 top-1/2 -translate-y-1/2 text-white/60 font-medium pointer-events-none">
-                      CHF
+                  </div>
+
+                  <div>
+                    <label className="block text-white/80 text-sm font-medium mb-2">Lieu (optionnel)</label>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={location}
+                        onChange={(e) => setLocation(e.target.value)}
+                        placeholder="Genève, Suisse"
+                        className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-4 text-white placeholder-white/50 text-base focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                      />
+                      <MapPin className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white/40" size={20} />
                     </div>
                   </div>
-                  <p className="mt-2 text-xs text-white/60">
-                    Les utilisateurs devront payer pour accéder à ce contenu
+                </div>
+              </div>
+            )}
+
+            {/* Step 2: Visibility */}
+            {currentStep === 2 && (
+              <div className="space-y-6">
+                <div className="text-center">
+                  <h3 className="text-white text-xl font-semibold mb-2">Visibilité du contenu</h3>
+                  <p className="text-white/70 text-sm">
+                    Choisissez qui peut voir votre contenu
                   </p>
-                </motion.div>
+                </div>
+
+                <div className="space-y-3">
+                  {visibilityOptions.map((option) => {
+                    const Icon = option.icon
+                    const isSelected = visibility === option.value
+
+                    return (
+                      <button
+                        key={option.value}
+                        onClick={() => setVisibility(option.value)}
+                        disabled={isPublishing}
+                        className={`w-full p-4 rounded-xl border-2 transition-all text-left ${
+                          isSelected
+                            ? 'bg-white/10 border-purple-500'
+                            : 'bg-white/5 border-white/10 hover:bg-white/10'
+                        }`}
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className={`w-12 h-12 rounded-full flex items-center justify-center bg-gradient-to-r ${option.gradient}`}>
+                            <Icon size={24} className="text-white" />
+                          </div>
+                          <div className="flex-1">
+                            <div className="text-white font-semibold text-base">{option.label}</div>
+                            <div className="text-white/60 text-sm">{option.description}</div>
+                          </div>
+                          {isSelected && (
+                            <CheckCircle2 size={24} className="text-purple-500" />
+                          )}
+                        </div>
+                      </button>
+                    )
+                  })}
+                </div>
+
+                {/* Price (si premium) */}
+                {visibility === 'premium' && (
+                  <div className="mt-6">
+                    <label className="block text-white/80 text-sm font-medium mb-2">Prix (CHF)</label>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        value={price}
+                        onChange={(e) => setPrice(e.target.value)}
+                        placeholder="9.99"
+                        step="0.01"
+                        min="0"
+                        className="w-full bg-white/10 border border-yellow-500/40 rounded-xl px-4 py-4 text-white placeholder-white/50 text-base focus:outline-none focus:ring-2 focus:ring-yellow-500/50"
+                      />
+                      <div className="absolute right-4 top-1/2 -translate-y-1/2 text-white/60 font-medium pointer-events-none">
+                        CHF
+                      </div>
+                    </div>
+                    <p className="mt-2 text-xs text-white/60">
+                      Les utilisateurs devront payer pour accéder à ce contenu
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Navigation buttons */}
+          <div className="flex gap-3">
+            <button
+              onClick={prevStep}
+              disabled={isPublishing}
+              className="flex-1 py-4 bg-white/10 hover:bg-white/20 text-white rounded-xl font-medium transition-all disabled:opacity-60 flex items-center justify-center gap-2"
+            >
+              <ChevronLeft size={20} />
+              {currentStep === 0 ? 'Annuler' : 'Retour'}
+            </button>
+            <button
+              onClick={nextStep}
+              disabled={isPublishing}
+              className="flex-1 py-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-medium disabled:opacity-60 flex items-center justify-center gap-2 hover:shadow-lg transition-all"
+            >
+              {isPublishing ? (
+                <>
+                  <Loader2 size={20} className="animate-spin" />
+                  Publication...
+                </>
+              ) : currentStep === 2 ? (
+                'Publier'
+              ) : (
+                'Continuer'
               )}
-            </AnimatePresence>
+            </button>
           </div>
         </div>
       </div>
 
       {/* Success overlay */}
-      <AnimatePresence>
-        {publishSuccess && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-xl"
-          >
-            <motion.div
-              initial={{ scale: 0.5, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ type: "spring", duration: 0.5 }}
-              className="text-center"
-            >
-              <div className="w-24 h-24 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-4 border-2 border-green-500/50">
-                <CheckCircle2 size={56} className="text-green-400" />
-              </div>
-              <p className="text-2xl font-black text-white mb-2">Publication réussie !</p>
-              <p className="text-white/60">Redirection en cours...</p>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+      {publishSuccess && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-xl">
+          <div className="text-center">
+            <div className="w-24 h-24 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-4 border-2 border-green-500/50">
+              <CheckCircle2 size={56} className="text-green-400" />
+            </div>
+            <p className="text-2xl font-bold text-white mb-2">Publication réussie !</p>
+            <p className="text-white/60">Redirection en cours...</p>
+          </div>
+        </div>
+      )}
+    </main>
+  )
+}
+
+function Shield(props: any) {
+  return (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+    </svg>
   )
 }
