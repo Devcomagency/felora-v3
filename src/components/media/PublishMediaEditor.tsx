@@ -120,9 +120,9 @@ export default function PublishMediaEditor({
         </div>
       </div>
 
-      {/* Contenu principal - Une seule colonne centrée */}
-      <div className="relative z-10 h-[calc(100vh-73px)] overflow-hidden">
-        <div className="h-full max-w-2xl mx-auto px-4 py-4 flex flex-col gap-3">
+      {/* Contenu principal - Une seule colonne centrée avec scroll si nécessaire */}
+      <div className="relative z-10 h-[calc(100vh-73px)] overflow-y-auto">
+        <div className="max-w-2xl mx-auto px-4 py-4 flex flex-col gap-3 pb-24">
           {/* Preview miniature cliquable */}
           <button
             onClick={() => setShowFullPreview(true)}
@@ -134,7 +134,7 @@ export default function PublishMediaEditor({
               border: '1px solid rgba(255, 255, 255, 0.15)'
             }}
           >
-            <div className="aspect-video max-h-[200px] bg-black/40 flex items-center justify-center">
+            <div className="aspect-video max-h-[150px] bg-black/40 flex items-center justify-center">
               {mediaType === 'video' ? (
                 <video
                   src={mediaUrl}
@@ -157,7 +157,7 @@ export default function PublishMediaEditor({
 
           {/* Description */}
           <div
-            className="rounded-2xl p-4"
+            className="rounded-2xl p-3"
             style={{
               background: 'linear-gradient(to bottom right, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03))',
               backdropFilter: 'blur(20px)',
@@ -171,7 +171,7 @@ export default function PublishMediaEditor({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Racontez votre moment..."
-              rows={3}
+              rows={2}
               disabled={isPublishing}
               className="w-full px-3 py-2 rounded-xl text-white text-sm placeholder-white/40 resize-none transition-all border focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500/50 disabled:opacity-60"
               style={{
@@ -184,7 +184,7 @@ export default function PublishMediaEditor({
 
           {/* Visibilité */}
           <div
-            className="rounded-2xl p-4"
+            className="rounded-2xl p-3"
             style={{
               background: 'linear-gradient(to bottom right, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03))',
               backdropFilter: 'blur(20px)',
@@ -207,7 +207,7 @@ export default function PublishMediaEditor({
                     className="w-full"
                   >
                     <div
-                      className={`p-3 rounded-xl transition-all duration-300 ${
+                      className={`p-2 rounded-xl transition-all duration-300 ${
                         isSelected ? 'ring-1 ring-pink-500/50' : ''
                       }`}
                       style={{
@@ -220,18 +220,18 @@ export default function PublishMediaEditor({
                           : '1px solid rgba(255, 255, 255, 0.1)'
                       }}
                     >
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2">
                         <div
-                          className={`w-10 h-10 rounded-full flex items-center justify-center bg-gradient-to-r ${option.gradient}`}
+                          className={`w-8 h-8 rounded-full flex items-center justify-center bg-gradient-to-r ${option.gradient}`}
                         >
-                          <Icon size={16} className="text-white" />
+                          <Icon size={14} className="text-white" />
                         </div>
                         <div className="flex-1 text-left">
-                          <div className="text-white font-semibold text-sm">{option.label}</div>
-                          <div className="text-white/60 text-xs">{option.description}</div>
+                          <div className="text-white font-semibold text-xs">{option.label}</div>
+                          <div className="text-white/60 text-[10px]">{option.description}</div>
                         </div>
                         {isSelected && (
-                          <CheckCircle2 size={18} className="text-pink-500" />
+                          <CheckCircle2 size={16} className="text-pink-500" />
                         )}
                       </div>
                     </div>
@@ -242,8 +242,8 @@ export default function PublishMediaEditor({
 
             {/* Prix si premium */}
             {visibility === 'premium' && (
-              <div className="mt-3">
-                <label className="block text-white/80 text-xs font-medium mb-2">
+              <div className="mt-2">
+                <label className="block text-white/80 text-xs font-medium mb-1">
                   Prix (CHF)
                 </label>
                 <div className="relative">
@@ -266,9 +266,6 @@ export default function PublishMediaEditor({
                     CHF
                   </div>
                 </div>
-                <p className="mt-1 text-xs text-white/60">
-                  Les utilisateurs devront payer pour accéder à ce contenu
-                </p>
               </div>
             )}
           </div>
