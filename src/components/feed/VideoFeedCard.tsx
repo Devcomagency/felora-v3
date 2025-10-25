@@ -148,7 +148,7 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
   
   // États pour l'optimisation vidéo
   const [isInView, setIsInView] = useState(false)
-  const [shouldLoadVideo, setShouldLoadVideo] = useState(false)
+  const [shouldLoadVideo, setShouldLoadVideo] = useState(true) // PRÉCHARGER IMMÉDIATEMENT
 
   // Hooks
   const { handleIntersectingChange, togglePlayPause, currentVideo, isMute } = useVideoIntersection()
@@ -327,7 +327,8 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
 
   return (
     <InView
-      threshold={0.1}
+      threshold={0.0}
+      rootMargin="200px"
       onChange={onIntersectingChange}
       style={{
         scrollSnapStop: 'always',
@@ -343,7 +344,7 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
       >
       {/* Vidéo Background */}
       <div className="absolute inset-0">
-        {shouldLoadVideo || isInView ? (
+        {shouldLoadVideo ? (
           <video
             aria-label="Lire/Pause média"
             ref={videoRef}
@@ -360,7 +361,7 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
             loop
             muted
             playsInline
-            preload="metadata"
+            preload="auto"
             poster={item.thumb}
             onClick={handleVideoClick}
             onLoadStart={() => console.log('🎬 Vidéo en cours de chargement...')}

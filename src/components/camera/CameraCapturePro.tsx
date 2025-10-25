@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from 'react'
 interface CameraProProps {
   onCapture?: (file: File) => void
   onClose?: () => void
-  mode?: 'photo' | 'video'
+  mode?: 'photo' | 'video' | 'upload'
 }
 
 /**
@@ -25,8 +25,21 @@ export default function CameraCapturePro({ onCapture, onClose, mode }: CameraPro
 
       const input = document.createElement('input')
       input.type = 'file'
-      input.accept = mode === 'video' ? 'video/*' : 'image/*'
-      input.capture = 'environment'
+
+      // Définir le type de fichier accepté
+      if (mode === 'video') {
+        input.accept = 'video/*'
+      } else if (mode === 'photo') {
+        input.accept = 'image/*'
+      } else if (mode === 'upload') {
+        input.accept = 'image/*,video/*'
+      }
+
+      // Utiliser capture="environment" seulement pour photo/video (pas pour upload)
+      if (mode === 'photo' || mode === 'video') {
+        input.capture = 'environment'
+      }
+
       input.onchange = (e: any) => {
         const file = e.target.files?.[0]
         if (file) {

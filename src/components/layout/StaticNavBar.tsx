@@ -139,20 +139,7 @@ export default function StaticNavBar() {
         onClick: () => {
           // Sur desktop : ouvrir directement l'upload
           if (!isMobile) {
-            const input = document.createElement('input')
-            input.type = 'file'
-            input.accept = 'image/*,video/*'
-            input.onchange = (e: any) => {
-              const file = e.target.files?.[0]
-              if (file) {
-                const url = URL.createObjectURL(file)
-                sessionStorage.setItem('upload-file-url', url)
-                sessionStorage.setItem('upload-file-name', file.name)
-                sessionStorage.setItem('upload-file-type', file.type)
-                router.push('/camera?mode=upload')
-              }
-            }
-            input.click()
+            router.push('/camera?mode=upload')
           } else {
             // Sur mobile : afficher le menu avec les 3 options
             setShowCreateMenu(!showCreateMenu)
@@ -292,22 +279,9 @@ export default function StaticNavBar() {
                   transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.1 }}
                   onClick={() => {
                     setShowCreateMenu(false)
-                    const input = document.createElement('input')
-                    input.type = 'file'
-                    input.accept = 'image/*,video/*'
-                    input.onchange = (e: any) => {
-                      const file = e.target.files?.[0]
-                      if (file) {
-                        const url = URL.createObjectURL(file)
-                        sessionStorage.setItem('upload-file-url', url)
-                        sessionStorage.setItem('upload-file-name', file.name)
-                        sessionStorage.setItem('upload-file-type', file.type)
-                        router.push('/camera?mode=upload')
-                      }
-                    }
-                    input.click()
+                    router.push('/camera?mode=upload')
                   }}
-                  className="absolute w-16 h-16 rounded-full bg-gradient-to-br from-gray-600 to-gray-700 flex items-center justify-center shadow-lg hover:shadow-xl hover:scale-110 transition-all"
+                  className="absolute w-16 h-16 rounded-full bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center shadow-lg hover:shadow-xl hover:scale-110 transition-all"
                 >
                   <Upload size={28} className="text-white" />
                 </motion.button>
