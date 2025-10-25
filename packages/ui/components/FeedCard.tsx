@@ -20,6 +20,7 @@ export default function FeedCard({ item, onLike, onMessage, onShare }: FeedCardP
             loop
             muted
             playsInline
+            preload="none"
             poster={item.thumb}
           >
             <source src={item.url} type="video/mp4" />

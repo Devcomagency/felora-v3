@@ -929,7 +929,8 @@ export default function ProfileClient({ profile: initialProfile }: ProfileClient
                         }`}
                         muted
                         playsInline
-                        preload="metadata"
+                        preload="none"
+                        poster={content.thumb}
                       />
                       {/* Overlay Play Button */}
                       <div className="absolute inset-0 flex items-center justify-center">

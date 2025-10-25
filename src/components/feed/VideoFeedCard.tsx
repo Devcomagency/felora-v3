@@ -145,6 +145,10 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
   const [showMediaMenu, setShowMediaMenu] = useState(false)
   const [isManaging, setIsManaging] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  
+  // États pour l'optimisation vidéo
+  const [isInView, setIsInView] = useState(false)
+  const [shouldLoadVideo, setShouldLoadVideo] = useState(false)
 
   // Hooks
   const { handleIntersectingChange, togglePlayPause, currentVideo, isMute } = useVideoIntersection()
@@ -225,14 +229,21 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
   // Gestionnaire de clic unifié
   const handleVideoClick = useClickHandler(handleSingleClick, handleDoubleClick)
 
-  // Gestion de l'intersection
+  // Gestion de l'intersection avec chargement intelligent
   const onIntersectingChange = useCallback((inView: boolean) => {
+    setIsInView(inView)
     handleIntersectingChange({ id: item.id, inView, videoRef })
+    
     if (inView && !trackedRef.current) {
       trackedRef.current = true
       try { (window as any)?.umami?.track?.('media_view', { mediaId }) } catch {}
     }
-  }, [handleIntersectingChange, item.id, mediaId, videoRef])
+    
+    // Charger la vidéo seulement quand elle est visible
+    if (inView && !shouldLoadVideo) {
+      setShouldLoadVideo(true)
+    }
+  }, [handleIntersectingChange, item.id, mediaId, videoRef, shouldLoadVideo])
 
   // Actions
   const onReact = useCallback((emoji: string) => {
@@ -332,7 +343,7 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
       >
       {/* Vidéo Background */}
       <div className="absolute inset-0">
-        {shouldShowVideo ? (
+        {shouldLoadVideo ? (
           <video
             aria-label="Lire/Pause média"
             ref={videoRef}
@@ -349,9 +360,12 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
             loop
             muted
             playsInline
-            preload="metadata"
+            preload="none"
             poster={item.thumb}
             onClick={handleVideoClick}
+            onLoadStart={() => console.log('🎬 Vidéo en cours de chargement...')}
+            onCanPlay={() => console.log('✅ Vidéo prête à être lue')}
+            onError={(e) => console.error('❌ Erreur vidéo:', e)}
           >
             <source src={item.url} type="video/mp4" />
           </video>
