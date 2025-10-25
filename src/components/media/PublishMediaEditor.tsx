@@ -59,6 +59,8 @@ export default function PublishMediaEditor({
       value: 'public' as const,
       icon: Eye,
       gradient: 'from-purple-500 to-pink-500',
+      accentColor: '#B794F6',
+      bgGradient: 'from-purple-500/10 via-pink-500/5 to-transparent',
       label: 'Public',
       description: 'Visible par tous'
     },
@@ -66,6 +68,8 @@ export default function PublishMediaEditor({
       value: 'private' as const,
       icon: EyeOff,
       gradient: 'from-pink-500 to-rose-500',
+      accentColor: '#EC4899',
+      bgGradient: 'from-pink-500/10 via-rose-500/5 to-transparent',
       label: 'Privé',
       description: 'Vous seulement'
     },
@@ -73,6 +77,8 @@ export default function PublishMediaEditor({
       value: 'premium' as const,
       icon: Crown,
       gradient: 'from-yellow-500 to-orange-500',
+      accentColor: '#F59E0B',
+      bgGradient: 'from-yellow-500/10 via-orange-500/5 to-transparent',
       label: 'Premium',
       description: 'Contenu payant'
     },
@@ -204,36 +210,51 @@ export default function PublishMediaEditor({
                     key={option.value}
                     onClick={() => setVisibility(option.value)}
                     disabled={isPublishing}
-                    className="w-full"
+                    className={`group w-full rounded-xl border transition-all duration-500 ${
+                      isSelected
+                        ? 'border-white/30 shadow-xl scale-[1.02]'
+                        : 'border-white/10 hover:border-white/20'
+                    }`}
+                    style={{
+                      background: isSelected
+                        ? `linear-gradient(135deg, ${option.accentColor}15 0%, rgba(0,0,0,0.8) 100%)`
+                        : 'rgba(255,255,255,0.03)'
+                    }}
                   >
-                    <div
-                      className={`p-2 rounded-xl transition-all duration-300 ${
-                        isSelected ? 'ring-1 ring-pink-500/50' : ''
-                      }`}
-                      style={{
-                        background: isSelected
-                          ? 'linear-gradient(to bottom right, rgba(255, 107, 157, 0.15), rgba(183, 148, 246, 0.1))'
-                          : 'linear-gradient(to bottom right, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02))',
-                        backdropFilter: 'blur(20px)',
-                        border: isSelected
-                          ? '1px solid rgba(255, 107, 157, 0.3)'
-                          : '1px solid rgba(255, 255, 255, 0.1)'
-                      }}
-                    >
-                      <div className="flex items-center gap-2">
+                    {/* Gradient overlay on hover */}
+                    <div className={`absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-br ${option.bgGradient}`} />
+
+                    <div className="relative p-3 flex items-center gap-3">
+                      {/* Icon Box - même style que register */}
+                      <div className="shrink-0">
                         <div
-                          className={`w-8 h-8 rounded-full flex items-center justify-center bg-gradient-to-r ${option.gradient}`}
+                          className="inline-flex p-2.5 rounded-xl border shadow-lg transition-transform group-hover:scale-110 duration-500"
+                          style={{
+                            background: `linear-gradient(to bottom right, ${option.accentColor}20, ${option.accentColor}15)`,
+                            borderColor: `${option.accentColor}30`,
+                            boxShadow: `0 4px 12px ${option.accentColor}10`
+                          }}
                         >
-                          <Icon size={14} className="text-white" />
+                          <Icon className="w-5 h-5" style={{ color: option.accentColor }} strokeWidth={2} />
                         </div>
-                        <div className="flex-1 text-left">
-                          <div className="text-white font-semibold text-xs">{option.label}</div>
-                          <div className="text-white/60 text-[10px]">{option.description}</div>
-                        </div>
-                        {isSelected && (
-                          <CheckCircle2 size={16} className="text-pink-500" />
-                        )}
                       </div>
+
+                      {/* Content */}
+                      <div className="flex-1 text-left">
+                        <div className="text-white font-semibold text-sm group-hover:text-white transition-colors">
+                          {option.label}
+                        </div>
+                        <div className="text-white/50 text-xs group-hover:text-white/70 transition-colors">
+                          {option.description}
+                        </div>
+                      </div>
+
+                      {/* Checkmark */}
+                      {isSelected && (
+                        <div className="shrink-0">
+                          <CheckCircle2 size={20} style={{ color: option.accentColor }} />
+                        </div>
+                      )}
                     </div>
                   </button>
                 )
