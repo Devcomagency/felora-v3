@@ -179,7 +179,19 @@ export class MediaStorage {
       const publicUrl = process.env.CLOUDFLARE_R2_PUBLIC_URL ||
                         process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL ||
                         'https://media.felora.ch'
+      
+      // VALIDATION CRITIQUE - Empêcher les URLs undefined
+      if (!publicUrl || publicUrl === 'undefined' || publicUrl.includes('undefined')) {
+        console.error('❌ ERREUR CRITIQUE storage.ts: publicUrl invalide:', publicUrl)
+        throw new Error('Configuration CDN invalide - publicUrl undefined')
+      }
+      
       const cdnUrl = `${publicUrl}/${key}`
+
+      if (cdnUrl.includes('undefined')) {
+        console.error('❌ ERREUR CRITIQUE storage.ts: cdnUrl contient undefined:', cdnUrl)
+        throw new Error('URL CDN invalide générée')
+      }
 
       console.log('✅ R2 upload success:', { key, cdnUrl })
       return { url: cdnUrl, success: true, key }
