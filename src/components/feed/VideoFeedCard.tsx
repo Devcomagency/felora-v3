@@ -239,10 +239,10 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
       try { (window as any)?.umami?.track?.('media_view', { mediaId }) } catch {}
     }
     
-    // Charger la vidéo seulement quand elle est visible et que l'URL est valide
-    if (inView && !shouldLoadVideo && item.url && !item.url.includes('undefined')) {
-      setShouldLoadVideo(true)
-    }
+        // Charger la vidéo immédiatement quand elle est visible
+        if (inView && !shouldLoadVideo) {
+          setShouldLoadVideo(true)
+        }
   }, [handleIntersectingChange, item.id, mediaId, videoRef, shouldLoadVideo, item.url])
 
   // Actions
@@ -327,7 +327,7 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
 
   return (
     <InView
-      threshold={0.5}
+      threshold={0.1}
       onChange={onIntersectingChange}
       style={{
         scrollSnapStop: 'always',
@@ -343,7 +343,7 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
       >
       {/* Vidéo Background */}
       <div className="absolute inset-0">
-        {shouldLoadVideo ? (
+        {shouldLoadVideo || isInView ? (
           <video
             aria-label="Lire/Pause média"
             ref={videoRef}
@@ -360,7 +360,7 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
             loop
             muted
             playsInline
-            preload="none"
+            preload="metadata"
             poster={item.thumb}
             onClick={handleVideoClick}
             onLoadStart={() => console.log('🎬 Vidéo en cours de chargement...')}
@@ -381,25 +381,22 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
           </video>
         ) : (
           <div 
-            className="w-full h-full cursor-pointer flex items-center justify-center"
+            className="w-full h-full cursor-pointer flex items-center justify-center bg-black"
             style={{ 
-              backgroundImage: item.url && !item.url.includes('undefined') ? `url(${item.url})` : 'none',
+              backgroundImage: item.thumb ? `url(${item.thumb})` : 'none',
               backgroundColor: '#1a1a1a',
               backgroundSize: 'cover',
               backgroundPosition: 'center center',
               backgroundRepeat: 'no-repeat',
-              // Optimisation pour éviter les déformations
               minWidth: '100%',
               minHeight: '100%'
             }}
             onClick={handleVideoClick}
           >
-            {(!item.url || item.url.includes('undefined')) && (
-              <div className="text-center text-white/60">
-                <div className="text-4xl mb-2">🎬</div>
-                <div className="text-sm">Vidéo non disponible</div>
-              </div>
-            )}
+            <div className="text-center text-white/60">
+              <div className="text-4xl mb-2">🎬</div>
+              <div className="text-sm">Chargement...</div>
+            </div>
           </div>
         )}
         
