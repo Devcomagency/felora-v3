@@ -82,6 +82,14 @@ export async function POST(request: NextRequest) {
     const baseUrl = process.env.CLOUDFLARE_R2_PUBLIC_URL || process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL || 'https://media.felora.ch'
     const publicUrl = `${baseUrl}/${key}`
 
+    console.log('🔍 DEBUG URL génération:', {
+      CLOUDFLARE_R2_PUBLIC_URL: process.env.CLOUDFLARE_R2_PUBLIC_URL,
+      NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL: process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL,
+      baseUrl,
+      key,
+      publicUrl
+    })
+
     console.log('✅ Fichier uploadé sur R2:', publicUrl)
 
     // Déterminer le type de profil (escort ou club)
