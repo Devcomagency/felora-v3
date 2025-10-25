@@ -134,19 +134,19 @@ export default function PublishMediaEditor({
               border: '1px solid rgba(255, 255, 255, 0.15)'
             }}
           >
-            <div className="aspect-video max-h-[150px] bg-black/40 flex items-center justify-center">
+            <div className="h-[150px] bg-black/40 flex items-center justify-center">
               {mediaType === 'video' ? (
                 <video
                   src={mediaUrl}
                   playsInline
                   muted
-                  className="w-full h-full object-contain pointer-events-none"
+                  className="max-w-full max-h-full object-contain pointer-events-none"
                 />
               ) : (
                 <img
                   src={mediaUrl}
                   alt="Preview"
-                  className="w-full h-full object-contain"
+                  className="max-w-full max-h-full object-contain"
                 />
               )}
               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all flex items-center justify-center">
