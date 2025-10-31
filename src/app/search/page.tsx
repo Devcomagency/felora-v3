@@ -1,20 +1,13 @@
 'use client'
 
-import React, { useState, Suspense, useRef, useEffect, useCallback, useMemo } from 'react'
+import React, { useState, Suspense, useRef, useEffect, useCallback } from 'react'
 import '@/styles/scrollbar.css'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
-import { 
-  Search, 
-  SlidersHorizontal, 
-  MapPin, 
-  Plus,
-  Home,
-  MessageSquare,
-  User,
-  Heart,
-  Star,
-  Clock
+import {
+  Search,
+  SlidersHorizontal,
+  MapPin
 } from 'lucide-react'
 import { useSearch } from '@/hooks/useSearch'
 import { useClubs } from '@/hooks/useClubs'
@@ -23,36 +16,6 @@ import { useDebounce } from '@/hooks/useDebounce'
 import EscortCard2025 from '@/components/search/EscortCard2025'
 import ClubCard from '@/components/search/ClubCard'
 import SearchFiltersSimple from '@/components/search/SearchFiltersSimple'
-
-// Interface pour les escortes
-interface Escort {
-  id: string
-  stageName: string
-  age?: number
-  city?: string
-  canton?: string
-  isVerifiedBadge?: boolean
-  isActive?: boolean
-  profilePhoto?: string
-  heroMedia?: { type: 'IMAGE'|'VIDEO'; url: string; thumb?: string }
-  languages?: string[]
-  services?: string[]
-  rate1H?: number
-  rate2H?: number
-  rateOvernight?: number
-  availableNow?: boolean
-  outcall?: boolean
-  incall?: boolean
-  hasPrivatePhotos?: boolean
-  hasPrivateVideos?: boolean
-  hasWebcamLive?: boolean
-  rating?: number
-  reviewCount?: number
-  views?: number
-  likes?: number
-  status?: string
-  updatedAt: string
-}
 
 // Skeleton components
 function EscortCardSkeleton() {
@@ -74,7 +37,7 @@ function ClubCardSkeleton() {
 // Composant principal de recherche
 function SearchContent() {
   const router = useRouter()
-  const { data: session, status } = useSession()
+  const { status } = useSession()
   const isAuthenticated = status === "authenticated"
 
   // États pour les escortes
@@ -86,8 +49,7 @@ function SearchContent() {
     total: escortsTotal,
     filters: escortsFilters,
     setFilters: setEscortsFilters,
-    loadMore: loadMoreEscorts,
-    refresh: refreshEscorts
+    loadMore: loadMoreEscorts
   } = useSearch()
 
   // États pour les clubs
@@ -99,8 +61,7 @@ function SearchContent() {
     total: clubsTotal,
     filters: clubsFilters,
     setFilters: setClubsFilters,
-    loadMore: loadMoreClubs,
-    refresh: refreshClubs
+    loadMore: loadMoreClubs
   } = useClubs()
 
   // États locaux

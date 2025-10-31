@@ -29,10 +29,10 @@ export default function MediaUploader({ onUploadSuccess, className = '' }: Media
 
   if (hasEscortProfile === null) {
     return (
-      <div className={`flex items-center justify-center p-8 ${className}`}>
+      <div className={`flex items-center justify-center p-8 bg-gray-800/50 rounded-xl ${className}`}>
         <div className="flex items-center space-x-3">
           <div className="w-6 h-6 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
-          <span className="text-gray-400">Vérification du profil...</span>
+          <span className="text-white font-medium">Vérification du profil...</span>
         </div>
       </div>
     )

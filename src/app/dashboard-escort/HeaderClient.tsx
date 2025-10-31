@@ -120,6 +120,6 @@ function AccountCert({ kycStatus }: { kycStatus: 'NONE' | 'PENDING' | 'APPROVED'
   }
   // NONE or REJECTED
   return (
-    <a href="/certification" className="px-3 py-2 rounded-lg bg-white/5 text-white/80 border border-white/10 hover:bg-white/10">Certifier mon compte</a>
+    <a href="/profile-test-signup/escort?step=3" className="px-3 py-2 rounded-lg bg-white/5 text-white/80 border border-white/10 hover:bg-white/10">Certifier mon compte</a>
   )
 }

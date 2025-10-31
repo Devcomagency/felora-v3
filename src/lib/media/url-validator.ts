@@ -48,6 +48,7 @@ export class MediaUrlValidator {
     }
 
     // Cas 4: URL valide
+    console.log('✅ [MediaUrlValidator] URL valide:', url)
     return {
       isValid: true,
       correctedUrl: url

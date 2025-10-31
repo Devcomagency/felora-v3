@@ -80,12 +80,13 @@ export async function POST(request: NextRequest) {
 
     let media
     if (existingMedia) {
-      // Mettre à jour le média existant
+      // ✅ Mettre à jour le média existant + FORCER updatedAt pour le cache-buster
       media = await prisma.media.update({
         where: { id: existingMedia.id },
         data: {
           type: mediaType,
-          url: fileUrl
+          url: fileUrl,
+          updatedAt: new Date() // Forcer la mise à jour du timestamp
         }
       })
     } else {
@@ -101,6 +102,27 @@ export async function POST(request: NextRequest) {
         }
       })
     }
+
+    // Mettre à jour aussi les champs avatarUrl/coverUrl dans ClubDetails
+    if (pos === 0) {
+      // Photo de profil
+      await prisma.clubDetails.updateMany({
+        where: { clubId: club.id },
+        data: { avatarUrl: fileUrl }
+      })
+    } else if (pos === 1) {
+      // Photo de couverture
+      await prisma.clubDetails.updateMany({
+        where: { clubId: club.id },
+        data: { coverUrl: fileUrl }
+      })
+    }
+
+    // ✅ IMPORTANT : Mettre à jour updatedAt du club pour forcer le cache-buster
+    await prisma.clubProfileV2.update({
+      where: { id: club.id },
+      data: { updatedAt: new Date() }
+    })
 
     return NextResponse.json({
       success: true,

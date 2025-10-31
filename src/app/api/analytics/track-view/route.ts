@@ -28,16 +28,27 @@ export async function POST(request: NextRequest) {
       })
       console.log('[ANALYTICS DEBUG] ✅ Escort profile view tracked')
     } else if (profileType === 'club') {
-      // Vues de profil club
-      await prisma.clubProfile.update({
+      // Vues de profil club (ClubProfileV2 -> ClubDetails)
+      // On incrémente les vues dans ClubDetails qui est lié à ClubProfileV2
+      const clubProfile = await prisma.clubProfileV2.findUnique({
         where: { id: profileId },
-        data: {
-          views: {
-            increment: 1
-          }
-        }
+        select: { id: true }
       })
-      console.log('[ANALYTICS DEBUG] ✅ Club profile view tracked')
+
+      if (clubProfile) {
+        // Incrémenter les vues dans ClubDetails
+        await prisma.clubDetails.update({
+          where: { clubId: profileId },
+          data: {
+            views: {
+              increment: 1
+            }
+          }
+        })
+        console.log('[ANALYTICS DEBUG] ✅ Club profile view tracked (ClubProfileV2)')
+      } else {
+        console.log('[ANALYTICS DEBUG] ⚠️ Club profile not found:', profileId)
+      }
     } else {
       console.log('[ANALYTICS DEBUG] ⚠️ Unknown profile type:', profileType)
     }
@@ -45,7 +56,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true })
 
   } catch (error) {
-    console.error('Erreur tracking vue:', error)
+    console.error('[ANALYTICS DEBUG] ❌ Error tracking vue:', error)
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 })
   }
 }

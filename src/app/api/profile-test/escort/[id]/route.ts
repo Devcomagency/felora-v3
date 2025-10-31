@@ -99,22 +99,70 @@ export async function GET(
     }
 
     const validatedId = idValidation.data
-    
-    // Récupérer les stats réelles depuis la base de données et le système de tracking
+
+    console.log(`🔍 [ESCORT API] Fetching escort profile for ID: ${validatedId}`)
+
+    // Récupérer le profil escort depuis la base de données
+    const escortProfile = await prisma.escortProfile.findUnique({
+      where: { id: validatedId },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            image: true
+          }
+        }
+      }
+    })
+
+    if (!escortProfile) {
+      console.warn(`❌ [ESCORT API] Profile not found for ID: ${validatedId}`)
+      return NextResponse.json(
+        {
+          error: 'not_found',
+          message: 'Profile not found',
+          code: 404
+        },
+        { status: 404 }
+      )
+    }
+
+    console.log(`✅ [ESCORT API] Profile found: ${escortProfile.stageName || escortProfile.user.name}`)
+
+    // Récupérer les médias du profil
+    const media = await prisma.media.findMany({
+      where: {
+        ownerId: validatedId
+      },
+      orderBy: {
+        pos: 'asc'
+      },
+      select: {
+        id: true,
+        url: true,
+        type: true,
+        thumbUrl: true,
+        pos: true
+      }
+    })
+
+    console.log(`📸 [ESCORT API] Found ${media.length} media items`)
+
+    // Récupérer les stats réelles
     let realStats = {
       likes: 0,
-      followers: 289, // Garder cette valeur fictive pour l'instant  
-      views: 0 // Récupérer depuis le système de tracking
+      followers: 0,
+      views: 0
     }
 
     try {
       // Compter les réactions sur tous les médias de ce profil
-      // Méthode 1: Via le modèle Media (pour les médias en DB)
-      const ownerIdLookup = validatedId === '1' ? 'escort-1' : `escort-${validatedId}`
       const mediaReactionsFromDB = await prisma.reaction.aggregate({
         where: {
           media: {
-            ownerId: ownerIdLookup
+            ownerId: validatedId
           }
         },
         _count: {
@@ -122,35 +170,10 @@ export async function GET(
         }
       })
 
-      // Méthode 2: Via stableMediaId pour les médias de test
-      // Générer les IDs des médias de test pour ce profil
-      const { stableMediaId } = await import('@/lib/reactions/stableMediaId')
-      const testMediaUrls = [
-        'https://picsum.photos/400/600?random=2',
-        'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4', 
-        'https://picsum.photos/400/600?random=4',
-        'https://picsum.photos/400/600?random=5',
-        'https://picsum.photos/400/600?random=6'
-      ]
-      
-      const testMediaIds = testMediaUrls.map(url => 
-        stableMediaId({ rawId: null, profileId: validatedId, url })
-      )
-      
-      // Chercher les réactions pour ces médias spécifiques
-      const testMediaReactions = await prisma.reaction.findMany({
-        where: {
-          mediaId: { in: testMediaIds }
-        }
-      })
+      realStats.likes = mediaReactionsFromDB._count.id || 0
+      console.log(`📊 Profile ${validatedId}: ${realStats.likes} reactions found`)
 
-      // Total des réactions = DB + Test
-      const totalReactions = (mediaReactionsFromDB._count.id || 0) + testMediaReactions.length
-
-      realStats.likes = totalReactions
-      console.log(`📊 Profile ${validatedId}: ${realStats.likes} reactions found (DB: ${mediaReactionsFromDB._count.id}, Test: ${testMediaReactions.length})`)
-
-      // Récupérer les stats de vues depuis le système de tracking
+      // Récupérer les stats de vues
       const { getViewStats } = await import('@/lib/analytics/viewTracker')
       const viewStats = await getViewStats(validatedId)
       realStats.views = viewStats.profileViews || 0
@@ -158,84 +181,75 @@ export async function GET(
     } catch (error) {
       console.warn('Failed to fetch real stats, using fallback:', error)
     }
-    
-    // DEMO DATA - Retourner des données de test avec toutes les références de filtres
-    const demoProfile = {
-      id: validatedId,
-      name: `Escort ${validatedId}`,
-      handle: `@${validatedId}`,
-      stageName: `${validatedId.charAt(0).toUpperCase()}${validatedId.slice(1)}`,
-      avatar: 'https://picsum.photos/400/600?random=1',
-      city: 'Zurich',
-      age: 25,
-      languages: ['Français', 'Anglais', 'Allemand'],
-      services: ['Accompagnement', 'Massage', 'Rencontres'],
-      media: [
-        {
-          type: 'image',
-          url: 'https://picsum.photos/400/600?random=2'
-        },
-        {
-          type: 'video',
-          url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-          thumb: 'https://picsum.photos/400/600?random=3'
-        },
-        {
-          type: 'image', 
-          url: 'https://picsum.photos/400/600?random=4'
-        },
-        {
-          type: 'image', 
-          url: 'https://picsum.photos/400/600?random=5'
-        },
-        {
-          type: 'image', 
-          url: 'https://picsum.photos/400/600?random=6'
-        }
-      ],
-      verified: true,
-      premium: true,
-      online: true,
-      description: `Profil de test pour ${validatedId}. Escort professionnelle basée à Zurich.`,
+
+    // Parser les champs JSON stockés en string
+    const parseJsonField = (field: string | null | undefined): any[] => {
+      if (!field) return []
+      try {
+        return typeof field === 'string' ? JSON.parse(field) : field
+      } catch {
+        return []
+      }
+    }
+
+    // Construire le profil à retourner avec les vraies données
+    const profileData = {
+      id: escortProfile.id,
+      name: escortProfile.stageName || escortProfile.user.name || 'Escort',
+      handle: `@${escortProfile.stageName?.toLowerCase().replace(/\s+/g, '') || escortProfile.user.name?.toLowerCase().replace(/\s+/g, '') || 'escort'}`,
+      stageName: escortProfile.stageName || escortProfile.user.name || 'Escort',
+      avatar: buildMediaUrl(escortProfile.profilePhoto || escortProfile.user.image),
+      city: escortProfile.city || 'Zurich',
+      age: null, // Calculer depuis dateOfBirth si nécessaire
+      languages: parseJsonField(escortProfile.languages),
+      services: parseJsonField(escortProfile.services),
+      media: media.map(m => ({
+        id: m.id,
+        type: m.type.toLowerCase() as 'image' | 'video', // Convertir en minuscules pour la validation
+        url: buildMediaUrl(m.url),
+        thumb: buildMediaUrl(m.thumbUrl)
+      })),
+      verified: escortProfile.isVerifiedBadge || false,
+      premium: false, // Ajouter la logique premium si nécessaire
+      online: false, // Ajouter la logique online si nécessaire
+      description: escortProfile.description || '',
       stats: realStats,
       rates: {
-        hour: 350,
-        twoHours: 600,
-        halfDay: 900,
-        fullDay: 1500,
-        overnight: 2000
+        hour: escortProfile.rate1H || null,
+        twoHours: escortProfile.rate2H || null,
+        halfDay: escortProfile.rateHalfDay || null,
+        fullDay: escortProfile.rateFullDay || null,
+        overnight: escortProfile.rateOvernight || null
       },
       availability: {
-        incall: true,
-        outcall: true,
-        available: validatedId === '1' ? true : false,
-        availableUntil: validatedId === '1' ? '2025-01-15T18:00:00Z' : undefined,
-        nextAvailable: validatedId !== '1' ? '2025-01-16T09:00:00Z' : undefined,
-        schedule: validatedId === '1' 
-          ? 'Disponible jusqu\'à 18h'
-          : 'De retour demain 9h'
+        incall: escortProfile.incall ?? true,
+        outcall: escortProfile.outcall ?? true,
+        available: escortProfile.availableNow || false,
+        availableUntil: undefined,
+        nextAvailable: undefined,
+        schedule: null
       },
       physical: {
-        height: 165,
-        bodyType: 'Athlétique',
-        hairColor: 'Châtain',
-        eyeColor: 'Noisette'
+        height: escortProfile.height || null,
+        bodyType: escortProfile.bodyType || null,
+        hairColor: escortProfile.hairColor || null,
+        eyeColor: escortProfile.eyeColor || null
       },
-      practices: ['GFE', 'Massage', 'Accompagnement'],
-      workingArea: 'Zurich et alentours',
-      
-      // NOUVELLES DONNÉES CORRESPONDANT AUX FILTRES
-      category: 'Premium', // Catégorie
-      serviceType: 'Escort Indépendante', // Type de service
-      experience: 'Experte (5+ ans)', // Expérience 
-      style: 'Élégante & Sophistiquée', // Style
-      profile: 'Escorte de Luxe', // Profil
-      specialties: ['GFE (Girlfriend Experience)', 'Massage Tantrique', 'Accompagnement VIP', 'Soirées Privées'], // Spécialités détaillées
-      additionalLanguages: ['Italien', 'Espagnol'] // Langues supplémentaires
+      practices: parseJsonField(escortProfile.practices),
+      workingArea: escortProfile.workingArea || null,
+      category: escortProfile.category || null,
+      serviceType: null,
+      experience: null,
+      style: null,
+      profile: null,
+      specialties: [],
+      additionalLanguages: []
     }
-    
+
+    console.log(`✅ [ESCORT API] Returning profile data for: ${profileData.name}`)
+
     // Validate and sanitize output
-    const validatedProfile = validateEscortProfile(demoProfile)
+    const validatedProfile = validateEscortProfile(profileData)
     
     const headers = new Headers({
       'Content-Type': 'application/json',
@@ -246,7 +260,7 @@ export async function GET(
       success: true,
       data: validatedProfile,
       cached: false,
-      demo: true,
+      demo: false,
       timestamp: new Date().toISOString()
     }, { headers })
 

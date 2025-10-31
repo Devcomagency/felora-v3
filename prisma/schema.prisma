@@ -17,8 +17,12 @@ model User {
   role                 UserRole             @default(CLIENT)
   createdAt            DateTime             @default(now())
   updatedAt            DateTime             @updatedAt
+  lastLoginAt          DateTime?
   passwordHash         String?
   phoneE164            String?
+  // Champs de ban
+  bannedAt             DateTime?
+  bannedReason         String?
   accounts             Account[]
   profile              ClientProfile?
   clubProfile          ClubProfile?
@@ -36,6 +40,8 @@ model User {
   passwordResetTokens  PasswordResetToken[]
   salonProfile         SalonProfile?
   sessions             Session[]
+  kycSubmissions       KycSubmission[]      @relation("UserKycSubmissions")
+  notifications        Notification[]       @relation("UserNotifications")
 
   @@map("users")
 }
@@ -92,6 +98,7 @@ model ClubDetails {
   latitude         Float?
   longitude        Float?
   establishmentType String?  @default("club")
+  views            Int       @default(0)
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
   club             ClubProfileV2 @relation(fields: [clubId], references: [id], onDelete: Cascade)
@@ -124,12 +131,20 @@ model KycSubmission {
   selfieUrl        String?
   selfieSignUrl    String?
   livenessVideoUrl String?
+  // Clés R2 (sans signatures AWS, juste le nom du fichier)
+  docFrontKey      String?
+  docBackKey       String?
+  selfieSignKey    String?
+  livenessKey      String?
   status           KycStatusV2 @default(PENDING)
   reviewerId       String?
   reviewedAt       DateTime?
-  notes            String?
+  rejectionReason  String?
+  adminNotes       String?     // Notes de l'admin (séparées des données techniques)
+  notes            String?     // Données techniques JSON (legacy, à supprimer plus tard)
   createdAt        DateTime    @default(now())
   updatedAt        DateTime    @updatedAt
+  user             User        @relation("UserKycSubmissions", fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, status])
   @@map("kyc_submissions")
@@ -193,15 +208,16 @@ model EscortProfile {
   videos              String
   status              EscortStatus @default(PENDING)
   verificationData    Json?
-  isVerifiedBadge     Boolean      @default(false)
-  profileCompleted    Boolean      @default(false)
-  photosCount         Int          @default(0)
-  videosCount         Int          @default(0)
-  hasProfilePhoto     Boolean      @default(false)
-  views               Int          @default(0)
-  likes               Int          @default(0)
-  rating              Float        @default(0)
-  reviewCount         Int          @default(0)
+  isVerifiedBadge     Boolean        @default(false)
+  profileCompleted    Boolean        @default(false)
+  photosCount         Int            @default(0)
+  videosCount         Int            @default(0)
+  hasProfilePhoto     Boolean        @default(false)
+  views               Int            @default(0)
+  likes               Int            @default(0)
+  rating              Float          @default(0)
+  reviewCount         Int            @default(0)
+  category            EscortCategory @default(ESCORT)
   telegramChatId      String?
   telegramUsername    String?
   telegramConnected   Boolean      @default(false)
@@ -255,7 +271,6 @@ model EscortProfile {
   smoker              Boolean?
 
   // Nouveaux champs manquants ajoutés
-  category            String?      // escort, masseuse_erotique, dominatrice_bdsm, transsexuel
   phoneDisplayType    String?      @default("hidden") // visible, cache_avec_boutons, messagerie_privee
   originDetails       String?      // Origine détaillée
   blockedCountries    Json?        // Liste des codes pays bloqués (ex: ["FR", "DE", "IT"])
@@ -647,22 +662,33 @@ model ChatReport {
 }
 
 model Media {
-  id          String          @id @default(cuid())
-  ownerType   String
-  ownerId     String
-  type        String
-  url         String
-  thumbUrl    String?
-  description String?
-  visibility  MediaVisibility @default(PUBLIC)
-  price       Int?
-  pos         Int?
-  likeCount   Int             @default(0)
-  reactCount  Int             @default(0)
-  createdAt   DateTime        @default(now())
-  mediaAccess MediaAccess[]
-  reactions   Reaction[]
+  id              String          @id @default(cuid())
+  ownerType       String
+  ownerId         String
+  type            String
+  url             String
+  thumbUrl        String?
+  description     String?
+  visibility      MediaVisibility @default(PUBLIC)
+  price           Int?
+  pos             Int?
+  likeCount       Int             @default(0)
+  reactCount      Int             @default(0)
+  // Moderation fields (simplified)
+  reportCount     Int             @default(0)
+  reportReason    String?
+  reportedAt      DateTime?
+  deletedBy       String?
+  deletedAt       DateTime?
+  deletionReason  String?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  mediaAccess     MediaAccess[]
+  reactions       Reaction[]
 
+  @@index([reportCount])
+  @@index([ownerType, ownerId])
+  @@index([deletedAt])
   @@map("media")
 }
 
@@ -790,6 +816,14 @@ enum EscortStatus {
   VERIFIED
   SUSPENDED
   BANNED
+}
+
+enum EscortCategory {
+  ESCORT           // Escort classique
+  MASSEUSE         // Masseuse érotique
+  DOMINATRICE      // Dominatrice / BDSM
+  TRANSSEXUELLE    // Transsexuelle / Trans
+  AUTRE            // Autre catégorie
 }
 
 enum ConversationType {
@@ -938,4 +972,35 @@ enum ClubEscortInvitationStatus {
   DECLINED  // Refusée
   EXPIRED   // Expirée
   CANCELLED // Annulée par le club
+}
+
+// ============================================
+// SYSTÈME DE NOTIFICATIONS
+// ============================================
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  message   String
+  read      Boolean          @default(false)
+  link      String?          // URL optionnelle pour redirection
+  metadata  String?          // Données JSON optionnelles
+  createdAt DateTime         @default(now())
+  user      User             @relation("UserNotifications", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, read])
+  @@index([userId, createdAt])
+  @@map("notifications")
+}
+
+enum NotificationType {
+  KYC_APPROVED         // Vérification KYC approuvée
+  KYC_REJECTED         // Vérification KYC rejetée
+  ACCOUNT_BANNED       // Compte banni
+  MESSAGE_RECEIVED     // Message reçu
+  SUBSCRIPTION_NEW     // Nouvel abonnement
+  SUBSCRIPTION_EXPIRED // Abonnement expiré
+  SYSTEM_ALERT         // Alerte système
 }

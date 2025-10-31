@@ -26,6 +26,7 @@ export async function GET(
         description: true,
         city: true,
         canton: true,
+        category: true,
         isVerifiedBadge: true,
         hasProfilePhoto: true,
         profilePhoto: true,
@@ -236,7 +237,8 @@ export async function GET(
     const mediaFromTable = await prisma.media.findMany({
       where: {
         ownerType: 'ESCORT',
-        ownerId: profileId
+        ownerId: profileId,
+        deletedAt: null // Exclure les médias supprimés
       },
       orderBy: { createdAt: 'desc' }
     })
@@ -278,7 +280,8 @@ export async function GET(
     const escortMedia = await prisma.media.findMany({
       where: {
         ownerType: 'ESCORT',
-        ownerId: profileId
+        ownerId: profileId,
+        deletedAt: null // Exclure les médias supprimés
       },
       select: { id: true, url: true }
     })
@@ -450,6 +453,7 @@ export async function GET(
       bio: escort.description || undefined,
       city: escort.city || undefined,
       canton: escort.canton || undefined,
+      category: escort.category || undefined,
       isVerifiedBadge: !!escort.isVerifiedBadge,
       media: allMedia,
       stats,

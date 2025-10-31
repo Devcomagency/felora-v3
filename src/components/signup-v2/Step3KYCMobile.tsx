@@ -38,8 +38,16 @@ export default function Step3KYCMobile({ userId, role='ESCORT', onSubmitted }:{ 
         if (!url) return undefined
         // Si c'est déjà une clé (pas d'URL), la retourner
         if (!url.includes('/')) return url
-        // Sinon, extraire la clé de l'URL
-        return url.split('/').pop() || undefined
+
+        // Extraire la clé de l'URL en gardant le préfixe folder (kyc/filename)
+        // Ex: https://media.felora.ch/kyc/12345-file.png → kyc/12345-file.png
+        const parts = url.split('/')
+        if (parts.length >= 2) {
+          // Récupérer les 2 derniers segments (kyc/filename)
+          return `${parts[parts.length - 2]}/${parts[parts.length - 1]}`
+        }
+        // Fallback: retourner juste le nom de fichier
+        return parts.pop() || undefined
       }
 
       const optimizedPayload = {

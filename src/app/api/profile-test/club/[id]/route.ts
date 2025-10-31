@@ -8,6 +8,7 @@ import { PrismaClient } from '@prisma/client'
 import { toClubProfileDTO, createMinimalProfile } from '../../../../../../packages/core/profile-test/adapters'
 import { validateProfileId, validateQuery, validateClubProfile } from '../../../../../../packages/core/profile-test/validators'
 import { rateLimit, getClientIdentifier } from '../../../../../../packages/core/profile-test/rateLimit'
+import { isClubOpenNow } from '@/lib/club-utils'
 
 const prisma = new PrismaClient()
 
@@ -26,7 +27,8 @@ function buildMediaUrl(url: string | null | undefined): string | null {
   }
 
   // Chemins R2 : on ajoute le domaine R2
-  const R2_PATHS = ['/profiles/', '/uploads/', '/clubs/', '/media/']
+  // Note: /uploads/ est exclu car les fichiers sont stockés localement dans public/
+  const R2_PATHS = ['/profiles/', '/clubs/', '/media/']
   const isR2Path = R2_PATHS.some(prefix => url.startsWith(prefix))
 
   if (isR2Path) {
@@ -222,6 +224,13 @@ export async function GET(
         // Transform to expected format matching ClubProfileResponseSchema
         const profilePhoto = media.find((m: any) => m.pos === 0) // Photo de profil
         const footerPhoto = media.find((m: any) => m.pos === 1)  // Photo footer
+
+        // ✅ Calculer si le club est ouvert maintenant basé sur les vrais horaires
+        const agendaIsOpenNow = isClubOpenNow(
+          services?.openingHours || null,
+          services?.isOpen24_7 || false
+        )
+
         clubProfile = {
           id: club.handle,
           dbId: club.id, // ID de la base de données pour les API internes
@@ -256,9 +265,10 @@ export async function GET(
           },
           amenities: services?.equipments || [],
           workingHours: services?.openingHours || null,
+          agendaIsOpenNow: agendaIsOpenNow, // ✅ Statut ouvert/fermé en temps réel
           establishmentType: details?.establishmentType || 'club',
           stats: {
-            views: Math.floor(Math.random() * 1000) + 100,
+            views: (details as any)?.views || 0, // ✅ Lire les vraies vues depuis la base de données
             likes: 0, // Sera calculé après
             reactions: 0 // Sera calculé après
           }

@@ -48,11 +48,18 @@ export async function POST(req: NextRequest) {
   try {
     initSentryServerOnce()
     const session = await getServerSession(authOptions)
+    console.log('🔐 [API STATUS POST] Session:', session ? 'exists' : 'null')
     const userId = (session as any)?.user?.id as string | undefined
-    if (!userId) return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
+    console.log('🔐 [API STATUS POST] UserID:', userId)
+    if (!userId) {
+      console.error('❌ [API STATUS POST] Unauthorized - no userId')
+      return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 })
+    }
 
     const body = await req.json().catch(() => ({}))
+    console.log('📥 [API STATUS POST] Body:', body)
     const action = String(body?.action || '').toLowerCase()
+    console.log('🎯 [API STATUS POST] Action:', action)
 
     const escort = await prisma.escortProfile.findUnique({ 
       where: { userId }, 
@@ -104,12 +111,15 @@ export async function POST(req: NextRequest) {
         if (!hasServices) missing.push('Services')
         if (!hasRate) missing.push('Tarifs')
         
+        console.log('❌ [API STATUS POST] Profil incomplet:', { completion: Math.round(completion), missing })
+        
         return NextResponse.json({ 
           ok: false, 
           error: 'profile_incomplete',
           reason: 'INCOMPLETE',
           completion: Math.round(completion),
-          missing: missing
+          missing: missing,
+          missingFields: missing
         }, { status: 400 })
       }
       newStatus = 'ACTIVE'
@@ -118,9 +128,10 @@ export async function POST(req: NextRequest) {
     }
 
     await prisma.escortProfile.update({ where: { id: escort.id }, data: { status: newStatus } })
+    console.log('✅ [API STATUS POST] Status updated to:', newStatus)
     return NextResponse.json({ ok: true, status: newStatus })
   } catch (e:any) {
-    console.error('/api/escort/profile/status POST error:', e.message)
+    console.error('❌ [API STATUS POST] Error:', e.message, e.stack)
     try { captureServerException(e) } catch {}
     return NextResponse.json({ ok: false, error: 'server_error' }, { status: 500 })
   }

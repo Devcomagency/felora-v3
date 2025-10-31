@@ -18,10 +18,58 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'invalid_params' }, { status: 400 })
     }
 
+    // Récupérer la soumission pour avoir le userId et le role
+    const submission = await prisma.kycSubmission.findUnique({
+      where: { id },
+      select: { userId: true, role: true }
+    })
+
+    if (!submission) {
+      return NextResponse.json({ error: 'submission_not_found' }, { status: 404 })
+    }
+
+    // Mettre à jour le statut KYC
     const updated = await prisma.kycSubmission.update({
       where: { id },
-      data: { status: status as any, notes: notes ?? undefined }
+      data: {
+        status: status as any,
+        notes: notes ?? undefined,
+        reviewerId: (session as any)?.user?.id,
+        reviewedAt: new Date()
+      }
     })
+
+    // Si approuvé, attribuer le badge de vérification au profil
+    if (status === 'APPROVED') {
+      if (submission.role === 'ESCORT') {
+        // Mettre à jour le profil escort avec le badge
+        await prisma.escortProfile.updateMany({
+          where: { userId: submission.userId },
+          data: { isVerifiedBadge: true }
+        })
+      } else if (submission.role === 'CLUB') {
+        // Mettre à jour le profil club avec le badge
+        await prisma.clubProfileV2.updateMany({
+          where: { userId: submission.userId },
+          data: { verified: true }
+        })
+      }
+    }
+
+    // Si rejeté, retirer le badge
+    if (status === 'REJECTED') {
+      if (submission.role === 'ESCORT') {
+        await prisma.escortProfile.updateMany({
+          where: { userId: submission.userId },
+          data: { isVerifiedBadge: false }
+        })
+      } else if (submission.role === 'CLUB') {
+        await prisma.clubProfileV2.updateMany({
+          where: { userId: submission.userId },
+          data: { verified: false }
+        })
+      }
+    }
 
     return NextResponse.json({ ok: true, status: updated.status })
   } catch (e:any) {

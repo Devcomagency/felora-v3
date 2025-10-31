@@ -105,6 +105,35 @@ export default function MapTest() {
   
   // 🎯 ÉTAT POUR LE PROFIL ESCORT CONNECTÉ
   const [currentUserProfile, setCurrentUserProfile] = useState<EscortData | null>(null)
+  const [showVisibleProfiles, setShowVisibleProfiles] = useState(false)
+  const [isPanelOpening, setIsPanelOpening] = useState(false)
+
+  // Fonction pour décaler les coordonnées selon le mode de confidentialité
+  const applyPrivacyOffset = (lat: number, lng: number, addressPrivacy: string | null | undefined) => {
+    if (!lat || !lng || addressPrivacy !== 'approximate') {
+      return { lat, lng }
+    }
+
+    const maxOffset = 0.00135 // ≈150m
+    const coordsStr = `${lat},${lng}`
+    let hash = 0
+    for (let i = 0; i < coordsStr.length; i++) {
+      const char = coordsStr.charCodeAt(i)
+      hash = ((hash << 5) - hash) + char
+      hash = hash & hash
+    }
+    
+    const normalizedHash1 = ((hash & 0x7FFFFFFF) % 1000) / 1000 * 2 - 1
+    const normalizedHash2 = ((((hash >> 8) & 0x7FFFFFFF) % 1000) / 1000 * 2 - 1)
+    
+    const offsetLat = normalizedHash1 * maxOffset
+    const offsetLng = normalizedHash2 * maxOffset
+    
+    return {
+      lat: lat + offsetLat,
+      lng: lng + offsetLng
+    }
+  }
 
   // 🎯 RÉCUPÉRER LE PROFIL ESCORT CONNECTÉ
   useEffect(() => {
@@ -116,11 +145,14 @@ export default function MapTest() {
           const profile = await response.json()
 
           if (profile && profile.latitude && profile.longitude) {
+            // Appliquer le décalage selon le mode de confidentialité
+            const coords = applyPrivacyOffset(profile.latitude, profile.longitude, profile.addressPrivacy)
+            
             const escortData: EscortData = {
               id: profile.escortId || 'FIXED_ID',
               name: profile.stageName || 'Mon Profil',
-              lat: profile.latitude,
-              lng: profile.longitude,
+              lat: coords.lat,
+              lng: coords.lng,
               city: profile.city || '',
               services: profile.services || [],
               languages: profile.languages || {},
@@ -141,23 +173,26 @@ export default function MapTest() {
   // 🎯 ÉCOUTER LES ÉVÉNEMENTS D'ADRESSE CHANGÉE POUR SYNCHRONISER LA CARTE
   useEffect(() => {
     const handleAddressChanged = (event: any) => {
-      const { coordinates } = event.detail
+      const { coordinates, addressPrivacy } = event.detail
 
       if (coordinates && coordinates.lat && coordinates.lng) {
-        // Mettre à jour la vue de la carte
+        // Appliquer le décalage selon le mode de confidentialité
+        const displayCoords = applyPrivacyOffset(coordinates.lat, coordinates.lng, addressPrivacy)
+        
+        // Mettre à jour la vue de la carte avec les coordonnées décalées
         setViewState(prev => ({
           ...prev,
-          latitude: coordinates.lat,
-          longitude: coordinates.lng,
+          latitude: displayCoords.lat,
+          longitude: displayCoords.lng,
           zoom: Math.max(prev.zoom, 15)
         }))
 
-        // 🎯 METTRE À JOUR LE PROFIL ESCORT CONNECTÉ
+        // 🎯 METTRE À JOUR LE PROFIL ESCORT CONNECTÉ avec les coordonnées décalées
         if (currentUserProfile) {
           setCurrentUserProfile(prev => prev ? {
             ...prev,
-            lat: coordinates.lat,
-            lng: coordinates.lng
+            lat: displayCoords.lat,
+            lng: displayCoords.lng
           } : null)
         }
 
@@ -219,20 +254,46 @@ export default function MapTest() {
 
   // Transform real API data to match expected format + include current user profile
   const allEscorts = useMemo(() => {
-    const apiEscorts = (data?.items || []).map((escort: any) => ({
-      id: escort.id,
-      name: escort.stageName || 'Escort',
-      lat: escort.latitude || 46.8182, // Default to Switzerland center
-      lng: escort.longitude || 8.2275,
-      avatar: escort.profilePhoto || '',
-      city: escort.city || 'Suisse',
-      services: escort.services || [],
-      languages: escort.languages || [],
-      category: escort.category || null,
-      verified: escort.isVerifiedBadge || false,
-      isActive: escort.isActive || true,
-      isCurrentUser: false // Marquer comme profil d'un autre utilisateur
-    }))
+    const apiEscorts = (data?.items || []).map((escort: any) => {
+      let avatar = escort.profilePhoto || escort.avatar || escort.photo || ''
+      
+      // 🔧 CORRECTION: Fix les URLs qui commencent par "undefined/"
+      if (avatar && avatar.includes('undefined/')) {
+        avatar = avatar.replace(/^undefined\//, 'https://media.felora.ch/')
+        console.log(`🔧 Avatar URL corrigée pour ${escort.id}:`, avatar)
+      }
+      
+      // Debug log pour voir les valeurs d'avatar
+      if (!avatar || avatar === '') {
+        console.log(`⚠️ Profil sans avatar:`, { id: escort.id, stageName: escort.stageName, profilePhoto: escort.profilePhoto })
+      }
+      
+      // Debug spécifique pour le profil problématique
+      if (escort.id === 'cmg2ej3hs0003l804ns2h6d0o') {
+        console.log(`🐛 DEBUG PROFILE:`, { 
+          id: escort.id, 
+          stageName: escort.stageName,
+          profilePhoto: escort.profilePhoto,
+          avatar,
+          hasAvatar: !!avatar
+        })
+      }
+      
+      return {
+        id: escort.id,
+        name: escort.stageName || 'Escort',
+        lat: escort.latitude || 46.8182, // Default to Switzerland center
+        lng: escort.longitude || 8.2275,
+        avatar,
+        city: escort.city || 'Suisse',
+        services: escort.services || [],
+        languages: escort.languages || [],
+        category: escort.category || null,
+        verified: escort.isVerifiedBadge || false,
+        isActive: escort.isActive || true,
+        isCurrentUser: false // Marquer comme profil d'un autre utilisateur
+      }
+    })
 
     // 🎯 GÉRER LE PROFIL ESCORT CONNECTÉ
     if (currentUserProfile) {
@@ -354,6 +415,15 @@ export default function MapTest() {
     )).length
   }, [bounds, filteredEscorts])
 
+  // Visible escorts list (only those in current map bounds)
+  const visibleEscorts = useMemo(() => {
+    if (!bounds) return filteredEscorts.slice(0, 30)
+    const [west, south, east, north] = bounds
+    return filteredEscorts.filter((e: EscortData) => (
+      e.lng >= west && e.lng <= east && e.lat >= south && e.lat <= north
+    )).slice(0, 30)
+  }, [bounds, filteredEscorts])
+
   // Handle view state changes with throttling
   const onViewStateChange = useCallback((evt: ViewStateChangeEvent) => {
     const { latitude, longitude, zoom } = evt.viewState
@@ -412,10 +482,23 @@ export default function MapTest() {
   }, [supercluster, viewState.zoom])
 
   // Geolocation function
-  const locateUser = useCallback(() => {
+  const locateUser = useCallback(async () => {
     if (!navigator.geolocation) {
       setGeoError("La géolocalisation n'est pas supportée par ce navigateur")
       return
+    }
+
+    // 🔒 Vérifier les permissions avant de demander la géolocalisation
+    if (typeof navigator.permissions !== 'undefined') {
+      try {
+        const result = await navigator.permissions.query({ name: 'geolocation' })
+        if (result.state === 'denied') {
+          setGeoError('Permission refusée. Activez-la dans les paramètres de votre navigateur.')
+          return
+        }
+      } catch (err) {
+        // Silent fail - navigateur ne supporte pas permissions API
+      }
     }
 
     setIsLocating(true)
@@ -531,7 +614,9 @@ export default function MapTest() {
       {/* Back Button - Top Left */}
       <button
         onClick={() => router.back()}
-        className="fixed top-4 left-4 z-50 w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110"
+        className={`fixed top-4 left-4 z-50 w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 ${
+          showVisibleProfiles || isPanelOpening ? 'opacity-0 pointer-events-none' : ''
+        }`}
         style={{
           background: 'rgba(13, 13, 13, 0.7)',
           backdropFilter: 'blur(20px)',
@@ -653,12 +738,21 @@ export default function MapTest() {
                       boxShadow: '0 4px 20px rgba(79, 209, 199, 0.4)'
                     }}
                   >
-                    {escort.avatar && (
+                    {escort.avatar ? (
                       <img 
                         src={escort.avatar} 
                         alt={escort.name}
                         className="w-full h-full rounded-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.src = '/logo-principal.png'
+                        }}
                       />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-pink-500/20 to-purple-500/20">
+                        <span className="text-white font-bold text-lg">
+                          {escort.name.charAt(0)}
+                        </span>
+                      </div>
                     )}
                     {escort.verified && (
                       <div 
@@ -699,10 +793,13 @@ export default function MapTest() {
                 {/* Portrait compact, UX-friendly */}
                 <div className="w-full rounded-lg overflow-hidden mb-3 relative" style={{ height: 200 }}>
                   <img
-                    src={selectedEscort.avatar || 'https://picsum.photos/seed/portrait/600/800'}
+                    src={selectedEscort.avatar || '/default-avatar.png'}
                     alt={selectedEscort.name}
                     loading="lazy"
                     decoding="async"
+                    onError={(e) => {
+                      e.currentTarget.src = '/default-avatar.png'
+                    }}
                     style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }}
                   />
                   {selectedEscort.verified && (
@@ -797,14 +894,23 @@ export default function MapTest() {
                         setSelectedEscort(escort)
                       }}
                     >
-                      {escort.avatar && (
+                      {escort.avatar ? (
                         <img
                           src={escort.avatar}
                           alt={escort.name}
                           loading="lazy"
                           decoding="async"
+                          onError={(e) => {
+                            e.currentTarget.src = '/logo-principal.png'
+                          }}
                           className="w-8 h-8 rounded-full object-cover"
                         />
+                      ) : (
+                        <div className="w-8 h-8 rounded-full flex items-center justify-center bg-gradient-to-br from-pink-500/20 to-purple-500/20">
+                          <span className="text-white font-bold text-xs">
+                            {escort.name.charAt(0)}
+                          </span>
+                        </div>
                       )}
                       <div className="flex-1">
                         <p className="text-white text-sm font-medium">{escort.name}</p>
@@ -850,17 +956,28 @@ export default function MapTest() {
         </Map>
       </div>
 
-      {/* Status Bar */}
+      {/* Status Bar - Clickable */}
       <div
-        className="fixed bottom-20 left-4 px-3 py-2 rounded-xl text-sm text-white font-medium"
+        onClick={() => {
+          if (!showVisibleProfiles) {
+            setIsPanelOpening(true)
+            setTimeout(() => setShowVisibleProfiles(true), 50)
+            setTimeout(() => setIsPanelOpening(false), 400)
+          } else {
+            setShowVisibleProfiles(false)
+          }
+        }}
+        className="fixed bottom-20 left-4 px-3 py-2 rounded-xl text-sm text-white font-medium cursor-pointer transition-all hover:scale-105"
         style={{
-          background: 'linear-gradient(135deg, #FF6B9D 0%, #B794F6 100%)',
+          background: showVisibleProfiles 
+            ? 'linear-gradient(135deg, #4FD1C7 0%, #00D4AA 100%)'
+            : 'linear-gradient(135deg, #FF6B9D 0%, #B794F6 100%)',
           backdropFilter: 'blur(16px)',
           border: '1px solid rgba(255, 255, 255, 0.35)',
           boxShadow: '0 10px 26px rgba(0,0,0,0.30), 0 0 0 1px rgba(255,255,255,0.05)'
         }}
-        role="status"
-        aria-live="polite"
+        role="button"
+        aria-label="Voir la liste des profils visibles"
       >
         {visibleCount} profil{visibleCount !== 1 ? 's' : ''} visible{visibleCount !== 1 ? 's' : ''}
         {isLoading && ' • Chargement...'}
@@ -951,6 +1068,9 @@ export default function MapTest() {
       {/* Bouton Filtres - Au-dessus du bouton localisation */}
       <button
         onClick={() => setShowFilters(!showFilters)}
+        aria-label="Ouvrir les filtres"
+        aria-expanded={showFilters}
+        aria-pressed={showFilters}
         className="fixed right-4 w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 z-50"
         style={{
           bottom: '138px',
@@ -968,7 +1088,6 @@ export default function MapTest() {
           width: 52,
           height: 52
         }}
-        aria-label="Filtres"
       >
         {showFilters ? (
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -984,6 +1103,9 @@ export default function MapTest() {
       <button
         onClick={locateUser}
         disabled={isLocating}
+        aria-label="Se localiser sur la carte"
+        aria-pressed={userLocation !== null}
+        aria-busy={isLocating}
         className="fixed bottom-20 right-4 w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 z-50"
         style={{
           background: 'linear-gradient(135deg, #FF6B9D 0%, #B794F6 100%)',
@@ -1008,6 +1130,175 @@ export default function MapTest() {
           <MapPin width={20} height={20} />
         )}
       </button>
+
+      {/* Overlay avec effet de blur */}
+      {(showVisibleProfiles || isPanelOpening) && (
+        <div 
+          className="fixed inset-0 z-30 transition-opacity duration-300"
+          style={{
+            background: isPanelOpening ? 'rgba(0, 0, 0, 0.5)' : 'rgba(0, 0, 0, 0.3)',
+            backdropFilter: 'blur(4px)'
+          }}
+          onClick={() => {
+            setShowVisibleProfiles(false)
+            setIsPanelOpening(false)
+          }}
+        />
+      )}
+
+      {/* Sidebar Premium - Profils visibles */}
+      {(showVisibleProfiles || isPanelOpening) && (
+        <div 
+          className="fixed top-0 left-0 h-full w-[95vw] sm:w-[420px] max-w-[450px] z-40 transition-transform duration-300 ease-out"
+          style={{
+            background: 'linear-gradient(to right, rgba(13, 13, 13, 0.98) 0%, rgba(13, 13, 13, 0.95) 100%)',
+            backdropFilter: 'blur(40px)',
+            boxShadow: '20px 0 80px rgba(0, 0, 0, 0.8), inset -1px 0 0 rgba(255, 255, 255, 0.1)',
+            transform: showVisibleProfiles ? 'translateX(0)' : 'translateX(-100%)'
+          }}
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between p-4 border-b border-white/10">
+                 <div>
+                   <h3 className="text-white font-semibold text-lg">Profils visibles</h3>
+                   <p className="text-white/60 text-sm">{visibleEscorts.length} profils dans la zone visible</p>
+                 </div>
+            <button
+              onClick={() => setShowVisibleProfiles(false)}
+              className="text-white/60 hover:text-white transition-colors"
+            >
+              ✕
+            </button>
+          </div>
+
+               {/* Liste des profils */}
+               <div className="overflow-y-auto p-4" style={{ maxHeight: 'calc(100vh - 120px)' }}>
+                 {visibleEscorts.length === 0 ? (
+                   <div className="text-center py-8 text-white/40">
+                     Aucun profil visible dans cette zone
+                   </div>
+                 ) : (
+                   <div className="space-y-3">
+                     {visibleEscorts.map(escort => (
+                       <div 
+                         key={escort.id}
+                         className="group relative w-full rounded-xl border transition-all duration-500 cursor-pointer border-white/10 hover:border-pink-500/30 hover:shadow-2xl"
+                         style={{
+                           background: 'rgba(255,255,255,0.03)'
+                         }}
+                         onClick={() => {
+                           setSelectedEscort(escort)
+                           setShowVisibleProfiles(false)
+                           // Centrer sur l'escort
+                           setViewState(prev => ({
+                             ...prev,
+                             latitude: escort.lat,
+                             longitude: escort.lng,
+                             zoom: Math.max(prev.zoom, 16)
+                           }))
+                         }}
+                       >
+                         {/* Gradient overlay on hover */}
+                         <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-br from-pink-500/10 via-purple-500/5 to-transparent" />
+                         
+                         <div className="relative p-3 flex items-center gap-3">
+                           {/* Avatar */}
+                           <div className="shrink-0">
+                             <div
+                               className="w-20 h-20 rounded-xl border shadow-lg transition-transform group-hover:scale-110 duration-500 overflow-hidden"
+                               style={{
+                                 background: 'linear-gradient(to bottom right, #EC489920, #EC489915)',
+                                 borderColor: '#EC489930',
+                                 boxShadow: '0 4px 12px #EC489910'
+                               }}
+                             >
+                             {escort.avatar ? (
+                               <img
+                                 src={escort.avatar}
+                                 alt={escort.name}
+                                 loading="lazy"
+                                 onError={(e) => {
+                                   e.currentTarget.src = '/logo-principal.png'
+                                 }}
+                                 className="w-full h-full object-cover"
+                               />
+                               ) : (
+                                 <div 
+                                   className="w-full h-full flex items-center justify-center text-white font-bold text-2xl"
+                                   style={{
+                                     background: 'linear-gradient(135deg, #FF6B9D 0%, #B794F6 100%)'
+                                   }}
+                                 >
+                                   {escort.name.charAt(0)}
+                                 </div>
+                               )}
+                               {escort.verified && (
+                                 <div className="absolute -top-1 -right-1">
+                                   <div 
+                                     className="w-6 h-6 rounded-full flex items-center justify-center"
+                                     style={{
+                                       background: 'linear-gradient(135deg, #4FD1C7 0%, #00D4AA 100%)',
+                                       boxShadow: '0 2px 8px rgba(79, 209, 199, 0.4)'
+                                     }}
+                                   >
+                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                                       <polyline points="20 6 9 17 4 12"></polyline>
+                                     </svg>
+                                   </div>
+                                 </div>
+                               )}
+                             </div>
+                           </div>
+                           
+                           {/* Content */}
+                           <div className="flex-1 min-w-0 max-w-[140px]">
+                             <h3 className="text-white font-bold text-xs mb-1 group-hover:text-white transition-colors truncate">
+                               {escort.name}
+                             </h3>
+                             {escort.services && escort.services.length > 0 && (
+                               <div className="flex items-center gap-1.5 flex-wrap">
+                                 <div 
+                                   className="w-1 h-1 rounded-full bg-gradient-to-r from-pink-500 to-purple-500"
+                                 />
+                                 <div 
+                                   className="text-[9px] px-1.5 py-0.5 rounded font-medium truncate max-w-[100px]"
+                                   style={{
+                                     background: 'rgba(255, 107, 157, 0.2)',
+                                     color: '#FF6B9D',
+                                     border: '1px solid rgba(255, 107, 157, 0.3)'
+                                   }}
+                                 >
+                                   {escort.services[0]}
+                                 </div>
+                               </div>
+                             )}
+                           </div>
+                           
+                           {/* Arrow */}
+                           <div className="shrink-0">
+                             <svg 
+                               className="w-4 h-4 text-white group-hover:translate-x-1 transition-transform"
+                               fill="none" 
+                               stroke="currentColor" 
+                               viewBox="0 0 24 24"
+                             >
+                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                             </svg>
+                           </div>
+                         </div>
+                       </div>
+                     ))}
+                   </div>
+                 )}
+               </div>
+
+          {visibleEscorts.length >= 30 && filteredEscorts.length > visibleEscorts.length && (
+            <div className="p-3 border-t border-white/10 text-center text-xs text-white/40">
+              +{filteredEscorts.length - visibleEscorts.length} autres profils dans la zone
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Geolocation Error */}
       {geoError && !showFilters && (

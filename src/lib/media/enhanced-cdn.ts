@@ -94,15 +94,19 @@ export class EnhancedCDNManager {
    */
   validateAndFixUrl(url: string | undefined | null, type: 'avatar' | 'image' | 'video' = 'image'): string {
     if (!url) {
+      console.log('⚠️ [EnhancedCDN] URL vide, fallback:', this.getFallbackUrl(type))
       return this.getFallbackUrl(type)
     }
 
     const validation = MediaUrlValidator.validateUrl(url, type)
+    console.log('🔍 [EnhancedCDN] validation:', { isValid: validation.isValid, correctedUrl: validation.correctedUrl, fallback: validation.fallback })
     
     if (validation.isValid && validation.correctedUrl) {
+      console.log('✅ [EnhancedCDN] Retourne correctedUrl:', validation.correctedUrl)
       return validation.correctedUrl
     }
 
+    console.log('⚠️ [EnhancedCDN] Retourne fallback:', validation.fallback || this.getFallbackUrl(type))
     return validation.fallback || this.getFallbackUrl(type)
   }
 

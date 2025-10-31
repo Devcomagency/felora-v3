@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { User, Image, Eye, Heart, Clock, Settings as SettingsIcon, CheckCircle2, AlertTriangle, ShieldCheck, Pause, Calendar, Save, X, BadgeCheck, Search, Loader2, Star, MapPin, ExternalLink, Zap, Trash2 } from 'lucide-react'
 import * as Dialog from '@radix-ui/react-dialog'
 import AddressAutocomplete from '../ui/AddressAutocomplete'
+import PremiumAddressAutocomplete from '../ui/PremiumAddressAutocomplete'
 import LocationPreviewMap from '../ui/LocationPreviewMap'
 import AddressValidator from '../ui/AddressValidator'
 import NetworkIndicator from '../ui/NetworkIndicator'
@@ -159,13 +160,6 @@ const StarRating = ({
               </button>
             ))}
           </div>
-          <span className="text-xs text-gray-400 ml-2">
-            {rating === 0 ? 'Niveau non défini' : 
-             rating === 1 ? 'Débutant' :
-             rating === 2 ? 'Élémentaire' :
-             rating === 3 ? 'Intermédiaire' :
-             rating === 4 ? 'Avancé' : 'Courant'}
-          </span>
         </>
       )}
     </div>
@@ -645,6 +639,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
     canton: '',
     city: '',
     address: '',
+    addressPrivacy: 'precise' as 'precise' | 'approximate',
     phoneVisibility: 'hidden',
     acceptsCouples: false,
     acceptsWomen: false,
@@ -752,9 +747,32 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
             logger.log('🔄 [CLIENTELE DEBUG] Chargement acceptsSeniors depuis API:', { raw: p.clientele?.acceptsSeniors, processed: acceptsSeniors })
             return acceptsSeniors
           })(),
-          specialties: (p.specialties || []).concat(p.options?.amenities || []).map((item: string) =>
-            item.startsWith('opt:') || item.startsWith('srv:') ? item : `opt:${item}`
-          ),
+          specialties: (() => {
+            // Récupérer les specialties existantes (depuis practices filtrées)
+            const existingSpecialties = (p.specialties || [])
+            
+            // Récupérer les amenities (opt:)
+            const amenities = (p.options?.amenities || []).map((item: string) =>
+              item.startsWith('opt:') || item.startsWith('srv:') ? item : `opt:${item}`
+            )
+            
+            // IMPORTANT: Récupérer les services depuis p.services et ajouter le préfixe srv: s'il n'existe pas
+            const services = (p.services || []).map((item: string) =>
+              item.startsWith('srv:') ? item : `srv:${item}`
+            )
+            
+            // Combiner tout
+            const allSpecialties = [...existingSpecialties, ...amenities, ...services]
+            
+            logger.log('[DASHBOARD] Chargement specialties:', {
+              existingSpecialties,
+              amenities,
+              services,
+              allSpecialties
+            })
+            
+            return allSpecialties
+          })(),
         }))
 
 
@@ -1354,7 +1372,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
   useEffect(() => {
     triggerAutoSave()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [profileData.stageName, profileData.age, profileData.description, profileData.address, profileData.coordinates, profileData.city, profileData.canton, profileData.phone, profileData.phoneVisibility, profileData.incall, profileData.outcall, profileData.languages, profileData.serviceType, profileData.specialties, profileData.prices?.fifteenMin, profileData.prices?.thirtyMin, profileData.prices?.oneHour, profileData.prices?.twoHours, profileData.prices?.halfDay, profileData.prices?.fullDay, profileData.prices?.overnight, profileData.height, profileData.bodyType, profileData.breastType, profileData.hairColor, profileData.eyeColor, profileData.ethnicity, profileData.breastSize, profileData.pubicHair, profileData.smoker, profileData.tattoos, profileData.piercings, profileData.acceptsCouples, profileData.acceptsWomen, profileData.acceptsHandicapped, profileData.acceptsSeniors, weekly, pauseEnabled, pauseStart, pauseEnd, absences])
+  }, [profileData.stageName, profileData.age, profileData.description, profileData.address, profileData.coordinates, profileData.addressPrivacy, profileData.city, profileData.canton, profileData.phone, profileData.phoneVisibility, profileData.incall, profileData.outcall, profileData.languages, profileData.serviceType, profileData.specialties, profileData.prices?.fifteenMin, profileData.prices?.thirtyMin, profileData.prices?.oneHour, profileData.prices?.twoHours, profileData.prices?.halfDay, profileData.prices?.fullDay, profileData.prices?.overnight, profileData.height, profileData.bodyType, profileData.breastType, profileData.hairColor, profileData.eyeColor, profileData.ethnicity, profileData.breastSize, profileData.pubicHair, profileData.smoker, profileData.tattoos, profileData.piercings, profileData.acceptsCouples, profileData.acceptsWomen, profileData.acceptsHandicapped, profileData.acceptsSeniors, weekly, pauseEnabled, pauseStart, pauseEnd, absences])
 
   const manualSave = async () => {
     try {
@@ -1586,7 +1604,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                 <span className="text-sm font-medium text-yellow-300">En vérification</span>
               </div>
             ) : (
-              <a href="/certification" className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all">
+              <a href="/profile-test-signup/escort?step=3" className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all">
                 <ShieldCheck className="text-white/60" size={20} />
                 <span className="text-sm font-medium text-white/80">Certifier</span>
               </a>
@@ -1950,7 +1968,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
             <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Nom d'artiste *</label>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">Pseudo *</label>
                   <input
                     type="text"
                     value={profileData.stageName || ''}
@@ -1966,15 +1984,16 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                     className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600/50 rounded-xl text-white focus:border-purple-500 focus:outline-none"
                   >
                     <option value="">Sélectionner</option>
-                    <option value="escort">Escort</option>
-                    <option value="masseuse-erotique">Masseuse érotique</option>
-                    <option value="dominatrice-bdsm">Dominatrice BDSM</option>
-                    <option value="transsexuel">Transsexuel</option>
+                    <option value="ESCORT">👠 Escort</option>
+                    <option value="MASSEUSE">💆 Masseuse érotique</option>
+                    <option value="DOMINATRICE">🔗 Dominatrice BDSM</option>
+                    <option value="TRANSSEXUELLE">🌸 Transsexuelle</option>
+                    <option value="AUTRE">💼 Autre</option>
                   </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Âge * {profileData.age && <span className="text-sm text-green-400 font-normal">({profileData.age} ans calculé)</span>}
+                    Âge *
                   </label>
                   <select
                     value={profileData.age || ''}
@@ -2004,7 +2023,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                     </optgroup>
                   </select>
                   <div className="mt-2 text-xs">
-                    <a href="/certification" className="text-purple-300 hover:text-purple-200 inline-flex items-center gap-1"><BadgeCheck size={14}/> Certifier mon âge</a>
+                    <a href="/profile-test-signup/escort?step=3" className="text-purple-300 hover:text-purple-200 inline-flex items-center gap-1"><BadgeCheck size={14}/> Certifier mon âge</a>
                   </div>
                 </div>
               </div>
@@ -2024,20 +2043,19 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-1">Langues parlées</label>
                 <div className="text-xs text-gray-400 mb-3">Évaluez votre niveau de maîtrise pour chaque langue (1 = Débutant, 5 = Courant)</div>
-                <div className="bg-gray-700/20 rounded-xl p-4 space-y-4">
-                  {['Français', 'Anglais', 'Allemand', 'Italien', 'Espagnol', 'Russe', 'Arabe', 'Chinois'].map((lang) => (
-                    <StarRating
-                      key={lang}
-                      language={lang}
-                      rating={profileData.languages?.[lang] || 0}
-                      isSelected={!!profileData.languages?.[lang]}
-                      onToggleLanguage={(selected) => toggleLanguageSelection(lang, selected)}
-                      onRatingChange={(rating) => updateLanguageRating(lang, rating)}
-                    />
-                  ))}
-                      </div>
-                <div className="mt-3 text-xs text-gray-500">
-                  💡 Les langues avec 0 étoile ne seront pas affichées dans votre profil public
+                <div className="bg-gray-700/20 rounded-xl p-4 space-y-3 sm:space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                    {['Français', 'Anglais', 'Allemand', 'Italien', 'Espagnol', 'Russe', 'Arabe', 'Chinois'].map((lang) => (
+                      <StarRating
+                        key={lang}
+                        language={lang}
+                        rating={profileData.languages?.[lang] || 0}
+                        isSelected={!!profileData.languages?.[lang]}
+                        onToggleLanguage={(selected) => toggleLanguageSelection(lang, selected)}
+                        onRatingChange={(rating) => updateLanguageRating(lang, rating)}
+                      />
+                    ))}
+                  </div>
                 </div>
               </div>
 
@@ -2114,7 +2132,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                   <label className="block text-sm font-medium text-gray-300 mb-2">
                     Adresse complète <span className="text-red-400">*</span>
                   </label>
-                  <AddressAutocomplete
+                  <PremiumAddressAutocomplete
                     value={profileData.address || ''}
                     onChange={(address, coordinates) => {
                       updateProfileData('address', address)

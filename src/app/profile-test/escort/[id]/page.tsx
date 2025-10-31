@@ -190,6 +190,13 @@ export default function EscortProfileTestPage() {
   const [notFound, setNotFound] = useState(false)
   const router = useRouter()
 
+  // Calculer si l'utilisateur connecté est le propriétaire du profil
+  const isOwner = useMemo(() => {
+    if (!session?.user?.id || !profile?.id) return false
+    // Comparer l'ID utilisateur de la session avec l'ID du profil
+    return session.user.id === profile.id
+  }, [session?.user?.id, profile?.id])
+
   // Resolve params
   const routeParams = useParams() as Record<string, string | string[]>
   const [resolvedId, setResolvedId] = useState<string>('')
@@ -680,9 +687,6 @@ export default function EscortProfileTestPage() {
             onFavoriteToggle={() => handleFavoriteToggle()}
           />
 
-          {/* Debug: afficher l'état de isOwner */}
-          {console.log('🔧 [PROFILE PAGE] isOwner:', isOwner, 'Profile ID:', profile.id)}
-          
           <MediaFeedWithGallery
             media={profile.media}
             profileId={profile.id}

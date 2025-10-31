@@ -16,6 +16,9 @@ export interface UnifiedProfileData {
   age?: number
   category?: string // escort, masseuse_erotique, dominatrice_bdsm, transsexuel
 
+  // Photo de profil
+  avatar?: string // URL de la photo de profil
+
   // Localisation
   city: string
   canton: string
@@ -113,6 +116,10 @@ export interface UnifiedProfileData {
   }
   createdAt?: string
   updatedAt: string
+
+  // Tarifs personnalisés et blocage géographique (commun pour dashboard et public)
+  customPrices?: any[]
+  blockedCountries?: string[]
 }
 
 interface UseUnifiedProfileReturn {
@@ -152,9 +159,17 @@ export function useUnifiedProfile(profileId: string): UseUnifiedProfileReturn {
 
       // Transform contact data for compatibility
       const profileData = data.profile
-      if (profileData?.contact?.phoneVisibility === 'none') {
-        profileData.contact.phoneVisibility = 'hidden'
-      }
+      // Ne pas transformer 'none' car c'est maintenant la valeur correcte
+
+      // Debug: Logger les services et avatar
+      console.log('🔍 [useUnifiedProfile] Data from API:', {
+        services: profileData.services,
+        servicesLength: profileData.services?.length,
+        avatar: profileData.avatar,
+        profilePhoto: profileData.profilePhoto,
+        isVerifiedBadge: profileData.isVerifiedBadge,
+        profileId
+      })
 
       setProfile(profileData)
     } catch (err: any) {

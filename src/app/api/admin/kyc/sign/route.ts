@@ -24,13 +24,27 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ url: `/api/kyc-v2/file/${encodeURIComponent(key)}` })
     }
 
-    const { S3Client, GetObjectCommand } = await import('@aws-sdk/client-s3')
+    const { S3Client, GetObjectCommand, HeadObjectCommand } = await import('@aws-sdk/client-s3')
     const { getSignedUrl } = await import('@aws-sdk/s3-request-presigner')
     const s3 = new S3Client({ region: 'auto', endpoint, credentials: { accessKeyId: accessKey!, secretAccessKey: secretKey! }, forcePathStyle: true })
+
+    // Vérifier si le fichier existe avant de créer l'URL signée
+    try {
+      await s3.send(new HeadObjectCommand({ Bucket: bucket, Key: key }))
+    } catch (headError: any) {
+      console.error('File not found on R2:', key)
+      return NextResponse.json({
+        error: 'file_not_found',
+        message: `Le fichier "${key}" n'existe pas sur le stockage cloud. Il n'a peut-être pas été uploadé correctement.`,
+        key
+      }, { status: 404 })
+    }
+
     const url = await getSignedUrl(s3 as any, new GetObjectCommand({ Bucket: bucket, Key: key }) as any, { expiresIn })
     return NextResponse.json({ url })
   } catch (e:any) {
-    return NextResponse.json({ error: e?.message || 'server_error' }, { status: 500 })
+    console.error('Error generating signed URL:', e)
+    return NextResponse.json({ error: e?.message || 'server_error', details: e }, { status: 500 })
   }
 }
 

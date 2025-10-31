@@ -1,7 +1,6 @@
 'use client'
 
 import React from 'react'
-import Image from 'next/image'
 import { MapPin, Clock, Star, Users } from 'lucide-react'
 import { Club } from '@/hooks/useClubs'
 
@@ -16,6 +15,10 @@ export default function ClubCard({ club, onClick }: ClubCardProps) {
       onClick(club)
     }
   }
+
+  // ✅ L'API envoie déjà les URLs avec cache-buster, on les utilise directement
+  // Note: On utilise l'avatar comme image principale car c'est la position 0 (photo de couverture dans le dashboard)
+  const coverUrl = club.avatar || club.cover
 
   const getEstablishmentTypeLabel = (type: string) => {
     switch (type) {
@@ -42,12 +45,15 @@ export default function ClubCard({ club, onClick }: ClubCardProps) {
     >
       {/* Image de couverture */}
       <div className="relative w-full h-full">
-        <Image
-          src={club.cover}
+        <img
+          key={`cover-${club.id}-${club.updatedAt}`}
+          src={coverUrl}
           alt={club.name}
-          fill
-          className="object-cover transition-transform duration-300 group-hover:scale-105"
-          sizes="(max-width: 768px) 80vw, 40vw"
+          className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+          onError={(e) => {
+            // Fallback si l'image ne charge pas
+            e.currentTarget.src = `https://picsum.photos/seed/club-${club.id}/600/400`
+          }}
         />
         
         {/* Overlay dégradé */}

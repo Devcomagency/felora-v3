@@ -23,34 +23,37 @@ export class MediaStorage {
 
   async upload(file: File, folder: string = 'general'): Promise<UploadResult> {
     const provider = (process.env.STORAGE_PROVIDER || '').toLowerCase()
-    
+
     console.log('🔍 DEBUG storage.ts upload():', {
       provider,
       NODE_ENV: process.env.NODE_ENV,
       isProduction: this.isProduction,
       fileSize: file.size,
       fileName: file.name,
-      fileType: file.type
+      fileType: file.type,
+      folder
     })
-    
-    // FORCE Base64 storage for reliability 
-    if (provider === 'base64' || provider === '') {
+
+    // FORCE Base64 storage for reliability
+    if (provider === 'base64') {
       console.log('📦 Storage: Using Base64 (provider:', provider, ')')
       return await this.uploadBase64(file, folder)
     }
-    
-    if (!this.isProduction || provider === 'local') {
-      console.log('📦 Storage: Using Local (isProduction:', this.isProduction, ', provider:', provider, ')')
-      return await this.uploadLocal(file, folder)
-    }
-    
-    // cloud providers (fallback)
+
+    // Use Cloudflare R2 if provider is configured (works in dev and production)
     if (provider === 'cloudflare-r2') {
       console.log('📦 Storage: Using Cloudflare R2 (provider:', provider, ')')
       return await this.uploadToCloud(file, folder)
     }
-    
-    // Default: Base64 for production reliability
+
+    // Use local storage if explicitly requested or if no provider is set
+    if (provider === 'local' || provider === '') {
+      console.log('📦 Storage: Using Local (isProduction:', this.isProduction, ', provider:', provider, ')')
+      return await this.uploadLocal(file, folder)
+    }
+
+    // Default fallback: Base64 for reliability
+    console.log('📦 Storage: Fallback to Base64 (unknown provider:', provider, ')')
     return await this.uploadBase64(file, folder)
   }
 

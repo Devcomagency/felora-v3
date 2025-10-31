@@ -5,6 +5,21 @@
 /* Import des design tokens de la librairie UI */
 @import '../ui/tokens/design-tokens.css';
 
+/* Felora Landing Page Custom Styles */
+:root {
+  --felora-void: #000000;
+  --felora-obsidian: #0D0D0D;
+  --felora-charcoal: #1A1A1A;
+  --felora-steel: #2A2A2A;
+  --felora-silver: #F8F9FA;
+  --felora-pearl: #FFFFFF;
+  --felora-aurora: #FF6B9D;
+  --felora-neon: #00F5FF;
+  --felora-plasma: #B794F6;
+  --felora-quantum: #4FD1C7;
+  --felora-neural: #7C3AED;
+}
+
 /* Styles de base pour l'application */
 html, body { 
   height: 100%; 
@@ -58,6 +73,24 @@ body[data-hide-static-nav="true"] [data-static-nav="true"] {
 body[data-hide-static-nav="true"] [data-app-shell] {
   padding-bottom: 0 !important;
   padding-top: 0 !important;
+}
+
+/* Hide menu burger on admin pages */
+body:has([data-hide-menu="true"]) [data-menu="true"],
+body:has([data-hide-menu="true"]) button[data-menu] {
+  display: none !important;
+}
+
+/* Hide footer on admin pages - Multiple selectors pour compatibilité */
+body:has([data-admin-layout="true"]) footer,
+[data-admin-layout="true"] ~ footer,
+body:has([data-hide-menu="true"]) footer {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  height: 0 !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
 }
 
 /* Styles spécifiques pour le feed TikTok responsive */
@@ -153,4 +186,52 @@ body[data-hide-static-nav="true"] [data-app-shell] {
     scroll-snap-align: center;
     scroll-snap-stop: always;
   }
+
+  .animate-gradient-shift {
+    background-size: 200% 200%;
+    animation: gradient-shift 15s ease infinite;
+  }
+
+  @keyframes gradient-shift {
+    0%, 100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+
+  .text-shadow-glow {
+    text-shadow: 0 0 20px rgba(112, 0, 227, 0.5),
+                 0 0 40px rgba(227, 0, 140, 0.3),
+                 0 0 60px rgba(255, 102, 27, 0.2);
+  }
+}
+
+/* Hide scrollbar completely for immersive experience (TikTok-style) */
+::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+html, body {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
+}
+
+/* Selection styling */
+::selection {
+  background: rgba(112, 0, 227, 0.3);
+  color: white;
+}
+
+::-moz-selection {
+  background: rgba(112, 0, 227, 0.3);
+  color: white;
 }

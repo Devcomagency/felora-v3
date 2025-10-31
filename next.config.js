@@ -19,6 +19,7 @@ const nextConfig = {
   // Images: production domains + development testing
   images: {
     domains: ['localhost'],
+    unoptimized: process.env.NODE_ENV !== 'production', // Désactiver l'optimisation en dev pour éviter le cache
     remotePatterns: [
       // Production storage - Cloudflare R2
       { protocol: 'https', hostname: '*.r2.cloudflarestorage.com', port: '', pathname: '/**' },
@@ -76,6 +77,8 @@ const nextConfig = {
       // Demo images (mock)
       'https://picsum.photos',
       'https://fastly.picsum.photos',
+      'https://images.unsplash.com',
+      'https://*.unsplash.com',
 
       // Observability & Analytics
       'https://*.sentry.io',

@@ -20,6 +20,8 @@ interface SwissAddress {
   address: string
   latitude: number
   longitude: number
+  type?: string
+  origin?: string
 }
 
 interface AddressAutocompleteProps {
@@ -51,7 +53,8 @@ export default function AddressAutocomplete({
   const [loading, setLoading] = useState(false)
   const [selectedIndex, setSelectedIndex] = useState(-1)
   const [isLocating, setIsLocating] = useState(false)
-  
+  const [hasUserInteracted, setHasUserInteracted] = useState(false)
+
   const inputRef = useRef<HTMLInputElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   
@@ -133,7 +136,7 @@ export default function AddressAutocomplete({
 
   useEffect(() => {
     const searchTimeout = setTimeout(async () => {
-      if (value.length >= 2) {
+      if (value.length >= 2 && hasUserInteracted) {
         setLoading(true)
         try {
           const results = await searchAddresses(value)
@@ -151,7 +154,7 @@ export default function AddressAutocomplete({
     }, 300)
 
     return () => clearTimeout(searchTimeout)
-  }, [value])
+  }, [value, hasUserInteracted])
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -240,10 +243,10 @@ export default function AddressAutocomplete({
 
   const handleHistorySelect = (address: string, coordinates?: { lat: number; lng: number }) => {
     onChange(address, coordinates)
-    onCoordinatesChange?.(coordinates)
+    onCoordinatesChange?.(coordinates || null)
     setIsOpen(false)
     inputRef.current?.blur()
-    
+
     // Sauvegarder dans l'historique (mise à jour du compteur)
     saveToHistory(address, coordinates)
   }
@@ -415,21 +418,22 @@ export default function AddressAutocomplete({
           if (data.address) {
             onChange(data.address, { lat: latitude, lng: longitude })
             onCoordinatesChange?.({ lat: latitude, lng: longitude })
-            
+
             // Extraire la ville de l'adresse pour mise à jour automatique
             const addressParts = data.address.split(', ')
+            let cityName = ''
             if (addressParts.length >= 2) {
               const cityPart = addressParts[addressParts.length - 1]
-              const cityName = cityPart.replace(/^\d+\s+/, '').replace(/\s*\([^)]*\)/, '')
+              cityName = cityPart.replace(/^\d+\s+/, '').replace(/\s*\([^)]*\)/, '')
               if (cityName) {
                 // Déclencher un événement personnalisé pour mettre à jour la ville
-                const event = new CustomEvent('addressCityDetected', { 
+                const event = new CustomEvent('addressCityDetected', {
                   detail: { city: cityName, canton: extractCantonFromAddress(data.address) }
                 })
                 window.dispatchEvent(event)
               }
             }
-            
+
             // 🎯 ÉMISSION D'ÉVÉNEMENT POUR SYNCHRONISER LA CARTE (GÉOLOCALISATION)
             const mapUpdateEvent = new CustomEvent('addressChanged', {
               detail: {
@@ -442,9 +446,27 @@ export default function AddressAutocomplete({
             console.log('📤 [DASHBOARD] Émission événement addressChanged (géolocalisation):', mapUpdateEvent.detail)
             window.dispatchEvent(mapUpdateEvent)
           } else {
-            // Fallback si pas d'adresse trouvée
-            onChange(`Position GPS: ${latitude.toFixed(6)}, ${longitude.toFixed(6)}`, { lat: latitude, lng: longitude })
-            onCoordinatesChange?.({ lat: latitude, lng: longitude })
+            // Fallback : Essayer un appel direct à Nominatim
+            console.warn('⚠️ Reverse geocoding API failed, trying Nominatim...')
+            try {
+              const nominatimUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`
+              const nominatimRes = await fetch(nominatimUrl)
+              const nominatimData = await nominatimRes.json()
+
+              if (nominatimData.display_name) {
+                const formattedAddress = nominatimData.display_name
+                onChange(formattedAddress, { lat: latitude, lng: longitude })
+                onCoordinatesChange?.({ lat: latitude, lng: longitude })
+                console.log('✅ Nominatim fallback successful:', formattedAddress)
+              } else {
+                throw new Error('No address from Nominatim')
+              }
+            } catch (nominatimError) {
+              console.error('❌ Nominatim fallback failed:', nominatimError)
+              // Dernier fallback : afficher un message plus convivial
+              alert('Impossible de trouver l\'adresse exacte. Veuillez saisir votre adresse manuellement.')
+              onCoordinatesChange?.({ lat: latitude, lng: longitude })
+            }
           }
         } catch (error) {
           console.error('Erreur reverse geocoding:', error)
@@ -514,6 +536,7 @@ export default function AddressAutocomplete({
           type="text"
           value={value}
           onChange={(e) => {
+            setHasUserInteracted(true)
             const newAddress = e.target.value
             onChange(newAddress, undefined)
             if (newAddress === '') {
@@ -555,6 +578,7 @@ export default function AddressAutocomplete({
           }}
           onKeyDown={handleKeyDown}
           onFocus={() => {
+            setHasUserInteracted(true)
             if (suggestions.length > 0) {
               setIsOpen(true)
             }

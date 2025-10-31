@@ -284,22 +284,31 @@ export default function RealMediaManager() {
 
       {/* Modal d'upload avec nouveau MediaUploader */}
       {showUploadModal && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-900 rounded-2xl w-full max-w-2xl border border-gray-700 max-h-[90vh] overflow-y-auto">
+        <div
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          onClick={(e) => {
+            // Fermer si on clique sur le backdrop
+            if (e.target === e.currentTarget) {
+              setShowUploadModal(false)
+            }
+          }}
+        >
+          <div className="bg-gray-900 rounded-2xl w-full max-w-2xl border border-gray-700 max-h-[90vh] overflow-y-auto shadow-2xl">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xl font-bold text-white">Ajouter des médias</h3>
                 <button
                   onClick={() => setShowUploadModal(false)}
-                  className="p-2 text-gray-400 hover:text-white transition-colors"
+                  className="p-2 text-gray-400 hover:text-white transition-colors rounded-lg hover:bg-gray-800"
+                  aria-label="Fermer"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
               </div>
-              
-              <MediaUploader 
+
+              <MediaUploader
                 onUploadSuccess={handleUploadSuccess}
                 className="border-0 bg-transparent p-0"
               />

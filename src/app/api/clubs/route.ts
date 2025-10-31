@@ -1,5 +1,39 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { isClubOpenNow } from '@/lib/club-utils'
+
+/**
+ * Construit l'URL complète d'un média
+ * - URLs complètes (http/https) : retournées telles quelles
+ * - Chemins locaux (/uploads/) : retournés tels quels (servis depuis public/)
+ * - Chemins R2 (/profiles/, /clubs/, /media/) : préfixés avec le domaine R2
+ */
+function buildMediaUrl(url: string | null | undefined): string | null {
+  if (!url) return null
+
+  // Si c'est déjà une URL complète (http ou https), on la retourne telle quelle
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url
+  }
+
+  // Chemins R2 : on ajoute le domaine R2
+  // Note: /uploads/ est exclu car les fichiers sont stockés localement dans public/
+  const R2_PATHS = ['/profiles/', '/clubs/', '/media/']
+  const isR2Path = R2_PATHS.some(prefix => url.startsWith(prefix))
+
+  if (isR2Path) {
+    const R2_PUBLIC_URL = process.env.CLOUDFLARE_R2_PUBLIC_URL ||
+                          process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL ||
+                          'https://media.felora.ch'
+    return `${R2_PUBLIC_URL}${url}`
+  }
+
+  // Autres chemins (fichiers locaux comme /uploads/) : retourner tel quel
+  return url
+}
+
+export const dynamic = 'force-dynamic' // Désactiver le cache pour rafraîchir les images
+export const revalidate = 0 // Pas de revalidation, toujours frais
 
 export async function GET(request: NextRequest) {
   try {
@@ -83,9 +117,28 @@ export async function GET(request: NextRequest) {
             ownerType: 'CLUB',
             ownerId: club.id
           },
-          orderBy: { pos: 'asc' }
+          orderBy: [
+            { pos: 'asc' },
+            { createdAt: 'desc' } // Plus récent en premier pour chaque position
+          ],
+          select: {
+            id: true,
+            ownerType: true,
+            ownerId: true,
+            type: true,
+            url: true,
+            thumbUrl: true,
+            description: true,
+            visibility: true,
+            price: true,
+            pos: true,
+            likeCount: true,
+            reactCount: true,
+            createdAt: true,
+            updatedAt: true // ✅ IMPORTANT pour le cache-buster
+          }
         })
-        
+
         return {
           ...club,
           media
@@ -100,13 +153,43 @@ export async function GET(request: NextRequest) {
       // Trouver la photo de profil (pos=0) et la photo de couverture (pos=1)
       const profilePhoto = club.media.find(m => m.pos === 0)
       const coverPhoto = club.media.find(m => m.pos === 1)
+
+      // Construire les URLs - privilégier TOUJOURS les médias de la table Media
+      // Ajouter un cache-buster basé sur l'ID + updatedAt du média pour forcer le refresh
+      let avatarUrl = profilePhoto?.url
+        ? buildMediaUrl(profilePhoto.url)
+        : (club.details?.avatarUrl ? buildMediaUrl(club.details.avatarUrl) : `https://picsum.photos/seed/club-${club.id}/300/300`)
       
+      // ✅ IMPORTANT : Utiliser updatedAt pour que le cache se rafraîchisse quand on modifie un média
+      if (avatarUrl && profilePhoto) {
+        const timestamp = profilePhoto.updatedAt ? new Date(profilePhoto.updatedAt).getTime() : Date.now()
+        const separator = avatarUrl.includes('?') ? '&' : '?'
+        avatarUrl = `${avatarUrl}${separator}cb=${profilePhoto.id}_${timestamp}`
+      }
+
+      let coverUrl = coverPhoto?.url
+        ? buildMediaUrl(coverPhoto.url)
+        : (club.details?.coverUrl ? buildMediaUrl(club.details.coverUrl) : `https://picsum.photos/seed/cover-${club.id}/600/400`)
+
+      // ✅ IMPORTANT : Utiliser updatedAt pour que le cache se rafraîchisse quand on modifie un média
+      if (coverUrl && coverPhoto) {
+        const timestamp = coverPhoto.updatedAt ? new Date(coverPhoto.updatedAt).getTime() : Date.now()
+        const separator = coverUrl.includes('?') ? '&' : '?'
+        coverUrl = `${coverUrl}${separator}cb=${coverPhoto.id}_${timestamp}`
+      }
+
+      // ✅ Calculer si le club est ouvert maintenant basé sur les vrais horaires
+      const isOpenNow = isClubOpenNow(
+        club.services?.openingHours || null,
+        club.services?.isOpen24_7 || false
+      )
+
       return {
         id: club.id,
         name: club.details?.name || club.companyName,
         handle: club.handle,
-        avatar: profilePhoto?.url || club.details?.avatarUrl || `https://picsum.photos/seed/club-${club.id}/300/300`,
-        cover: coverPhoto?.url || club.details?.coverUrl || `https://picsum.photos/seed/cover-${club.id}/600/400`,
+        avatar: avatarUrl,
+        cover: coverUrl,
         city: club.details?.city || '',
         description: club.details?.description || '',
         establishmentType: club.details?.establishmentType || 'club',
@@ -116,7 +199,7 @@ export async function GET(request: NextRequest) {
         email: club.details?.email || club.user?.email || '',
         phone: club.details?.phone || club.user?.phoneE164 || '',
         verified: club.verified || false,
-        isActive: club.details?.isActive || false,
+        isActive: isOpenNow, // ✅ Utiliser le vrai statut d'ouverture
         capacity: club.details?.capacity || null,
         latitude: club.details?.latitude || null,
         longitude: club.details?.longitude || null,

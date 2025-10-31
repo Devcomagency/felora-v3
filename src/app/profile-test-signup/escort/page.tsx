@@ -23,17 +23,37 @@ function EscortSignupContent(){
     { id:3, label:'KYC' },
   ],[])
 
-  // Restore userId from localStorage if page reloaded or opened directly on step 2/3
+  // Restore userId from localStorage OR fetch from session if user is logged in
   useEffect(() => {
-    try {
-      if (!userId) {
+    const fetchUserId = async () => {
+      try {
+        if (userId) return // Already have userId
+
+        // First, try localStorage (for signup flow)
         const saved = localStorage.getItem('felora-signup-userId') || ''
-        console.log('Restoring userId from localStorage:', saved)
-        if (saved) setUserId(saved)
+        if (saved) {
+          console.log('Restoring userId from localStorage:', saved)
+          setUserId(saved)
+          return
+        }
+
+        // If no localStorage, try to get from session (for logged-in users clicking notification link)
+        console.log('No localStorage userId, trying to fetch from session...')
+        const res = await fetch('/api/auth/session')
+        const session = await res.json()
+
+        if (session?.user?.id) {
+          console.log('Got userId from session:', session.user.id)
+          setUserId(session.user.id)
+        } else {
+          console.log('No session found, user needs to sign up first')
+        }
+      } catch (e) {
+        console.error('Error fetching userId:', e)
       }
-    } catch (e) {
-      console.error('Error restoring userId from localStorage:', e)
     }
+
+    fetchUserId()
   }, [userId])
 
   // Keep step in sync with URL (if user navigates directly to ?step=2/3)
@@ -103,10 +123,23 @@ function EscortSignupContent(){
 
       {step === 3 && (
         <div className="max-w-2xl mx-auto">
-          <Step3KYCMobile userId={userId} role="ESCORT" onSubmitted={(ok)=>{
+          <Step3KYCMobile userId={userId} role="ESCORT" onSubmitted={async (ok)=>{
             try { if (ok) localStorage.removeItem('felora-signup-userId') } catch {}
             if (ok) {
-              router.push('/dashboard-escort/statistiques?welcome=1')
+              // Récupérer l'ID du profil escort pour rediriger vers le profil public
+              try {
+                const res = await fetch('/api/me/escort-profile')
+                const data = await res.json()
+                if (data.success && data.profile?.id) {
+                  router.push(`/profile/${data.profile.id}?kycSuccess=1`)
+                } else {
+                  // Fallback vers le dashboard si pas de profil
+                  router.push('/dashboard-escort/statistiques?welcome=1')
+                }
+              } catch (error) {
+                console.error('Error fetching profile:', error)
+                router.push('/dashboard-escort/statistiques?welcome=1')
+              }
             } else {
               // Vérifier plus tard: amener au dashboard escort minimal
               router.push('/dashboard-escort/profil?kyc=deferred')

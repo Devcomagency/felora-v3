@@ -154,7 +154,7 @@ function MediaPlayer({ id, type, url, thumb, poster, index, isActive, profileId,
             trackMediaView(url, index)
           }}
           className="absolute inset-0 bg-transparent group-hover:bg-black/20 transition-colors duration-200 flex items-center justify-center"
-          aria-label={isPlaying ? 'Pause video' : 'Play video'}
+          aria-label={isPlaying ? 'Mettre en pause la vidéo' : 'Lire la vidéo'}
         >
           {(!error) && (
             <div className="w-16 h-16 bg-black/70 backdrop-blur-sm rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
@@ -182,8 +182,10 @@ function MediaPlayer({ id, type, url, thumb, poster, index, isActive, profileId,
         src={url}
         alt={`Media ${index + 1}`}
         fill
+        loading="lazy"
         className={`object-cover ${isPrivate ? 'blur-xl brightness-30' : ''}`}
         onError={() => setError(true)}
+        sizes="(max-width: 768px) 50vw, 33vw"
       />
 
       <button
@@ -192,6 +194,7 @@ function MediaPlayer({ id, type, url, thumb, poster, index, isActive, profileId,
           trackMediaView(url, index)
         }}
         className="absolute inset-0 bg-transparent group-hover:bg-black/20 transition-colors duration-200 flex items-center justify-center"
+        aria-label="Voir le média en plein écran"
       >
         {isPrivate && (
           <div className="w-16 h-16 bg-black/70 backdrop-blur-sm rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
@@ -259,6 +262,28 @@ export default function MediaFeedWithGallery({
   const mixedContent = useMemo(() => [...publicContent, ...premiumContent, ...privateContent], [publicContent, premiumContent, privateContent])
 
   const fullUserId = useMemo(() => userId ?? 'dev-guest', [userId])
+
+  // Detect #media-{id} in URL hash and open that media in fullscreen
+  useEffect(() => {
+    if (typeof window === 'undefined' || !media.length) return
+
+    const hash = window.location.hash
+    if (hash.startsWith('#media-')) {
+      const mediaId = hash.substring(7) // Remove '#media-' prefix
+      const mediaIndex = media.findIndex(m => m.id === mediaId)
+
+      if (mediaIndex !== -1) {
+        const targetMedia = media[mediaIndex]
+        setFullscreenMedia(targetMedia.url)
+        setFullscreenIndex(mediaIndex)
+
+        // Remove hash from URL after opening (optional)
+        setTimeout(() => {
+          window.history.replaceState(null, '', window.location.pathname + window.location.search)
+        }, 100)
+      }
+    }
+  }, [media])
 
   const fullscreenMediaId = useMemo(() => {
     if (!fullscreenMedia) return ''
@@ -404,7 +429,7 @@ export default function MediaFeedWithGallery({
                     : 'text-gray-400'
                 }`}
               >
-                <span className="text-sm font-medium">Premium 👑</span>
+                <span className="text-sm font-medium">Premium</span>
                 <span className="ml-1 text-xs">({premiumContent.length})</span>
               </button>
             )}
@@ -496,7 +521,6 @@ export default function MediaFeedWithGallery({
                     />
                     {!isOwner && (
                       <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm">
-                        <div className="text-4xl mb-2">👑</div>
                         <div className="text-white text-sm font-bold">{content.price ? `${content.price} CHF` : 'Premium'}</div>
                         <button className="mt-2 px-3 py-1 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full text-xs font-semibold text-white hover:scale-105 transition-transform">
                           Déverrouiller

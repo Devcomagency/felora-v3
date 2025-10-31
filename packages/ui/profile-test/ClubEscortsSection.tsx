@@ -48,7 +48,7 @@ export default function ClubEscortsSection({ escorts, isLoading }: ClubEscortsSe
     <div className="px-4 py-6 border-b border-white/5">
       {/* Header */}
       <div className="flex items-center gap-2 mb-4">
-        <h2 className="text-white font-semibold text-lg">Nos Escortes</h2>
+        <h2 className="text-white font-semibold text-lg">Les filles</h2>
         <span className="text-xs text-white/40 bg-white/5 px-2 py-1 rounded-full">
           {escorts.length}
         </span>
@@ -59,7 +59,7 @@ export default function ClubEscortsSection({ escorts, isLoading }: ClubEscortsSe
         {escorts.map((escort) => (
           <button
             key={escort.id}
-            onClick={() => router.push(`/profile-test/escort/${escort.id}`)}
+            onClick={() => router.push(`/profile/${escort.id}`)}
             className="flex-shrink-0 group"
           >
             {/* Avatar container avec gradient border */}

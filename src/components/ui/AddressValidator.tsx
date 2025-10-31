@@ -132,77 +132,22 @@ export default function AddressValidator({ address, coordinates, className = '' 
 
   if (!validation) return null
 
-  const getIcon = () => {
-    switch (validation.quality) {
-      case 'excellent':
-        return <CheckCircle className="text-green-400" size={16} />
-      case 'good':
-        return <CheckCircle className="text-blue-400" size={16} />
-      case 'warning':
-        return <AlertTriangle className="text-orange-400" size={16} />
-      case 'error':
-        return <XCircle className="text-red-400" size={16} />
-    }
-  }
-
-  const getColors = () => {
-    switch (validation.quality) {
-      case 'excellent':
-        return 'bg-green-500/10 border-green-500 text-green-400'
-      case 'good':
-        return 'bg-blue-500/10 border-blue-500 text-blue-400'
-      case 'warning':
-        return 'bg-orange-500/10 border-orange-500 text-orange-400'
-      case 'error':
-        return 'bg-red-500/10 border-red-500 text-red-400'
-    }
-  }
+  const isCorrect = validation.score >= 75
 
   return (
-    <div className={`p-3 rounded-lg border-l-4 ${getColors()} ${className}`}>
-      <div className="flex items-start gap-2">
-        {getIcon()}
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-sm font-medium">{validation.message}</span>
-            <span className="text-xs opacity-75">({validation.score}%)</span>
-          </div>
-          
-          {validation.suggestions && validation.suggestions.length > 0 && (
-            <div className="mt-2">
-              <p className="text-xs opacity-75 mb-1">Suggestions d'amélioration :</p>
-              <ul className="list-disc list-inside space-y-1">
-                {validation.suggestions.map((suggestion, index) => (
-                  <li key={index} className="text-xs opacity-75">{suggestion}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-          
-          {validation.details && (
-            <div className="mt-2 pt-2 border-t border-current/20">
-              <div className="grid grid-cols-2 gap-1 text-xs opacity-75">
-                <div className="flex items-center gap-1">
-                  <div className={`w-2 h-2 rounded-full ${validation.details.hasStreetNumber ? 'bg-green-400' : 'bg-red-400'}`} />
-                  <span>Numéro</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <div className={`w-2 h-2 rounded-full ${validation.details.hasStreetName ? 'bg-green-400' : 'bg-red-400'}`} />
-                  <span>Rue</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <div className={`w-2 h-2 rounded-full ${validation.details.hasPostalCode ? 'bg-green-400' : 'bg-red-400'}`} />
-                  <span>Code postal</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <div className={`w-2 h-2 rounded-full ${validation.details.hasCity ? 'bg-green-400' : 'bg-red-400'}`} />
-                  <span>Ville</span>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
+    <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${
+      isCorrect 
+        ? 'bg-green-500/10 text-green-400 border border-green-500/30' 
+        : 'bg-red-500/10 text-red-400 border border-red-500/30'
+    } ${className}`}>
+      {isCorrect ? (
+        <CheckCircle size={16} />
+      ) : (
+        <XCircle size={16} />
+      )}
+      <span className="text-sm font-medium">
+        {isCorrect ? 'Adresse correcte' : 'Adresse incorrecte'}
+      </span>
     </div>
   )
 }

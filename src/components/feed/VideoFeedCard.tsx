@@ -148,7 +148,21 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
   
   // États pour l'optimisation vidéo
   const [isInView, setIsInView] = useState(false)
-  const [shouldLoadVideo, setShouldLoadVideo] = useState(true) // PRÉCHARGER IMMÉDIATEMENT
+  const [videoError, setVideoError] = useState<string | null>(null)
+  const [shouldLoadVideo, setShouldLoadVideo] = useState(() => {
+    // Valider l'URL de la vidéo avant de la charger
+    if (!item.url || typeof item.url !== 'string') {
+      console.warn('⚠️ URL vidéo invalide:', item.url)
+      return false
+    }
+    try {
+      new URL(item.url)
+      return true
+    } catch {
+      console.warn('⚠️ URL vidéo malformée:', item.url)
+      return false
+    }
+  })
 
   // Hooks
   const { handleIntersectingChange, togglePlayPause, currentVideo, isMute } = useVideoIntersection()
@@ -364,18 +378,39 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
             preload="auto"
             poster={item.thumb}
             onClick={handleVideoClick}
-            onLoadStart={() => console.log('🎬 Vidéo en cours de chargement...')}
-            onCanPlay={() => console.log('✅ Vidéo prête à être lue')}
+            onLoadStart={() => {
+              console.log('🎬 Vidéo en cours de chargement...')
+              setVideoError(null) // Réinitialiser l'erreur au début du chargement
+            }}
+            onCanPlay={() => {
+              console.log('✅ Vidéo prête à être lue')
+              setVideoError(null) // Pas d'erreur si la vidéo peut être lue
+            }}
             onError={(e) => {
               const target = e.target as HTMLVideoElement;
               const error = target.error;
-              console.error('❌ Erreur vidéo:', {
-                errorCode: error?.code,
-                errorMessage: error?.message,
-                src: target.src,
-                networkState: target.networkState,
-                readyState: target.readyState
-              });
+              
+              // Vérifier si l'erreur existe
+              if (error) {
+                console.error('❌ Erreur vidéo:', {
+                  errorCode: error.code,
+                  errorMessage: error.message,
+                  src: target.src,
+                  networkState: target.networkState,
+                  readyState: target.readyState
+                });
+                setVideoError(`Erreur ${error.code}: ${error.message || 'Chargement impossible'}`)
+              } else {
+                // Si l'erreur est vide, essayer d'obtenir plus d'informations
+                console.error('❌ Erreur vidéo (détails non disponibles):', {
+                  src: target.src,
+                  networkState: target.networkState,
+                  readyState: target.readyState,
+                  videoUrl: item.url,
+                  videoThumb: item.thumb
+                });
+                setVideoError('Vidéo non disponible')
+              }
             }}
           >
             <source src={item.url} type="video/mp4" />
@@ -394,10 +429,18 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
             }}
             onClick={handleVideoClick}
           >
-            <div className="text-center text-white/60">
-              <div className="text-4xl mb-2">🎬</div>
-              <div className="text-sm">Chargement...</div>
-            </div>
+            {videoError ? (
+              <div className="text-center text-white/80">
+                <AlertTriangle className="w-16 h-16 mx-auto mb-2 text-red-500" />
+                <div className="text-sm font-medium mb-1">Vidéo non disponible</div>
+                <div className="text-xs text-white/50">{videoError}</div>
+              </div>
+            ) : (
+              <div className="text-center text-white/60">
+                <div className="text-4xl mb-2">🎬</div>
+                <div className="text-sm">Chargement...</div>
+              </div>
+            )}
           </div>
         )}
         

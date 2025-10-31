@@ -3,6 +3,36 @@ import { prisma } from '@/lib/prisma'
 
 type SortKey = 'recent' | 'relevance'
 
+// Fonction pour décaler les coordonnées selon le mode de confidentialité
+function applyPrivacyOffset(lat: number | null, lng: number | null, addressPrivacy: string | null | undefined): { lat: number | null, lng: number | null } {
+  if (!lat || !lng || addressPrivacy !== 'approximate') {
+    return { lat, lng }
+  }
+
+  // Générer un offset déterministe de ~150m
+  const maxOffset = 0.00135 // ≈150m
+  
+  // Hash simple basé sur lat+lng pour obtenir un offset déterministe
+  const coordsStr = `${lat},${lng}`
+  let hash = 0
+  for (let i = 0; i < coordsStr.length; i++) {
+    const char = coordsStr.charCodeAt(i)
+    hash = ((hash << 5) - hash) + char
+    hash = hash & hash
+  }
+  
+  const normalizedHash1 = ((hash & 0x7FFFFFFF) % 1000) / 1000 * 2 - 1
+  const normalizedHash2 = ((((hash >> 8) & 0x7FFFFFFF) % 1000) / 1000 * 2 - 1)
+  
+  const offsetLat = normalizedHash1 * maxOffset
+  const offsetLng = normalizedHash2 * maxOffset
+  
+  return {
+    lat: lat + offsetLat,
+    lng: lng + offsetLng
+  }
+}
+
 export async function GET(request: NextRequest) {
   try {
     console.log('[API ESCORTS] Request started:', request.url)
@@ -266,6 +296,7 @@ export async function GET(request: NextRequest) {
           currency: true,
           latitude: true,
           longitude: true,
+          addressPrivacy: true,
           height: true,
           bodyType: true,
           hairColor: true,
@@ -424,8 +455,8 @@ export async function GET(request: NextRequest) {
           rate2H: e.rate2H || undefined,
           rateOvernight: e.rateOvernight || undefined,
           currency: e.currency || 'CHF',
-          latitude: e.latitude || undefined,
-          longitude: e.longitude || undefined,
+          latitude: applyPrivacyOffset(e.latitude || null, e.longitude || null, e.addressPrivacy).lat,
+          longitude: applyPrivacyOffset(e.latitude || null, e.longitude || null, e.addressPrivacy).lng,
           updatedAt: e.updatedAt,
           // Nouveaux champs V2
           height: e.height || undefined,

@@ -69,8 +69,17 @@ export async function POST(req: Request) {
     )
 
     if (hasR2 || hasS3) {
-      const res = await mediaStorage.upload(file, 'kyc').catch((e:any)=>({ success:false, error:e?.message }))
-      if (!res?.success) return NextResponse.json({ error: (res as any)?.error || 'upload_failed' }, { status: 502 })
+      console.log('🔍 KYC Upload - Calling mediaStorage.upload with folder: kyc')
+      const res = await mediaStorage.upload(file, 'kyc').catch((e:any)=>{
+        console.error('❌ KYC Upload - mediaStorage.upload failed:', e)
+        return { success:false, error:e?.message }
+      })
+      console.log('📦 KYC Upload - Result:', { success: res?.success, hasUrl: !!res?.url, hasKey: !!res?.key, key: (res as any)?.key })
+      if (!res?.success) {
+        console.error('❌ KYC Upload - Upload failed:', (res as any)?.error)
+        return NextResponse.json({ error: (res as any)?.error || 'upload_failed' }, { status: 502 })
+      }
+      console.log('✅ KYC Upload - Success, returning URL and key')
       return NextResponse.json({ url: (res as any).url, key: (res as any).key })
     }
 

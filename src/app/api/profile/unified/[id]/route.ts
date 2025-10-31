@@ -56,6 +56,7 @@ export async function GET(
           latitude: true,
           longitude: true,
           workingArea: true, // Adresse legacy
+          addressPrivacy: true, // Mode de confidentialité de l'adresse
 
           // Contact et visibilité
           phoneVisibility: true,
@@ -97,6 +98,10 @@ export async function GET(
           paymentMethods: true,
           venueOptions: true,
           acceptedCurrencies: true,
+
+          // Tarifs personnalisés et blocage géographique
+          customPrices: true,
+          blockedCountries: true,
 
           // Médias
           galleryPhotos: true,
@@ -203,6 +208,7 @@ export async function GET(
           // Localisation publique
           city: true,
           canton: true,
+          addressPrivacy: true, // Mode de confidentialité de l'adresse
 
           // Langues et services publics
           languages: true,
@@ -242,6 +248,9 @@ export async function GET(
           venueOptions: true,
           acceptedCurrencies: true,
 
+          // Tarifs personnalisés (pour affichage public)
+          customPrices: true,
+
           // Disponibilité publique
           availableNow: true,
           weekendAvailable: true,
@@ -264,7 +273,11 @@ export async function GET(
           status: true,
           updatedAt: true,
 
+          // Badge vérifié
+          isVerifiedBadge: true,
+
           // Anciens champs médias (pour compatibilité)
+          profilePhoto: true,
           galleryPhotos: true,
           videos: true,
 
@@ -281,11 +294,20 @@ export async function GET(
         return NextResponse.json({ error: 'profile_not_found' }, { status: 404 })
       }
 
+      console.log('🔍 [API UNIFIED] Profile data from DB:', {
+        venueOptions: profile.venueOptions,
+        services: profile.services,
+        practices: profile.practices,
+        profilePhoto: profile.profilePhoto,
+        isVerifiedBadge: profile.isVerifiedBadge
+      })
+
       // Récupérer les médias depuis la table Media
       const medias = await prisma.media.findMany({
         where: {
           ownerType: 'ESCORT',
-          ownerId: id
+          ownerId: id,
+          deletedAt: null // Exclure les médias supprimés
         },
         orderBy: {
           pos: 'asc'
@@ -309,9 +331,15 @@ export async function GET(
       })
     }
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('❌ [API UNIFIED PROFILE] Error:', error)
-    return NextResponse.json({ error: 'server_error' }, { status: 500 })
+    console.error('❌ [API UNIFIED PROFILE] Stack:', error?.stack)
+    console.error('❌ [API UNIFIED PROFILE] Message:', error?.message)
+    return NextResponse.json({ 
+      error: 'server_error', 
+      message: error?.message || 'Unknown error',
+      details: process.env.NODE_ENV === 'development' ? error?.stack : undefined
+    }, { status: 500 })
   }
 }
 
@@ -489,10 +517,13 @@ export async function POST(
 
   } catch (error: any) {
     console.error('❌ [API UNIFIED POST] Error:', error)
+    console.error('❌ [API UNIFIED POST] Stack:', error?.stack)
+    console.error('❌ [API UNIFIED POST] Message:', error?.message)
     return NextResponse.json({
       success: false,
       error: 'server_error',
-      message: error.message || 'Erreur lors de la sauvegarde'
+      message: error.message || 'Erreur lors de la sauvegarde',
+      details: process.env.NODE_ENV === 'development' ? error?.stack : undefined
     }, { status: 500 })
   }
 }
@@ -508,6 +539,7 @@ function transformUpdateData(body: any): Record<string, any> {
   if (body.description !== undefined) data.description = body.description
   if (body.city !== undefined) data.city = body.city
   if (body.canton !== undefined) data.canton = body.canton
+  if (body.addressPrivacy !== undefined) data.addressPrivacy = body.addressPrivacy
 
   // Âge → dateOfBirth
   if (body.age !== undefined && typeof body.age === 'number') {
@@ -754,6 +786,14 @@ function transformUpdateData(body: any): Record<string, any> {
     console.log('📦 [API UNIFIED POST] Ajout blockedCountries:', data.blockedCountries)
   }
 
+  // Tarifs personnalisés
+  if (body.customPrices !== undefined) {
+    data.customPrices = typeof body.customPrices === 'string'
+      ? body.customPrices
+      : JSON.stringify(body.customPrices)
+    console.log('💰 [API UNIFIED POST] Ajout customPrices:', data.customPrices)
+  }
+
   return data
 }
 
@@ -907,7 +947,7 @@ function transformProfileData(rawProfile: any, mode: 'dashboard' | 'public') {
   })()
 
   // Parse des services avec tri automatique (logique centralisée)
-  const { services, extractedCategory } = (() => {
+  const { services: categorizedServices, extractedCategory } = (() => {
     try {
       const raw = String(rawProfile.services || '')
       if (!raw) return { services: [], extractedCategory: null }
@@ -932,6 +972,32 @@ function transformProfileData(rawProfile: any, mode: 'dashboard' | 'public') {
     }
   })()
 
+  // Parse des services bruts depuis le champ "services" (pour legacy)
+  const rawServicesArray = (() => {
+    try {
+      const raw = String(rawProfile.services || '')
+      console.log('🔍 [API UNIFIED] Parsing services brut:', raw, 'type:', typeof rawProfile.services)
+      if (!raw) {
+        console.log('🔍 [API UNIFIED] services est vide')
+        return []
+      }
+
+      let result
+      if (raw.trim().startsWith('[')) {
+        const S = JSON.parse(raw)
+        result = Array.isArray(S) ? S : []
+        console.log('🔍 [API UNIFIED] services parsés depuis JSON:', result)
+      } else {
+        result = raw.split(',').map((x: string) => x.trim()).filter(Boolean)
+        console.log('🔍 [API UNIFIED] services parsés depuis CSV:', result)
+      }
+      return result
+    } catch (e) {
+      console.error('🔍 [API UNIFIED] Erreur parsing services:', e)
+      return []
+    }
+  })()
+
   // Practices supprimé - remplacé par amenities uniquement
 
   // Parse des spécialités depuis practices (en excluant les équipements opt:)
@@ -940,8 +1006,26 @@ function transformProfileData(rawProfile: any, mode: 'dashboard' | 'public') {
 
   // Parse des nouvelles options (avec fallback si champs manquants)
   const paymentMethods = parseStringArray((rawProfile as any).paymentMethods)
+  
+  // IMPORTANT: Extraire les services depuis practices AVEC le préfixe srv: aussi
+  const servicesFromPractices = [...new Set(rawSpecialties)].filter(item => 
+    item && item.trim() !== ''
+  ).map(item => {
+    // Si l'item commence par srv:, enlever le préfixe pour obtenir le service
+    if (item.startsWith('srv:')) {
+      return item.replace(/^srv:/, '').trim()
+    }
+    // Si l'item commence par opt:, on l'exclut (c'est un équipement)
+    if (item.startsWith('opt:')) {
+      return null
+    }
+    // Sinon, c'est un service sans préfixe
+    return item.trim()
+  }).filter(Boolean)
 
   console.log('🔄 [API UNIFIED] venueOptions brut:', (rawProfile as any).venueOptions, typeof (rawProfile as any).venueOptions)
+  console.log('🔄 [API UNIFIED] services brut:', (rawProfile as any).services, typeof (rawProfile as any).services)
+  console.log('🔄 [API UNIFIED] practices brut:', (rawProfile as any).practices, typeof (rawProfile as any).practices)
 
   // Parsing spécial pour venueOptions qui contient un mélange srv: et opt:
   const rawVenueOptions = parseStringArray((rawProfile as any).venueOptions)
@@ -959,12 +1043,25 @@ function transformProfileData(rawProfile: any, mode: 'dashboard' | 'public') {
     .map(item => item.replace(/^srv:/, '').trim())
     .filter(item => item !== '')
 
+  // Aussi extraire les services depuis le champ legacy "services" (utiliser les bruts)
+  const legacyServices = rawServicesArray
+  
+  // EXTRA: Aussi extraire les services sans préfixe depuis venueOptions (compatibilité)
+  const venueServicesNoPrefix = rawVenueOptions
+    .filter(item => item && item.trim() !== '' && !item.startsWith('srv:') && !item.startsWith('opt:'))
+    .map(item => item.trim())
+    .filter(item => item !== '')
+
   // Déduplication
   const uniqueAmenities = [...new Set(amenities)]
-  const uniqueServices = [...new Set(venueServices)]
+  const uniqueServices = [...new Set([...venueServices, ...legacyServices, ...venueServicesNoPrefix, ...servicesFromPractices])] // Combiner les quatre sources
   
   console.log('🔄 [API UNIFIED] amenities filtrées:', uniqueAmenities.length, 'éléments')
-  console.log('🔄 [API UNIFIED] services filtrés:', uniqueServices.length, 'éléments')
+  console.log('🔄 [API UNIFIED] services filtrés:', uniqueServices.length, 'éléments:', uniqueServices)
+  console.log('🔄 [API UNIFIED] venueServices:', venueServices)
+  console.log('🔄 [API UNIFIED] legacyServices:', legacyServices)
+  console.log('🔄 [API UNIFIED] venueServicesNoPrefix:', venueServicesNoPrefix)
+  console.log('🔄 [API UNIFIED] servicesFromPractices:', servicesFromPractices)
 
   const acceptedCurrencies = parseStringArray((rawProfile as any).acceptedCurrencies)
 
@@ -983,6 +1080,7 @@ function transformProfileData(rawProfile: any, mode: 'dashboard' | 'public') {
     // Localisation
     city: rawProfile.city || '',
     canton: rawProfile.canton || '',
+    addressPrivacy: rawProfile.addressPrivacy || 'precise', // Mode de confidentialité de l'adresse
 
     // Langues et services
     languages,
@@ -998,6 +1096,7 @@ function transformProfileData(rawProfile: any, mode: 'dashboard' | 'public') {
     galleryPhotos: parseStringArray(rawProfile.galleryPhotos),
     videos: parseStringArray(rawProfile.videos),
     profilePhoto: rawProfile.profilePhoto || null,
+    avatar: rawProfile.profilePhoto || (rawProfile.mediasFromTable?.[0]?.url) || null, // Avatar pour l'affichage du profil
 
     // Médias au format moderne pour le gestionnaire
     medias: (() => {
@@ -1148,6 +1247,34 @@ function transformProfileData(rawProfile: any, mode: 'dashboard' | 'public') {
       phoneDisplayType: rawProfile.phoneDisplayType || 'hidden',
       phone: rawProfile.user?.phone || undefined
     },
+
+    // Tarifs personnalisés et blocage géographique (commun pour dashboard et public)
+    customPrices: (() => {
+      try {
+        if (rawProfile.customPrices) {
+          const parsed = typeof rawProfile.customPrices === 'string' 
+            ? JSON.parse(rawProfile.customPrices) 
+            : rawProfile.customPrices
+          console.log('💰 [API UNIFIED] customPrices trouvés:', Array.isArray(parsed) ? parsed.length : 'non-array', parsed)
+          return parsed
+        }
+      } catch (e) {
+        console.error('❌ [API UNIFIED] Erreur parsing customPrices:', e)
+      }
+      return []
+    })(),
+    blockedCountries: (() => {
+      try {
+        if (rawProfile.blockedCountries) {
+          return typeof rawProfile.blockedCountries === 'string' 
+            ? JSON.parse(rawProfile.blockedCountries) 
+            : rawProfile.blockedCountries
+        }
+      } catch (e) {
+        console.error('❌ [API UNIFIED] Erreur parsing blockedCountries:', e)
+      }
+      return []
+    })(),
 
     updatedAt: rawProfile.updatedAt
   }

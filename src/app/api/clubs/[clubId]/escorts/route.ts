@@ -7,10 +7,10 @@ import { prisma } from '@/lib/prisma'
  */
 export async function GET(
   req: NextRequest,
-  { params }: { params: { clubId: string } }
+  { params }: { params: Promise<{ clubId: string }> }
 ) {
   try {
-    const { clubId } = params
+    const { clubId } = await params
 
     console.log('[API CLUB ESCORTS] Received clubId:', clubId)
 
@@ -70,7 +70,8 @@ export async function GET(
     const escortsData = escorts.map(escort => {
       const link = links.find(l => l.escortId === escort.id)
       return {
-        id: escort.userId,
+        id: escort.id, // ✅ ID du profil escort (pour la redirection vers /profile-test/escort/[id])
+        userId: escort.userId, // ID utilisateur (si besoin)
         linkId: link?.id, // ID du lien pour la suppression
         name: escort.stageName || escort.user.name || 'Escort',
         avatar: escort.profilePhoto || escort.user.image,

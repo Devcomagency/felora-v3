@@ -66,6 +66,16 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         ;(token as any).role = (user as any).role
+
+        // Mettre à jour lastLoginAt lors de la première connexion (quand user est présent)
+        try {
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { lastLoginAt: new Date() }
+          })
+        } catch (error) {
+          console.error('Error updating lastLoginAt:', error)
+        }
       }
       return token
     },
@@ -73,6 +83,50 @@ export const authOptions: NextAuthOptions = {
       if (token) {
         ;(session as any).user.id = token.sub as string
         ;(session as any).user.role = (token as any).role
+        
+        // Récupérer le profil escort si l'utilisateur est escort
+        if ((token as any).role === 'ESCORT') {
+          try {
+            const escortProfile = await prisma.escortProfile.findUnique({
+              where: { userId: token.sub as string },
+              select: {
+                id: true,
+                stageName: true,
+                profilePhoto: true
+              }
+            })
+
+            if (escortProfile) {
+              ;(session as any).user.name = escortProfile.stageName || session.user.name
+              ;(session as any).user.avatar = escortProfile.profilePhoto
+              ;(session as any).user.escortProfileId = escortProfile.id // ✅ Ajouter l'ID du profil
+            }
+          } catch (error) {
+            console.error('Error fetching escort profile:', error)
+          }
+        }
+
+        // Récupérer le profil club si l'utilisateur est club
+        if ((token as any).role === 'CLUB') {
+          try {
+            const clubProfile = await prisma.clubProfileV2.findUnique({
+              where: { userId: token.sub as string },
+              select: {
+                id: true,
+                handle: true,
+                companyName: true
+              }
+            })
+
+            if (clubProfile) {
+              ;(session as any).user.name = clubProfile.companyName || session.user.name
+              ;(session as any).user.clubHandle = clubProfile.handle // ✅ Ajouter le handle du club
+              ;(session as any).user.clubId = clubProfile.id
+            }
+          } catch (error) {
+            console.error('Error fetching club profile:', error)
+          }
+        }
       }
       return session
     },

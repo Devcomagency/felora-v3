@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useCallback } from 'react'
-import { Diamond, ChevronDown, Star } from 'lucide-react'
+import { Diamond, ChevronDown } from 'lucide-react'
 import { motion } from 'framer-motion'
 
 interface ActionsBarProps {
@@ -90,71 +90,146 @@ export default function ActionsBar({
   return (
     <div className="px-4 mb-6">
       <div className="flex gap-2 mb-3">
-        {/* Bouton principal configurable */}
+        {/* Bouton Voir plus - Style register page avec gradient */}
         <button
           onClick={handleShowDetails}
-          className="flex-1 py-2 px-4 bg-gradient-to-r from-slate-600 to-slate-700 text-white rounded-lg font-medium text-sm transition-all hover:from-slate-700 hover:to-slate-800 active:scale-95 shadow-sm border border-slate-500/20"
+          className="py-2.5 px-4 text-white rounded-xl font-semibold text-sm transition-all duration-500 border hover:scale-[1.02] active:scale-95 flex-1"
+          style={{
+            background: 'linear-gradient(to right, #8B5CF630, #8B5CF620)',
+            borderColor: '#8B5CF650',
+            boxShadow: '0 8px 16px #8B5CF620',
+            minWidth: 0
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'linear-gradient(to right, #8B5CF640, #8B5CF630)'
+            e.currentTarget.style.borderColor = '#8B5CF660'
+            e.currentTarget.style.boxShadow = '0 12px 24px #8B5CF630'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'linear-gradient(to right, #8B5CF630, #8B5CF620)'
+            e.currentTarget.style.borderColor = '#8B5CF650'
+            e.currentTarget.style.boxShadow = '0 8px 16px #8B5CF620'
+          }}
         >
           {primaryLabel}
         </button>
-        
-        {/* Bouton Cadeau - optionnel */}
+
+        {/* Bouton Cadeau - Style register page avec gradient rose */}
         {showGift && (
-          <motion.button 
+          <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => onGift?.(profileId)}
-            className="px-3 py-2 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-lg font-medium text-sm transition-all hover:from-pink-600 hover:to-purple-600 active:scale-95 shadow-md flex items-center gap-1"
+            className="py-2.5 px-4 text-white rounded-xl font-semibold text-sm transition-all duration-500 border flex items-center justify-center gap-2 flex-1"
+            style={{
+              background: 'linear-gradient(to right, #EC489930, #EC489920)',
+              borderColor: '#EC489950',
+              boxShadow: '0 8px 16px #EC489920',
+              minWidth: 0
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'linear-gradient(to right, #EC489940, #EC489930)'
+              e.currentTarget.style.borderColor = '#EC489960'
+              e.currentTarget.style.boxShadow = '0 12px 24px #EC489930'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'linear-gradient(to right, #EC489930, #EC489920)'
+              e.currentTarget.style.borderColor = '#EC489950'
+              e.currentTarget.style.boxShadow = '0 8px 16px #EC489920'
+            }}
           >
-            <Diamond size={14} />
+            <Diamond size={16} />
+            <span>Cadeau</span>
           </motion.button>
         )}
-        
-        {/* Message ou Contact - pour clubs on affiche Contact au lieu de Message */}
+
+        {/* Message ou Contact - Style register page avec gradient bleu */}
         {onMessage && !showMessage && (
           <button
             onClick={handleMessage}
-            className="flex-1 py-2 px-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg font-medium text-sm transition-all hover:from-purple-600 hover:to-pink-600 active:scale-95 shadow-md flex items-center justify-center gap-2"
+            className="py-2.5 px-4 text-white rounded-xl font-semibold text-sm transition-all duration-500 border flex items-center justify-center gap-2 flex-1"
+            style={{
+              background: 'linear-gradient(to right, #06B6D430, #06B6D420)',
+              borderColor: '#06B6D450',
+              boxShadow: '0 8px 16px #06B6D420',
+              minWidth: 0
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'linear-gradient(to right, #06B6D440, #06B6D430)'
+              e.currentTarget.style.borderColor = '#06B6D460'
+              e.currentTarget.style.boxShadow = '0 12px 24px #06B6D430'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'linear-gradient(to right, #06B6D430, #06B6D420)'
+              e.currentTarget.style.borderColor = '#06B6D450'
+              e.currentTarget.style.boxShadow = '0 8px 16px #06B6D420'
+            }}
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
             </svg>
-            Contact
+            <span>Contact</span>
           </button>
         )}
 
         {showMessage && (
           <button
             onClick={handleMessage}
-            className="flex-1 py-2 px-4 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg font-medium text-sm transition-all hover:from-blue-600 hover:to-cyan-600 active:scale-95 shadow-md"
+            className="py-2.5 px-4 text-white rounded-xl font-semibold text-sm transition-all duration-500 border flex items-center justify-center gap-2 flex-1"
+            style={{
+              background: 'linear-gradient(to right, #06B6D430, #06B6D420)',
+              borderColor: '#06B6D450',
+              boxShadow: '0 8px 16px #06B6D420',
+              minWidth: 0
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'linear-gradient(to right, #06B6D440, #06B6D430)'
+              e.currentTarget.style.borderColor = '#06B6D460'
+              e.currentTarget.style.boxShadow = '0 12px 24px #06B6D430'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'linear-gradient(to right, #06B6D430, #06B6D420)'
+              e.currentTarget.style.borderColor = '#06B6D450'
+              e.currentTarget.style.boxShadow = '0 8px 16px #06B6D420'
+            }}
           >
-            Message
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
+            <span>Message</span>
           </button>
         )}
 
-        {/* Site Web pour clubs, Favoris pour escorts */}
-        {website ? (
+        {/* Site Web pour clubs - Style register page avec gradient violet */}
+        {website && !website.includes('@') && (
           <a
-            href={website}
+            href={website.startsWith('http') ? website : `https://${website}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex-1 py-2 px-4 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-lg font-medium text-sm transition-all hover:from-cyan-600 hover:to-blue-600 active:scale-95 shadow-md flex items-center justify-center gap-2"
+            className="py-2.5 px-4 text-white rounded-xl font-semibold text-sm transition-all duration-500 border flex items-center justify-center gap-2 flex-1"
             title="Visiter le site web"
+            style={{
+              background: 'linear-gradient(to right, #8B5CF630, #8B5CF620)',
+              borderColor: '#8B5CF650',
+              boxShadow: '0 8px 16px #8B5CF620',
+              minWidth: 0
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'linear-gradient(to right, #8B5CF640, #8B5CF630)'
+              e.currentTarget.style.borderColor = '#8B5CF660'
+              e.currentTarget.style.boxShadow = '0 12px 24px #8B5CF630'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'linear-gradient(to right, #8B5CF630, #8B5CF620)'
+              e.currentTarget.style.borderColor = '#8B5CF650'
+              e.currentTarget.style.boxShadow = '0 8px 16px #8B5CF620'
+            }}
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
             </svg>
-            Site
+            <span>Site</span>
           </a>
-        ) : (
-          <button
-            aria-label="Favori"
-            onClick={() => onFavoriteToggle?.(profileId)}
-            className="w-10 h-10 flex items-center justify-center rounded-lg bg-white/10 text-white border border-white/20 hover:bg-white/15 active:scale-95 transition-colors"
-            title="Ajouter aux favoris"
-          >
-            <Star size={18} className={isFavorite ? 'text-yellow-500 fill-yellow-500' : ''} />
-          </button>
         )}
 
         {/* Bouton Contact intelligent avec gestion des 3 cas */}
@@ -174,7 +249,7 @@ export default function ActionsBar({
             : `sms:${cleanPhone}?body=${encodeURIComponent(smsMessage)}`;
           const callUrl = `tel:${cleanPhone}`;
 
-          if (phoneVisibility === 'private') {
+          if (phoneVisibility === 'none') {
             // CAS 3: Messagerie privée uniquement - Bouton spécial
             return (
               <button

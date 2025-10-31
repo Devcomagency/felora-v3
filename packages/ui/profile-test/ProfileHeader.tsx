@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useMemo, useState } from 'react'
-import { Star, Crown, MapPin } from 'lucide-react'
+import { Star, MapPin } from 'lucide-react'
 import { normalizeScheduleData } from '@/lib/availability-calculator'
 import { validateMediaUrl } from '@/lib/media/enhanced-cdn'
 
@@ -10,6 +10,7 @@ interface ProfileHeaderProps {
   handle?: string
   city?: string
   age?: number
+  category?: string // Catégorie: escort, transsexuel, masseuse_erotique, dominatrice_bdsm
   avatar?: string
   coverPhoto?: string // Photo de couverture pour les clubs
   verified?: boolean
@@ -55,6 +56,7 @@ export default function ProfileHeader({
   handle,
   city,
   age,
+  category,
   avatar,
   coverPhoto,
   verified = false,
@@ -77,6 +79,13 @@ export default function ProfileHeader({
   // Animation des viewers retirée
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false)
   const [showFullDescription, setShowFullDescription] = useState(false)
+  
+  // Debug
+  console.log('🖼️ [ProfileHeader] showAvatar:', showAvatar, 'avatar:', avatar)
+  
+  // Tester l'URL validée
+  const validatedUrl = avatar ? validateMediaUrl(avatar, 'avatar') : null
+  console.log('🖼️ [ProfileHeader] validatedUrl:', validatedUrl)
 
   const normalizedSchedule = useMemo(() => normalizeScheduleData(scheduleData), [scheduleData])
   const weeklyEntries = normalizedSchedule?.weekly ?? []
@@ -159,97 +168,123 @@ export default function ProfileHeader({
           </div>
         </div>
       ) : (
-        // Design classique avec avatar rond pour les escorts
-        <div className="px-4 pt-4">
-          <div className="flex items-start gap-4 mb-4">
-            {/* Photo de profil avec gradient ring */}
+        // Design premium avec photo plein écran
+        <div className="relative -mt-[calc(72px+env(safe-area-inset-top,0px))]">
+          <div className="flex flex-col">
+            {/* Photo de profil plein écran - Prend tout l'écran */}
             {showAvatar && (
-              <div className="relative">
-                <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-pink-500 via-purple-500 to-blue-500 p-0.5">
-                  <img
-                    src={validateMediaUrl(avatar, 'avatar')}
-                    alt={name}
-                    className="w-full h-full rounded-full object-cover border-2 border-black"
-                  />
-                </div>
-                {/* Status online */}
-                {online && (
-                  <div className="absolute bottom-1 right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-black animate-pulse" />
+              <div className="relative w-full" style={{ height: 'calc(60vh + 72px + env(safe-area-inset-top, 0px))', minHeight: '500px' }}>
+                {avatar ? (
+                  <>
+                    <img
+                      src={validatedUrl || avatar}
+                      alt={name}
+                      className="absolute inset-0 w-full h-full object-cover"
+                      style={{ display: 'block' }}
+                      onError={(e) => {
+                        console.error('❌ [ProfileHeader] Erreur chargement avatar:', validatedUrl || avatar)
+                        const target = e.target as HTMLImageElement
+                        target.src = '/default-avatar.svg'
+                      }}
+                      onLoad={() => console.log('✅ [ProfileHeader] Image chargée avec succès:', validatedUrl || avatar)}
+                      onLoadStart={() => console.log('⏳ [ProfileHeader] Début chargement image:', validatedUrl || avatar)}
+                    />
+                    {/* Gradient sombre en bas pour lisibilité */}
+                    <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-black/95" />
+                    <div className="absolute inset-x-0 bottom-0 h-48 sm:h-56 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
+                  </>
+                ) : (
+                  <div className="absolute inset-0 bg-gradient-to-br from-pink-500 via-purple-500 to-blue-500 flex items-center justify-center">
+                    <span className="text-7xl sm:text-8xl font-bold text-white">{name.charAt(0).toUpperCase()}</span>
+                  </div>
                 )}
+
+                {/* Status online - En haut à droite */}
+                {online && (
+                  <div className="absolute top-20 right-4 w-8 h-8 bg-green-500 rounded-full border-4 border-black shadow-2xl animate-pulse">
+                    <div className="absolute inset-0 rounded-full bg-green-400 animate-ping opacity-75" />
+                  </div>
+                )}
+
+                {/* Badges premium flottants - En haut */}
+                {verified && (
+                  <div className="absolute top-20 left-4 w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center shadow-2xl border-4 border-black">
+                    <span className="text-white text-base font-bold">✓</span>
+                  </div>
+                )}
+                {premium && (
+                  <div className="absolute top-20 left-16 w-10 h-10 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center shadow-2xl border-4 border-black">
+                    <Crown size={20} className="text-white" />
+                  </div>
+                )}
+
+                {/* Stats par-dessus la photo - en bas avec gradient */}
+                <div className="absolute inset-x-0 bottom-0 px-5 sm:px-6 md:px-8 pb-6 sm:pb-8">
+                  <div className="inline-flex gap-4 sm:gap-5 md:gap-6">
+                    <div>
+                      <div className="text-sm sm:text-base md:text-lg font-bold text-white mb-0.5" style={{ textShadow: '0 1px 4px rgba(0,0,0,0.6)' }}>{stats?.views || 0}</div>
+                      <div className="text-[9px] sm:text-[10px] text-white/70 uppercase tracking-wide font-medium" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>Vues</div>
+                    </div>
+                    <div className="border-l border-white/20"></div>
+                    <div>
+                      <div className="text-sm sm:text-base md:text-lg font-bold text-white mb-0.5" style={{ textShadow: '0 1px 4px rgba(0,0,0,0.6)' }}>{(stats?.likes || 0) + (stats?.reactions || 0)}</div>
+                      <div className="text-[9px] sm:text-[10px] text-white/70 uppercase tracking-wide font-medium" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>Réactions</div>
+                    </div>
+                    <div className="border-l border-white/20"></div>
+                    <div>
+                      <div className="text-sm sm:text-base md:text-lg font-bold text-white mb-0.5" style={{ textShadow: '0 1px 4px rgba(0,0,0,0.6)' }}>{mediaCount}</div>
+                      <div className="text-[9px] sm:text-[10px] text-white/70 uppercase tracking-wide font-medium" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>Posts</div>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
+          </div>
 
-            {/* Nom + stats - Style TikTok */}
-            <div className="flex-1">
-              {/* Nom au-dessus des compteurs */}
-              <div className="mb-2">
-                <h2 className="font-semibold text-lg flex items-center gap-2 text-white">
-                  {name}
-                  {verified && (
-                    <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
-                      <span className="text-white text-xs">✓</span>
-                    </div>
-                  )}
-                  {premium && (
-                    <div className="w-5 h-5 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full flex items-center justify-center">
-                      <Crown size={12} className="text-white" />
-                    </div>
-                  )}
-                </h2>
+          {/* Catégorie (Transsexuel, Escort, etc.) - Badge compact - en dessous de la photo */}
+          <div className="px-4 pt-4 pb-2">
+            {category && (
+              <div className="flex justify-center mb-1">
+                <span className="inline-flex items-center px-4 py-1.5 bg-gradient-to-r from-pink-500/20 to-purple-500/20 text-pink-300 rounded-full text-xs font-medium border border-pink-500/30 uppercase tracking-wide">
+                  {category === 'transsexuel' ? 'Transsexuel' :
+                   category === 'masseuse_erotique' ? 'Masseuse Érotique' :
+                   category === 'dominatrice_bdsm' ? 'Dominatrice BDSM' :
+                   category === 'escort' ? 'Escort' : category}
+                </span>
               </div>
-
-              <div className="flex items-start mb-3">
-                <div className="flex gap-6">
-                  {/* Vues */}
-                  <div className="text-center">
-                    <div className="text-lg font-bold text-white">{stats?.views || 0}</div>
-                    <div className="text-xs text-gray-400">Vues</div>
-                  </div>
-                  {/* Réactions */}
-                  <div className="text-center">
-                    <div className="text-lg font-bold text-white">{(stats?.likes || 0) + (stats?.reactions || 0)}</div>
-                    <div className="text-xs text-gray-400">React</div>
-                  </div>
-                  {/* Publications (public + privé) */}
-                  <div className="text-center">
-                    <div className="text-lg font-bold text-white">{mediaCount}</div>
-                    <div className="text-xs text-gray-400">Publications</div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            )}
           </div>
         </div>
       )}
 
-      {/* Infos profil complètes - Style moderne */}
-      <div className={`space-y-3 ${coverPhoto ? 'px-4 sm:px-6 pt-4' : 'px-4 pb-6'}`}>
+      {/* Infos profil complètes - Style moderne - Espacement réduit */}
+      <div className={`space-y-2 ${coverPhoto ? 'px-4 sm:px-6 pt-4 pb-6' : 'px-4 pb-4'}`}>
         <div>
-          {/* Handle et infos de base */}
-          {handle && (
-            <p className="text-gray-400 text-sm mb-2">{handle}</p>
-          )}
-
-          {/* Pour les clubs avec coverPhoto, city est déjà affiché dans le header */}
+          {/* Handle et infos de base - Centré pour le nouveau design */}
           {!coverPhoto && (
-            <div className="flex flex-wrap items-center gap-2 text-sm text-gray-400">
-              {city && (
-                <>
-                  <div className="flex items-center gap-1">
-                    <MapPin className="w-3 h-3" />
-                    <span>{city}</span>
-                  </div>
-                  <span>•</span>
-                </>
+            <div className="flex flex-col items-center gap-2 mb-2">
+              {handle && (
+                <p className="text-gray-400 text-sm">{handle}</p>
               )}
-              {age && <span>{age} ans</span>}
-              {/* Indicateur en ligne retiré */}
+
+              <div className="flex items-center gap-2 text-sm text-gray-400">
+                {city && (
+                  <>
+                    <div className="flex items-center gap-1">
+                      <MapPin className="w-3.5 h-3.5" />
+                      <span>{city}</span>
+                    </div>
+                    {age && <span>•</span>}
+                  </>
+                )}
+                {age && <span>{age} ans</span>}
+              </div>
             </div>
           )}
 
           {/* Description courte placée sous l'âge et au-dessus des langues */}
           {description && (
-            <div className="mt-1">
+            <div className={`mt-1 ${coverPhoto ? '' : 'text-center max-w-2xl mx-auto'}`}>
               <p
                 className="text-sm text-white/85 leading-relaxed"
                 style={{
@@ -288,9 +323,9 @@ export default function ProfileHeader({
 
         {/* Langues (pour les escorts uniquement, pas pour les clubs) */}
         {!website && languages.length > 0 ? (
-          <div>
-            <h4 className="text-white font-medium mb-2 text-sm">Langues</h4>
-            <div className="flex flex-wrap gap-2">
+          <div className={coverPhoto ? '' : 'flex flex-col items-center'}>
+            <h4 className="text-white font-medium mb-2 text-sm text-center">{coverPhoto ? 'Langues' : ''}</h4>
+            <div className="flex flex-wrap gap-2 justify-center">
               {languages.slice(0, 4).map((language) => (
                 <span
                   key={language}
@@ -305,7 +340,7 @@ export default function ProfileHeader({
 
         {/* Statut de disponibilité temps réel + bouton Agenda - Affiche seulement si agenda activé */}
         {(realTimeAvailability || availability || showAgendaPill) && (
-          <div>
+          <div className={coverPhoto ? '' : 'flex justify-center'}>
             {realTimeAvailability ? (
               <div className="flex items-center gap-2">
                 <div className={`w-2 h-2 rounded-full ${
@@ -345,7 +380,7 @@ export default function ProfileHeader({
             ) : null}
 
             {showAgendaPill && (
-              <div className="mt-2">
+              <div className="mt-6 mb-2">
                 <button
                   type="button"
                   onClick={onAgendaClick}

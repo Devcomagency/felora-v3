@@ -125,11 +125,6 @@ export default function SimpleRichTextEditor({
       <div className={`text-xs ${isValid ? 'text-emerald-300' : 'text-gray-400'}`}>
         {charCount} / {minLength} caractères minimum
       </div>
-
-      {/* Markdown guide */}
-      <div className="text-xs text-gray-500">
-        💡 Utilisez ** pour le <strong>gras</strong>, * pour l'<em>italique</em>, • pour les listes
-      </div>
     </div>
   )
 }

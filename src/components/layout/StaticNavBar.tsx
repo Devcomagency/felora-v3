@@ -4,11 +4,13 @@ import React, { useState, useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useSession, signOut } from 'next-auth/react'
+import Image from 'next/image'
 import {
   Home, Search, MessageCircle, User, Settings, Bell, Menu,
   Map, Globe, LogIn, UserPlus, BarChart3, Calendar, Heart, Plus,
   Camera, Video, Upload
 } from 'lucide-react'
+import NotificationBell from '@/components/notifications/NotificationBell'
 
 const languages = [
   { code: 'fr', label: 'Français', flag: '🇫🇷' },
@@ -21,9 +23,15 @@ export default function StaticNavBar() {
   const router = useRouter()
   const pathname = usePathname()
   const isMessages = pathname?.startsWith('/messages')
+  const isAdmin = pathname?.startsWith('/admin')
   const { data: session, status } = useSession()
   const isAuthenticated = status === 'authenticated'
   const user = session?.user as any
+
+  // Ne pas afficher la navbar sur les pages admin
+  if (isAdmin) {
+    return null
+  }
 
   // États pour le menu burger
   const [showMenu, setShowMenu] = useState(false)
@@ -157,9 +165,15 @@ export default function StaticNavBar() {
 
     // Profil: visible uniquement pour ESCORT et CLUB
     if (role === 'ESCORT') {
-      items.push({ id: 'profile', icon: User, label: 'Profil', href: '/dashboard-escort/profil', active: pathname?.startsWith('/dashboard-escort') })
+      // Rediriger vers le profil PUBLIC de l'escort
+      const escortProfileId = (user as any)?.escortProfileId || (user as any)?.escortProfile?.id
+      const profileHref = escortProfileId ? `/profile/${escortProfileId}` : '/dashboard-escort/profil'
+      items.push({ id: 'profile', icon: User, label: 'Profil', href: profileHref, active: pathname?.startsWith('/profile') || pathname?.startsWith('/dashboard-escort') })
     } else if (role === 'CLUB') {
-      items.push({ id: 'profile', icon: User, label: 'Profil', href: '/club/profile', active: pathname?.startsWith('/club') })
+      // Rediriger vers le profil PUBLIC du club
+      const clubHandle = (user as any)?.clubHandle || (user as any)?.clubProfile?.handle
+      const profileHref = clubHandle ? `/profile-test/club/${clubHandle}` : '/club/profile'
+      items.push({ id: 'profile', icon: User, label: 'Profil', href: profileHref, active: pathname?.startsWith('/profile') || pathname?.startsWith('/club') })
     }
     // ✅ Pas d'onglet profil pour les clients/non-connectés
 
@@ -198,18 +212,23 @@ export default function StaticNavBar() {
               <motion.button
                 key={item.id}
                 whileTap={{ scale: 0.9 }}
+                whileHover={item.special ? { scale: 1.05, boxShadow: '0 8px 16px rgba(255, 107, 157, 0.4)' } : {}}
                 onClick={() => item.onClick ? item.onClick() : router.push(item.href)}
                 data-create-menu={item.id === 'create' ? true : undefined}
                 className={`
                   relative flex flex-col items-center justify-center px-3 py-2 rounded-xl
-                  transition-all duration-200 min-w-[60px]
+                  transition-all duration-300 min-w-[60px]
                   ${item.special
-                    ? 'bg-gradient-to-r from-[#FF6B9D] to-[#B794F6] text-white shadow-lg hover:shadow-xl hover:scale-105'
+                    ? 'border border-[#FF6B9D]/50 text-white'
                     : item.active
                       ? 'text-[#FF6B9D] bg-[#FF6B9D]/10'
                       : 'text-white/70 hover:text-white hover:bg-white/5'
                   }
                 `}
+                style={item.special ? {
+                  background: 'linear-gradient(to right, rgba(255, 107, 157, 0.3), rgba(183, 148, 246, 0.2))',
+                  boxShadow: '0 4px 12px rgba(255, 107, 157, 0.2)'
+                } : undefined}
               >
                 <Icon size={item.special ? 24 : 22} className={item.special ? "" : "mb-1"} />
                 {!item.special && <span className="text-xs font-medium">{item.label}</span>}
@@ -291,6 +310,13 @@ export default function StaticNavBar() {
         )}
       </AnimatePresence>
 
+      {/* Notification Bell - Uniquement pour les utilisateurs connectés (pas admin, pas /messages) */}
+      {!isMessages && isAuthenticated && !pathname?.startsWith('/admin') && (
+        <div className="fixed top-4 right-16 z-[1002]">
+          <NotificationBell />
+        </div>
+      )}
+
       {/* Bouton menu burger - caché sur /messages */}
       {!isMessages && (
       <motion.button
@@ -347,12 +373,28 @@ export default function StaticNavBar() {
               {/* Header du menu */}
               <div className="px-4 py-3 border-b border-white/[0.06]">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-500 to-purple-600 flex items-center justify-center">
-                    <span className="text-white text-sm font-semibold">F</span>
-                  </div>
+                  {isAuthenticated && user?.avatar ? (
+                    <img
+                      src={user.avatar}
+                      alt={user.name || 'User'}
+                      className="w-8 h-8 rounded-full object-cover border border-white/20"
+                    />
+                  ) : (
+                    <Image
+                      src="/logo-principal.png"
+                      alt="Felora"
+                      width={isAuthenticated && user?.role === 'CLIENT' ? 40 : 50}
+                      height={isAuthenticated && user?.role === 'CLIENT' ? 40 : 50}
+                      className="rounded-full object-cover"
+                    />
+                  )}
                   <div>
-                    <h3 className="text-white font-medium text-sm">FELORA</h3>
-                    <p className="text-white/60 text-xs">Plateforme Premium</p>
+                    <h3 className="text-white font-medium text-sm">
+                      {isAuthenticated && user?.name ? user.name.toUpperCase() : 'FELORA'}
+                    </h3>
+                    <p className="text-white/60 text-xs">
+                      {isAuthenticated ? (user?.role === 'ESCORT' ? 'Escort' : user?.role === 'CLUB' ? 'Club' : 'Client') : 'Plateforme Premium'}
+                    </p>
                   </div>
                 </div>
               </div>

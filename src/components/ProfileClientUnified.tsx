@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { usePublicProfile } from '@/hooks/useUnifiedProfile'
 import { ArrowLeft, MapPin, Star, Heart, MessageCircle, Crown, BadgeCheck, X, Clock, Users, Home, Car, CreditCard, Settings, Phone, Smartphone, MessageSquare, ExternalLink } from 'lucide-react'
 
@@ -37,6 +38,15 @@ interface ProfileClientUnifiedProps {
 
 export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifiedProps) {
   const { profile, loading, error } = usePublicProfile(profileId)
+  const router = useRouter()
+
+  // Fonction pour ouvrir la messagerie
+  const handleMessage = () => {
+    // Fermer le modal
+    onClose()
+    // Rediriger vers la messagerie
+    router.push(`/messages?to=${encodeURIComponent(profileId)}`)
+  }
 
   // Assurer que safeProfile.options existe avec des valeurs par défaut
   const safeProfile = profile ? {
@@ -45,8 +55,22 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
       paymentMethods: [],
       amenities: [],
       acceptedCurrencies: []
-    }
+    },
+    // Parse customPrices si présent
+    customPrices: (() => {
+      try {
+        if ((profile as any).customPrices) {
+          return typeof (profile as any).customPrices === 'string' 
+            ? JSON.parse((profile as any).customPrices) 
+            : (profile as any).customPrices
+        }
+      } catch (e) {
+        console.error('Error parsing customPrices:', e)
+      }
+      return []
+    })()
   } : null
+
 
   if (loading) {
     return (
@@ -83,45 +107,85 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
   }
 
   return (
-    <div className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50">
-      <div className="flex min-h-full items-center justify-center p-4">
-        <div className="relative w-full max-w-4xl max-h-[90vh] overflow-hidden bg-gradient-to-br from-gray-900 via-black to-gray-900 rounded-2xl shadow-2xl border border-gray-800">
+    <div className="fixed inset-0 bg-black z-50">
+      {/* Background Effects */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-pink-900/10 via-black to-black" />
+      <div className="absolute inset-0 bg-grid-white/[0.02]" />
+
+      {/* Animated gradient orbs */}
+      <div className="absolute top-1/4 -left-48 w-96 h-96 bg-pink-500/10 rounded-full blur-3xl animate-pulse" />
+      <div className="absolute bottom-1/4 -right-48 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse delay-700" />
+
+      <div className="relative flex min-h-full items-center justify-center p-4 z-10">
+        <div className="relative w-full max-w-4xl max-h-[90vh] overflow-hidden rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-2xl">
 
           {/* Header avec fermeture */}
-          <div className="sticky top-0 z-10 bg-gradient-to-r from-gray-900/95 via-black/95 to-gray-900/95 backdrop-blur-lg border-b border-gray-800 px-6 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                {/* Avatar avec gradient ring style Felora */}
-                <div className="relative">
-                  <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-pink-500 via-purple-500 to-blue-500 p-0.5">
-                    <div className="w-full h-full rounded-full bg-gray-800 flex items-center justify-center text-2xl font-bold text-white">
+          <div className="sticky top-0 z-10 bg-black/60 backdrop-blur-xl border-b border-white/10 px-6 py-4">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex items-start gap-4 flex-1">
+                {/* Photo de profil réelle avec effet rose */}
+                <div className="relative flex-shrink-0">
+                  <div className="w-20 h-20 rounded-2xl overflow-hidden shadow-[0_0_30px_rgba(236,72,153,0.4)] ring-3 ring-pink-500/50 bg-gradient-to-br from-pink-500/10 via-rose-500/10 to-fuchsia-500/10">
+                    {safeProfile.avatar ? (
+                      <img
+                        src={safeProfile.avatar}
+                        alt={safeProfile.stageName}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement
+                          target.style.display = 'none'
+                          const fallback = target.parentElement?.querySelector('.fallback-avatar')
+                          if (fallback) (fallback as HTMLElement).style.display = 'flex'
+                        }}
+                      />
+                    ) : null}
+                    <div className="fallback-avatar w-full h-full bg-gradient-to-br from-pink-500 via-purple-500 to-blue-500 flex items-center justify-center text-2xl font-bold text-white" style={{ display: safeProfile.avatar ? 'none' : 'flex' }}>
                       {safeProfile.stageName.charAt(0)}
                     </div>
                   </div>
-                  <div className="absolute bottom-1 right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-black animate-pulse" />
+                  {/* Badge vérifié si applicable */}
+                  {safeProfile.isVerifiedBadge && (
+                    <div className="absolute -top-1 -right-1 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center shadow-lg border-2 border-black">
+                      <BadgeCheck className="w-4 h-4 text-white" />
+                    </div>
+                  )}
                 </div>
 
-                <div className="flex-1">
-                  <h1 className="text-2xl font-bold text-white truncate">{safeProfile.stageName}</h1>
-                  <div className="flex items-center gap-3 mt-1 text-sm text-gray-300">
-                    {safeProfile.age && <span>{safeProfile.age} ans</span>}
-                    {safeProfile.city && (
-                      <span className="flex items-center gap-1">
-                        <MapPin className="w-3 h-3" />
-                        {safeProfile.city}, {safeProfile.canton}
-                      </span>
+                {/* Informations réorganisées */}
+                <div className="flex-1 min-w-0">
+                  <h1 className="text-2xl font-bold text-white mb-2 truncate">{safeProfile.stageName}</h1>
+
+                  {/* Ligne 1: Âge et Lieu */}
+                  <div className="flex items-center gap-3 mb-2 text-sm">
+                    {safeProfile.age && (
+                      <span className="text-white/80 font-medium">{safeProfile.age} ans</span>
                     )}
-                    {safeProfile.category && (
-                      <span className="px-3 py-1 bg-gradient-to-r from-pink-500/20 to-purple-500/20 text-pink-300 rounded-full text-xs border border-pink-500/30">
-                        {safeProfile.category}
-                      </span>
+                    {safeProfile.city && (
+                      <>
+                        {safeProfile.age && <span className="text-white/40">•</span>}
+                        <span className="flex items-center gap-1.5 text-white/70">
+                          <MapPin className="w-3.5 h-3.5" />
+                          {safeProfile.city}{safeProfile.canton ? `, ${safeProfile.canton}` : ''}
+                        </span>
+                      </>
                     )}
                   </div>
+
+                  {/* Ligne 2: Catégorie (Transsexuel, etc.) */}
+                  {safeProfile.category && (
+                    <div className="inline-flex items-center gap-2">
+                      <span className="px-3 py-1.5 bg-gradient-to-r from-pink-500/20 to-purple-500/20 text-pink-300 rounded-full text-xs font-medium border border-pink-500/30">
+                        {safeProfile.category}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
+
+              {/* Bouton fermer */}
               <button
                 onClick={onClose}
-                className="p-2 hover:bg-gray-800 rounded-full transition-colors text-gray-400 hover:text-white"
+                className="flex-shrink-0 p-2 hover:bg-white/10 rounded-full transition-colors text-white/60 hover:text-white"
               >
                 <X className="w-6 h-6" />
               </button>
@@ -133,61 +197,61 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
             <div className="p-6 space-y-6">
 
               {/* 1. Profil physique - En premier selon la demande */}
-              <div className="glass-card">
-                <div className="p-5">
+              <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-5">
+                <div>
                   <h3 className="text-lg font-semibold text-white mb-4">Profil physique</h3>
                   <div className="grid grid-cols-2 gap-3">
                     {safeProfile.physical.height && (
-                      <div className="p-2 bg-gray-800/30 rounded-lg">
-                        <div className="text-xs text-gray-400 mb-1">Taille</div>
+                      <div className="p-3 bg-white/5 border border-white/10 rounded-xl hover:border-white/20 transition-colors">
+                        <div className="text-xs text-white/60 mb-1">Taille</div>
                         <div className="text-white text-sm font-medium">{safeProfile.physical.height} cm</div>
                       </div>
                     )}
                     {safeProfile.physical.bodyType && (
-                      <div className="p-2 bg-gray-800/30 rounded-lg">
-                        <div className="text-xs text-gray-400 mb-1">Silhouette</div>
+                      <div className="p-3 bg-white/5 border border-white/10 rounded-xl hover:border-white/20 transition-colors">
+                        <div className="text-xs text-white/60 mb-1">Silhouette</div>
                         <div className="text-white text-sm font-medium">{safeProfile.physical.bodyType}</div>
                       </div>
                     )}
                     {safeProfile.physical.hairColor && (
-                      <div className="p-2 bg-gray-800/30 rounded-lg">
-                        <div className="text-xs text-gray-400 mb-1">Cheveux</div>
+                      <div className="p-3 bg-white/5 border border-white/10 rounded-xl hover:border-white/20 transition-colors">
+                        <div className="text-xs text-white/60 mb-1">Cheveux</div>
                         <div className="text-white text-sm font-medium">{safeProfile.physical.hairColor}</div>
                       </div>
                     )}
                     {safeProfile.physical.eyeColor && (
-                      <div className="p-2 bg-gray-800/30 rounded-lg">
-                        <div className="text-xs text-gray-400 mb-1">Yeux</div>
+                      <div className="p-3 bg-white/5 border border-white/10 rounded-xl hover:border-white/20 transition-colors">
+                        <div className="text-xs text-white/60 mb-1">Yeux</div>
                         <div className="text-white text-sm font-medium">{safeProfile.physical.eyeColor}</div>
                       </div>
                     )}
                     {safeProfile.physical.ethnicity && (
-                      <div className="p-2 bg-gray-800/30 rounded-lg">
-                        <div className="text-xs text-gray-400 mb-1">Origine</div>
+                      <div className="p-3 bg-white/5 border border-white/10 rounded-xl hover:border-white/20 transition-colors">
+                        <div className="text-xs text-white/60 mb-1">Origine</div>
                         <div className="text-white text-sm font-medium">{safeProfile.physical.ethnicity}</div>
                       </div>
                     )}
                     {safeProfile.physical.bustSize && (
-                      <div className="p-2 bg-gray-800/30 rounded-lg">
-                        <div className="text-xs text-gray-400 mb-1">Tour poitrine</div>
+                      <div className="p-3 bg-white/5 border border-white/10 rounded-xl hover:border-white/20 transition-colors">
+                        <div className="text-xs text-white/60 mb-1">Tour poitrine</div>
                         <div className="text-white text-sm font-medium">{safeProfile.physical.bustSize}</div>
                       </div>
                     )}
                     {safeProfile.physical.breastType && (
-                      <div className="p-2 bg-gray-800/30 rounded-lg">
-                        <div className="text-xs text-gray-400 mb-1">Type poitrine</div>
+                      <div className="p-3 bg-white/5 border border-white/10 rounded-xl hover:border-white/20 transition-colors">
+                        <div className="text-xs text-white/60 mb-1">Type poitrine</div>
                         <div className="text-white text-sm font-medium">{safeProfile.physical.breastType}</div>
                       </div>
                     )}
                     {safeProfile.physical.pubicHair && (
-                      <div className="p-2 bg-gray-800/30 rounded-lg">
-                        <div className="text-xs text-gray-400 mb-1">Pilosité</div>
+                      <div className="p-3 bg-white/5 border border-white/10 rounded-xl hover:border-white/20 transition-colors">
+                        <div className="text-xs text-white/60 mb-1">Pilosité</div>
                         <div className="text-white text-sm font-medium">{safeProfile.physical.pubicHair}</div>
                       </div>
                     )}
                     {(safeProfile.physical.tattoos || safeProfile.physical.piercings || safeProfile.physical.smoker !== undefined) && (
-                      <div className="p-3 bg-gray-800/30 rounded-lg">
-                        <div className="text-xs text-gray-400 mb-2">Spécificités</div>
+                      <div className="p-3 bg-white/5 border border-white/10 rounded-xl">
+                        <div className="text-xs text-white/60 mb-2">Spécificités</div>
                         <div className="flex flex-wrap gap-1">
                           {safeProfile.physical.tattoos && (
                             <span className="text-xs px-2 py-1 bg-blue-500/20 text-blue-300 rounded">
@@ -227,7 +291,7 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
 
                     return !isEquipment && !isLocation;
                   }).length > 0 && (
-                    <div className="glass-card">
+                    <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl">
                       <div className="p-4">
                         <h3 className="text-md font-medium text-white/90 mb-3 flex items-center gap-2">
                           <Heart className="w-4 h-4 text-purple-400" />
@@ -263,7 +327,7 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
 
               {/* 3. Services & Spécialités - En troisième selon la demande */}
               {(safeProfile.services && safeProfile.services.length > 0) && (
-                <div className="glass-card">
+                <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl">
                   <div className="p-5">
                     <h3 className="text-lg font-semibold text-white mb-4">Services & Spécialités</h3>
                     <div className="grid grid-cols-2 gap-2">
@@ -285,7 +349,7 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
 
               {/* 4. Langues - En quatrième selon la demande */}
               {safeProfile.languages && Object.keys(safeProfile.languages).length > 0 && (
-                <div className="glass-card">
+                <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl">
                   <div className="p-5">
                     <h3 className="text-lg font-semibold text-white mb-4">Langues parlées</h3>
                     <div className="space-y-3">
@@ -313,7 +377,7 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
                     const equipmentKeywords = ['douche à deux', 'jacuzzi', 'sauna', 'climatisation', 'fumoir', 'parking', 'accès handicapé', 'ambiance musicale', 'bar', 'pole dance'];
                     return equipmentKeywords.some(keyword => cleanAmenity.includes(keyword));
                   }).length > 0 && (
-                    <div className="glass-card">
+                    <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl">
                       <div className="p-4">
                         <h3 className="text-md font-medium text-white/90 mb-3 flex items-center gap-2">
                           <Settings className="w-4 h-4 text-orange-400" />
@@ -343,7 +407,7 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
               )}
 
               {/* 6. Tarifs - En sixième selon la demande */}
-              <div className="glass-card">
+              <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl">
                 <div className="p-4">
                   <h3 className="text-md font-medium text-white/90 mb-3 flex items-center gap-2">
                     <CreditCard className="w-4 h-4 text-pink-400" />
@@ -363,68 +427,86 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
                   {/* Grille des tarifs - Design compact */}
                   <div className="grid grid-cols-3 lg:grid-cols-4 gap-2">
                     {safeProfile.rates.fifteenMin && (
-                      <div className="p-2 bg-gray-800/20 border border-gray-700/20 rounded-lg text-center">
+                      <div className="p-2 bg-white/5 border border-white/10 rounded-xl text-center hover:border-white/20 transition-colors">
                         <div className="text-sm font-medium text-white">
                           {safeProfile.rates.fifteenMin}
                         </div>
-                        <div className="text-xs text-gray-400">15min</div>
+                        <div className="text-xs text-white/60">15min</div>
                       </div>
                     )}
                     {safeProfile.rates.thirtyMin && (
-                      <div className="p-2 bg-gray-800/20 border border-gray-700/20 rounded-lg text-center">
+                      <div className="p-2 bg-white/5 border border-white/10 rounded-xl text-center hover:border-white/20 transition-colors">
                         <div className="text-sm font-medium text-white">
                           {safeProfile.rates.thirtyMin}
                         </div>
-                        <div className="text-xs text-gray-400">30min</div>
+                        <div className="text-xs text-white/60">30min</div>
                       </div>
                     )}
                     {safeProfile.rates.oneHour && safeProfile.rates.baseRate && safeProfile.rates.oneHour !== safeProfile.rates.baseRate && (
-                      <div className="p-2 bg-gray-800/20 border border-gray-700/20 rounded-lg text-center">
+                      <div className="p-2 bg-white/5 border border-white/10 rounded-xl text-center hover:border-white/20 transition-colors">
                         <div className="text-sm font-medium text-white">
                           {safeProfile.rates.oneHour}
                         </div>
-                        <div className="text-xs text-gray-400">1h</div>
+                        <div className="text-xs text-white/60">1h</div>
                       </div>
                     )}
                     {safeProfile.rates.twoHours && (
-                      <div className="p-2 bg-gray-800/20 border border-gray-700/20 rounded-lg text-center">
+                      <div className="p-2 bg-white/5 border border-white/10 rounded-xl text-center hover:border-white/20 transition-colors">
                         <div className="text-sm font-medium text-white">
                           {safeProfile.rates.twoHours}
                         </div>
-                        <div className="text-xs text-gray-400">2h</div>
+                        <div className="text-xs text-white/60">2h</div>
                       </div>
                     )}
                     {safeProfile.rates.halfDay && (
-                      <div className="p-2 bg-gray-800/20 border border-gray-700/20 rounded-lg text-center">
+                      <div className="p-2 bg-white/5 border border-white/10 rounded-xl text-center hover:border-white/20 transition-colors">
                         <div className="text-sm font-medium text-white">
                           {safeProfile.rates.halfDay}
                         </div>
-                        <div className="text-xs text-gray-400">½j</div>
+                        <div className="text-xs text-white/60">½j</div>
                       </div>
                     )}
                     {safeProfile.rates.fullDay && (
-                      <div className="p-2 bg-gray-800/20 border border-gray-700/20 rounded-lg text-center">
+                      <div className="p-2 bg-white/5 border border-white/10 rounded-xl text-center hover:border-white/20 transition-colors">
                         <div className="text-sm font-medium text-white">
                           {safeProfile.rates.fullDay}
                         </div>
-                        <div className="text-xs text-gray-400">Jour</div>
+                        <div className="text-xs text-white/60">Jour</div>
                       </div>
                     )}
                     {safeProfile.rates.overnight && (
-                      <div className="p-2 bg-gray-800/20 border border-gray-700/20 rounded-lg text-center">
+                      <div className="p-2 bg-white/5 border border-white/10 rounded-xl text-center hover:border-white/20 transition-colors">
                         <div className="text-sm font-medium text-white">
                           {safeProfile.rates.overnight}
                         </div>
-                        <div className="text-xs text-gray-400">Nuit</div>
+                        <div className="text-xs text-white/60">Nuit</div>
                       </div>
                     )}
                   </div>
+
+                  {/* Tarifs personnalisés */}
+                  {safeProfile.customPrices && Array.isArray(safeProfile.customPrices) && safeProfile.customPrices.length > 0 && (
+                    <div className="mt-4 pt-4 border-t border-white/10">
+                      <h4 className="text-sm font-semibold text-white/70 mb-3">Tarifs personnalisés</h4>
+                      <div className="space-y-2">
+                        {safeProfile.customPrices.map((custom: any, index: number) => (
+                          <div key={custom.id || index} className="flex items-center justify-between p-3 bg-white/5 border border-white/10 rounded-xl">
+                            <div>
+                              <div className="text-sm font-medium text-white">{custom.label || custom.duration}</div>
+                              {custom.description && <div className="text-xs text-white/60">{custom.description}</div>}
+                            </div>
+                            <div className="text-sm font-semibold text-pink-300">{custom.price} {safeProfile.rates.currency}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
               {/* 7. Paiements - En septième selon la demande */}
               {safeProfile.options?.paymentMethods && safeProfile.options.paymentMethods.length > 0 && (
-                <div className="glass-card">
+                <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl">
                   <div className="p-4">
                     <h3 className="text-md font-medium text-white/90 mb-3 flex items-center gap-2">
                       <CreditCard className="w-4 h-4 text-green-400" />
@@ -446,7 +528,7 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
 
               {/* 8. Devises - En huitième selon la demande */}
               {safeProfile.options?.acceptedCurrencies && safeProfile.options.acceptedCurrencies.length > 0 && (
-                <div className="glass-card">
+                <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl">
                   <div className="p-4">
                     <h3 className="text-md font-medium text-white/90 mb-3">Devises</h3>
                     <div className="flex flex-wrap gap-2">
@@ -465,7 +547,7 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
 
               {/* 8. LE RESTE NE BOUGE PAS - Mode de service */}
               {(safeProfile.availability.incall || safeProfile.availability.outcall) && (
-                <div className="glass-card">
+                <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl">
                   <div className="p-5">
                     <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                       <MapPin className="w-5 h-5 text-pink-400" />
@@ -500,7 +582,7 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
               )}
 
               {/* Clientèle acceptée - Ne bouge pas */}
-              <div className="glass-card">
+              <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl">
                 <div className="p-5">
                   <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                     <Users className="w-5 h-5 text-pink-400" />
@@ -540,7 +622,7 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
                 <>
                   {/* Lieux */}
                   {safeProfile.options.amenities.filter(amenity => amenity.startsWith('opt:') && (amenity.includes('privé') || amenity.includes('discret') || amenity.includes('luxe') || amenity.includes('appartement') || amenity.includes('studio') || amenity.includes('maison'))).length > 0 && (
-                    <div className="glass-card">
+                    <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl">
                       <div className="p-4">
                         <h3 className="text-md font-medium text-white/90 mb-3 flex items-center gap-2">
                           <Home className="w-4 h-4 text-blue-400" />
@@ -566,16 +648,19 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
               )}
 
               {/* Actions de contact - Gestion intelligente du téléphone */}
-              <div className="glass-card border-gradient-to-r from-pink-500/30 via-purple-500/30 to-blue-500/30">
+              <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl">
                 <div className="p-4">
                   <div className="text-center mb-4">
                     <h3 className="text-lg font-semibold text-white mb-1">Contactez {safeProfile.stageName}</h3>
-                    <p className="text-gray-300 text-sm">Réservez votre moment privilégié</p>
+                    <p className="text-white/90 text-sm">Réservez votre moment privilégié</p>
                   </div>
 
                   <div className="space-y-3">
                     {/* Bouton Message Interne */}
-                    <button className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 hover:from-pink-600 hover:via-purple-600 hover:to-blue-600 rounded-lg text-white font-medium transition-all duration-300 text-sm">
+                    <button 
+                      onClick={handleMessage}
+                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-blue-500/10 hover:from-pink-500/20 hover:via-purple-500/20 hover:to-blue-500/20 rounded-xl text-white font-medium transition-all duration-300 text-sm border border-pink-500/30 hover:border-pink-400/50"
+                    >
                       <MessageCircle className="w-4 h-4" />
                       <span>Message privé</span>
                     </button>
@@ -600,7 +685,7 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
                         // CAS 1: Numéro visible - Afficher le numéro + boutons
                         return (
                           <div className="space-y-2">
-                            <div className="text-center p-2 bg-green-500/10 rounded-lg border border-green-500/20">
+                            <div className="text-center p-3 bg-green-500/10 rounded-xl border border-green-500/20">
                               <div className="flex items-center justify-center gap-2 text-green-300">
                                 <Phone className="w-4 h-4" />
                                 <span className="font-mono text-sm">{phoneNumber}</span>
@@ -611,21 +696,21 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
                                 href={whatsappUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex items-center justify-center gap-1 px-3 py-2 bg-green-600/20 hover:bg-green-600/30 rounded-lg text-green-300 hover:text-green-200 font-medium transition-all duration-300 border border-green-600/30 text-xs"
+                                className="flex items-center justify-center gap-1 px-3 py-2 bg-green-600/20 hover:bg-green-600/30 rounded-xl text-green-300 hover:text-green-200 font-medium transition-all duration-300 border border-green-600/30 text-xs"
                               >
                                 <MessageSquare className="w-3 h-3" />
                                 <span>WhatsApp</span>
                               </a>
                               <a
                                 href={smsUrl}
-                                className="flex items-center justify-center gap-1 px-3 py-2 bg-blue-600/20 hover:bg-blue-600/30 rounded-lg text-blue-300 hover:text-blue-200 font-medium transition-all duration-300 border border-blue-600/30 text-xs"
+                                className="flex items-center justify-center gap-1 px-3 py-2 bg-blue-600/20 hover:bg-blue-600/30 rounded-xl text-blue-300 hover:text-blue-200 font-medium transition-all duration-300 border border-blue-600/30 text-xs"
                               >
                                 <Smartphone className="w-3 h-3" />
                                 <span>SMS</span>
                               </a>
                               <a
                                 href={callUrl}
-                                className="flex items-center justify-center gap-1 px-3 py-2 bg-orange-600/20 hover:bg-orange-600/30 rounded-lg text-orange-300 hover:text-orange-200 font-medium transition-all duration-300 border border-orange-600/30 text-xs"
+                                className="flex items-center justify-center gap-1 px-3 py-2 bg-orange-600/20 hover:bg-orange-600/30 rounded-xl text-orange-300 hover:text-orange-200 font-medium transition-all duration-300 border border-orange-600/30 text-xs"
                               >
                                 <Phone className="w-3 h-3" />
                                 <span>Appel</span>
@@ -637,8 +722,8 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
                         // CAS 2: Numéro caché - Boutons uniquement (numéro masqué mais fonctionnel)
                         return (
                           <div className="space-y-2">
-                            <div className="text-center p-2 bg-gray-700/20 rounded-lg border border-gray-600/20">
-                              <div className="flex items-center justify-center gap-2 text-gray-400">
+                            <div className="text-center p-2 bg-white/5 rounded-xl border border-white/10">
+                              <div className="flex items-center justify-center gap-2 text-white/60">
                                 <Phone className="w-4 h-4" />
                                 <span className="text-sm">Contact téléphonique disponible</span>
                               </div>
@@ -648,21 +733,21 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
                                 href={whatsappUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex items-center justify-center gap-1 px-3 py-2 bg-green-600/20 hover:bg-green-600/30 rounded-lg text-green-300 hover:text-green-200 font-medium transition-all duration-300 border border-green-600/30 text-xs"
+                                className="flex items-center justify-center gap-1 px-3 py-2 bg-green-600/20 hover:bg-green-600/30 rounded-xl text-green-300 hover:text-green-200 font-medium transition-all duration-300 border border-green-600/30 text-xs"
                               >
                                 <MessageSquare className="w-3 h-3" />
                                 <span>WhatsApp</span>
                               </a>
                               <a
                                 href={smsUrl}
-                                className="flex items-center justify-center gap-1 px-3 py-2 bg-blue-600/20 hover:bg-blue-600/30 rounded-lg text-blue-300 hover:text-blue-200 font-medium transition-all duration-300 border border-blue-600/30 text-xs"
+                                className="flex items-center justify-center gap-1 px-3 py-2 bg-blue-600/20 hover:bg-blue-600/30 rounded-xl text-blue-300 hover:text-blue-200 font-medium transition-all duration-300 border border-blue-600/30 text-xs"
                               >
                                 <Smartphone className="w-3 h-3" />
                                 <span>SMS</span>
                               </a>
                               <a
                                 href={callUrl}
-                                className="flex items-center justify-center gap-1 px-3 py-2 bg-orange-600/20 hover:bg-orange-600/30 rounded-lg text-orange-300 hover:text-orange-200 font-medium transition-all duration-300 border border-orange-600/30 text-xs"
+                                className="flex items-center justify-center gap-1 px-3 py-2 bg-orange-600/20 hover:bg-orange-600/30 rounded-xl text-orange-300 hover:text-orange-200 font-medium transition-all duration-300 border border-orange-600/30 text-xs"
                               >
                                 <Phone className="w-3 h-3" />
                                 <span>Appel</span>
@@ -670,32 +755,20 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
                             </div>
                           </div>
                         );
-                      } else if (phoneVisibility === 'private') {
-                        // CAS 3: Messagerie privée uniquement - Redirection vers messagerie interne
+                      } else if (phoneVisibility === 'none') {
+                        // CAS 3: Messagerie privée uniquement - Simple message text
                         return (
-                          <div className="space-y-2">
-                            <div className="text-center p-2 bg-purple-700/20 rounded-lg border border-purple-600/20">
-                              <div className="flex items-center justify-center gap-2 text-purple-400">
-                                <MessageCircle className="w-4 h-4" />
-                                <span className="text-sm">Contact par messagerie privée uniquement</span>
-                              </div>
+                          <div className="text-center p-4 bg-purple-700/20 rounded-xl border border-purple-600/20">
+                            <div className="flex items-center justify-center gap-2 text-purple-300">
+                              <MessageCircle className="w-5 h-5" />
+                              <span className="text-sm font-medium">Contact par messagerie privée uniquement</span>
                             </div>
-                            <button className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-purple-600/20 hover:bg-purple-600/30 rounded-lg text-purple-300 hover:text-purple-200 font-medium transition-all duration-300 border border-purple-600/30 text-sm">
-                              <MessageCircle className="w-4 h-4" />
-                              <span>Ouvrir la messagerie</span>
-                            </button>
                           </div>
                         );
                       }
 
                       return null; // Pas de contact téléphonique disponible
                     })()}
-
-                    {/* Bouton Favoris */}
-                    <button className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-gray-800/30 hover:bg-gray-700/50 rounded-lg text-gray-300 hover:text-white font-medium transition-all duration-300 border border-gray-600/30 hover:border-pink-500/50 text-sm">
-                      <Heart className="w-4 h-4" />
-                      <span>Ajouter aux favoris</span>
-                    </button>
                   </div>
                 </div>
               </div>

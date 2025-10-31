@@ -61,6 +61,27 @@ export async function DELETE(request: NextRequest) {
       )
     }
 
+    // Mettre à jour aussi les champs avatarUrl/coverUrl dans ClubDetails
+    if (pos === 0) {
+      // Photo de profil supprimée
+      await prisma.clubDetails.updateMany({
+        where: { clubId: club.id },
+        data: { avatarUrl: null }
+      })
+    } else if (pos === 1) {
+      // Photo de couverture supprimée
+      await prisma.clubDetails.updateMany({
+        where: { clubId: club.id },
+        data: { coverUrl: null }
+      })
+    }
+
+    // ✅ IMPORTANT : Mettre à jour updatedAt du club pour forcer le cache-buster
+    await prisma.clubProfileV2.update({
+      where: { id: club.id },
+      data: { updatedAt: new Date() }
+    })
+
     console.log(`Média supprimé pour club ${club.id} à la position ${pos}`)
 
     return NextResponse.json({

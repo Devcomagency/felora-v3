@@ -1,14 +1,15 @@
 'use client'
 
-import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter, useParams } from 'next/navigation'
-import { ArrowLeft, Star, BadgeCheck } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import ProfileHeader from '../../../../../packages/ui/profile-test/ProfileHeader'
 import ActionsBar from '../../../../../packages/ui/profile-test/ActionsBar'
 import MediaFeedWithGallery from '../../../../../packages/ui/profile-test/MediaFeedWithGallery'
 import ClubEscortsSection from '../../../../../packages/ui/profile-test/ClubEscortsSection'
 import { ClubProfileModal } from '@/components/ClubProfileModal'
+import { useViewTracker } from '@/hooks/useViewTracker'
 
 interface ClubProfile {
   id: string
@@ -46,6 +47,7 @@ interface ClubProfile {
   }
   amenities?: string[]
   workingHours?: string
+  agendaIsOpenNow?: boolean // ✅ Statut ouvert/fermé en temps réel
 }
 
 // Loading skeleton
@@ -97,111 +99,12 @@ function ProfileSkeleton() {
   )
 }
 
-// Fonction pour calculer la disponibilité du club basée sur les horaires d'ouverture
-function calculateClubAvailability(workingHours?: string) {
-  if (!workingHours) {
-    return { available: false, schedule: 'Horaires non disponibles' }
-  }
-
-  try {
-    const hours = typeof workingHours === 'string' ? JSON.parse(workingHours) : workingHours
-    const now = new Date()
-    const currentDay = now.getDay() // 0 = Dimanche, 1 = Lundi, etc.
-    const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
-
-    // Mapping des jours
-    const dayMapping: Record<number, string> = {
-      0: 'dimanche',
-      1: 'lundi',
-      2: 'mardi',
-      3: 'mercredi',
-      4: 'jeudi',
-      5: 'vendredi',
-      6: 'samedi'
-    }
-
-    const todayKey = dayMapping[currentDay]
-    const todaySchedule = hours[todayKey]
-
-    if (!todaySchedule || todaySchedule.closed) {
-      // Trouver le prochain jour ouvert
-      for (let i = 1; i <= 7; i++) {
-        const nextDayIndex = (currentDay + i) % 7
-        const nextDayKey = dayMapping[nextDayIndex]
-        const nextDaySchedule = hours[nextDayKey]
-
-        if (nextDaySchedule && !nextDaySchedule.closed) {
-          const dayNames: Record<string, string> = {
-            'lundi': 'lundi',
-            'mardi': 'mardi',
-            'mercredi': 'mercredi',
-            'jeudi': 'jeudi',
-            'vendredi': 'vendredi',
-            'samedi': 'samedi',
-            'dimanche': 'dimanche'
-          }
-          return {
-            available: false,
-            schedule: `Fermé - Ouvre ${dayNames[nextDayKey]} à ${nextDaySchedule.open}`
-          }
-        }
-      }
-      return { available: false, schedule: 'Fermé' }
-    }
-
-    // Vérifier si on est dans les horaires d'ouverture
-    const openTime = todaySchedule.open
-    const closeTime = todaySchedule.close
-
-    if (currentTime >= openTime && currentTime <= closeTime) {
-      return {
-        available: true,
-        schedule: `Ouvert jusqu'à ${closeTime}`
-      }
-    } else if (currentTime < openTime) {
-      return {
-        available: false,
-        schedule: `Ouvre aujourd'hui à ${openTime}`
-      }
-    } else {
-      // Trouver le prochain jour ouvert
-      for (let i = 1; i <= 7; i++) {
-        const nextDayIndex = (currentDay + i) % 7
-        const nextDayKey = dayMapping[nextDayIndex]
-        const nextDaySchedule = hours[nextDayKey]
-
-        if (nextDaySchedule && !nextDaySchedule.closed) {
-          const dayNames: Record<string, string> = {
-            'lundi': 'lundi',
-            'mardi': 'mardi',
-            'mercredi': 'mercredi',
-            'jeudi': 'jeudi',
-            'vendredi': 'vendredi',
-            'samedi': 'samedi',
-            'dimanche': 'dimanche'
-          }
-          return {
-            available: false,
-            schedule: `Fermé - Ouvre ${dayNames[nextDayKey]} à ${nextDaySchedule.open}`
-          }
-        }
-      }
-      return { available: false, schedule: 'Fermé' }
-    }
-  } catch (error) {
-    console.error('Error parsing working hours:', error)
-    return { available: false, schedule: 'Horaires non disponibles' }
-  }
-}
-
 export default function ClubProfileTestPage() {
   const { data: session } = useSession()
   const [profile, setProfile] = useState<ClubProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
   const [notFound, setNotFound] = useState(false)
-  const [activeTab, setActiveTab] = useState<'public' | 'private'>('public')
-  const [totalReactions, setTotalReactions] = useState(0)
   const [showDetailModal, setShowDetailModal] = useState(false)
   const [showContactModal, setShowContactModal] = useState(false)
   const [isFollowing, setIsFollowing] = useState(false)
@@ -214,23 +117,6 @@ export default function ClubProfileTestPage() {
 
   const router = useRouter()
 
-  // Générer un guestId si pas de session
-  useEffect(() => {
-    if (!session?.user?.id) {
-      try {
-        const key = 'felora-user-id'
-        let u = localStorage.getItem(key)
-        if (!u) { 
-          u = `guest_${Math.random().toString(36).slice(2)}`
-          localStorage.setItem(key, u) 
-        }
-        setGuestId(u)
-      } catch {
-        setGuestId(`guest_${Math.random().toString(36).slice(2)}`)
-      }
-    }
-  }, [session?.user?.id])
-
   // Resolve params
   const routeParams = useParams() as Record<string, string | string[]>
   const [resolvedId, setResolvedId] = useState<string>('')
@@ -240,6 +126,30 @@ export default function ClubProfileTestPage() {
     const id = typeof raw === 'string' ? raw : Array.isArray(raw) ? raw[0] : ''
     setResolvedId(id)
   }, [routeParams])
+
+  // ✅ Track profile views using the dbId (ClubProfileV2 ID)
+  useViewTracker({
+    profileId: profile?.dbId || '',
+    profileType: 'club',
+    enabled: !!profile?.dbId && !loading && !error
+  })
+
+  // Générer un guestId si pas de session
+  useEffect(() => {
+    if (!session?.user?.id) {
+      try {
+        const key = 'felora-user-id'
+        let u = localStorage.getItem(key)
+        if (!u) {
+          u = `guest_${Math.random().toString(36).slice(2)}`
+          localStorage.setItem(key, u)
+        }
+        setGuestId(u)
+      } catch {
+        setGuestId(`guest_${Math.random().toString(36).slice(2)}`)
+      }
+    }
+  }, [session?.user?.id])
 
   // Action handlers with localStorage persistence
   const handleFollow = useCallback(async (profileId: string) => {
@@ -280,66 +190,44 @@ export default function ClubProfileTestPage() {
     await new Promise(resolve => setTimeout(resolve, 200))
   }, [resolvedId])
 
-  // Fonction pour recalculer les réactions totales
-  const calculateTotalReactions = useCallback(async () => {
-    try {
-      const response = await fetch(`/api/profile-test/club/${resolvedId}?cache_bust=${Date.now()}`)
-      const data = await response.json()
-      if (data.success && data.data?.stats) {
-        const total = (data.data.stats.likes || 0) + (data.data.stats.reactions || 0)
-        setTotalReactions(total)
-        // Mettre à jour le profil avec les nouvelles stats
-        setProfile(prev => prev ? {
-          ...prev,
-          stats: {
-            ...prev.stats,
-            likes: data.data.stats.likes || 0,
-            reactions: data.data.stats.reactions || 0
-          }
-        } : prev)
-        console.log('[CLUB PROFILE] Total réactions calculé:', total)
-      }
-    } catch (error) {
-      console.error('Error fetching club stats:', error)
+  // Update optimiste pour les réactions
+  const [totalReactions, setTotalReactions] = useState(0)
+
+  // Calculer les réactions totales depuis le state local
+  const calculateTotalReactions = useCallback(() => {
+    if (profile?.stats) {
+      const total = (profile.stats.likes || 0) + (profile.stats.reactions || 0)
+      setTotalReactions(total)
     }
-  }, [resolvedId])
+  }, [profile?.stats])
 
   // Fonction pour forcer le recalcul des réactions (appelée après chaque réaction)
   const reactionChangeTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const handleReactionChange = useCallback(async () => {
-    console.log('[CLUB PROFILE] Reaction changed, scheduling recalculation...')
-    
+  const handleReactionChange = useCallback(async (delta: number = 0) => {
+    // Update optimiste immédiat
+    setTotalReactions(prev => prev + delta)
+    setProfile(prev => prev ? {
+      ...prev,
+      stats: {
+        ...prev.stats,
+        reactions: (prev.stats?.reactions || 0) + delta
+      }
+    } : prev)
+
     // Annuler le timeout précédent s'il existe
     if (reactionChangeTimeoutRef.current) {
       clearTimeout(reactionChangeTimeoutRef.current)
     }
-    
-    // Programmer le recalcul avec un délai pour éviter les appels multiples
-    reactionChangeTimeoutRef.current = setTimeout(async () => {
-      console.log('[CLUB PROFILE] Recalculating total reactions...')
-      try {
-        const response = await fetch(`/api/profile-test/club/${resolvedId}?cache_bust=${Date.now()}`)
-        const data = await response.json()
-        if (data.success && data.data?.stats) {
-          const total = (data.data.stats.likes || 0) + (data.data.stats.reactions || 0)
-          setTotalReactions(total)
-          // Mettre à jour le profil avec les nouvelles stats
-          setProfile(prev => prev ? {
-            ...prev,
-            stats: {
-              ...prev.stats,
-              likes: data.data.stats.likes || 0,
-              reactions: data.data.stats.reactions || 0
-            }
-          } : prev)
-          console.log('[CLUB PROFILE] Total réactions calculé:', total)
-        }
-      } catch (error) {
-        console.error('Error fetching club stats:', error)
-      }
-      reactionChangeTimeoutRef.current = null
-    }, 500) // Délai de 500ms pour éviter les appels multiples
-  }, [resolvedId])
+
+    // Sync avec serveur (debounced)
+    return new Promise<void>((resolve) => {
+      reactionChangeTimeoutRef.current = setTimeout(() => {
+        // Le sync se fait automatiquement au prochain refetch
+        reactionChangeTimeoutRef.current = null
+        resolve()
+      }, 500)
+    })
+  }, [])
 
   const handleContact = useCallback(() => {
     setShowContactModal(true)
@@ -409,13 +297,18 @@ export default function ClubProfileTestPage() {
 
   // Charger les escorts liées au club
   useEffect(() => {
-    if (!profile?.dbId) return
+    console.log('[CLUB PROFILE] useEffect triggered, profile.dbId:', profile?.dbId)
+
+    if (!profile?.dbId) {
+      console.warn('[CLUB PROFILE] No dbId found, skipping escort fetch')
+      return
+    }
 
     async function fetchLinkedEscorts() {
       try {
         setEscortsLoading(true)
-        console.log('[CLUB PROFILE] Fetching escorts for clubId:', profile.dbId)
-        const response = await fetch(`/api/clubs/${profile.dbId}/escorts`)
+        console.log('[CLUB PROFILE] Fetching escorts for clubId:', profile?.dbId)
+        const response = await fetch(`/api/clubs/${profile?.dbId}/escorts`)
         const data = await response.json()
 
         console.log('[CLUB PROFILE] Escorts response:', data)
@@ -447,9 +340,8 @@ export default function ClubProfileTestPage() {
         setError(false)
         setNotFound(false)
 
-        const response = await fetch(`/api/profile-test/club/${resolvedId}?cache_bust=1`, { 
-          signal: controller.signal,
-          headers: { 'cache-control': 'no-cache' }
+        const response = await fetch(`/api/profile-test/club/${resolvedId}`, {
+          signal: controller.signal
         })
         const data = await response.json()
 
@@ -541,16 +433,22 @@ export default function ClubProfileTestPage() {
               }))
             : []
 
-          // Calculer la disponibilité du club en temps réel
-          const clubAvailability = calculateClubAvailability(profile.workingHours)
+          // ✅ Construire le texte de disponibilité en fonction du statut réel de l'API
+          const isOpen = profile.agendaIsOpenNow ?? false
+          const scheduleText = isOpen ? 'Ouvert maintenant' : 'Fermé'
+
+          const finalAvailability = {
+            available: isOpen,
+            schedule: scheduleText
+          }
 
           return (
             <>
               <ProfileHeader
                 name={profile.name}
                 city={profile.city}
-                avatar={profilePhoto?.url || profile.avatar}
-                coverPhoto={profilePhoto?.url || profile.avatar} // Photo de couverture pour le design moderne
+                avatar={profilePhoto?.url ? `${profilePhoto.url}?cb=${Date.now()}` : profile.avatar}
+                coverPhoto={profilePhoto?.url ? `${profilePhoto.url}?cb=${Date.now()}` : profile.avatar} // Photo de couverture pour le design moderne
                 verified={profile.verified}
                 premium={profile.premium}
                 online={false}
@@ -563,13 +461,11 @@ export default function ClubProfileTestPage() {
                   followers: profile.stats?.followers || 0,
                   views: profile.stats?.views || 0
                 }}
-                availability={{
-                  available: clubAvailability.available,
-                  schedule: clubAvailability.schedule
-                }}
+                availability={finalAvailability}
                 description={profile.description}
                 mediaCount={Array.isArray(feedMedia) ? feedMedia.length : 0}
                 website={profile.contact?.website} // Afficher le site web pour les clubs
+                agendaIsOpenNow={profile.agendaIsOpenNow} // ✅ Statut ouvert/fermé en temps réel depuis l'API
               />
 
               <ActionsBar

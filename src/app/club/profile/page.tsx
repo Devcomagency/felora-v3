@@ -62,13 +62,20 @@ export default function ClubProfilePage() {
               isActive: !!data.club.isActive,
               websiteUrl: (data.club as any).websiteUrl || '',
               establishmentType: data.club.establishmentType || 'club',
-              // Pré-remplir avec les données d'inscription
-              email: data.club.user?.email || '',
-              phone: data.club.user?.phoneE164 || '',
+              // Pré-remplir avec les données sauvegardées en priorité
+              email: data.club.email || data.club.user?.email || '',
+              phone: data.club.phone || data.club.user?.phoneE164 || '',
               handle: data.club.handle || '',
               companyName: data.club.companyName || '',
               managerName: data.club.managerName || ''
             })
+            // Charger les coordonnées si elles existent
+            if (data.club.latitude && data.club.longitude) {
+              setCoordinates({
+                lat: data.club.latitude,
+                lng: data.club.longitude
+              })
+            }
           }
         }
       } catch (e) {
@@ -117,7 +124,8 @@ export default function ClubProfilePage() {
         openingHours: updatedForm.openingHours,
         avatarUrl: updatedForm.avatarUrl,
         coverUrl: updatedForm.coverUrl,
-        isActive: updatedForm.isActive,
+        // Ne pas envoyer isActive dans l'auto-save pour éviter de le réinitialiser
+        // isActive est géré uniquement par le bouton toggle
         city: updatedForm.address ? updatedForm.address.split(',')[0] || '' : '',
         websiteUrl: updatedForm.websiteUrl,
         email: updatedForm.email,

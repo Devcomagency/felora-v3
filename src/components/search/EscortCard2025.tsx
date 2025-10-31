@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import Image from 'next/image'
-import { Heart, Play, MapPin, Star, Eye } from 'lucide-react'
+import { Play, MapPin, Star, Eye } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { buildCdnUrl } from '@/lib/media/cdn'
 
@@ -47,11 +47,6 @@ export default function EscortCard2025({ escort, onLike, isLiked = false, priori
 
   const handleCardClick = () => {
     router.push(`/profile/${escort.id}`)
-  }
-
-  const handleLike = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    onLike?.(escort.id)
   }
 
   const getMediaUrl = () => {
@@ -103,18 +98,6 @@ export default function EscortCard2025({ escort, onLike, isLiked = false, priori
             </div>
           )}
         </div>
-
-        {/* Bouton like */}
-        <button
-          onClick={handleLike}
-          className={`absolute top-3 right-3 w-8 h-8 rounded-full backdrop-blur-sm flex items-center justify-center transition-all duration-200 ${
-            isLiked 
-              ? 'bg-red-500/90 text-white shadow-lg shadow-red-500/30' 
-              : 'bg-black/40 hover:bg-black/60 text-white/80'
-          }`}
-        >
-          <Heart size={16} className={isLiked ? 'fill-current' : ''} />
-        </button>
 
         {/* Contenu en bas */}
         <div className="absolute bottom-0 left-0 right-0 p-4">

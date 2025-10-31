@@ -180,6 +180,7 @@ export function useClubs(): UseClubsReturn {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters.q, filters.city, filters.canton, filters.sort, filters.establishmentType, categoriesKey])
 
+
   return {
     clubs,
     isLoading,

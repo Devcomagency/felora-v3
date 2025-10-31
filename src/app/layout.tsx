@@ -77,15 +77,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <div data-app-shell style={{
               minHeight: '100vh',
               paddingTop: 0,
-              paddingBottom: '64px',
+              paddingBottom: 0,
               position: 'relative',
               width: '100%'
             }}>
               {children}
             </div>
-            <FooterLegal />
             <StaticNavBar />
           </AppGateway>
+          <FooterLegal />
           <CookieConsent />
           <ToastContainer />
         </Providers>

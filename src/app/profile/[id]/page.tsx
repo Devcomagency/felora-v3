@@ -3,7 +3,8 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter, useParams } from 'next/navigation'
-import { ArrowLeft, Star, BadgeCheck } from 'lucide-react'
+import { ArrowLeft, Star, BadgeCheck, CheckCircle, X } from 'lucide-react'
+import { toast } from 'sonner'
 import { useProfileViewTracker } from '@/hooks/useViewTracker'
 import { stableMediaId } from '@/lib/reactions/stableMediaId'
 import ProfileHeader from '../../../../packages/ui/profile-test/ProfileHeader'
@@ -44,6 +45,7 @@ interface EscortProfile {
   description?: string
   stats?: {
     likes?: number
+    reactions?: number
     followers?: number
     views?: number
   }
@@ -97,25 +99,37 @@ interface EscortProfile {
   }
 }
 
-// Loading skeleton
-function ProfileSkeleton() {
+// Loading skeleton - Amélioré avec grille de médias
+const ProfileSkeleton = React.memo(function ProfileSkeleton() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 animate-pulse">
       <div className="max-w-4xl mx-auto p-4">
+        {/* Header skeleton */}
         <div className="glass-card p-6 mb-6">
           <div className="flex items-start gap-4">
-            <div className="w-20 h-20 bg-gray-700 rounded-full"></div>
+            <div className="w-48 h-48 bg-gray-700 rounded-3xl"></div>
             <div className="flex-1">
-              <div className="h-6 bg-gray-700 rounded w-48 mb-2"></div>
-              <div className="h-4 bg-gray-700 rounded w-32 mb-3"></div>
-              <div className="flex gap-2">
-                <div className="h-6 bg-gray-700 rounded w-16"></div>
-                <div className="h-6 bg-gray-700 rounded w-16"></div>
+              <div className="h-8 bg-gray-700 rounded w-48 mb-3"></div>
+              <div className="h-4 bg-gray-700 rounded w-32 mb-4"></div>
+              <div className="flex gap-6">
+                <div className="text-center">
+                  <div className="h-6 bg-gray-700 rounded w-12 mb-1"></div>
+                  <div className="h-3 bg-gray-700 rounded w-16"></div>
+                </div>
+                <div className="text-center">
+                  <div className="h-6 bg-gray-700 rounded w-12 mb-1"></div>
+                  <div className="h-3 bg-gray-700 rounded w-16"></div>
+                </div>
+                <div className="text-center">
+                  <div className="h-6 bg-gray-700 rounded w-12 mb-1"></div>
+                  <div className="h-3 bg-gray-700 rounded w-16"></div>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
+        {/* Actions bar skeleton */}
         <div className="glass-card p-4 mb-6">
           <div className="flex gap-3">
             <div className="flex-1 h-10 bg-gray-700 rounded-lg"></div>
@@ -125,14 +139,19 @@ function ProfileSkeleton() {
           </div>
         </div>
 
-        <div className="h-96 bg-gray-700 rounded-lg mb-6"></div>
+        {/* Media grid skeleton */}
+        <div className="grid grid-cols-3 gap-2">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="aspect-square bg-gray-700 rounded-lg"></div>
+          ))}
+        </div>
       </div>
     </div>
   )
-}
+})
 
 // Error fallback
-function ErrorFallback() {
+const ErrorFallback = React.memo(function ErrorFallback({ onRetry }: { onRetry?: () => void }) {
   const router = useRouter()
 
   return (
@@ -143,7 +162,7 @@ function ErrorFallback() {
         <p className="text-gray-400 mb-6">We're having trouble loading this profile. Please try again.</p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <button
-            onClick={() => window.location.reload()}
+            onClick={() => onRetry ? onRetry() : router.back()}
             className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors"
           >
             Retry
@@ -158,7 +177,7 @@ function ErrorFallback() {
       </div>
     </div>
   )
-}
+})
 
 export default function EscortProfilePage() {
   const { data: session } = useSession()
@@ -166,11 +185,34 @@ export default function EscortProfilePage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
   const [notFound, setNotFound] = useState(false)
+  const [refetchTrigger, setRefetchTrigger] = useState(0)
+  const [showKycSuccess, setShowKycSuccess] = useState(false)
   const router = useRouter()
 
   // Resolve params
   const routeParams = useParams() as Record<string, string | string[]>
   const [resolvedId, setResolvedId] = useState<string>('')
+
+  // Détecter le paramètre kycSuccess dans l'URL
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search)
+      if (params.get('kycSuccess') === '1') {
+        setShowKycSuccess(true)
+        // Nettoyer l'URL après 500ms
+        setTimeout(() => {
+          const url = new URL(window.location.href)
+          url.searchParams.delete('kycSuccess')
+          window.history.replaceState({}, '', url)
+        }, 500)
+      }
+    }
+  }, [])
+
+  // Fonction pour refetch manuellement
+  const handleRetry = useCallback(() => {
+    setRefetchTrigger(prev => prev + 1)
+  }, [])
 
   useEffect(() => {
     const raw = routeParams?.id as unknown
@@ -206,11 +248,6 @@ export default function EscortProfilePage() {
 
         const data = await response.json()
 
-        // Debug: Vérifier les données reçues de l'API
-        console.log('[DEBUG API] Données reçues de l\'API:', data)
-        console.log('[DEBUG API] realTimeAvailability dans data:', data.realTimeAvailability)
-        console.log('[DEBUG API] scheduleData dans data:', data.scheduleData)
-
         const normalizedMedia = Array.isArray(data.media)
           ? data.media.map((item: any) => ({
               ...item,
@@ -224,15 +261,44 @@ export default function EscortProfilePage() {
             }))
           : []
 
+        // Déterminer l'avatar : priorité à profilePhoto, sinon premier média
+        const avatar = data.profilePhoto 
+          ? validateMediaUrl(data.profilePhoto, 'avatar')
+          : (normalizedMedia?.[0]?.url ? validateMediaUrl(normalizedMedia[0].url, 'avatar') : undefined)
+
         // Transform API data to match EscortProfile interface
+        // Fetch contact data from session if available
+        let contactData = undefined
+        try {
+          const contactResponse = await fetch(`/api/profile/unified/${resolvedId}`, {
+            signal: controller.signal,
+            credentials: 'include'
+          })
+
+          if (contactResponse.ok) {
+            const contactResponseData = await contactResponse.json()
+            if (contactResponseData.success && contactResponseData.profile?.contact) {
+              const contact = contactResponseData.profile.contact
+              // Transform 'none' to 'hidden' for compatibility
+              if (contact.phoneVisibility === 'none') {
+                contact.phoneVisibility = 'hidden'
+              }
+              contactData = contact
+            }
+          }
+        } catch (contactErr) {
+          // Non-blocking error - continue without contact functionality
+        }
+
         const transformedProfile: EscortProfile = {
           id: data.id,
           userId: data.userId, // AJOUT: userId pour isOwner check
           name: data.stageName || 'Escort',
           stageName: data.stageName,
-          avatar: validateMediaUrl(normalizedMedia?.[0]?.url, 'avatar'),
+          avatar: avatar,
           city: data.city,
           age: data.age || undefined,
+          category: data.category,
           languages: data.languages || [],
           services: data.services || [],
           media: normalizedMedia,
@@ -258,44 +324,14 @@ export default function EscortProfilePage() {
           // Disponibilité temps réel de l'API
           realTimeAvailability: data.realTimeAvailability,
           scheduleData: data.scheduleData,
-          // Agenda activé
-          agendaEnabled: true,
-          // Contact intelligent - fetch séparé
-          contact: undefined
+          // Contact intelligent - fetch immédiat
+          contact: contactData
         }
         setProfile(transformedProfile)
-
-        // Fetch contact data separately from unified API
-        try {
-          const contactResponse = await fetch(`/api/profile/unified/${resolvedId}`, {
-            signal: controller.signal,
-            credentials: 'include'
-          })
-
-          if (contactResponse.ok) {
-            const contactData = await contactResponse.json()
-            if (contactData.success && contactData.profile?.contact) {
-              const contact = contactData.profile.contact
-              // Transform 'none' to 'hidden' for compatibility
-              if (contact.phoneVisibility === 'none') {
-                contact.phoneVisibility = 'hidden'
-              }
-
-              setProfile(prev => prev ? {
-                ...prev,
-                contact: contact
-              } : prev)
-            }
-          }
-        } catch (contactErr) {
-          console.warn('Could not fetch contact data:', contactErr)
-          // Non-blocking error - continue without contact functionality
-        }
 
       } catch (err) {
         if ((err as any)?.name === 'AbortError') return
         if (isCancelled) return
-        console.error('Failed to fetch escort profile:', err)
         setError(true)
       } finally {
         if (!isCancelled) {
@@ -310,13 +346,15 @@ export default function EscortProfilePage() {
       isCancelled = true
       controller.abort()
     }
-  }, [resolvedId])
+  }, [resolvedId, refetchTrigger])
 
   // Action handlers with localStorage persistence
   const handleFollow = useCallback(async (profileId: string) => {
     const key = `follow_${profileId}`
     const currentState = localStorage.getItem(key) === 'true'
     localStorage.setItem(key, (!currentState).toString())
+    
+    toast.success(currentState ? 'Vous ne suivez plus ce profil' : 'Vous suivez maintenant ce profil')
 
     // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 500))
@@ -327,6 +365,10 @@ export default function EscortProfilePage() {
     const currentState = localStorage.getItem(key) === 'true'
     localStorage.setItem(key, (!currentState).toString())
 
+    if (!currentState) {
+      toast.success('❤️ Ajouté aux favoris')
+    }
+
     await new Promise(resolve => setTimeout(resolve, 300))
   }, [])
 
@@ -334,6 +376,8 @@ export default function EscortProfilePage() {
     const key = `save_${profileId}`
     const currentState = localStorage.getItem(key) === 'true'
     localStorage.setItem(key, (!currentState).toString())
+
+    toast.success(currentState ? 'Profil retiré des sauvegardes' : '📌 Profil sauvegardé')
 
     await new Promise(resolve => setTimeout(resolve, 300))
   }, [])
@@ -371,6 +415,7 @@ export default function EscortProfilePage() {
       })
     } else {
       navigator.clipboard.writeText(window.location.href)
+      toast.success('Lien copié dans le presse-papiers')
     }
   }, [profile?.name])
 
@@ -401,19 +446,11 @@ export default function EscortProfilePage() {
 
   // Vérifier si l'utilisateur connecté est le propriétaire du profil
   const isOwner = useMemo(() => {
-    console.log('[DEBUG isOwner] session.user.id:', session?.user?.id)
-    console.log('[DEBUG isOwner] profile.id:', profile?.id)
-    console.log('[DEBUG isOwner] profile.userId:', (profile as any)?.userId)
-
     if (!session?.user?.id || !profile?.id) return false
 
     // Comparer avec profile.id et aussi avec profile.userId si disponible
     const matchesProfileId = session.user.id === profile.id
     const matchesUserId = session.user.id === (profile as any)?.userId
-
-    console.log('[DEBUG isOwner] matchesProfileId:', matchesProfileId)
-    console.log('[DEBUG isOwner] matchesUserId:', matchesUserId)
-    console.log('[DEBUG isOwner] Final result:', matchesProfileId || matchesUserId)
 
     return matchesProfileId || matchesUserId
   }, [session?.user?.id, profile?.id, (profile as any)?.userId])
@@ -424,75 +461,18 @@ export default function EscortProfilePage() {
 
   const handleCloseModal = useCallback(() => {
     setShowDetailModal(false)
-    // Double sécurité pour restaurer le scroll mobile
-    setTimeout(() => {
-      const body = document.body
-      const html = document.documentElement
-      const scrollY = body.getAttribute('data-scroll-y')
-
-      body.style.position = ''
-      body.style.top = ''
-      body.style.width = ''
-      body.style.overflow = ''
-      html.style.overflow = ''
-      body.style.touchAction = ''
-      body.style.userSelect = ''
-
-      if (scrollY) {
-        window.scrollTo(0, parseInt(scrollY))
-        body.removeAttribute('data-scroll-y')
-      }
-    }, 100)
   }, [])
 
-  // Gérer le scroll du body quand la modal est ouverte (spécial mobile)
+  // Gérer le scroll du body quand la modal est ouverte
   useEffect(() => {
-    const body = document.body
-    const html = document.documentElement
-
     if (showDetailModal) {
-      // Spécial mobile : empêcher tout scroll
-      const scrollY = window.scrollY
-      body.style.position = 'fixed'
-      body.style.top = `-${scrollY}px`
-      body.style.width = '100%'
-      body.style.overflow = 'hidden'
-      html.style.overflow = 'hidden'
-
-      // Pour iOS Safari
-      body.style.touchAction = 'none'
-      body.style.userSelect = 'none'
-
-      // Stocker la position pour la restaurer
-      body.setAttribute('data-scroll-y', scrollY.toString())
+      document.body.classList.add('overflow-hidden')
     } else {
-      // Restaurer le scroll mobile
-      const scrollY = body.getAttribute('data-scroll-y')
-
-      body.style.position = ''
-      body.style.top = ''
-      body.style.width = ''
-      body.style.overflow = ''
-      html.style.overflow = ''
-      body.style.touchAction = ''
-      body.style.userSelect = ''
-
-      if (scrollY) {
-        window.scrollTo(0, parseInt(scrollY))
-        body.removeAttribute('data-scroll-y')
-      }
+      document.body.classList.remove('overflow-hidden')
     }
 
-    // Nettoyage au démontage
     return () => {
-      body.style.position = ''
-      body.style.top = ''
-      body.style.width = ''
-      body.style.overflow = ''
-      html.style.overflow = ''
-      body.style.touchAction = ''
-      body.style.userSelect = ''
-      body.removeAttribute('data-scroll-y')
+      document.body.classList.remove('overflow-hidden')
     }
   }, [showDetailModal])
 
@@ -525,12 +505,10 @@ export default function EscortProfilePage() {
       if (data?.stats) {
         const total = (data.stats.likes || 0) + (data.stats.reactions || 0)
         setTotalReactions(total)
-        console.log('[PROFILE] Total réactions calculé:', total, '(likes:', data.stats.likes, '+ reactions:', data.stats.reactions, ')')
       } else {
         setTotalReactions(0)
       }
     } catch (error) {
-      console.error('Error fetching profile stats:', error)
       setTotalReactions(0)
     }
   }, [profile?.media, profile?.id])
@@ -543,8 +521,6 @@ export default function EscortProfilePage() {
   // Fonction pour forcer le recalcul des réactions (appelée après chaque réaction)
   const reactionChangeTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const handleReactionChange = useCallback(async () => {
-    console.log('[PROFILE] Reaction changed, scheduling recalculation...')
-    
     // Annuler le timeout précédent s'il existe
     if (reactionChangeTimeoutRef.current) {
       clearTimeout(reactionChangeTimeoutRef.current)
@@ -552,7 +528,6 @@ export default function EscortProfilePage() {
     
     // Programmer le recalcul avec un délai pour éviter les appels multiples
     reactionChangeTimeoutRef.current = setTimeout(async () => {
-      console.log('[PROFILE] Recalculating total reactions...')
       await calculateTotalReactions()
       reactionChangeTimeoutRef.current = null
     }, 500) // Délai de 500ms pour éviter les appels multiples
@@ -572,10 +547,12 @@ export default function EscortProfilePage() {
       const newFavorites = favorites.filter((id: string) => id !== profile.id)
       localStorage.setItem('felora-favorites', JSON.stringify(newFavorites))
       setIsFavorite(false)
+      toast.success('Retiré des favoris')
     } else {
       const newFavorites = [...favorites, profile.id]
       localStorage.setItem('felora-favorites', JSON.stringify(newFavorites))
       setIsFavorite(true)
+      toast.success('⭐ Ajouté aux favoris')
     }
   }, [isFavorite, profile])
 
@@ -583,27 +560,12 @@ export default function EscortProfilePage() {
   const extendedProfileData = useMemo(() => {
     if (!profile) return null
 
-    // Debug: Vérifier si realTimeAvailability existe
-    console.log('[DEBUG REAL-TIME] profile.realTimeAvailability:', profile.realTimeAvailability)
-    console.log('[DEBUG REAL-TIME] profile.scheduleData:', profile.scheduleData)
-
     const rates = []
     if (profile.rates?.hour) rates.push({ duration: '1h', price: profile.rates.hour, description: 'Rencontre intime' })
     if (profile.rates?.twoHours) rates.push({ duration: '2h', price: profile.rates.twoHours, description: 'Moment prolongé' })
     if (profile.rates?.halfDay) rates.push({ duration: '4h', price: profile.rates.halfDay, description: 'Demi-journée' })
     if (profile.rates?.fullDay) rates.push({ duration: '8h', price: profile.rates.fullDay, description: 'Journée complète' })
     if (profile.rates?.overnight) rates.push({ duration: '24h', price: profile.rates.overnight, description: 'Week-end VIP' })
-
-    // DEBUG: Logs pour vérifier les données
-    console.log('[DEBUG MODAL] Profile data:', {
-      languages: profile.languages,
-      services: profile.services,
-      rates: profile.rates,
-      availability: profile.availability,
-      physical: profile.physical,
-      practices: profile.practices,
-      clientele: profile.clientele
-    })
 
     return {
       languages: profile.languages || {},
@@ -637,10 +599,8 @@ export default function EscortProfilePage() {
 
   // Render states
   if (loading) return <ProfileSkeleton />
-  if (notFound) return <ErrorFallback />
-  if (error || !profile) return <ErrorFallback />
-
-  // Debug log
+  if (notFound) return <ErrorFallback onRetry={handleRetry} />
+  if (error || !profile) return <ErrorFallback onRetry={handleRetry} />
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -654,7 +614,8 @@ export default function EscortProfilePage() {
                 router.back()
               }}
               className="w-10 h-10 flex items-center justify-center hover:bg-white/10 rounded-full transition-colors"
-              title="Retour à la recherche"
+              title="Retour"
+              aria-label="Retour à la page précédente"
             >
               <ArrowLeft size={24} className="text-white" />
             </button>
@@ -669,11 +630,57 @@ export default function EscortProfilePage() {
         </div>
       </div>
 
+      {/* Message de félicitations KYC */}
+      {showKycSuccess && (
+        <div className="fixed top-20 left-0 right-0 z-40 px-4 animate-in slide-in-from-top duration-500">
+          <div className="max-w-2xl mx-auto bg-gradient-to-r from-green-500/10 via-emerald-500/10 to-teal-500/10 border border-green-500/30 rounded-2xl p-4 sm:p-6 shadow-xl backdrop-blur-xl">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex items-start gap-3 flex-1">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-500/20 rounded-full flex items-center justify-center flex-shrink-0">
+                  <CheckCircle className="text-green-400" size={24} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-green-400 text-base sm:text-lg font-bold mb-1 sm:mb-2">🎉 Félicitations ! KYC soumis avec succès</h3>
+                  <p className="text-green-300 text-xs sm:text-sm mb-2">
+                    Votre vérification d'identité a été transmise. Voici votre profil public !
+                  </p>
+                  <div className="bg-green-500/10 rounded-lg p-2 sm:p-3">
+                    <p className="text-green-200 text-xs font-medium mb-1 sm:mb-2">📋 Prochaines étapes :</p>
+                    <ul className="space-y-1 text-green-200 text-xs">
+                      <li className="flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 bg-green-400 rounded-full flex-shrink-0"></span>
+                        <span>Votre vérification sera traitée sous 48h</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 bg-green-400 rounded-full flex-shrink-0"></span>
+                        <span>Complétez votre profil pour plus de visibilité</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 bg-green-400 rounded-full flex-shrink-0"></span>
+                        <span>Une fois vérifié, vous recevrez le badge ✓</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowKycSuccess(false)}
+                className="text-green-400 hover:text-green-300 transition-colors p-1 flex-shrink-0"
+              >
+                <X size={20} />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Contenu principal avec padding-top pour header fixe + safe-area (~72px) */}
       <div className="pt-0" style={{ paddingTop: 'calc(72px + env(safe-area-inset-top, 0px))' }}>
         {/* Séparation des médias : media[0] = photo de profil, media[1-5] = posts feed */}
         {(() => {
           const profilePhoto = profile.media && profile.media.length > 0 ? profile.media[0] : null
+          const finalAvatar = profilePhoto?.url || profile.avatar
+          
           const feedMedia = profile.media
             ? profile.media.slice(1).map((item) => ({
                 ...item,
@@ -691,11 +698,12 @@ export default function EscortProfilePage() {
               <ProfileHeader
                 name={profile.name}
                 city={profile.city}
-                avatar={profilePhoto?.url || profile.avatar}
+                avatar={finalAvatar}
                 verified={profile.verified}
                 premium={profile.premium}
                 online={profile.online}
                 age={profile.age}
+                category={profile.category}
                 languages={[]}
                 services={profile.services}
                 stats={{
@@ -709,7 +717,7 @@ export default function EscortProfilePage() {
                 scheduleData={profile.scheduleData}
                 description={profile.description}
                 mediaCount={Array.isArray(feedMedia) ? feedMedia.length : 0}
-                agendaEnabled={true}
+                showAvatar={true}
               />
 
               <ActionsBar
@@ -732,13 +740,7 @@ export default function EscortProfilePage() {
               />
 
               <MediaFeedWithGallery
-                media={(() => {
-                  console.log('[PROFILE DEBUG] Media passed to feed:', feedMedia)
-                  feedMedia.forEach((media, i) => {
-                    console.log(`[PROFILE DEBUG] Media ${i}:`, { type: media.type, url: media.url })
-                  })
-                  return feedMedia
-                })()}
+                media={feedMedia}
                 profileId={profile.id}
                 profileName={profile.name}
                 viewerIsOwner={isOwner}
@@ -746,20 +748,48 @@ export default function EscortProfilePage() {
                 onSave={handleMediaSave}
                 onReactionChange={handleReactionChange}
                 onUpdateMedia={async (mediaUrl: string, updates: any) => {
+                  // Update optimiste : mise à jour immédiate de l'état local
+                  const originalProfile = profile
+
+                  setProfile(prev => prev ? ({
+                    ...prev,
+                    media: prev.media.map(m =>
+                      m.url === mediaUrl ? { ...m, ...updates } : m
+                    )
+                  }) : null)
+
+                  // Requête API
                   const result = await updateMediaWithErrorHandling(mediaUrl, updates)
+
+                  // Si échec, rollback
                   if (!result.success) {
+                    setProfile(originalProfile)
                     throw new Error(result.error)
                   }
-                  // Recharger le profil après la mise à jour
-                  window.location.reload()
+
+                  // Recalculer les stats si nécessaire
+                  await calculateTotalReactions()
                 }}
                 onDeleteMedia={async (mediaUrl: string, index: number) => {
+                  // Update optimiste : suppression immédiate de l'état local
+                  const originalProfile = profile
+
+                  setProfile(prev => prev ? ({
+                    ...prev,
+                    media: prev.media.filter(m => m.url !== mediaUrl)
+                  }) : null)
+
+                  // Requête API
                   const result = await deleteMediaWithErrorHandling(mediaUrl, index)
+
+                  // Si échec, rollback
                   if (!result.success) {
+                    setProfile(originalProfile)
                     throw new Error(result.error)
                   }
-                  // Recharger le profil après la suppression
-                  window.location.reload()
+
+                  // Recalculer les stats si nécessaire
+                  await calculateTotalReactions()
                 }}
               />
             </>
