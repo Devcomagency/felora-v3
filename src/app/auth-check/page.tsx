@@ -1,9 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 
-export default function AuthCheck() {
+function AuthCheckForm() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -103,5 +103,17 @@ export default function AuthCheck() {
         }
       `}</style>
     </div>
+  )
+}
+
+export default function AuthCheck() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-felora-obsidian via-felora-charcoal to-felora-void">
+        <div className="text-felora-silver">Chargement...</div>
+      </div>
+    }>
+      <AuthCheckForm />
+    </Suspense>
   )
 }
