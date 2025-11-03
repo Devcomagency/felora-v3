@@ -1,30 +1,27 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
-import { Search, Filter, Eye, Trash2, AlertTriangle, Image as ImageIcon, Video, Lock, DollarSign, Calendar, Download, RefreshCw, CheckSquare, Square, LogOut, ArrowUpDown, RotateCcw } from 'lucide-react'
-import { useDebounce } from 'use-debounce'
-import toast, { Toaster } from 'react-hot-toast'
+import { useEffect, useState, useCallback, useMemo } from 'react'
+import { Search, Trash2, Eye, Video, Image as ImageIcon, AlertTriangle, ChevronLeft, ChevronRight, Filter, ExternalLink, Download, X } from 'lucide-react'
+import { useToast } from '@/hooks/useToast'
+import ToastNotification from '@/components/admin/ToastNotification'
+import { useDebounce } from '@/hooks/useDebounce'
 
 interface MediaItem {
   id: string
-  ownerType: string
-  ownerId: string
   type: string
   url: string
   thumbUrl: string | null
-  description: string | null
-  visibility: 'PUBLIC' | 'PREMIUM' | 'PRIVATE' | 'REQUESTABLE'
-  price: number | null
-  likeCount: number
-  reactCount: number
-  reportCount: number
-  reportedAt: string | null
-  createdAt: string
+  visibility: string
+  ownerType: string
+  ownerId: string
   owner?: {
     name: string
     stageName?: string
-    slug?: string
+    userId?: string
   }
+  reportCount: number
+  price: number | null
+  createdAt: string
 }
 
 interface MediaStats {
@@ -35,95 +32,44 @@ interface MediaStats {
   totalPremium: number
 }
 
-type SortOption = 'reportCount' | 'createdAt' | 'likeCount'
-
-export default function AdminMediaPage() {
+export default function AdminMediaImproved() {
   const [media, setMedia] = useState<MediaItem[]>([])
   const [stats, setStats] = useState<MediaStats | null>(null)
   const [loading, setLoading] = useState(true)
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [authError, setAuthError] = useState<string | null>(null)
+  const [search, setSearch] = useState('')
+  const debouncedSearch = useDebounce(search, 500) // Debounce 500ms
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 10
 
   // Filtres
-  const [searchQuery, setSearchQuery] = useState('')
-  const [debouncedSearch] = useDebounce(searchQuery, 500) // ✅ Debounce 500ms
   const [filterOwnerType, setFilterOwnerType] = useState<string>('ALL')
   const [filterVisibility, setFilterVisibility] = useState<string>('ALL')
   const [filterReported, setFilterReported] = useState(false)
-  const [sortBy, setSortBy] = useState<SortOption>('reportCount') // ✅ Tri personnalisé
 
-  // Selection multiple (bulk actions)
-  const [selectedMedia, setSelectedMedia] = useState<Set<string>>(new Set())
+  // Sélection multiple
+  const [selectedMedia, setSelectedMedia] = useState<string[]>([])
 
-  // Modal de suppression
+  // Modal suppression
   const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean, media: MediaItem | null }>({ isOpen: false, media: null })
   const [deleteReason, setDeleteReason] = useState('')
   const [deleteDetails, setDeleteDetails] = useState('')
+  const [notifyOwner, setNotifyOwner] = useState(true)
   const [deleting, setDeleting] = useState(false)
 
-  // Preview modal
-  const [previewModal, setPreviewModal] = useState<{ isOpen: boolean, media: MediaItem | null }>({ isOpen: false, media: null })
+  // Toast
+  const { toasts, addToast, removeToast } = useToast()
 
   useEffect(() => {
-    checkAuth()
+    fetchMedia()
+    fetchStats()
   }, [])
 
-  const checkAuth = async () => {
-    try {
-      const response = await fetch('/api/admin/auth/check')
-      if (response.ok) {
-        setIsAuthenticated(true)
-        fetchMedia()
-        fetchStats()
-      } else {
-        setLoading(false)
-      }
-    } catch (e) {
-      setLoading(false)
-    }
-  }
+  // Utiliser debouncedSearch au lieu de search
+  useEffect(() => {
+    fetchMedia()
+  }, [filterOwnerType, filterVisibility, filterReported, debouncedSearch])
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setAuthError(null)
-
-    try {
-      const response = await fetch('/api/admin/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      })
-
-      const data = await response.json()
-
-      if (data.success) {
-        setIsAuthenticated(true)
-        toast.success('✅ Connexion réussie')
-        fetchMedia()
-        fetchStats()
-      } else {
-        setAuthError(data.error)
-        toast.error('❌ ' + data.error)
-      }
-    } catch (error) {
-      setAuthError('Erreur de connexion')
-      toast.error('❌ Erreur de connexion')
-    }
-  }
-
-  const handleLogout = async () => {
-    try {
-      await fetch('/api/admin/auth/logout', { method: 'POST' })
-      setIsAuthenticated(false)
-      toast.success('✅ Déconnexion réussie')
-    } catch (error) {
-      toast.error('❌ Erreur de déconnexion')
-    }
-  }
-
-  const fetchMedia = async (showToast = false) => {
+  async function fetchMedia() {
     try {
       setLoading(true)
       const params = new URLSearchParams({
@@ -132,699 +78,810 @@ export default function AdminMediaPage() {
         reported: filterReported.toString(),
         search: debouncedSearch
       })
-
-      const response = await fetch(`/api/admin/media?${params}`)
-      const data = await response.json()
-
+      const res = await fetch(`/api/admin/media?${params}`)
+      const data = await res.json()
       if (data.success) {
-        // Tri côté client
-        let sorted = [...data.media]
-        if (sortBy === 'reportCount') {
-          sorted.sort((a, b) => b.reportCount - a.reportCount)
-        } else if (sortBy === 'createdAt') {
-          sorted.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-        } else if (sortBy === 'likeCount') {
-          sorted.sort((a, b) => b.likeCount - a.likeCount)
-        }
-        setMedia(sorted)
-        // Only show toast on manual refresh, not on every filter change
-        if (showToast) {
-          toast.success(`✅ ${sorted.length} médias chargés`)
-        }
+        setMedia(data.media)
+        // 🔍 DEBUG: Afficher les types de médias
+        console.log('[ADMIN MEDIA] Types de médias reçus:', data.media.map((m: MediaItem) => ({ id: m.id.substring(0, 8), type: m.type, isVideo: m.type.includes('video') })).slice(0, 10))
+      } else {
+        addToast(data.error || 'Erreur lors du chargement', 'error')
       }
-    } catch (e) {
-      console.error('Error fetching media:', e)
-      toast.error('❌ Erreur de chargement des médias')
+    } catch (error) {
+      console.error('Error fetching media:', error)
+      addToast('Erreur de connexion', 'error')
     } finally {
       setLoading(false)
     }
   }
 
-  const fetchStats = async () => {
+  async function fetchStats() {
     try {
-      const response = await fetch('/api/admin/media/stats')
-      const data = await response.json()
-
+      const res = await fetch('/api/admin/media/stats')
+      const data = await res.json()
       if (data.success) {
         setStats(data.stats)
       }
-    } catch (e) {
-      console.error('Error fetching stats:', e)
+    } catch (error) {
+      console.error('Error fetching stats:', error)
     }
   }
 
-  const handleDelete = async () => {
+  // Pagination intelligente
+  const totalPages = Math.ceil(media.length / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = startIndex + itemsPerPage
+  const currentMedia = media.slice(startIndex, endIndex)
+
+  const getPageNumbers = useCallback(() => {
+    const pages: (number | string)[] = []
+    const maxVisible = 7
+
+    if (totalPages <= maxVisible) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1)
+    }
+
+    if (currentPage <= 3) {
+      return [1, 2, 3, 4, '...', totalPages]
+    }
+
+    if (currentPage >= totalPages - 2) {
+      return [1, '...', totalPages - 3, totalPages - 2, totalPages - 1, totalPages]
+    }
+
+    return [1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages]
+  }, [currentPage, totalPages])
+
+  // Reset à la page 1 si changement de filtre
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [debouncedSearch, filterOwnerType, filterVisibility, filterReported])
+
+  // Gestion de la suppression
+  async function handleDelete() {
     if (!deleteModal.media || !deleteReason) return
 
     setDeleting(true)
     try {
-      const response = await fetch(`/api/admin/media/${deleteModal.media.id}`, {
+      const res = await fetch(`/api/admin/media/${deleteModal.media.id}`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           reason: deleteReason,
-          details: deleteDetails
+          details: deleteDetails,
+          notifyOwner: notifyOwner
         })
       })
 
-      const data = await response.json()
+      const data = await res.json()
 
       if (data.success) {
-        toast.success('✅ Média supprimé et utilisateur notifié')
+        addToast('Média supprimé avec succès', 'success')
         fetchMedia()
         fetchStats()
         setDeleteModal({ isOpen: false, media: null })
         setDeleteReason('')
         setDeleteDetails('')
+        setNotifyOwner(true)
       } else {
-        toast.error('❌ ' + (data.error || 'Erreur lors de la suppression'))
+        addToast(data.error || 'Erreur lors de la suppression', 'error')
       }
-    } catch (e) {
-      console.error('Error deleting media:', e)
-      toast.error('❌ Erreur de connexion')
+    } catch (error) {
+      console.error('Error deleting media:', error)
+      addToast('Erreur de connexion', 'error')
     } finally {
       setDeleting(false)
     }
   }
 
-  // ✅ Bulk delete
-  const handleBulkDelete = async () => {
-    if (selectedMedia.size === 0) {
-      toast.error('❌ Aucun média sélectionné')
-      return
+  // Suppression en masse
+  async function handleBulkDelete() {
+    if (selectedMedia.length === 0) return
+
+    if (!confirm(`Voulez-vous vraiment supprimer ${selectedMedia.length} média(s) ?`)) return
+
+    try {
+      const res = await fetch('/api/admin/media/bulk-delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: selectedMedia })
+      })
+
+      const data = await res.json()
+
+      if (data.success) {
+        addToast(`${selectedMedia.length} média(s) supprimé(s)`, 'success')
+        setSelectedMedia([])
+        fetchMedia()
+        fetchStats()
+      } else {
+        addToast('Erreur lors de la suppression en masse', 'error')
+      }
+    } catch (error) {
+      addToast('Erreur de connexion', 'error')
     }
+  }
 
-    if (!confirm(`Supprimer ${selectedMedia.size} médias ?`)) return
+  // Export CSV
+  function handleExportCSV() {
+    const headers = ['ID', 'Type', 'Propriétaire', 'Type Proprio', 'Visibilité', 'Signalements', 'Date']
+    const rows = media.map(m => {
+      // ✅ FIX: Détecter le type en vérifiant AUSSI l'URL du fichier
+      const isVideo = m.type.includes('video') ||
+                     m.url.match(/\.(mp4|mov|avi|webm|mkv)$/i) ||
+                     m.url.includes('.mp4') ||
+                     m.url.includes('_video')
 
-    const reason = prompt('Raison de suppression :')
-    if (!reason) return
+      return [
+        m.id,
+        isVideo ? 'Vidéo' : 'Image',
+        m.owner?.stageName || m.owner?.name || 'Unknown',
+        m.ownerType,
+        m.visibility,
+        m.reportCount.toString(),
+        new Date(m.createdAt).toLocaleDateString('fr-FR')
+      ]
+    })
 
-    toast.loading(`Suppression de ${selectedMedia.size} médias...`)
+    const csv = [headers, ...rows].map(row => row.join(',')).join('\n')
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `media-report-${new Date().toISOString().split('T')[0]}.csv`
+    link.click()
+    URL.revokeObjectURL(url)
 
-    let successCount = 0
-    for (const id of selectedMedia) {
-      try {
-        const response = await fetch(`/api/admin/media/${id}`, {
-          method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ reason, details: '' })
-        })
+    addToast('Export CSV réussi', 'success')
+  }
 
-        if (response.ok) successCount++
-      } catch (e) {
-        console.error(`Failed to delete ${id}:`, e)
+  // Fermer modal avec Escape
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && deleteModal.isOpen) {
+        setDeleteModal({ isOpen: false, media: null })
       }
     }
+    window.addEventListener('keydown', handleEscape)
+    return () => window.removeEventListener('keydown', handleEscape)
+  }, [deleteModal.isOpen])
 
-    toast.dismiss()
-    toast.success(`✅ ${successCount}/${selectedMedia.size} médias supprimés`)
-    setSelectedMedia(new Set())
-    fetchMedia()
-    fetchStats()
-  }
-
-  // ✅ Export CSV
-  const handleExportCSV = () => {
-    const csv = [
-      ['ID', 'Type', 'Propriétaire', 'Visibilité', 'Likes', 'Reports', 'Date'].join(','),
-      ...media.map(m => [
-        m.id,
-        m.type,
-        m.ownerType + ' - ' + (m.owner?.stageName || m.owner?.name || 'Unknown'),
-        m.visibility,
-        m.likeCount,
-        m.reportCount,
-        new Date(m.createdAt).toLocaleDateString()
-      ].join(','))
-    ].join('\n')
-
-    const blob = new Blob([csv], { type: 'text/csv' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `felora-media-${new Date().toISOString()}.csv`
-    a.click()
-    toast.success('✅ Export CSV réussi')
-  }
-
-  // Toggle selection
-  const toggleSelect = (id: string) => {
-    const newSet = new Set(selectedMedia)
-    if (newSet.has(id)) {
-      newSet.delete(id)
-    } else {
-      newSet.add(id)
-    }
-    setSelectedMedia(newSet)
-  }
-
-  const toggleSelectAll = () => {
-    if (selectedMedia.size === media.length) {
-      setSelectedMedia(new Set())
-    } else {
-      setSelectedMedia(new Set(media.map(m => m.id)))
-    }
-  }
-
-  // Generate profile URL with media parameter for fullscreen
-  const getProfileUrl = (item: MediaItem): string => {
-    if (item.ownerType === 'ESCORT') {
-      // For escorts: /profile/{escortId}#media-{mediaId}
-      return `/profile/${item.ownerId}#media-${item.id}`
-    } else if (item.ownerType === 'CLUB' && item.owner?.slug) {
-      // For clubs: /profile-test/club/{slug}#media-{mediaId}
-      return `/profile-test/club/${item.owner.slug}#media-${item.id}`
-    } else {
-      // Fallback to old format if slug is missing
-      return `/profile/${item.ownerId}#media-${item.id}`
-    }
-  }
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      fetchMedia()
-    }
-  }, [filterOwnerType, filterVisibility, filterReported, debouncedSearch, sortBy])
-
-  // Page de connexion
-  if (!isAuthenticated) {
-    return (
-      <>
-        <Toaster position="top-right" />
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-black p-4">
-          <div className="w-full max-w-md bg-black/50 backdrop-blur-xl border border-white/10 rounded-2xl p-8">
-            <div className="text-center mb-8">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                <ImageIcon size={32} className="text-white" />
-              </div>
-              <h1 className="text-2xl font-bold text-white mb-2">Modération Média</h1>
-              <p className="text-gray-400 text-sm">Connexion admin sécurisée</p>
-            </div>
-
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Email</label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-purple-500"
-                  placeholder="admin@felora.ch"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Mot de passe</label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-purple-500"
-                  placeholder="••••••••"
-                  required
-                />
-              </div>
-
-              {authError && (
-                <div className="p-3 bg-red-500/20 border border-red-500/50 rounded-lg text-red-400 text-sm">
-                  {authError}
-                </div>
-              )}
-
-              <button
-                type="submit"
-                className="w-full py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-medium rounded-lg hover:opacity-90 transition-opacity"
-              >
-                Se connecter
-              </button>
-            </form>
-          </div>
+  // Skeleton loader
+  const SkeletonLoader = () => (
+    <div className="space-y-4">
+      {[1, 2, 3, 4, 5].map((i) => (
+        <div key={i} className="flex gap-4 animate-skeleton">
+          <div className="h-12 w-32 bg-gray-800 rounded-lg"></div>
+          <div className="h-12 flex-1 bg-gray-800 rounded-lg"></div>
+          <div className="h-12 w-24 bg-gray-800 rounded-lg"></div>
+          <div className="h-12 w-24 bg-gray-800 rounded-lg"></div>
+          <div className="h-12 w-32 bg-gray-800 rounded-lg"></div>
+          <div className="h-12 w-24 bg-gray-800 rounded-lg"></div>
         </div>
-      </>
-    )
-  }
+      ))}
+    </div>
+  )
 
   return (
-    <>
-      <Toaster position="top-right" />
-      <div className="p-6 space-y-6">
-        {/* Header avec logout */}
-        <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-white">Modération Média</h1>
-          <button
-            onClick={handleLogout}
-            className="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 border border-red-500/50 rounded-lg text-red-400 text-sm transition-colors flex items-center gap-2"
-          >
-            <LogOut size={16} />
-            Déconnexion
-          </button>
+    <div className="min-h-screen bg-gray-950 p-6">
+      {/* Toast Container */}
+      <div className="fixed top-4 right-4 z-50 space-y-2">
+        {toasts.map(toast => (
+          <ToastNotification key={toast.id} toast={toast} onClose={removeToast} />
+        ))}
+      </div>
+
+      {/* Header */}
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-white mb-2">Modération Médias</h1>
+          <p className="text-gray-400">
+            {media.length} média(s) · Page {currentPage} / {totalPages || 1}
+          </p>
         </div>
 
-        {/* Stats */}
-        {stats && (
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-            <div className="bg-black/30 backdrop-blur-xl border border-white/10 rounded-xl p-4">
-              <div className="text-gray-400 text-sm mb-1">Total actifs</div>
-              <div className="text-2xl font-bold text-white">{stats.totalActive}</div>
-            </div>
-            <div className="bg-black/30 backdrop-blur-xl border border-red-500/20 rounded-xl p-4">
-              <div className="text-gray-400 text-sm mb-1">Signalés</div>
-              <div className="text-2xl font-bold text-red-400">{stats.reported}</div>
-            </div>
-            <div className="bg-black/30 backdrop-blur-xl border border-white/10 rounded-xl p-4">
-              <div className="text-gray-400 text-sm mb-1">Supprimés (7j)</div>
-              <div className="text-2xl font-bold text-white">{stats.deletedThisWeek}</div>
-            </div>
-            <div className="bg-black/30 backdrop-blur-xl border border-green-500/20 rounded-xl p-4">
-              <div className="text-gray-400 text-sm mb-1">Aujourd'hui</div>
-              <div className="text-2xl font-bold text-green-400">{stats.uploadedToday}</div>
-            </div>
-            <div className="bg-black/30 backdrop-blur-xl border border-purple-500/20 rounded-xl p-4">
-              <div className="text-gray-400 text-sm mb-1">Premium</div>
-              <div className="text-2xl font-bold text-purple-400">{stats.totalPremium}</div>
+        <button
+          onClick={handleExportCSV}
+          disabled={media.length === 0}
+          className="flex items-center gap-2 px-4 py-2 bg-green-500/10 border border-green-500/30 text-green-400 rounded-xl hover:bg-green-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          aria-label="Exporter en CSV"
+        >
+          <Download size={18} />
+          <span className="font-medium">Export CSV</span>
+        </button>
+      </div>
+
+      {/* Stats - Design frais avec gradients */}
+      {stats && (
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+          {/* Total actifs */}
+          <div className="relative overflow-hidden bg-gradient-to-br from-blue-500/10 to-blue-600/10 border border-blue-500/20 rounded-xl p-5 hover:border-blue-500/40 transition-all">
+            <div className="absolute top-0 right-0 w-20 h-20 bg-blue-500/10 rounded-full blur-2xl"></div>
+            <div className="relative">
+              <div className="flex items-center gap-2 mb-2">
+                <ImageIcon size={16} className="text-blue-400" />
+                <div className="text-blue-400 text-xs font-medium uppercase tracking-wider">Total actifs</div>
+              </div>
+              <div className="text-3xl font-bold text-white">{stats.totalActive}</div>
             </div>
           </div>
-        )}
 
-        {/* Actions bar */}
-        <div className="bg-black/30 backdrop-blur-xl border border-white/10 rounded-xl p-4 flex gap-3">
-          <button
-            onClick={handleExportCSV}
-            disabled={media.length === 0}
-            className="px-4 py-2 bg-green-500/20 hover:bg-green-500/30 border border-green-500/50 rounded-lg text-green-400 text-sm transition-colors flex items-center gap-2 disabled:opacity-50"
+          {/* Signalés */}
+          <div
+            className="relative overflow-hidden bg-gradient-to-br from-red-500/10 to-red-600/10 border border-red-500/20 rounded-xl p-5 hover:border-red-500/40 transition-all cursor-pointer"
+            onClick={() => setFilterReported(true)}
+            role="button"
+            tabIndex={0}
+            aria-label="Filtrer les médias signalés"
           >
-            <Download size={16} />
-            Export CSV
-          </button>
+            <div className="absolute top-0 right-0 w-20 h-20 bg-red-500/10 rounded-full blur-2xl"></div>
+            <div className="relative">
+              <div className="flex items-center gap-2 mb-2">
+                <AlertTriangle size={16} className="text-red-400" />
+                <div className="text-red-400 text-xs font-medium uppercase tracking-wider">Signalés</div>
+              </div>
+              <div className="text-3xl font-bold text-white">{stats.reported}</div>
+              <div className="text-xs text-red-400/60 mt-1">Cliquer pour filtrer</div>
+            </div>
+          </div>
 
-          {selectedMedia.size > 0 && (
+          {/* Supprimés */}
+          <div className="relative overflow-hidden bg-gradient-to-br from-gray-500/10 to-gray-600/10 border border-gray-500/20 rounded-xl p-5 hover:border-gray-500/40 transition-all">
+            <div className="absolute top-0 right-0 w-20 h-20 bg-gray-500/10 rounded-full blur-2xl"></div>
+            <div className="relative">
+              <div className="flex items-center gap-2 mb-2">
+                <Trash2 size={16} className="text-gray-400" />
+                <div className="text-gray-400 text-xs font-medium uppercase tracking-wider">Supprimés (7j)</div>
+              </div>
+              <div className="text-3xl font-bold text-white">{stats.deletedThisWeek}</div>
+            </div>
+          </div>
+
+          {/* Aujourd'hui */}
+          <div className="relative overflow-hidden bg-gradient-to-br from-green-500/10 to-green-600/10 border border-green-500/20 rounded-xl p-5 hover:border-green-500/40 transition-all">
+            <div className="absolute top-0 right-0 w-20 h-20 bg-green-500/10 rounded-full blur-2xl"></div>
+            <div className="relative">
+              <div className="flex items-center gap-2 mb-2">
+                <Eye size={16} className="text-green-400" />
+                <div className="text-green-400 text-xs font-medium uppercase tracking-wider">Aujourd'hui</div>
+              </div>
+              <div className="text-3xl font-bold text-white">{stats.uploadedToday}</div>
+            </div>
+          </div>
+
+          {/* Premium */}
+          <div
+            className="relative overflow-hidden bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-xl p-5 hover:border-purple-500/40 transition-all cursor-pointer"
+            onClick={() => setFilterVisibility('PREMIUM')}
+            role="button"
+            tabIndex={0}
+            aria-label="Filtrer les médias premium"
+          >
+            <div className="absolute top-0 right-0 w-20 h-20 bg-purple-500/10 rounded-full blur-2xl"></div>
+            <div className="relative">
+              <div className="flex items-center gap-2 mb-2">
+                <Video size={16} className="text-purple-400" />
+                <div className="text-purple-400 text-xs font-medium uppercase tracking-wider">Premium</div>
+              </div>
+              <div className="text-3xl font-bold text-white">{stats.totalPremium}</div>
+              <div className="text-xs text-purple-400/60 mt-1">Cliquer pour filtrer</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Filtres - Design moderne avec pills */}
+      <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-6 mb-6">
+        <div className="flex items-center gap-3 mb-4">
+          <Filter size={20} className="text-purple-400" />
+          <h2 className="text-lg font-semibold text-white">Filtres</h2>
+          {(search || filterOwnerType !== 'ALL' || filterVisibility !== 'ALL' || filterReported) && (
             <button
-              onClick={handleBulkDelete}
-              className="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 border border-red-500/50 rounded-lg text-red-400 text-sm transition-colors flex items-center gap-2"
+              onClick={() => {
+                setSearch('')
+                setFilterOwnerType('ALL')
+                setFilterVisibility('ALL')
+                setFilterReported(false)
+              }}
+              className="ml-auto text-xs text-gray-400 hover:text-white transition-colors"
+              aria-label="Réinitialiser les filtres"
             >
-              <Trash2 size={16} />
-              Supprimer ({selectedMedia.size})
+              Réinitialiser
             </button>
           )}
-
-          <button
-            onClick={() => fetchMedia(true)}
-            className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white text-sm transition-colors flex items-center gap-2"
-          >
-            <RefreshCw size={16} />
-            Actualiser
-          </button>
         </div>
 
-        {/* Filtres */}
-        <div className="bg-black/30 backdrop-blur-xl border border-white/10 rounded-xl p-4">
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-            <div>
-              <label className="block text-sm text-gray-400 mb-2">Recherche</label>
-              <div className="relative">
-                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="ID ou description..."
-                  className="w-full pl-10 pr-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-purple-500"
-                />
+        <div className="space-y-4">
+          {/* Search bar */}
+          <div className="relative">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Rechercher par ID, propriétaire..."
+              className="w-full pl-12 pr-4 py-3 bg-gray-800/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 focus:bg-gray-800 transition-all"
+              aria-label="Rechercher des médias"
+            />
+            {search && (
+              <button
+                onClick={() => setSearch('')}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors"
+                aria-label="Effacer la recherche"
+              >
+                <X size={18} />
+              </button>
+            )}
+          </div>
+
+          {/* Pills filters */}
+          <div className="flex flex-wrap gap-3">
+            {/* Type propriétaire */}
+            <div className="flex gap-2">
+              <button
+                onClick={() => setFilterOwnerType('ALL')}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                  filterOwnerType === 'ALL'
+                    ? 'bg-purple-500 text-white shadow-lg shadow-purple-500/30'
+                    : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white'
+                }`}
+                aria-label="Afficher tous les types"
+              >
+                Tous
+              </button>
+              <button
+                onClick={() => setFilterOwnerType('ESCORT')}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                  filterOwnerType === 'ESCORT'
+                    ? 'bg-pink-500 text-white shadow-lg shadow-pink-500/30'
+                    : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white'
+                }`}
+                aria-label="Filtrer par escorts"
+              >
+                👤 Escorts
+              </button>
+              <button
+                onClick={() => setFilterOwnerType('CLUB')}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                  filterOwnerType === 'CLUB'
+                    ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/30'
+                    : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white'
+                }`}
+                aria-label="Filtrer par clubs"
+              >
+                🏢 Clubs
+              </button>
+            </div>
+
+            {/* Séparateur */}
+            <div className="w-px bg-gray-700"></div>
+
+            {/* Visibilité */}
+            <div className="flex gap-2">
+              <button
+                onClick={() => setFilterVisibility('ALL')}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                  filterVisibility === 'ALL'
+                    ? 'bg-purple-500 text-white shadow-lg shadow-purple-500/30'
+                    : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white'
+                }`}
+                aria-label="Afficher toutes les visibilités"
+              >
+                Toutes
+              </button>
+              <button
+                onClick={() => setFilterVisibility('PUBLIC')}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                  filterVisibility === 'PUBLIC'
+                    ? 'bg-green-500 text-white shadow-lg shadow-green-500/30'
+                    : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white'
+                }`}
+                aria-label="Filtrer par public"
+              >
+                🌍 Public
+              </button>
+              <button
+                onClick={() => setFilterVisibility('PREMIUM')}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                  filterVisibility === 'PREMIUM'
+                    ? 'bg-yellow-500 text-white shadow-lg shadow-yellow-500/30'
+                    : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white'
+                }`}
+                aria-label="Filtrer par premium"
+              >
+                💎 Premium
+              </button>
+              <button
+                onClick={() => setFilterVisibility('PRIVATE')}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                  filterVisibility === 'PRIVATE'
+                    ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/30'
+                    : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white'
+                }`}
+                aria-label="Filtrer par privé"
+              >
+                🔒 Privé
+              </button>
+            </div>
+
+            {/* Séparateur */}
+            <div className="w-px bg-gray-700"></div>
+
+            {/* Signalés */}
+            <button
+              onClick={() => setFilterReported(!filterReported)}
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                filterReported
+                  ? 'bg-red-500 text-white shadow-lg shadow-red-500/30'
+                  : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white'
+              }`}
+              aria-label={filterReported ? "Afficher tous les médias" : "Filtrer les médias signalés"}
+            >
+              <div className="flex items-center gap-2">
+                <AlertTriangle size={16} />
+                Signalés uniquement
+              </div>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Table - Design moderne */}
+      <div className="bg-gray-900/50 border border-gray-800 rounded-xl overflow-hidden">
+        {loading ? (
+          <div className="p-6">
+            <SkeletonLoader />
+          </div>
+        ) : (
+          <>
+            <table className="w-full">
+              <thead className="bg-gradient-to-r from-gray-800 to-gray-900 border-b border-gray-700">
+                <tr>
+                  <th className="px-6 py-4 text-left">
+                    <input
+                      type="checkbox"
+                      checked={selectedMedia.length === currentMedia.length && currentMedia.length > 0}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedMedia(currentMedia.map(m => m.id))
+                        } else {
+                          setSelectedMedia([])
+                        }
+                      }}
+                      className="w-5 h-5 rounded bg-gray-800 border-gray-700 text-purple-500 focus:ring-purple-500"
+                      aria-label="Sélectionner tous les médias"
+                    />
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Type</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Propriétaire</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Visibilité</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Signalements</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Date</th>
+                  <th className="px-6 py-4 text-right text-xs font-semibold text-gray-400 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-800/50">
+                {currentMedia.map((item) => (
+                  <tr key={item.id} className="group hover:bg-gradient-to-r hover:from-purple-500/5 hover:to-pink-500/5 transition-all duration-200">
+                    {/* Checkbox */}
+                    <td className="px-6 py-4">
+                      <input
+                        type="checkbox"
+                        checked={selectedMedia.includes(item.id)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedMedia([...selectedMedia, item.id])
+                          } else {
+                            setSelectedMedia(selectedMedia.filter(id => id !== item.id))
+                          }
+                        }}
+                        className="w-5 h-5 rounded bg-gray-800 border-gray-700 text-purple-500 focus:ring-purple-500"
+                        aria-label={`Sélectionner le média ${item.id}`}
+                      />
+                    </td>
+
+                    {/* Type */}
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        {(() => {
+                          // ✅ FIX: Détecter le type en vérifiant AUSSI l'URL du fichier
+                          const isVideo = item.type.includes('video') ||
+                                         item.url.match(/\.(mp4|mov|avi|webm|mkv)$/i) ||
+                                         item.url.includes('.mp4') ||
+                                         item.url.includes('_video')
+
+                          return (
+                            <>
+                              <div className={`p-2 rounded-lg ${isVideo ? 'bg-red-500/10' : 'bg-blue-500/10'}`}>
+                                {isVideo ? (
+                                  <Video size={18} className="text-red-400" />
+                                ) : (
+                                  <ImageIcon size={18} className="text-blue-400" />
+                                )}
+                              </div>
+                              <div>
+                                <div className="text-sm font-medium text-white">
+                                  {isVideo ? 'Vidéo' : 'Image'}
+                                </div>
+                                <div className="text-xs text-gray-500">
+                                  {item.type.split('/')[1] || (isVideo ? 'video' : 'image')}
+                                </div>
+                              </div>
+                            </>
+                          )
+                        })()}
+                      </div>
+                    </td>
+
+                    {/* Propriétaire - Lien visible avec icône */}
+                    <td className="px-6 py-4">
+                      <div>
+                        <button
+                          onClick={() => {
+                            const profileUrl = `/profile/${item.ownerId}`
+                            window.open(profileUrl, '_blank')
+                          }}
+                          className="flex items-center gap-2 text-sm font-medium text-purple-400 hover:text-purple-300 transition-colors group/link"
+                          aria-label={`Voir le profil de ${item.owner?.stageName || item.owner?.name || 'Unknown'}`}
+                        >
+                          <span className="underline underline-offset-2 decoration-purple-400/30 group-hover/link:decoration-purple-300">
+                            {item.owner?.stageName || item.owner?.name || 'Unknown'}
+                          </span>
+                          <ExternalLink size={14} className="opacity-60 group-hover/link:opacity-100 transition-opacity" />
+                        </button>
+                        <div className="flex items-center gap-1 mt-1">
+                          <span className={`text-xs px-2 py-0.5 rounded-full ${
+                            item.ownerType === 'ESCORT'
+                              ? 'bg-pink-500/10 text-pink-400'
+                              : 'bg-blue-500/10 text-blue-400'
+                          }`}>
+                            {item.ownerType === 'ESCORT' ? '👤 Escort' : '🏢 Club'}
+                          </span>
+                        </div>
+                      </div>
+                    </td>
+
+                    {/* Visibilité */}
+                    <td className="px-6 py-4">
+                      <span className={`
+                        inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-full
+                        ${item.visibility === 'PUBLIC' ? 'bg-green-500/10 text-green-400 ring-1 ring-green-500/20' : ''}
+                        ${item.visibility === 'PREMIUM' ? 'bg-yellow-500/10 text-yellow-400 ring-1 ring-yellow-500/20' : ''}
+                        ${item.visibility === 'PRIVATE' ? 'bg-orange-500/10 text-orange-400 ring-1 ring-orange-500/20' : ''}
+                      `}>
+                        {item.visibility === 'PUBLIC' && '🌍'}
+                        {item.visibility === 'PREMIUM' && '💎'}
+                        {item.visibility === 'PRIVATE' && '🔒'}
+                        {item.visibility}
+                      </span>
+                    </td>
+
+                    {/* Signalements */}
+                    <td className="px-6 py-4">
+                      {item.reportCount > 0 ? (
+                        <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-red-500/10 text-red-400 rounded-full ring-1 ring-red-500/20">
+                          <AlertTriangle size={14} />
+                          <span className="text-sm font-bold">{item.reportCount}</span>
+                        </div>
+                      ) : (
+                        <span className="text-sm text-gray-600">—</span>
+                      )}
+                    </td>
+
+                    {/* Date */}
+                    <td className="px-6 py-4">
+                      <div className="text-sm text-gray-400">
+                        {new Date(item.createdAt).toLocaleDateString('fr-FR', {
+                          day: '2-digit',
+                          month: 'short',
+                          year: 'numeric'
+                        })}
+                      </div>
+                      <div className="text-xs text-gray-600 mt-0.5">
+                        {new Date(item.createdAt).toLocaleTimeString('fr-FR', {
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </div>
+                    </td>
+
+                    {/* Actions */}
+                    <td className="px-6 py-4">
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => window.open(item.url, '_blank')}
+                          className="p-2.5 hover:bg-blue-500/10 rounded-xl transition-all hover:ring-2 hover:ring-blue-500/20 group/btn"
+                          aria-label="Voir le média"
+                        >
+                          <Eye size={18} className="text-gray-400 group-hover/btn:text-blue-400 transition-colors" />
+                        </button>
+                        <button
+                          onClick={() => setDeleteModal({ isOpen: true, media: item })}
+                          className="p-2.5 hover:bg-red-500/10 rounded-xl transition-all hover:ring-2 hover:ring-red-500/20 group/btn"
+                          aria-label="Supprimer le média"
+                        >
+                          <Trash2 size={18} className="text-gray-400 group-hover/btn:text-red-400 transition-colors" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            {media.length === 0 && (
+              <div className="text-center py-12 text-gray-500">
+                Aucun média trouvé
+              </div>
+            )}
+          </>
+        )}
+      </div>
+
+      {/* Barre d'actions en masse */}
+      {selectedMedia.length > 0 && (
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 bg-gray-900 border border-gray-700 rounded-xl p-4 shadow-2xl z-40 animate-slide-in-right">
+          <div className="flex items-center gap-4">
+            <span className="text-white font-medium">{selectedMedia.length} sélectionné(s)</span>
+            <button
+              onClick={handleBulkDelete}
+              className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors flex items-center gap-2"
+              aria-label={`Supprimer ${selectedMedia.length} média(s)`}
+            >
+              <Trash2 size={16} />
+              Supprimer tout
+            </button>
+            <button
+              onClick={() => setSelectedMedia([])}
+              className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-colors"
+              aria-label="Annuler la sélection"
+            >
+              Annuler
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Pagination - Design moderne avec pagination intelligente */}
+      {totalPages > 1 && (
+        <div className="mt-6 flex items-center justify-between bg-gray-900/50 border border-gray-800 rounded-xl p-4">
+          <button
+            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+            className="flex items-center gap-2 px-5 py-2.5 bg-gray-800 border border-gray-700 rounded-xl text-white disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-700 hover:border-purple-500/50 transition-all shadow-lg disabled:shadow-none"
+            aria-label="Page précédente"
+          >
+            <ChevronLeft size={18} />
+            <span className="font-medium">Précédent</span>
+          </button>
+
+          <div className="flex items-center gap-2">
+            {getPageNumbers().map((page, index) => (
+              page === '...' ? (
+                <span key={`ellipsis-${index}`} className="px-2 text-gray-500">...</span>
+              ) : (
+                <button
+                  key={page}
+                  onClick={() => setCurrentPage(page as number)}
+                  className={`
+                    min-w-[44px] h-11 px-4 rounded-xl font-semibold transition-all shadow-lg
+                    ${currentPage === page
+                      ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white scale-110 shadow-purple-500/50'
+                      : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white hover:scale-105'
+                    }
+                  `}
+                  aria-label={`Page ${page}`}
+                  aria-current={currentPage === page ? 'page' : undefined}
+                >
+                  {page}
+                </button>
+              )
+            ))}
+          </div>
+
+          <button
+            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+            disabled={currentPage === totalPages}
+            className="flex items-center gap-2 px-5 py-2.5 bg-gray-800 border border-gray-700 rounded-xl text-white disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-700 hover:border-purple-500/50 transition-all shadow-lg disabled:shadow-none"
+            aria-label="Page suivante"
+          >
+            <span className="font-medium">Suivant</span>
+            <ChevronRight size={18} />
+          </button>
+        </div>
+      )}
+
+      {/* Modal Suppression avec accessibilité */}
+      {deleteModal.isOpen && deleteModal.media && (
+        <div
+          className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+          onClick={() => setDeleteModal({ isOpen: false, media: null })}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-title"
+        >
+          <div
+            className="bg-gray-900 border border-gray-800 rounded-xl p-6 max-w-md w-full"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 id="modal-title" className="text-xl font-bold text-white mb-4">Supprimer le média</h3>
+
+            <div className="mb-4">
+              <div className="w-full h-48 bg-gray-800 rounded-lg flex items-center justify-center">
+                {deleteModal.media.type.includes('video') ? (
+                  <Video size={48} className="text-red-400" />
+                ) : (
+                  <ImageIcon size={48} className="text-blue-400" />
+                )}
               </div>
             </div>
 
-            <div>
-              <label className="block text-sm text-gray-400 mb-2">Propriétaire</label>
-              <select
-                value={filterOwnerType}
-                onChange={(e) => setFilterOwnerType(e.target.value)}
-                className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-purple-500"
-              >
-                <option value="ALL">Tous</option>
-                <option value="ESCORT">Escorts</option>
-                <option value="CLUB">Clubs</option>
-              </select>
+            <div className="space-y-4 mb-6">
+              <div>
+                <label htmlFor="delete-reason" className="block text-sm font-medium text-gray-300 mb-2">Raison *</label>
+                <select
+                  id="delete-reason"
+                  value={deleteReason}
+                  onChange={(e) => setDeleteReason(e.target.value)}
+                  className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
+                  required
+                >
+                  <option value="">Sélectionner...</option>
+                  <option value="INAPPROPRIATE">Contenu inapproprié</option>
+                  <option value="REPORTED">Signalé par les utilisateurs</option>
+                  <option value="COPYRIGHT">Violation de droits d'auteur</option>
+                  <option value="QUALITY">Mauvaise qualité</option>
+                  <option value="OTHER">Autre</option>
+                </select>
+              </div>
+
+              <div>
+                <label htmlFor="delete-details" className="block text-sm font-medium text-gray-300 mb-2">Détails (optionnel)</label>
+                <textarea
+                  id="delete-details"
+                  value={deleteDetails}
+                  onChange={(e) => setDeleteDetails(e.target.value)}
+                  placeholder="Informations supplémentaires..."
+                  rows={3}
+                  className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-purple-500"
+                />
+              </div>
+
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={notifyOwner}
+                  onChange={(e) => setNotifyOwner(e.target.checked)}
+                  className="w-5 h-5 rounded bg-gray-800 border-gray-700 text-purple-500 focus:ring-purple-500"
+                />
+                <span className="text-sm text-gray-300">Notifier le propriétaire</span>
+              </label>
             </div>
 
-            <div>
-              <label className="block text-sm text-gray-400 mb-2">Visibilité</label>
-              <select
-                value={filterVisibility}
-                onChange={(e) => setFilterVisibility(e.target.value)}
-                className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-purple-500"
-              >
-                <option value="ALL">Tous</option>
-                <option value="PUBLIC">Public</option>
-                <option value="PREMIUM">Premium</option>
-                <option value="PRIVATE">Privé</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm text-gray-400 mb-2">Trier par</label>
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as SortOption)}
-                className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-purple-500"
-              >
-                <option value="reportCount">Signalements</option>
-                <option value="createdAt">Date</option>
-                <option value="likeCount">Likes</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm text-gray-400 mb-2">Signalés</label>
+            <div className="flex gap-3">
               <button
-                onClick={() => setFilterReported(!filterReported)}
-                className={`w-full px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  filterReported
-                    ? 'bg-red-500/20 text-red-400 border border-red-500/50'
-                    : 'bg-white/5 text-gray-400 border border-white/10'
-                }`}
+                onClick={() => {
+                  setDeleteModal({ isOpen: false, media: null })
+                  setDeleteReason('')
+                  setDeleteDetails('')
+                  setNotifyOwner(true)
+                }}
+                className="flex-1 px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                disabled={deleting}
               >
-                {filterReported ? '⚠️ Uniquement signalés' : 'Tous'}
+                Annuler
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={!deleteReason || deleting}
+                className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {deleting ? 'Suppression...' : 'Supprimer'}
               </button>
             </div>
           </div>
         </div>
-
-        {/* Bulk select bar */}
-        {media.length > 0 && (
-          <div className="bg-black/30 backdrop-blur-xl border border-white/10 rounded-xl p-3 flex items-center gap-3">
-            <button
-              onClick={toggleSelectAll}
-              className="flex items-center gap-2 text-white hover:text-purple-400 transition-colors"
-            >
-              {selectedMedia.size === media.length ? <CheckSquare size={20} /> : <Square size={20} />}
-              <span className="text-sm">
-                {selectedMedia.size === media.length ? 'Tout désélectionner' : 'Tout sélectionner'}
-              </span>
-            </button>
-            {selectedMedia.size > 0 && (
-              <span className="text-gray-400 text-sm">
-                {selectedMedia.size} sélectionné{selectedMedia.size > 1 ? 's' : ''}
-              </span>
-            )}
-          </div>
-        )}
-
-        {/* Liste des médias */}
-        {loading ? (
-          <div className="text-center py-12 text-gray-400">Chargement...</div>
-        ) : media.length === 0 ? (
-          <div className="text-center py-12">
-            <ImageIcon size={48} className="mx-auto mb-4 text-gray-600" />
-            <p className="text-gray-400">Aucun média trouvé</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {media.map((item) => (
-              <div
-                key={item.id}
-                className={`bg-black/30 backdrop-blur-xl border rounded-xl overflow-hidden hover:border-purple-500/50 transition-colors ${
-                  item.reportCount > 0 ? 'border-red-500/50' : 'border-white/10'
-                } ${selectedMedia.has(item.id) ? 'ring-2 ring-purple-500' : ''}`}
-              >
-                {/* Preview */}
-                <div
-                  className="relative aspect-square bg-gray-900 cursor-pointer group"
-                  onClick={() => setPreviewModal({ isOpen: true, media: item })}
-                >
-                  {/* Checkbox */}
-                  <div
-                    className="absolute top-2 left-2 z-10"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      toggleSelect(item.id)
-                    }}
-                  >
-                    <button className="w-8 h-8 bg-black/50 hover:bg-black/70 rounded-lg flex items-center justify-center text-white transition-colors">
-                      {selectedMedia.has(item.id) ? <CheckSquare size={16} /> : <Square size={16} />}
-                    </button>
-                  </div>
-
-                  <img
-                    src={item.thumbUrl || item.url}
-                    alt={item.description || 'Media'}
-                    className="w-full h-full object-cover group-hover:opacity-80 transition-opacity"
-                    onError={(e) => {
-                      const img = e.target as HTMLImageElement
-                      // Si le thumbnail échoue, essayer l'URL originale
-                      if (img.src !== item.url && item.thumbUrl) {
-                        img.src = item.url
-                      } else {
-                        // Si l'URL originale échoue aussi, afficher le placeholder approprié
-                        img.onerror = null
-                        const isVideo = item.type.includes('video')
-                        img.src = isVideo ? '/placeholder-video.svg' : '/placeholder-image.svg'
-                      }
-                    }}
-                  />
-
-                  {/* Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
-                    <div className="absolute bottom-2 left-2 right-2">
-                      <Eye size={20} className="text-white" />
-                    </div>
-                  </div>
-
-                  {/* Type badge */}
-                  <div className="absolute top-2 right-2">
-                    {item.type.includes('video') ? (
-                      <div className="px-2 py-1 bg-red-500 rounded-lg text-white text-xs font-medium flex items-center gap-1">
-                        <Video size={12} /> Vidéo
-                      </div>
-                    ) : (
-                      <div className="px-2 py-1 bg-blue-500 rounded-lg text-white text-xs font-medium flex items-center gap-1">
-                        <ImageIcon size={12} /> Photo
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Report badge */}
-                  {item.reportCount > 0 && (
-                    <div className="absolute top-12 right-2">
-                      <div className="px-2 py-1 bg-red-500 rounded-lg text-white text-xs font-bold flex items-center gap-1">
-                        <AlertTriangle size={12} /> {item.reportCount}
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Info */}
-                <div className="p-3 space-y-2">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-gray-400">
-                      {item.ownerType} · {item.owner?.stageName || item.owner?.name || 'Unknown'}
-                    </span>
-                    <span className={`px-2 py-0.5 rounded ${
-                      item.visibility === 'PREMIUM' ? 'bg-purple-500/20 text-purple-400' :
-                      item.visibility === 'PRIVATE' ? 'bg-yellow-500/20 text-yellow-400' :
-                      'bg-green-500/20 text-green-400'
-                    }`}>
-                      {item.visibility === 'PREMIUM' && <Lock size={10} className="inline mr-1" />}
-                      {item.visibility}
-                    </span>
-                  </div>
-
-                  {item.description && (
-                    <p className="text-white text-sm line-clamp-2">{item.description}</p>
-                  )}
-
-                  <div className="flex items-center gap-3 text-xs text-gray-400">
-                    <span>❤️ {item.likeCount}</span>
-                    {item.price && <span>💎 {item.price} CHF</span>}
-                    <span>{new Date(item.createdAt).toLocaleDateString()}</span>
-                  </div>
-
-                  {item.reportCount > 0 && (
-                    <div className="text-xs text-red-400 flex items-center gap-1">
-                      <AlertTriangle size={12} />
-                      {item.reportCount} signalement{item.reportCount > 1 ? 's' : ''}
-                    </div>
-                  )}
-
-                  {/* Actions */}
-                  <div className="flex flex-col gap-2 pt-2">
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => setPreviewModal({ isOpen: true, media: item })}
-                        className="flex-1 px-3 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white text-sm transition-colors"
-                      >
-                        👁️ Voir
-                      </button>
-                      <button
-                        onClick={() => setDeleteModal({ isOpen: true, media: item })}
-                        className="flex-1 px-3 py-2 bg-red-500/20 hover:bg-red-500/30 border border-red-500/50 rounded-lg text-red-400 text-sm transition-colors"
-                      >
-                        🗑️ Supprimer
-                      </button>
-                    </div>
-                    {/* Link to profile with media */}
-                    <a
-                      href={getProfileUrl(item)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-full px-3 py-2 bg-purple-500/20 hover:bg-purple-500/30 border border-purple-500/50 rounded-lg text-purple-400 text-sm transition-colors text-center"
-                    >
-                      🔗 Voir sur le profil
-                    </a>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Delete Modal */}
-        {deleteModal.isOpen && deleteModal.media && (
-          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-            <div className="w-full max-w-md bg-gray-900 border border-white/10 rounded-xl p-6">
-              <h3 className="text-xl font-bold text-white mb-4">🗑️ Supprimer ce média</h3>
-
-              {/* Preview */}
-              <div className="mb-4 rounded-lg overflow-hidden bg-gray-800">
-                <img
-                  src={deleteModal.media.thumbUrl || deleteModal.media.url}
-                  alt="Preview"
-                  className="w-full h-48 object-cover"
-                  onError={(e) => {
-                    const img = e.target as HTMLImageElement
-                    // Essayer l'URL originale si thumbnail échoue
-                    if (img.src !== deleteModal.media.url && deleteModal.media.thumbUrl) {
-                      img.src = deleteModal.media.url
-                    } else {
-                      img.onerror = null
-                      const isVideo = deleteModal.media.type.includes('video')
-                      img.src = isVideo ? '/placeholder-video.svg' : '/placeholder-image.svg'
-                    }
-                  }}
-                />
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Raison de suppression *</label>
-                  <select
-                    value={deleteReason}
-                    onChange={(e) => setDeleteReason(e.target.value)}
-                    className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-purple-500"
-                    required
-                  >
-                    <option value="">-- Sélectionner --</option>
-                    <option value="Contenu inapproprié">Contenu inapproprié</option>
-                    <option value="Nudité non autorisée">Nudité non autorisée</option>
-                    <option value="Violence / Harcèlement">Violence / Harcèlement</option>
-                    <option value="Contenu illégal">Contenu illégal</option>
-                    <option value="Spam / Publicité">Spam / Publicité</option>
-                    <option value="Droits d'auteur">Droits d'auteur</option>
-                    <option value="Autre">Autre</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Détails (optionnel)</label>
-                  <textarea
-                    value={deleteDetails}
-                    onChange={(e) => setDeleteDetails(e.target.value)}
-                    className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-purple-500 resize-none"
-                    rows={3}
-                    placeholder="Informations supplémentaires..."
-                  />
-                </div>
-
-                <div className="p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
-                  <p className="text-yellow-400 text-xs">
-                    ⚠️ L'utilisateur recevra une notification automatiquement avec la raison de suppression.
-                  </p>
-                </div>
-
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => {
-                      setDeleteModal({ isOpen: false, media: null })
-                      setDeleteReason('')
-                      setDeleteDetails('')
-                    }}
-                    className="flex-1 px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white hover:bg-white/10 transition-colors"
-                    disabled={deleting}
-                  >
-                    Annuler
-                  </button>
-                  <button
-                    onClick={handleDelete}
-                    disabled={!deleteReason || deleting}
-                    className="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 rounded-lg text-white font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {deleting ? 'Suppression...' : 'Supprimer et notifier'}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Preview Modal */}
-        {previewModal.isOpen && previewModal.media && (
-          <div
-            className="fixed inset-0 bg-black/95 backdrop-blur-sm flex items-center justify-center p-4 z-50"
-            onClick={() => setPreviewModal({ isOpen: false, media: null })}
-          >
-            <div className="max-w-4xl w-full" onClick={(e) => e.stopPropagation()}>
-              <div className="relative">
-                {previewModal.media.type.includes('video') ? (
-                  <video
-                    src={previewModal.media.url}
-                    controls
-                    className="w-full max-h-[80vh] rounded-xl bg-black"
-                    onError={(e) => {
-                      console.error('Erreur chargement vidéo:', previewModal.media.url)
-                      // Replace video with placeholder on error
-                      const video = e.target as HTMLVideoElement
-                      const parent = video.parentElement
-                      if (parent) {
-                        parent.innerHTML = `<img src="/placeholder-video.svg" alt="Vidéo non disponible" class="w-full max-h-[80vh] object-contain rounded-xl" />`
-                      }
-                    }}
-                  />
-                ) : (
-                  <img
-                    src={previewModal.media.url}
-                    alt="Preview"
-                    className="w-full max-h-[80vh] object-contain rounded-xl"
-                    onError={(e) => {
-                      const img = e.target as HTMLImageElement
-                      img.onerror = null
-                      img.src = '/placeholder-image.svg'
-                    }}
-                  />
-                )}
-
-                <button
-                  onClick={() => setPreviewModal({ isOpen: false, media: null })}
-                  className="absolute top-4 right-4 w-10 h-10 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center text-white transition-colors"
-                >
-                  ✕
-                </button>
-              </div>
-
-              <div className="mt-4 p-4 bg-black/50 backdrop-blur-xl border border-white/10 rounded-xl">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-white font-medium">
-                    {previewModal.media.owner?.stageName || previewModal.media.owner?.name || 'Unknown'}
-                  </span>
-                  <span className="text-gray-400 text-sm">{previewModal.media.ownerType}</span>
-                </div>
-                {previewModal.media.description && (
-                  <p className="text-gray-300 text-sm">{previewModal.media.description}</p>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    </>
+      )}
+    </div>
   )
 }

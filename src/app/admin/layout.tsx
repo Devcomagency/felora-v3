@@ -20,14 +20,12 @@ const navSections: NavSection[] = [
   {
     title: 'KYC & Vérification',
     icon: Shield,
-    href: '/admin/kyc',
-    badge: '✅'
+    href: '/admin/kyc'
   },
   {
     title: 'Gestion Utilisateurs',
     icon: Users,
-    href: '/admin/users',
-    badge: '✅'
+    href: '/admin/users'
   },
   {
     title: 'Gestion Clubs',
@@ -37,18 +35,12 @@ const navSections: NavSection[] = [
   {
     title: 'Modération Médias',
     icon: Image,
-    children: [
-      { title: 'Tous les médias', href: '/admin/media' },
-      { title: 'En attente', href: '/admin/media/pending' },
-      { title: 'Signalés', href: '/admin/media/reported' },
-      { title: 'Privés/Premium', href: '/admin/media/premium' }
-    ]
+    href: '/admin/media'
   },
   {
     title: 'Signalements',
     icon: AlertTriangle,
-    href: '/admin/reports',
-    badge: '✅'
+    href: '/admin/reports'
   },
   {
     title: 'Paiements',
@@ -304,15 +296,17 @@ export default function AdminLayout({
                   <a
                     href={section.href}
                     onClick={() => setSidebarOpen(false)}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all ${
+                    className={`flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all ${
                       isActive(section.href!)
                         ? 'bg-purple-500/20 text-purple-300 font-medium'
                         : 'text-gray-400 hover:bg-white/5 hover:text-white'
                     }`}
                   >
-                    <Icon size={16} />
-                    <span>{section.title}</span>
-                    {section.badge && <span className="ml-auto text-xs">{section.badge}</span>}
+                    <div className="flex items-center gap-2">
+                      <Icon size={16} />
+                      <span>{section.title}</span>
+                    </div>
+                    <ChevronRight size={14} />
                   </a>
                 )}
               </div>

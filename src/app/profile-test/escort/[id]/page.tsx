@@ -13,6 +13,7 @@ import { GiftToast } from '@/components/gifts/GiftToast'
 import MediaFeedWithGallery from '../../../../../packages/ui/profile-test/MediaFeedWithGallery'
 import { AboutSection, RatesSection, AvailabilitySection, PhysicalDetailsSection } from '../../../../../packages/ui/profile-test/Sections'
 import { CommentsSection } from '../../../../components/comments/CommentsSection'
+import ReportModal from '@/components/ReportModal'
 
 interface EscortProfile {
   id: string
@@ -323,8 +324,8 @@ export default function EscortProfileTestPage() {
   }, [profile?.name])
 
   const handleReport = useCallback((profileId: string) => {
-    router.push(`/report?type=profile&id=${profileId}`)
-  }, [router])
+    setShowReportModal(true)
+  }, [])
 
   // Get localStorage states
   const [isFollowing, setIsFollowing] = useState(false)
@@ -336,6 +337,7 @@ export default function EscortProfileTestPage() {
   const [showGiftPicker, setShowGiftPicker] = useState(false)
   const [showGiftToast, setShowGiftToast] = useState(false)
   const [lastReceivedGift, setLastReceivedGift] = useState<any>(null)
+  const [showReportModal, setShowReportModal] = useState(false)
   
   // Tracking des vues de profil
   try { useProfileViewTracker({ profileId: resolvedId, profileType: 'escort', enabled: true }) } catch {}
@@ -1078,6 +1080,16 @@ export default function EscortProfileTestPage() {
             onComplete={() => setShowGiftToast(false)}
           />
         )}
+
+        {/* Report Modal */}
+        <ReportModal
+          isOpen={showReportModal}
+          onClose={() => setShowReportModal(false)}
+          reportType="PROFILE"
+          targetType="escort"
+          targetId={resolvedId}
+          targetName={profile.name}
+        />
 
       </div>
     </ErrorBoundary>

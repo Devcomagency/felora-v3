@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
 import Link from 'next/link';
 import { Menu, X } from 'lucide-react';
 
@@ -16,14 +15,6 @@ const navLinks = [
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { scrollY } = useScroll();
-  const backgroundColor = useTransform(
-    scrollY,
-    [0, 100],
-    ['rgba(14, 14, 16, 0)', 'rgba(14, 14, 16, 0.95)']
-  );
-  const backdropBlur = useTransform(scrollY, [0, 100], [0, 24]);
-  const borderOpacity = useTransform(scrollY, [0, 100], [0, 0.15]);
 
   const handleSmoothScroll = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     if (href.startsWith('#')) {
@@ -44,14 +35,12 @@ export default function Header() {
   }, []);
 
   return (
-    <motion.header
+    <header
       style={{
-        backgroundColor,
-        backdropFilter: `blur(${backdropBlur}px) saturate(180%)`,
-        WebkitBackdropFilter: `blur(${backdropBlur}px) saturate(180%)`,
+        backgroundColor: '#0E0E10',
         borderBottomWidth: '1px',
         borderBottomStyle: 'solid',
-        borderBottomColor: `rgba(255, 255, 255, ${borderOpacity})`,
+        borderBottomColor: 'rgba(255, 255, 255, 0.15)',
       }}
       className="fixed top-0 left-0 right-0 z-50"
     >
@@ -64,13 +53,9 @@ export default function Header() {
             href="/" 
             className="group relative"
           >
-            <motion.span
-              className="relative inline-block text-2xl sm:text-3xl font-light text-white tracking-[0.05em]"
-              whileHover={{ opacity: 0.8 }}
-              transition={{ duration: 0.3 }}
-            >
+            <span className="relative inline-block text-2xl sm:text-3xl font-light text-white tracking-[0.05em] hover:opacity-80 transition-opacity duration-300">
               FELORA
-            </motion.span>
+            </span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -88,7 +73,7 @@ export default function Header() {
           </div>
 
           {/* CTA Button Desktop */}
-          <motion.div className="hidden lg:block">
+          <div className="hidden lg:block">
             <Link
               href="#early-access"
               onClick={(e) => handleSmoothScroll(e, '#early-access')}
@@ -111,7 +96,7 @@ export default function Header() {
                 Pré-inscription
               </span>
             </Link>
-          </motion.div>
+          </div>
 
           {/* Mobile Menu Button */}
           <button
@@ -129,12 +114,8 @@ export default function Header() {
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.2 }}
-            className="lg:hidden pb-6 space-y-2 border-t border-white/5 mt-2 pt-4"
+          <div
+            className="lg:hidden pb-6 space-y-2 border-t border-white/5 mt-2 pt-4 animate-in fade-in slide-in-from-top-5 duration-200"
           >
             {navLinks.map((link) => (
               <Link
@@ -159,9 +140,9 @@ export default function Header() {
                 Pré-inscription
               </span>
             </Link>
-          </motion.div>
+          </div>
         )}
       </nav>
-    </motion.header>
+    </header>
   );
 }

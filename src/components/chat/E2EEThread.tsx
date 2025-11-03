@@ -286,6 +286,32 @@ export default function E2EEThread({ conversationId, userId, partnerId, partnerN
           if (env.senderUserId !== userId && env.messageId) {
             updateMessageStatus(env.messageId, 'delivered')
 
+            // 🆕 Jouer un son de notification + vibration
+            try {
+              // Son de notification (si l'utilisateur a autorisé)
+              const audio = new Audio('/sounds/message-notification.mp3')
+              audio.volume = 0.5
+              audio.play().catch(e => {
+                // Silent fail si le navigateur bloque le son
+                console.log('[NOTIF] Son bloqué par le navigateur')
+              })
+
+              // Vibration mobile (si supportée)
+              if ('vibrate' in navigator) {
+                navigator.vibrate(200) // Vibration de 200ms
+              }
+            } catch (soundError) {
+              // Silent fail
+            }
+
+            // 🆕 Marquer les notifications de cette conversation comme lues
+            fetch('/api/notifications/mark-conversation-read', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
+              body: JSON.stringify({ conversationId })
+            }).catch(err => console.error('[NOTIF] Erreur marquage notifications:', err))
+
             // Persister le statut DELIVERED en base de données
             fetch('/api/e2ee/messages/ack', {
               method: 'POST',

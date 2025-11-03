@@ -12,8 +12,7 @@ export default function PromoBar() {
       transition={{ duration: 0.4, ease: 'easeOut' }}
       className="relative py-3.5 px-6 text-center overflow-hidden border-b"
       style={{
-        background: 'rgba(14, 14, 16, 0.8)',
-        backdropFilter: 'blur(20px)',
+        background: '#0E0E10',
         borderColor: 'rgba(255, 255, 255, 0.05)',
       }}
     >

@@ -18,6 +18,7 @@ import { MESSAGING_CONSTANTS, MEDIA_CONSTANTS } from '@/constants/messaging'
 import { compressImageIfNeeded } from '@/utils/imageCompression'
 import { useNetworkError } from '@/hooks/useNetworkError'
 import NetworkErrorBanner from '@/components/NetworkErrorBanner'
+import ReportModal from '@/components/ReportModal'
 
 // Old messages page (V3 original)
 function OldMessagesPage() {
@@ -41,9 +42,6 @@ function NewMessagesPage() {
   const [showHeaderMenu, setShowHeaderMenu] = useState(false)
   const [showReportModal, setShowReportModal] = useState(false)
   const [showEphemeralMenu, setShowEphemeralMenu] = useState(false)
-  const [reportReason, setReportReason] = useState('Spam')
-  const [reportDetails, setReportDetails] = useState('')
-  const [reportSubmitting, setReportSubmitting] = useState(false)
   const [ephemeralMode, setEphemeralMode] = useState(false)
   const [ephemeralDuration, setEphemeralDuration] = useState(86400) // 24h par défaut
   const [isMobile, setIsMobile] = useState(() => {
@@ -375,6 +373,21 @@ function NewMessagesPage() {
             credentials: 'include',
             body: JSON.stringify({ conversationId: activeConversation.id })
           })
+
+          // 🆕 Marquer les notifications MESSAGE_RECEIVED comme lues pour cette conversation
+          try {
+            console.log('[MESSAGES] Marquage notifications pour conversation:', activeConversation.id)
+            const notifRes = await fetch('/api/notifications/mark-conversation-read', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
+              body: JSON.stringify({ conversationId: activeConversation.id })
+            })
+            const notifData = await notifRes.json()
+            console.log('[MESSAGES] Réponse marquage notifications:', notifData)
+          } catch (notifError) {
+            console.error('Erreur marquage notifications:', notifError)
+          }
           if (!res.ok) {
             console.warn('Erreur lors de la marque comme lu:', res.status)
           }
@@ -458,7 +471,8 @@ function NewMessagesPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-black text-white">
+    <>
+      <div className="min-h-screen flex flex-col bg-black text-white">
       {/* Network Error Banner */}
       {networkError && (
         <NetworkErrorBanner
@@ -766,84 +780,26 @@ function NewMessagesPage() {
           </div>
         </BodyPortal>
       )}
-        {/* Report modal avec style V2 */}
-        <BodyPortal>
-          {(showReportModal && otherParticipant) ? (
-            <div className="fixed inset-0 z-[10000] flex items-center justify-center">
-              <div className="absolute inset-0 bg-black/60" onClick={() => setShowReportModal(false)} />
-              <div 
-                className="relative w-[min(92vw,32rem)] rounded-xl border p-4 text-white"
-                style={{
-                  background: 'rgba(15, 15, 25, 0.95)',
-                  backdropFilter: 'blur(20px)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)'
-                }}
-              >
-                <h3 
-                  className="text-lg font-semibold mb-2"
-                  style={{
-                    background: 'linear-gradient(135deg, var(--felora-aurora) 0%, var(--felora-plasma) 100%)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text'
-                  }}
-                >
-                  Signaler {otherParticipant.name}
-                </h3>
-              <label className="block text-sm text-white/80 mb-1">Raison</label>
-              <select value={reportReason} onChange={e => setReportReason(e.target.value)} className="w-full mb-3 bg-gray-800/60 border border-gray-700/60 rounded-lg px-3 py-2">
-                <option>Spam</option>
-                <option>Harcèlement</option>
-                <option>Arnaque</option>
-                <option>Contenu inapproprié</option>
-                <option>Autre</option>
-              </select>
-              <label className="block text-sm text-white/80 mb-1">Détails (optionnel)</label>
-              <textarea value={reportDetails} onChange={e => setReportDetails(e.target.value)} rows={4} className="w-full bg-gray-800/60 border border-gray-700/60 rounded-lg px-3 py-2 mb-4 resize-none" placeholder="Expliquez brièvement le problème..." />
-              <div className="flex justify-end gap-2">
-                <button 
-                  onClick={() => setShowReportModal(false)} 
-                  className="px-4 py-2 rounded-lg transition-colors"
-                  style={{
-                    background: 'rgba(255, 255, 255, 0.1)',
-                    color: 'var(--felora-silver)'
-                  }}
-                >
-                  Annuler
-                </button>
-                <button 
-                  disabled={reportSubmitting} 
-                  onClick={async () => {
-                    if (!otherParticipant?.id) return
-                    try {
-                      const res = await fetch('/api/chat/report', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ targetUserId: otherParticipant.id, conversationId: activeConversation?.id, reason: reportReason, details: reportDetails }) })
-                      if (!res.ok) throw new Error('report_failed')
-                      setShowReportModal(false)
-                      setReportDetails('')
-                      toastSuccess('Signalement envoyé')
-                    } finally {
-                      setReportSubmitting(false)
-                    }
-                  }} 
-                  className="px-4 py-2 rounded-lg text-white font-semibold transition-all hover:scale-105 disabled:opacity-50"
-                  style={{
-                    background: 'linear-gradient(135deg, var(--felora-aurora) 0%, var(--felora-plasma) 100%)',
-                    boxShadow: '0 4px 15px rgba(255, 107, 157, 0.3)'
-                  }}
-                >
-                  {reportSubmitting ? 'Envoi...' : 'Envoyer'}
-                </button>
-              </div>
-            </div>
-          </div>
-        ) : null}
+      </div>
 
-        {/* Modale Mode Éphémère */}
+      {/* Report modal avec ReportModal unifié */}
+      {otherParticipant && (
+        <ReportModal
+          isOpen={showReportModal}
+          onClose={() => setShowReportModal(false)}
+          reportType="MESSAGE"
+          targetType="conversation"
+          targetId={activeConversation?.id || ''}
+          targetName={otherParticipant.name}
+        />
+      )}
+
+      {/* Modale Mode Éphémère */}
+      <BodyPortal>
         {showEphemeralMenu && activeConversation && (
           <div className="fixed inset-0 z-[10000] flex items-center justify-center">
             <div className="absolute inset-0 bg-black/60" onClick={() => setShowEphemeralMenu(false)} />
-            <div 
+            <div
               className="relative w-[min(92vw,28rem)] rounded-xl border p-6 text-white"
               style={{
                 background: 'rgba(15, 15, 25, 0.95)',
@@ -852,7 +808,7 @@ function NewMessagesPage() {
                 boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)'
               }}
             >
-              <h3 
+              <h3
                 className="text-xl font-semibold mb-4 flex items-center gap-2"
                 style={{
                   background: 'linear-gradient(135deg, var(--felora-aurora) 0%, var(--felora-plasma) 100%)',
@@ -866,7 +822,7 @@ function NewMessagesPage() {
               <p className="text-sm text-gray-400 mb-6">
                 Les messages disparaîtront automatiquement après la durée choisie
               </p>
-              
+
               <div className="space-y-3 mb-6">
                 <button
                   onClick={() => { setEphemeralMode(false); setEphemeralDuration(0) }}
@@ -875,7 +831,7 @@ function NewMessagesPage() {
                   <div className="font-medium">Désactivé</div>
                   <div className="text-xs text-gray-400">Les messages restent indéfiniment</div>
                 </button>
-                
+
                 <button
                   onClick={() => { setEphemeralMode(true); setEphemeralDuration(43200) }}
                   className={`w-full text-left px-4 py-3 rounded-lg transition-all ${ephemeralMode && ephemeralDuration === 43200 ? 'bg-white/10 border-2 border-pink-500' : 'bg-white/5 border border-white/10'}`}
@@ -883,7 +839,7 @@ function NewMessagesPage() {
                   <div className="font-medium">12 heures</div>
                   <div className="text-xs text-gray-400">Les messages disparaissent après 12h</div>
                 </button>
-                
+
                 <button
                   onClick={() => { setEphemeralMode(true); setEphemeralDuration(86400) }}
                   className={`w-full text-left px-4 py-3 rounded-lg transition-all ${ephemeralMode && ephemeralDuration === 86400 ? 'bg-white/10 border-2 border-pink-500' : 'bg-white/5 border border-white/10'}`}
@@ -891,7 +847,7 @@ function NewMessagesPage() {
                   <div className="font-medium">24 heures</div>
                   <div className="text-xs text-gray-400">Les messages disparaissent après 24h</div>
                 </button>
-                
+
                 <button
                   onClick={() => { setEphemeralMode(true); setEphemeralDuration(172800) }}
                   className={`w-full text-left px-4 py-3 rounded-lg transition-all ${ephemeralMode && ephemeralDuration === 172800 ? 'bg-white/10 border-2 border-pink-500' : 'bg-white/5 border border-white/10'}`}
@@ -899,7 +855,7 @@ function NewMessagesPage() {
                   <div className="font-medium">48 heures</div>
                   <div className="text-xs text-gray-400">Les messages disparaissent après 2 jours</div>
                 </button>
-                
+
                 <button
                   onClick={() => { setEphemeralMode(true); setEphemeralDuration(604800) }}
                   className={`w-full text-left px-4 py-3 rounded-lg transition-all ${ephemeralMode && ephemeralDuration === 604800 ? 'bg-white/10 border-2 border-pink-500' : 'bg-white/5 border border-white/10'}`}
@@ -908,15 +864,15 @@ function NewMessagesPage() {
                   <div className="text-xs text-gray-400">Les messages disparaissent après 1 semaine</div>
                 </button>
               </div>
-              
+
               <div className="flex justify-end gap-3">
-                <button 
-                  onClick={() => setShowEphemeralMenu(false)} 
+                <button
+                  onClick={() => setShowEphemeralMenu(false)}
                   className="px-6 py-2 rounded-lg transition-colors bg-white/10 text-white/90 hover:bg-white/20"
                 >
                   Annuler
                 </button>
-                <button 
+                <button
                   onClick={async () => {
                     try {
                       const res = await fetch('/api/e2ee/conversations/update-ephemeral', {
@@ -929,9 +885,9 @@ function NewMessagesPage() {
                           ephemeralDuration
                         })
                       })
-                      
+
                       if (!res.ok) throw new Error('update_failed')
-                      
+
                       // Animation de succès avant de fermer
                       const btn = document.activeElement as HTMLButtonElement
                       if (btn) {
@@ -958,7 +914,7 @@ function NewMessagesPage() {
           </div>
         )}
       </BodyPortal>
-    </div>
+    </>
   )
 }
 

@@ -89,8 +89,33 @@ export async function POST(request: NextRequest) {
       where: { id: conversationId },
       data: { updatedAt: new Date() }
     })
-    
+
     console.log('[SEND API] Conversation mise à jour')
+
+    // 🆕 Créer une notification MESSAGE_RECEIVED pour le destinataire
+    const recipientId = participants.find(p => p !== user.id)
+    if (recipientId) {
+      try {
+        await prisma.notification.create({
+          data: {
+            userId: recipientId,
+            type: 'MESSAGE_RECEIVED',
+            title: 'Nouveau message',
+            message: `${user.name || 'Un utilisateur'} vous a envoyé un message`,
+            link: `/messages?conv=${conversationId}`,
+            metadata: JSON.stringify({
+              conversationId,
+              senderId: user.id,
+              senderName: user.name
+            })
+          }
+        })
+        console.log('[SEND API] ✅ Notification MESSAGE_RECEIVED créée pour', recipientId)
+      } catch (notifError) {
+        console.error('[SEND API] ❌ Erreur création notification:', notifError)
+        // Ne pas bloquer l'envoi du message si la notification échoue
+      }
+    }
 
     // Construire l'objet message pour la diffusion
     const messageForBroadcast = {

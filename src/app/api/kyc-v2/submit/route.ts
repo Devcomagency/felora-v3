@@ -84,7 +84,7 @@ export async function POST(req: NextRequest) {
     let user = await prisma.user.findUnique({ where: { id: uid }, select: { id: true, role: true } })
     
     const { role: rawRole, ...data } = body || {}
-    const role = (rawRole as string) || 'ESCORT'
+    const role = (rawRole as any) || 'ESCORT'
 
     // Si l'utilisateur n'existe pas, créer un utilisateur temporaire
     if (!user) {
@@ -96,10 +96,7 @@ export async function POST(req: NextRequest) {
             email: sessionUser?.email || `temp-${uid}@felora.com`,
             role: role || 'ESCORT',
             name: sessionUser?.name || 'Temporary User',
-            emailVerified: null,
-            image: sessionUser?.image || null,
-            createdAt: new Date(),
-            updatedAt: new Date()
+            image: sessionUser?.image || null
           },
           select: { id: true, role: true }
         })

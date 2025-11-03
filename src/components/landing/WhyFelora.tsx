@@ -30,15 +30,15 @@ export default function WhyFelora() {
             initial={{ opacity: 0, x: -50 }}
             animate={isInView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 1 }}
-            className="relative h-[500px] sm:h-[600px] border overflow-hidden"
+            className="relative h-[400px] sm:h-[500px] md:h-[600px] border overflow-hidden"
             style={{
               borderColor: 'rgba(255, 255, 255, 0.08)',
             }}
           >
             <img
-              src="https://images.unsplash.com/photo-1590736969955-71c3b4a26320"
+              src="/landing/imagedf.png"
               alt="Sécurité Felora"
-              className="absolute inset-0 w-full h-full object-cover opacity-35"
+              className="absolute inset-0 w-full h-full object-cover opacity-45"
               onError={(e) => {
                 console.error('WhyFelora image failed to load:', e);
                 e.currentTarget.style.display = 'none';
@@ -58,15 +58,15 @@ export default function WhyFelora() {
             className="space-y-8"
           >
             <div>
-              <h2 className="text-4xl sm:text-5xl md:text-6xl font-light mb-6 text-white leading-[1.1]">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light mb-4 sm:mb-6 text-white leading-[1.1]">
                 Sécurité suisse.
                 <br />
                 <span className="text-white/80">Esthétique irréprochable.</span>
                 <br />
                 <span className="text-white/60">Liberté créative.</span>
               </h2>
-              <div className="w-24 h-px bg-white/20 my-8" />
-              <p className="text-lg sm:text-xl text-white/60 leading-relaxed font-light max-w-2xl">
+              <div className="w-20 sm:w-24 h-px bg-white/20 my-6 sm:my-8" />
+              <p className="text-base sm:text-lg md:text-xl text-white/60 leading-relaxed font-light max-w-2xl">
                 Chez Felora, la technologie sert votre image. Chaque détail est pensé pour protéger vos données, valoriser votre contenu et augmenter vos revenus — sans compromis sur l&apos;élégance.
               </p>
             </div>

@@ -15,17 +15,22 @@ export async function GET(request: NextRequest) {
       }, { status: 401 })
     }
 
+    // ✅ Exclure MESSAGE_RECEIVED de la cloche (uniquement sur le badge Messages)
     const notifications = await prisma.notification.findMany({
-      where: { userId: session.user.id },
+      where: {
+        userId: session.user.id,
+        type: { not: 'MESSAGE_RECEIVED' } // Exclure les notifs de messages
+      },
       orderBy: { createdAt: 'desc' },
       take: 50 // Limiter à 50 notifications max
     })
 
-    // Compter les non-lues
+    // Compter les non-lues (sans MESSAGE_RECEIVED)
     const unreadCount = await prisma.notification.count({
       where: {
         userId: session.user.id,
-        read: false
+        read: false,
+        type: { not: 'MESSAGE_RECEIVED' } // Exclure les notifs de messages
       }
     })
 

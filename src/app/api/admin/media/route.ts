@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requireAdminAuth } from '@/lib/admin-auth'
+import { validateMediaUrl } from '@/lib/media/enhanced-cdn'
 
 export async function GET(request: NextRequest) {
   // ✅ Vérification d'authentification admin
@@ -33,90 +34,188 @@ export async function GET(request: NextRequest) {
       where.reportCount = { gt: 0 }
     }
 
+    console.log('[ADMIN MEDIA] Where clause:', where)
+
+    // ✅ FIX: Si on recherche par nom de propriétaire, on doit d'abord chercher les owners
+    let ownerIds: string[] = []
     if (search) {
+      // Rechercher les escorts qui matchent
+      const matchingEscorts = await prisma.escortProfile.findMany({
+        where: {
+          OR: [
+            { stageName: { contains: search, mode: 'insensitive' } },
+            { firstName: { contains: search, mode: 'insensitive' } },
+            { lastName: { contains: search, mode: 'insensitive' } }
+          ]
+        },
+        select: { id: true }
+      })
+
+      // Rechercher les clubs qui matchent
+      const matchingClubs = await prisma.clubProfile.findMany({
+        where: {
+          OR: [
+            { name: { contains: search, mode: 'insensitive' } },
+            { handle: { contains: search, mode: 'insensitive' } }
+          ]
+        },
+        select: { id: true }
+      })
+
+      ownerIds = [...matchingEscorts.map(e => e.id), ...matchingClubs.map(c => c.id)]
+      console.log(`[ADMIN MEDIA] Found ${matchingEscorts.length} escorts and ${matchingClubs.length} clubs matching "${search}"`)
+
+      // Ajouter la condition de recherche
       where.OR = [
         { id: { contains: search, mode: 'insensitive' } },
-        { description: { contains: search, mode: 'insensitive' } }
+        { description: { contains: search, mode: 'insensitive' } },
+        ...(ownerIds.length > 0 ? [{ ownerId: { in: ownerIds } }] : [])
       ]
     }
 
-    console.log('[ADMIN MEDIA] Where clause:', where)
-
-    // Fetch media
-    const media = await prisma.media.findMany({
+    // ✅ OPTIMISATION : Récupérer tous les médias + owners en UNE SEULE requête
+    const mediaItems = await prisma.media.findMany({
       where,
       orderBy: [
         { reportCount: 'desc' },
         { createdAt: 'desc' }
       ],
-      take: 100
+      take: 200, // ✅ Augmenté à 200 pour voir plus de médias
+      select: {
+        id: true,
+        ownerType: true,
+        ownerId: true,
+        type: true,
+        url: true,
+        thumbUrl: true,
+        description: true,
+        visibility: true,
+        price: true,
+        likeCount: true,
+        reactCount: true,
+        reportCount: true,
+        reportedAt: true,
+        createdAt: true
+      }
     })
 
-    console.log(`[ADMIN MEDIA] Found ${media.length} media items`)
+    console.log(`[ADMIN MEDIA] Found ${mediaItems.length} media items`)
+
+    // ✅ Extraire les IDs uniques des escorts et clubs
+    const escortIds = [...new Set(
+      mediaItems
+        .filter(m => m.ownerType === 'ESCORT' && m.ownerId && m.ownerId !== 'unknown')
+        .map(m => m.ownerId)
+    )]
+
+    const clubIds = [...new Set(
+      mediaItems
+        .filter(m => m.ownerType === 'CLUB' && m.ownerId && m.ownerId !== 'unknown')
+        .map(m => m.ownerId)
+    )]
+
+    console.log(`[ADMIN MEDIA] Fetching ${escortIds.length} escorts and ${clubIds.length} clubs`)
+
+    // ✅ Récupérer TOUS les escorts et clubs en 2 requêtes seulement
+    const escorts = escortIds.length > 0 ? await prisma.escortProfile.findMany({
+      where: { id: { in: escortIds } },
+      select: {
+        id: true,
+        stageName: true,
+        firstName: true,
+        userId: true
+      }
+    }) : []
+
+    const clubs = clubIds.length > 0 ? await prisma.clubProfile.findMany({
+      where: { id: { in: clubIds } },
+      select: {
+        id: true,
+        name: true,
+        handle: true,
+        userId: true
+      }
+    }) : []
+
+    // ✅ Créer des Maps pour accès O(1)
+    const escortMap = new Map(escorts.map(e => [e.id, e]))
+    const clubMap = new Map(clubs.map(c => [c.id, c]))
 
     // Helper function to validate and clean URLs
     const cleanUrl = (url: string | null): string | null => {
       if (!url) return null
 
-      // Filter out invalid URLs that start with 'media:' or other non-HTTP protocols
+      // Filter out invalid URLs
       if (url.startsWith('media:') ||
           url.startsWith('blob:') ||
           (!url.startsWith('http://') && !url.startsWith('https://') && !url.startsWith('/'))) {
-        console.warn(`[ADMIN MEDIA] Filtering invalid URL: ${url}`)
+        console.warn(`[ADMIN MEDIA] Invalid URL filtered: ${url.substring(0, 50)}`)
         return null
       }
 
       return url
     }
 
-    // Enrich with owner data and clean URLs
-    const enrichedMedia = await Promise.all(
-      media.map(async (m) => {
-        let owner = null
+    // ✅ Enrichir les médias (opération synchrone maintenant)
+    const enrichedMedia = mediaItems.map((m) => {
+      let owner = null
 
-        try {
-          if (m.ownerType === 'ESCORT' && m.ownerId !== 'unknown') {
-            const escort = await prisma.escortProfile.findUnique({
-              where: { id: m.ownerId },
-              select: { stageName: true, firstName: true }
-            })
-            if (escort) {
-              owner = { name: escort.firstName, stageName: escort.stageName }
-            }
-          } else if (m.ownerType === 'CLUB' && m.ownerId !== 'unknown') {
-            const club = await prisma.clubProfile.findUnique({
-              where: { id: m.ownerId },
-              select: { name: true, handle: true }
-            })
-            if (club) {
-              owner = { name: club.name, slug: club.handle } // Use handle as slug for URL
-            }
+      if (m.ownerType === 'ESCORT' && m.ownerId) {
+        const escort = escortMap.get(m.ownerId)
+        if (escort) {
+          owner = {
+            name: escort.firstName || 'Unknown',
+            stageName: escort.stageName || 'Unknown',
+            userId: escort.userId
           }
-        } catch (e) {
-          // Ignore errors, keep owner as null
+        } else {
+          console.warn(`[ADMIN MEDIA] Escort not found for media ${m.id}, ownerId: ${m.ownerId}`)
         }
-
-        // Default to Unknown if no owner found
-        if (!owner) {
-          owner = { name: 'Unknown', stageName: 'Unknown' }
+      } else if (m.ownerType === 'CLUB' && m.ownerId) {
+        const club = clubMap.get(m.ownerId)
+        if (club) {
+          owner = {
+            name: club.name || 'Unknown',
+            slug: club.handle,
+            userId: club.userId
+          }
+        } else {
+          console.warn(`[ADMIN MEDIA] Club not found for media ${m.id}, ownerId: ${m.ownerId}`)
         }
+      }
 
-        // Clean URLs to filter out invalid formats
-        const cleanedUrl = cleanUrl(m.url)
-        const cleanedThumbUrl = cleanUrl(m.thumbUrl)
+      // Default to Unknown if no owner found
+      if (!owner) {
+        owner = { name: 'Unknown', stageName: 'Unknown' }
+      }
 
-        // Choose appropriate placeholder based on media type
-        const isVideo = m.type.includes('video')
-        const fallbackUrl = isVideo ? '/placeholder-video.svg' : '/placeholder-image.svg'
+      // Clean URLs
+      const cleanedUrl = cleanUrl(m.url)
+      const cleanedThumbUrl = cleanUrl(m.thumbUrl)
 
-        return {
-          ...m,
-          url: cleanedUrl || fallbackUrl, // Fallback if URL is invalid
-          thumbUrl: cleanedThumbUrl || (isVideo ? '/placeholder-video.svg' : null), // Use video placeholder for videos without thumbs
-          owner
-        }
-      })
-    )
+      // Choose appropriate placeholder
+      const isVideo = m.type.includes('video')
+      const mediaType = isVideo ? 'video' : 'image'
+      const fallbackUrl = isVideo ? '/placeholder-video.svg' : '/placeholder-image.svg'
+
+      // ✅ Valider et corriger les URLs avec le CDN
+      const validatedUrl = cleanedUrl ? validateMediaUrl(cleanedUrl, mediaType) : fallbackUrl
+      const validatedThumbUrl = cleanedThumbUrl ? validateMediaUrl(cleanedThumbUrl, 'image') : (isVideo ? '/placeholder-video.svg' : null)
+
+      // ✅ Log des médias avec URLs invalides
+      if (!cleanedUrl && m.url) {
+        console.error(`[ADMIN MEDIA] Media ${m.id} has invalid URL: ${m.url}`)
+      }
+
+      return {
+        ...m,
+        url: validatedUrl,
+        thumbUrl: validatedThumbUrl,
+        owner
+      }
+    })
+
+    console.log(`[ADMIN MEDIA] Returning ${enrichedMedia.length} enriched media items`)
 
     return NextResponse.json({
       success: true,

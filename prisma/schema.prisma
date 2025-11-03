@@ -847,9 +847,12 @@ enum DeliveryStatus {
 }
 
 enum ReportStatus {
-  PENDING
-  REVIEWED
-  RESOLVED
+  PENDING     // En attente de traitement
+  REVIEWING   // En cours d'examen
+  REVIEWED    // Examiné (ancien, garder pour compatibilité)
+  RESOLVED    // Résolu
+  DISMISSED   // Rejeté/non fondé
+  ESCALATED   // Escaladé (cas grave)
 }
 
 enum SubscriptionPlan {
@@ -1004,3 +1007,86 @@ enum NotificationType {
   SUBSCRIPTION_EXPIRED // Abonnement expiré
   SYSTEM_ALERT         // Alerte système
 }
+
+// ============================================
+// SYSTÈME DE SIGNALEMENTS
+// ============================================
+
+model Report {
+  id              String       @id @default(cuid())
+
+  // Qui signale
+  reporterId      String?      // ID de l'utilisateur qui signale (null si anonyme/non connecté)
+  reporterEmail   String?      // Email du signaleur
+  reporterIp      String?      // IP du signaleur (pour tracking des abus)
+
+  // Quoi est signalé
+  reportType      ReportType   // Type de signalement (profil, message, média, comportement)
+  targetType      String       // Type de cible: 'escort', 'club', 'conversation', 'media', 'user'
+  targetId        String       // ID de la cible signalée
+
+  // Détails du signalement
+  reason          ReportReason // Raison principale du signalement
+  description     String?      // Description détaillée (optionnelle)
+  evidence        String?      // Preuves (URLs, screenshots) en JSON
+
+  // Traitement
+  status          ReportStatus @default(PENDING)
+  reviewedBy      String?      // ID de l'admin qui a traité
+  reviewedAt      DateTime?    // Date de traitement
+  reviewNotes     String?      // Notes de l'admin
+  actionTaken     String?      // Action prise (warning, ban, deleted, etc.)
+
+  // Métadonnées
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@index([reporterId])
+  @@index([reporterEmail])
+  @@index([reporterIp])
+  @@index([targetType, targetId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("reports")
+}
+
+enum ReportType {
+  PROFILE       // Signalement de profil escort/club
+  MESSAGE       // Signalement de message/conversation
+  MEDIA         // Signalement de média
+  BEHAVIOR      // Signalement de comportement
+  OTHER         // Autre
+}
+
+enum ReportReason {
+  // Profils
+  FAKE_PROFILE           // Faux profil
+  FAKE_PHOTOS            // Fausses photos
+  SCAM                   // Arnaque
+  IMPERSONATION          // Usurpation d'identité
+  MISLEADING_INFO        // Informations trompeuses
+  UNDERAGE               // Mineur
+
+  // Messages
+  HARASSMENT             // Harcèlement
+  SPAM                   // Spam
+  INAPPROPRIATE_CONTENT  // Contenu inapproprié
+  THREATS                // Menaces
+  HATE_SPEECH            // Discours haineux
+
+  // Médias
+  INAPPROPRIATE_MEDIA    // Média inapproprié
+  COPYRIGHT              // Violation de droits d'auteur
+  EXPLICIT_CONTENT       // Contenu explicite non autorisé
+
+  // Comportements
+  NO_SHOW                // Rendez-vous manqué
+  PAYMENT_ISSUE          // Problème de paiement
+  UNPROFESSIONAL         // Comportement non professionnel
+  SAFETY_CONCERN         // Problème de sécurité
+
+  // Autres
+  TOS_VIOLATION          // Violation des CGU
+  OTHER                  // Autre
+}
+

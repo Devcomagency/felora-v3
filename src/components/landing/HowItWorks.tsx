@@ -11,21 +11,21 @@ const steps = [
     title: 'Créez votre profil',
     description: 'Importez vos visuels, précisez votre ville et votre style.',
     icon: User,
-    image: 'https://images.unsplash.com/photo-1580374978635-0cfc8c7ef441',
+    image: '/landing/imagelmnlk.png',
   },
   {
     number: '02',
     title: 'Activez vos offres',
     description: 'Abonnements, médias privés, cadeaux, demandes personnalisées.',
     icon: Zap,
-    image: 'https://images.unsplash.com/photo-1611485988300-f0e8860ab556',
+    image: '/landing/imagelkjo.png',
   },
   {
     number: '03',
     title: 'Générez vos revenus',
     description: 'Publiez, engagez, recevez vos paiements via Felora Wallet.',
     icon: TrendingUp,
-    image: 'https://images.unsplash.com/photo-1534452203293-494d7ddbfb0e',
+    image: '/landing/image-jnjnjn.png',
   },
 ];
 
@@ -48,7 +48,7 @@ export default function HowItWorks() {
           transition={{ duration: 0.8 }}
           className="text-center mb-20"
         >
-          <h2 className="text-4xl sm:text-5xl md:text-6xl font-light mb-6 text-white">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light mb-4 sm:mb-6 text-white">
             Comment ça marche
           </h2>
           <div className="w-24 h-px bg-white/20 mx-auto" />
@@ -75,10 +75,10 @@ export default function HowItWorks() {
                       {step.number}
                     </span>
                   </div>
-                  <h3 className="text-3xl sm:text-4xl font-light mb-4 text-white">
+                  <h3 className="text-2xl sm:text-3xl md:text-4xl font-light mb-3 sm:mb-4 text-white">
                     {step.title}
                   </h3>
-                  <p className="text-lg text-white/50 leading-relaxed font-light max-w-md">
+                  <p className="text-base sm:text-lg text-white/60 leading-relaxed font-light max-w-md">
                     {step.description}
                   </p>
                 </div>
@@ -86,7 +86,7 @@ export default function HowItWorks() {
                 {/* Image Section */}
                 <div style={{ direction: 'ltr' }}>
                   <motion.div
-                    className="relative h-[400px] sm:h-[500px] border overflow-hidden"
+                    className="relative h-[300px] sm:h-[400px] md:h-[500px] border overflow-hidden"
                     style={{
                       borderColor: 'rgba(255, 255, 255, 0.08)',
                     }}
@@ -96,7 +96,7 @@ export default function HowItWorks() {
                     <img
                       src={step.image}
                       alt={step.title}
-                      className="absolute inset-0 w-full h-full object-cover opacity-25"
+                      className="absolute inset-0 w-full h-full object-cover opacity-35"
                       onError={(e) => {
                         console.error('Step image failed to load:', step.title, e);
                         e.currentTarget.style.display = 'none';

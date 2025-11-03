@@ -10,6 +10,7 @@ import MediaFeedWithGallery from '../../../../../packages/ui/profile-test/MediaF
 import ClubEscortsSection from '../../../../../packages/ui/profile-test/ClubEscortsSection'
 import { ClubProfileModal } from '@/components/ClubProfileModal'
 import { useViewTracker } from '@/hooks/useViewTracker'
+import ReportModal from '@/components/ReportModal'
 
 interface ClubProfile {
   id: string
@@ -114,6 +115,7 @@ export default function ClubProfileTestPage() {
   const [guestId, setGuestId] = useState<string | null>(null)
   const [linkedEscorts, setLinkedEscorts] = useState<any[]>([])
   const [escortsLoading, setEscortsLoading] = useState(true)
+  const [showReportModal, setShowReportModal] = useState(false)
 
   const router = useRouter()
 
@@ -246,8 +248,8 @@ export default function ClubProfileTestPage() {
   }, [profile?.name])
 
   const handleReport = useCallback((profileId: string) => {
-    router.push(`/report?type=club&id=${profileId}`)
-  }, [router])
+    setShowReportModal(true)
+  }, [])
 
   const handleShowDetails = useCallback(() => {
     setShowDetailModal(true)
@@ -615,6 +617,16 @@ export default function ClubProfileTestPage() {
           </div>
         </div>
       )}
+
+      {/* Report Modal */}
+      <ReportModal
+        isOpen={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        reportType="PROFILE"
+        targetType="club"
+        targetId={resolvedId}
+        targetName={profile.name}
+      />
     </div>
   )
 }

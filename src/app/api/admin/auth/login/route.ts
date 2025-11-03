@@ -1,6 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
 import { cookies } from 'next/headers'
 
 export async function POST(request: NextRequest) {
@@ -21,14 +19,10 @@ export async function POST(request: NextRequest) {
     // Créer un token sécurisé (simple pour commencer)
     const token = Buffer.from(`${email}:${Date.now()}`).toString('base64')
 
-    // Créer la réponse avec cookie httpOnly
-    const response = NextResponse.json({
-      success: true,
-      message: 'Connexion réussie'
-    })
-
     // Cookie sécurisé (httpOnly = inaccessible au JavaScript)
-    response.cookies.set('felora-admin-token', token, {
+    // IMPORTANT: Dans Next.js 15, on doit set le cookie AVANT de créer la réponse
+    const cookieStore = await cookies()
+    cookieStore.set('felora-admin-token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
@@ -36,7 +30,11 @@ export async function POST(request: NextRequest) {
       path: '/'
     })
 
-    return response
+    // Créer la réponse
+    return NextResponse.json({
+      success: true,
+      message: 'Connexion réussie'
+    })
   } catch (error) {
     console.error('Error in admin login:', error)
     return NextResponse.json(

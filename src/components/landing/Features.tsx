@@ -62,7 +62,7 @@ export default function Features() {
           transition={{ duration: 0.8 }}
           className="text-center mb-20"
         >
-          <h2 className="text-4xl sm:text-5xl md:text-6xl font-light mb-6 text-white">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light mb-4 sm:mb-6 text-white">
             Tout pour créer, publier et monétiser
           </h2>
           <div className="w-24 h-px bg-white/20 mx-auto" />
@@ -83,7 +83,7 @@ export default function Features() {
                 className="group relative"
               >
                 <div 
-                  className="relative h-full p-8 border transition-all duration-500"
+                  className="relative h-full p-6 sm:p-7 md:p-8 border transition-all duration-500"
                   style={{
                     background: 'rgba(255, 255, 255, 0.02)',
                     borderColor: 'rgba(255, 255, 255, 0.08)',
@@ -116,10 +116,10 @@ export default function Features() {
                     >
                       <Icon className="w-5 h-5" style={{ color: feature.accent }} strokeWidth={1.5} />
                     </div>
-                    <h3 className="text-xl font-light mb-3 text-white">
+                    <h3 className="text-lg sm:text-xl font-light mb-2 sm:mb-3 text-white">
                       {feature.title}
                     </h3>
-                    <p className="text-white/50 leading-relaxed font-light text-sm">
+                    <p className="text-white/60 leading-relaxed font-light text-xs sm:text-sm">
                       {feature.description}
                     </p>
                   </div>

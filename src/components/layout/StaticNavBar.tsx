@@ -28,12 +28,7 @@ export default function StaticNavBar() {
   const isAuthenticated = status === 'authenticated'
   const user = session?.user as any
 
-  // Ne pas afficher la navbar sur les pages admin
-  if (isAdmin) {
-    return null
-  }
-
-  // États pour le menu burger
+  // États pour le menu burger - AVANT le return conditionnel
   const [showMenu, setShowMenu] = useState(false)
   const [showLanguageSelector, setShowLanguageSelector] = useState(false)
   const [currentLanguage, setCurrentLanguage] = useState('fr')
@@ -66,10 +61,10 @@ export default function StaticNavBar() {
       const checkNotifications = () => {
         setHasNotifications(Math.random() > 0.7) // 30% de chance d'avoir des notifications
       }
-      
+
       checkNotifications()
       const interval = setInterval(checkNotifications, 30000) // Vérifier toutes les 30s
-      
+
       return () => clearInterval(interval)
     }
   }, [isAuthenticated])
@@ -121,6 +116,26 @@ export default function StaticNavBar() {
       return () => document.removeEventListener('click', handleClickOutside)
     }
   }, [showCreateMenu])
+
+  // Contrôle global du menu via événements (pour bouton burger dans les pages)
+  useEffect(() => {
+    const onOpen = () => setShowMenu(true)
+    const onClose = () => setShowMenu(false)
+    const onToggle = () => setShowMenu((v) => !v)
+    window.addEventListener('felora:menu:open', onOpen as any)
+    window.addEventListener('felora:menu:close', onClose as any)
+    window.addEventListener('felora:menu:toggle', onToggle as any)
+    return () => {
+      window.removeEventListener('felora:menu:open', onOpen as any)
+      window.removeEventListener('felora:menu:close', onClose as any)
+      window.removeEventListener('felora:menu:toggle', onToggle as any)
+    }
+  }, [])
+
+  // Ne pas afficher la navbar sur les pages admin - APRÈS tous les hooks
+  if (isAdmin) {
+    return null
+  }
 
   const handleLanguageChange = (langCode: string) => {
     setCurrentLanguage(langCode)
@@ -179,21 +194,6 @@ export default function StaticNavBar() {
 
     return items
   })()
-
-  // Contrôle global du menu via événements (pour bouton burger dans les pages)
-  useEffect(() => {
-    const onOpen = () => setShowMenu(true)
-    const onClose = () => setShowMenu(false)
-    const onToggle = () => setShowMenu((v) => !v)
-    window.addEventListener('felora:menu:open', onOpen as any)
-    window.addEventListener('felora:menu:close', onClose as any)
-    window.addEventListener('felora:menu:toggle', onToggle as any)
-    return () => {
-      window.removeEventListener('felora:menu:open', onOpen as any)
-      window.removeEventListener('felora:menu:close', onClose as any)
-      window.removeEventListener('felora:menu:toggle', onToggle as any)
-    }
-  }, [])
 
   const currentLang = languages.find(lang => lang.code === currentLanguage)
 

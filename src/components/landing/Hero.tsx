@@ -46,7 +46,7 @@ export default function Hero() {
     <section
       ref={containerRef}
       id="hero"
-      className="relative min-h-screen flex items-center justify-center pt-32 sm:pt-40 pb-24 sm:pb-32 px-6 sm:px-8 overflow-hidden"
+      className="relative min-h-screen flex items-center justify-center pt-28 sm:pt-32 md:pt-40 pb-20 sm:pb-24 md:pb-32 px-4 sm:px-6 md:px-8 overflow-hidden"
     >
       {/* Background avec image premium */}
       <div className="absolute inset-0 bg-[#0E0E10]" />
@@ -54,33 +54,33 @@ export default function Hero() {
       {/* Image hero premium - Silhouette sexy */}
       <div className="absolute inset-0">
         <img
-          src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1"
+          src="/landing/53261d65-24c7-4e91-9f66-7633a365ecdb.jpeg"
           alt="Felora Premium"
-          className="absolute inset-0 w-full h-full object-cover opacity-20"
+          className="absolute inset-0 w-full h-full object-cover opacity-60"
           loading="eager"
           onError={(e) => {
             console.error('Image failed to load:', e);
             e.currentTarget.style.display = 'none';
           }}
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#0E0E10] via-[#0E0E10]/90 to-[#0E0E10]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0E0E10]/70 via-[#0E0E10]/50 to-[#0E0E10]/80" />
       </div>
 
       {/* Content */}
-      <div className="relative z-10 max-w-5xl mx-auto text-center">
+      <div className="relative z-10 max-w-5xl mx-auto text-center px-4 sm:px-6">
         {/* Minimal badge */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2 }}
-          className="inline-flex items-center gap-2 px-5 py-2 mb-16 border"
+          className="inline-flex items-center gap-2 px-4 sm:px-5 py-1.5 sm:py-2 mb-12 sm:mb-14 md:mb-16 border"
           style={{
             background: 'rgba(255, 255, 255, 0.02)',
             backdropFilter: 'blur(10px)',
             borderColor: 'rgba(255, 255, 255, 0.08)',
           }}
         >
-          <span className="text-[10px] font-light text-white/50 uppercase tracking-[0.15em]">
+          <span className="text-[9px] sm:text-[10px] font-light text-white/60 sm:text-white/50 uppercase tracking-[0.15em]">
             Plateforme Premium Suisse
           </span>
         </motion.div>
@@ -88,7 +88,7 @@ export default function Hero() {
         {/* Main Title - Ultra épuré */}
         <motion.h1
           ref={titleRef}
-          className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-light mb-12 leading-[1.08] tracking-tight"
+            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-light mb-8 sm:mb-10 md:mb-12 leading-[1.08] tracking-tight px-2 sm:px-0"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           style={{
@@ -96,11 +96,11 @@ export default function Hero() {
             letterSpacing: '-0.02em',
           }}
         >
-          <span className="text-white">
+          <span className="text-white drop-shadow-[0_4px_16px_rgba(0,0,0,0.8)] drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">
             {splitText('Le réseau social premium')}
           </span>
           <br />
-          <span className="text-white/90">
+          <span className="text-white drop-shadow-[0_4px_16px_rgba(0,0,0,0.8)] drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">
             {splitText('pour créatrices & escorts')}
           </span>
         </motion.h1>
@@ -110,7 +110,7 @@ export default function Hero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8, duration: 1 }}
-          className="text-lg sm:text-xl text-white/60 mb-20 max-w-2xl mx-auto leading-relaxed font-light"
+          className="text-base sm:text-lg md:text-xl text-white/90 mb-16 sm:mb-20 max-w-2xl mx-auto leading-relaxed font-light drop-shadow-[0_4px_12px_rgba(0,0,0,0.7)] drop-shadow-[0_2px_6px_rgba(0,0,0,0.5)]"
           style={{
             letterSpacing: '0.01em',
             lineHeight: '1.8',
@@ -124,7 +124,7 @@ export default function Hero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1, duration: 0.8 }}
-          className="flex flex-wrap items-center justify-center gap-8 sm:gap-12 mb-20"
+          className="flex flex-wrap items-center justify-center gap-4 sm:gap-8 md:gap-12 mb-12 sm:mb-16 md:mb-20"
         >
           {bullets.map((bullet, i) => {
             const Icon = bullet.icon;
@@ -148,7 +148,7 @@ export default function Hero() {
                     strokeWidth={1.5} 
                   />
                 </div>
-                <span className="text-sm font-light text-white/50 group-hover:text-white/70 transition-colors tracking-wide">
+                <span className="text-xs sm:text-sm font-light text-white/70 sm:text-white/50 group-hover:text-white/90 sm:group-hover:text-white/70 transition-colors tracking-wide">
                   {bullet.text}
                 </span>
               </motion.div>
@@ -161,11 +161,11 @@ export default function Hero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.4, duration: 0.8 }}
-          className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16"
+          className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-12 sm:mb-16"
         >
           <Link
             href="#early-access"
-            className="group relative flex items-center justify-center gap-3 px-12 py-4 border transition-all duration-500"
+            className="group relative flex items-center justify-center gap-2 sm:gap-3 px-8 sm:px-12 py-3 sm:py-4 border transition-all duration-500 text-sm sm:text-base"
             style={{
               background: 'rgba(255, 255, 255, 0.03)',
               borderColor: 'rgba(255, 255, 255, 0.15)',
