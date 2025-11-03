@@ -5,13 +5,8 @@ export function middleware(request: NextRequest) {
   // 🔒 PROTECTION PAR MOT DE PASSE TEMPORAIRE
   const SITE_PASSWORD = process.env.SITE_PASSWORD
 
-  // Debug log (à supprimer en production)
-  console.log('[Middleware] SITE_PASSWORD exists:', !!SITE_PASSWORD)
-  console.log('[Middleware] Path:', request.nextUrl.pathname)
-
   // Si pas de mot de passe défini, on laisse passer
   if (!SITE_PASSWORD) {
-    console.log('[Middleware] No password configured, allowing access')
     return NextResponse.next()
   }
 
