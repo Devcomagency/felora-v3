@@ -9,6 +9,7 @@ import AgeGate from "@/components/AgeGate";
 import CookieConsent from "@/components/CookieConsent";
 import FooterLegal from "@/components/FooterLegal";
 import ToastContainer from "@/components/ui/Toast";
+import ConditionalLayout from "@/components/layout/ConditionalLayout";
 
 export const metadata: Metadata = {
   title: {
@@ -83,9 +84,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             }}>
               {children}
             </div>
-            <StaticNavBar />
+            <ConditionalLayout>
+              <StaticNavBar />
+              <FooterLegal />
+            </ConditionalLayout>
           </AppGateway>
-          <FooterLegal />
           <CookieConsent />
           <ToastContainer />
         </Providers>
