@@ -41,16 +41,19 @@ function AuthCheckForm() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-felora-obsidian via-felora-charcoal to-felora-void relative overflow-hidden">
-      {/* Logo en arrière-plan */}
+      {/* Image en arrière-plan */}
       <div
-        className="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none"
+        className="absolute inset-0 flex items-center justify-center opacity-20 pointer-events-none"
         style={{
-          backgroundImage: 'url(/logo-principal.png)',
+          backgroundImage: 'url(/landing/generated-image-af3cf7d3-6ee3-4b61-8750-a68e10cb940d.png)',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
-          backgroundSize: '60%',
+          backgroundSize: 'cover',
         }}
       />
+
+      {/* Overlay sombre pour améliorer la lisibilité */}
+      <div className="absolute inset-0 bg-black/60 pointer-events-none" />
 
       <div className="w-full max-w-md p-8 relative z-10">
         {/* Logo */}
@@ -78,7 +81,7 @@ function AuthCheckForm() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Entrez le mot de passe..."
-                className="w-full px-4 py-3 bg-felora-void/80 border border-felora-aurora/30 rounded-xl text-white placeholder:text-felora-silver/50 focus:outline-none focus:ring-2 focus:ring-felora-aurora focus:border-felora-aurora transition-all"
+                className="w-full px-4 py-3 bg-white/95 border-2 border-felora-aurora/40 rounded-xl text-black font-medium placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-felora-aurora focus:border-felora-aurora focus:bg-white transition-all shadow-lg"
                 autoFocus
                 disabled={loading}
               />
