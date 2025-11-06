@@ -110,20 +110,34 @@ export async function POST(
       })
       console.log('[MODERATE REPORT] Conversation found:', conversation ? 'YES' : 'NO')
 
-      if (conversation && reporter) {
-        // Trouver l'autre participant (celui qui n'est pas le signaleur)
-        const otherParticipantId = conversation.participants.find((id: string) => id !== reporter.id)
-        console.log('[MODERATE REPORT] Other participant ID:', otherParticipantId)
+      if (conversation) {
+        if (reporter) {
+          // Trouver l'autre participant (celui qui n'est pas le signaleur)
+          const otherParticipantId = conversation.participants.find((id: string) => id !== reporter.id)
+          console.log('[MODERATE REPORT] Other participant ID (avec reporter):', otherParticipantId)
 
-        if (otherParticipantId) {
-          targetUser = await prisma.user.findUnique({
-            where: { id: otherParticipantId },
-            select: { id: true, name: true, email: true }
-          })
-          console.log('[MODERATE REPORT] Other participant found:', targetUser ? 'YES' : 'NO')
+          if (otherParticipantId) {
+            targetUser = await prisma.user.findUnique({
+              where: { id: otherParticipantId },
+              select: { id: true, name: true, email: true }
+            })
+            console.log('[MODERATE REPORT] Other participant found:', targetUser ? 'YES' : 'NO')
+          }
+        } else {
+          // Si pas de reporter (signalement anonyme ou depuis comportements suspects),
+          // on prend le premier participant de la conversation
+          console.log('[MODERATE REPORT] No reporter - using first participant from conversation')
+          const participantId = conversation.participants[0]
+          console.log('[MODERATE REPORT] Participant ID (sans reporter):', participantId)
+
+          if (participantId) {
+            targetUser = await prisma.user.findUnique({
+              where: { id: participantId },
+              select: { id: true, name: true, email: true }
+            })
+            console.log('[MODERATE REPORT] Participant found:', targetUser ? 'YES' : 'NO')
+          }
         }
-      } else if (conversation && !reporter) {
-        console.log('[MODERATE REPORT] Cannot determine other participant without reporter info')
       }
     } else if (report.targetType === 'user') {
       console.log('[MODERATE REPORT] Searching user directly...')
@@ -175,11 +189,13 @@ export async function POST(
       const updateData: any = {}
 
       if (isBanned) {
-        updateData.banned = true
+        updateData.bannedAt = new Date()
+        updateData.bannedReason = report.reason || 'Non-respect des règles de la plateforme'
       }
 
       if (suspendedUntil) {
         updateData.suspendedUntil = suspendedUntil
+        updateData.suspensionReason = report.reason || 'Non-respect des règles de la plateforme'
       }
 
       console.log('[MODERATE REPORT] Update data:', updateData)
@@ -190,6 +206,12 @@ export async function POST(
           data: updateData
         })
         console.log('[MODERATE REPORT] User sanctions updated')
+
+        // Supprimer toutes les sessions de l'utilisateur pour le déconnecter immédiatement
+        await prisma.session.deleteMany({
+          where: { userId: targetUser.id }
+        })
+        console.log('[MODERATE REPORT] User sessions deleted (force logout)')
       }
     }
 
@@ -212,15 +234,28 @@ export async function POST(
     // Notification au signaleur
     if (notifyReporter && reporter) {
       console.log('[MODERATE REPORT] Creating reporter notification')
+
+      let reporterMessage = ''
+      if (action === 'DISMISS') {
+        reporterMessage = 'Votre signalement a été examiné. Aucune sanction n\'a été appliquée car il a été jugé non fondé.'
+      } else {
+        const actionLabels: Record<string, string> = {
+          'WARNING': 'un avertissement',
+          'SUSPEND_3_DAYS': 'une suspension de 3 jours',
+          'SUSPEND_7_DAYS': 'une suspension de 7 jours',
+          'SUSPEND_30_DAYS': 'une suspension de 30 jours',
+          'BAN': 'un bannissement définitif'
+        }
+        reporterMessage = `Votre signalement a été traité. L'utilisateur signalé a reçu ${actionLabels[action] || 'une sanction'}. Merci pour votre contribution à la sécurité de la plateforme.`
+      }
+
       notifications.push(
         prisma.notification.create({
           data: {
             userId: reporter.id,
             type: 'SYSTEM_ALERT',
-            title: 'Signalement traité',
-            message: action === 'DISMISS'
-              ? 'Votre signalement a été examiné. Aucune sanction n\'a été appliquée.'
-              : 'Votre signalement a été examiné et des mesures ont été prises. Merci pour votre contribution.',
+            title: '✅ Signalement traité',
+            message: reporterMessage,
             link: '/messages'
           }
         })
@@ -231,23 +266,44 @@ export async function POST(
     if (notifyReported && targetUser && action !== 'DISMISS') {
       console.log('[MODERATE REPORT] Creating reported user notification')
       let sanctionMessage = ''
+      let notifTitle = ''
+
       switch (action) {
         case 'WARNING':
-          sanctionMessage = 'Vous avez reçu un avertissement suite à un signalement. Veuillez respecter les règles de la plateforme.'
+          notifTitle = '⚠️ Avertissement'
+          sanctionMessage = 'Vous avez reçu un avertissement suite à un signalement.\n\n⚠️ Veuillez respecter les règles de la plateforme pour éviter des sanctions plus sévères.'
           break
         case 'SUSPEND_3_DAYS':
         case 'SUSPEND_7_DAYS':
         case 'SUSPEND_30_DAYS':
           const days = action.includes('3') ? 3 : action.includes('7') ? 7 : 30
-          sanctionMessage = `Votre compte a été suspendu pour ${days} jours suite à un signalement.`
+          notifTitle = `🚫 Suspension de ${days} jours`
+
+          if (suspendedUntil) {
+            const endDate = suspendedUntil.toLocaleDateString('fr-FR', {
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit'
+            })
+            sanctionMessage = `Votre compte a été suspendu pour ${days} jours suite à un signalement.\n\n📅 Fin de suspension : ${endDate}\n\n⚠️ Vous ne pourrez pas vous reconnecter avant cette date.`
+          } else {
+            sanctionMessage = `Votre compte a été suspendu pour ${days} jours suite à un signalement.`
+          }
           break
         case 'BAN':
-          sanctionMessage = 'Votre compte a été banni définitivement suite à un signalement grave.'
+          notifTitle = '🚫 Compte banni définitivement'
+          sanctionMessage = 'Votre compte a été banni définitivement suite à un signalement grave.\n\n❌ Vous ne pourrez plus accéder à la plateforme.'
           break
       }
 
+      // Ajouter la raison si fournie
       if (adminMessage) {
-        sanctionMessage += `\n\nRaison : ${adminMessage}`
+        sanctionMessage += `\n\n📝 Raison : ${adminMessage}`
+      } else if (report.reason) {
+        const reasonLabel = report.reason.replace(/_/g, ' ').toLowerCase()
+        sanctionMessage += `\n\n📝 Raison : ${reasonLabel}`
       }
 
       notifications.push(
@@ -255,9 +311,9 @@ export async function POST(
           data: {
             userId: targetUser.id,
             type: 'ACCOUNT_BANNED',
-            title: action === 'WARNING' ? 'Avertissement' : action === 'BAN' ? 'Compte banni' : 'Compte suspendu',
+            title: notifTitle,
             message: sanctionMessage,
-            link: '/profile'
+            link: null // Pas de lien pour forcer l'ouverture de la modal
           }
         })
       )

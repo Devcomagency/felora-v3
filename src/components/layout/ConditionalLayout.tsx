@@ -12,6 +12,7 @@ export default function ConditionalLayout({ children }: { children: React.ReactN
   // Pages où on veut masquer la navbar et le footer
   const hideLayoutPaths = [
     '/auth-check', // Page de mot de passe
+    '/login',      // Page de connexion
   ]
 
   // Si on est sur une page où on veut masquer le layout, ne rien afficher

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { AlertTriangle, Eye, User, MessageSquare, Image as ImageIcon, Ban, CheckCircle, XCircle, Clock } from 'lucide-react'
 import { REPORT_TYPE_LABELS, REPORT_REASON_LABELS, REPORT_STATUS_LABELS, type ReportStatus, type ReportType } from '@/types/reports'
 import ModerationActionsModal from '@/components/admin/reports/ModerationActionsModal'
+import SuspendedUsersSection from '@/components/admin/reports/SuspendedUsersSection'
 
 interface ReportItem {
   id: string
@@ -35,12 +36,33 @@ interface AbusiveEntity {
   identifier: string
   type: 'email' | 'ip'
   count: number
+  reports: Array<{
+    id: string
+    targetType: string
+    targetId: string
+    reason: string
+    status: string
+    createdAt: string
+  }>
+  relatedUser?: {
+    id: string
+    name: string | null
+    email: string
+    bannedAt: Date | null
+  } | null
+  relatedUsers?: Array<{
+    id: string
+    name: string | null
+    email: string
+    bannedAt: Date | null
+  }>
 }
 
 export default function AdminReportsPage() {
   const [reports, setReports] = useState<ReportItem[]>([])
   const [stats, setStats] = useState<ReportStats | null>(null)
   const [abusiveEntities, setAbusiveEntities] = useState<AbusiveEntity[]>([])
+  const [expandedEntity, setExpandedEntity] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
   // Filtres
@@ -136,7 +158,7 @@ export default function AdminReportsPage() {
       const res = await fetch('/api/admin/reports/block-entity', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include', // ✅ Fix Chrome: transmettre les cookies httpOnly
+        credentials: 'include',
         body: JSON.stringify({ identifier, type })
       })
       const data = await res.json()
@@ -147,6 +169,79 @@ export default function AdminReportsPage() {
     } catch (error) {
       console.error('Error blocking entity:', error)
       alert('Erreur lors du blocage')
+    }
+  }
+
+  async function handleIgnoreEntity(identifier: string, type: 'email' | 'ip') {
+    const reason = prompt(`Pourquoi ignorer ${type === 'email' ? "l'email" : "l'IP"} : ${identifier} ?`)
+    if (reason === null) return
+
+    try {
+      const res = await fetch('/api/admin/reports/ignore-entity', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ identifier, type, reason })
+      })
+      const data = await res.json()
+      if (data.success) {
+        alert(`${type === 'email' ? 'Email' : 'IP'} ignoré avec succès`)
+        fetchAbusiveEntities()
+      } else {
+        alert(data.error || 'Erreur lors de l\'ignorance')
+      }
+    } catch (error) {
+      console.error('Error ignoring entity:', error)
+      alert('Erreur lors de l\'ignorance')
+    }
+  }
+
+  async function handleDeleteAccount(report: ReportItem) {
+    // Déterminer l'ID du compte à supprimer selon le type de cible
+    let userIdToDelete: string | null = null
+    let targetDescription = ''
+
+    if (report.targetType === 'escort' || report.targetType === 'club') {
+      userIdToDelete = report.targetId
+      targetDescription = `le profil ${report.targetType}`
+    } else if (report.reporterEmail) {
+      // Si c'est un autre type, on cherche par l'email du signaleur
+      targetDescription = `le compte avec l'email ${report.reporterEmail}`
+    }
+
+    if (!userIdToDelete && !report.reporterEmail) {
+      alert('Impossible de déterminer le compte à supprimer')
+      return
+    }
+
+    const confirmMsg = userIdToDelete
+      ? `Voulez-vous SUPPRIMER DÉFINITIVEMENT ${targetDescription} (ID: ${userIdToDelete.substring(0, 8)}) ?\n\nCette action est IRRÉVERSIBLE.`
+      : `Voulez-vous SUPPRIMER DÉFINITIVEMENT ${targetDescription} ?\n\nCette action est IRRÉVERSIBLE.`
+
+    if (!confirm(confirmMsg)) return
+
+    try {
+      const res = await fetch('/api/admin/users/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          userId: userIdToDelete,
+          email: report.reporterEmail,
+          reason: `Signalement: ${report.reason}`
+        })
+      })
+      const data = await res.json()
+      if (data.success) {
+        alert('Compte supprimé avec succès')
+        fetchReports()
+        fetchStats()
+      } else {
+        alert(data.error || 'Erreur lors de la suppression')
+      }
+    } catch (error) {
+      console.error('Error deleting account:', error)
+      alert('Erreur lors de la suppression du compte')
     }
   }
 
@@ -216,36 +311,133 @@ export default function AdminReportsPage() {
         </div>
       )}
 
-      {/* Abusive Entities */}
+      {/* Utilisateurs Suspendus */}
+      <div className="mb-8">
+        <SuspendedUsersSection />
+      </div>
+
+      {/* Abusive Entities - Compact Version */}
       {abusiveEntities.length > 0 && (
-        <div className="mb-8 bg-red-500/10 border border-red-500/30 rounded-xl p-6">
-          <h2 className="text-xl font-bold text-red-400 mb-4 flex items-center gap-2">
-            <AlertTriangle size={20} />
-            Comportements Suspects ({abusiveEntities.length})
-          </h2>
-          <div className="space-y-3">
-            {abusiveEntities.slice(0, 5).map((entity) => (
-              <div key={entity.identifier} className="flex items-center justify-between p-4 bg-gray-900/50 rounded-lg">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-white font-medium">{entity.identifier}</span>
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-red-500/20 text-red-400">
-                      {entity.count} signalement{entity.count > 1 ? 's' : ''}
-                    </span>
-                  </div>
-                  <div className="text-xs text-gray-400">
-                    Type: {entity.type === 'email' ? 'Email' : 'Adresse IP'}
+        <div className="mb-8 bg-red-500/10 border border-red-500/30 rounded-xl overflow-hidden">
+          <div className="p-4 border-b border-red-500/20">
+            <h2 className="text-lg font-bold text-red-400 flex items-center gap-2">
+              <AlertTriangle size={18} />
+              Comportements Suspects ({abusiveEntities.length})
+            </h2>
+          </div>
+          <div className="max-h-[400px] overflow-y-auto">
+            <div className="divide-y divide-red-500/10">
+              {abusiveEntities.map((entity) => (
+                <div key={entity.identifier} className="p-3 hover:bg-gray-900/30 transition-colors">
+                  <div className="flex items-start gap-3">
+                    {/* Info principale */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <button
+                          onClick={() => setExpandedEntity(expandedEntity === entity.identifier ? null : entity.identifier)}
+                          className="text-white font-medium hover:text-red-400 transition-colors text-left truncate"
+                        >
+                          {entity.identifier}
+                        </button>
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 shrink-0">
+                          {entity.count} report{entity.count > 1 ? 's' : ''}
+                        </span>
+                        <span className="text-xs text-gray-500 shrink-0">
+                          {entity.type === 'email' ? '📧' : '🌐'} {entity.type.toUpperCase()}
+                        </span>
+                      </div>
+
+                      {/* Comptes liés */}
+                      {entity.type === 'email' && entity.relatedUser && (
+                        <div className="text-xs text-gray-400 flex items-center gap-2 mt-1">
+                          <User size={12} />
+                          <span>{entity.relatedUser.name || 'Sans nom'}</span>
+                          {entity.relatedUser.bannedAt && (
+                            <span className="px-1.5 py-0.5 bg-red-500/20 text-red-400 rounded">BANNI</span>
+                          )}
+                        </div>
+                      )}
+
+                      {entity.type === 'ip' && entity.relatedUsers && entity.relatedUsers.length > 0 && (
+                        <div className="text-xs text-gray-400 mt-1">
+                          <span className="flex items-center gap-1">
+                            <User size={12} />
+                            {entity.relatedUsers.length} compte{entity.relatedUsers.length > 1 ? 's' : ''} lié{entity.relatedUsers.length > 1 ? 's' : ''}
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Détails dépliables */}
+                      {expandedEntity === entity.identifier && (
+                        <div className="mt-3 pt-3 border-t border-red-500/20 space-y-2">
+                          {/* Comptes liés détaillés pour IP */}
+                          {entity.type === 'ip' && entity.relatedUsers && entity.relatedUsers.length > 0 && (
+                            <div className="mb-3">
+                              <div className="text-xs font-medium text-gray-300 mb-2">Comptes liés :</div>
+                              <div className="space-y-1">
+                                {entity.relatedUsers.map(user => (
+                                  <div key={user.id} className="text-xs text-gray-400 flex items-center gap-2 pl-2">
+                                    <span>•</span>
+                                    <span>{user.name || 'Sans nom'}</span>
+                                    <span className="text-gray-500">({user.email})</span>
+                                    {user.bannedAt && (
+                                      <span className="px-1.5 py-0.5 bg-red-500/20 text-red-400 rounded">BANNI</span>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Historique des signalements */}
+                          <div>
+                            <div className="text-xs font-medium text-gray-300 mb-2">Historique ({entity.reports.length}) :</div>
+                            <div className="space-y-1 max-h-40 overflow-y-auto">
+                              {entity.reports.map(report => (
+                                <div key={report.id} className="text-xs text-gray-400 flex items-center justify-between pl-2 py-1">
+                                  <div className="flex items-center gap-2">
+                                    <span>•</span>
+                                    <span>{report.reason}</span>
+                                    <span className="text-gray-600">→</span>
+                                    <span className="text-gray-500">{report.targetType}</span>
+                                  </div>
+                                  <span className={`px-1.5 py-0.5 rounded text-[10px] ${
+                                    report.status === 'RESOLVED' ? 'bg-green-500/20 text-green-400' :
+                                    report.status === 'DISMISSED' ? 'bg-gray-500/20 text-gray-400' :
+                                    report.status === 'ESCALATED' ? 'bg-red-500/20 text-red-400' :
+                                    'bg-yellow-500/20 text-yellow-400'
+                                  }`}>
+                                    {report.status}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex gap-2 shrink-0">
+                      <button
+                        onClick={() => handleIgnoreEntity(entity.identifier, entity.type)}
+                        className="px-3 py-1.5 bg-gray-500/20 border border-gray-500/30 text-gray-400 rounded-lg hover:bg-gray-500/30 transition-all text-xs"
+                        title="Ignorer définitivement"
+                      >
+                        Ignorer
+                      </button>
+                      <button
+                        onClick={() => handleBlockEntity(entity.identifier, entity.type)}
+                        className="px-3 py-1.5 bg-red-500/20 border border-red-500/30 text-red-400 rounded-lg hover:bg-red-500/30 transition-all flex items-center gap-1 text-xs"
+                      >
+                        <Ban size={14} />
+                        Bloquer
+                      </button>
+                    </div>
                   </div>
                 </div>
-                <button
-                  onClick={() => handleBlockEntity(entity.identifier, entity.type)}
-                  className="px-4 py-2 bg-red-500/20 border border-red-500/30 text-red-400 rounded-lg hover:bg-red-500/30 transition-all flex items-center gap-2"
-                >
-                  <Ban size={16} />
-                  Bloquer
-                </button>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       )}
@@ -420,10 +612,11 @@ export default function AdminReportsPage() {
                           Rejeter
                         </button>
                         <button
-                          onClick={() => handleUpdateStatus(report.id, 'ESCALATED')}
-                          className="px-3 py-1.5 bg-red-500/20 border border-red-500/30 text-red-400 rounded-lg hover:bg-red-500/30 transition-all text-sm"
+                          onClick={() => handleDeleteAccount(report)}
+                          className="px-3 py-1.5 bg-red-500/20 border border-red-500/30 text-red-400 rounded-lg hover:bg-red-500/30 transition-all text-sm flex items-center gap-1"
                         >
-                          Escalader
+                          <Ban size={14} />
+                          Supprimer compte
                         </button>
                       </div>
                     )}

@@ -224,8 +224,10 @@ export default function NotificationBell() {
                         <p className="text-xs sm:text-sm text-white/70 mt-1 line-clamp-2">{notif.message}</p>
                         <div className="flex items-center justify-between gap-2 mt-1 sm:mt-2">
                           <p className="text-[10px] sm:text-xs text-white/40">{formatDate(notif.createdAt)}</p>
-                          {notif.link && (
+                          {notif.link ? (
                             <span className="text-[10px] sm:text-xs text-purple-400">Cliquer pour ouvrir →</span>
+                          ) : (
+                            <span className="text-[10px] sm:text-xs text-white/40">Cliquer pour détails</span>
                           )}
                         </div>
                       </div>

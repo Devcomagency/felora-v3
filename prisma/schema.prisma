@@ -23,6 +23,9 @@ model User {
   // Champs de ban
   bannedAt             DateTime?
   bannedReason         String?
+  // Champs de suspension temporaire
+  suspendedUntil       DateTime?
+  suspensionReason     String?
   accounts             Account[]
   profile              ClientProfile?
   clubProfile          ClubProfile?
@@ -1048,6 +1051,20 @@ model Report {
   @@index([status])
   @@index([createdAt])
   @@map("reports")
+}
+
+model IgnoredReportEntity {
+  id         String   @id @default(cuid())
+  identifier String   // Email ou IP
+  type       String   // 'email' ou 'ip'
+  ignoredBy  String   // ID de l'admin qui a ignoré
+  ignoredAt  DateTime @default(now())
+  reason     String?  // Raison de l'ignorance (optionnel)
+
+  @@unique([identifier, type])
+  @@index([identifier])
+  @@index([type])
+  @@map("ignored_report_entities")
 }
 
 enum ReportType {

@@ -147,27 +147,18 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   
   // États pour l'optimisation vidéo
-  const [isInView, setIsInView] = useState(false)
   const [videoError, setVideoError] = useState<string | null>(null)
-  const [shouldLoadVideo, setShouldLoadVideo] = useState(() => {
-    // Valider l'URL de la vidéo avant de la charger
-    if (!item.url || typeof item.url !== 'string') {
-      console.warn('⚠️ URL vidéo invalide:', item.url)
-      return false
-    }
-    try {
-      new URL(item.url)
-      return true
-    } catch {
-      console.warn('⚠️ URL vidéo malformée:', item.url)
-      return false
-    }
-  })
+  const [videoReady, setVideoReady] = useState(false)
+  const [isInView, setIsInView] = useState(false)
+
+  // Debug : suivre les changements de videoReady
+  useEffect(() => {
+    console.log(`🎥 [${item.id}] videoReady changed:`, videoReady)
+  }, [videoReady, item.id])
 
   // Hooks
   const { handleIntersectingChange, togglePlayPause, currentVideo, isMute } = useVideoIntersection()
   const { toggleMute } = useFeedStore()
-  const screenCharacteristics = useScreenCharacteristics()
   const { data: session } = useSession()
 
   // Build a stable mediaId and a stable guest user id
@@ -181,20 +172,9 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
     ? `/profile-test/club/${item.clubHandle}`
     : `/profile/${item.author.id}`
 
-  // Debug: vérifier la redirection
-  console.log('🔗 [VIDEO FEED CARD] Type:', item.ownerType, 'URL:', profileUrl, 'Author:', item.author.name)
-  
   // Vérifier si l'utilisateur est le propriétaire du média
   const isOwner = session?.user?.id === item.author.id
-  
-  // Debug: vérifier la propriété
-  console.log('🔧 [MEDIA MENU] Session user ID:', session?.user?.id)
-  console.log('🔧 [MEDIA MENU] Author ID:', item.author.id)
-  console.log('🔧 [MEDIA MENU] Is owner:', isOwner)
-  
-  // Robust check: only treat as video if URL looks like a video
-  const isVideoUrl = typeof item.url === 'string' && /(\.mp4|\.webm|\.mov)(\?.*)?$/i.test(item.url)
-  const shouldShowVideo = item.type === 'VIDEO' && isVideoUrl
+
   const [userId, setUserId] = useState<string | null>(null)
   useEffect(() => {
     try {
@@ -214,7 +194,6 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
   const toggleReaction = reactionsRes?.toggleReaction || (async (_t: any) => {})
 
   // États dérivés (UI)
-  const likeLoading = !!loading
   const totalDisplay = stats?.total ?? (initialTotal ?? 0)
 
   // Gestion des clics
@@ -246,18 +225,16 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
   // Gestion de l'intersection avec chargement intelligent
   const onIntersectingChange = useCallback((inView: boolean) => {
     setIsInView(inView)
-    handleIntersectingChange({ id: item.id, inView, videoRef })
-    
+
+    if (videoRef.current) {
+      handleIntersectingChange({ id: item.id, inView, videoRef: videoRef as React.RefObject<HTMLVideoElement> })
+    }
+
     if (inView && !trackedRef.current) {
       trackedRef.current = true
       try { (window as any)?.umami?.track?.('media_view', { mediaId }) } catch {}
     }
-    
-        // Charger la vidéo immédiatement quand elle est visible
-        if (inView && !shouldLoadVideo) {
-          setShouldLoadVideo(true)
-        }
-  }, [handleIntersectingChange, item.id, mediaId, videoRef, shouldLoadVideo, item.url])
+  }, [handleIntersectingChange, item.id, mediaId])
 
   // Actions
   const onReact = useCallback((emoji: string) => {
@@ -358,96 +335,123 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
       >
       {/* Vidéo Background */}
       <div className="absolute inset-0">
-        {shouldLoadVideo ? (
-          <video
-            aria-label="Lire/Pause média"
-            ref={videoRef}
-            className="w-full h-full cursor-pointer"
+        {/* Poster image - toujours visible en arrière-plan */}
+        {item.thumb && (
+          <div
+            className="absolute inset-0 bg-cover bg-center transition-opacity duration-500"
             style={{
-              objectFit: 'cover',
-              objectPosition: 'center center',
-              // Optimisation pour éviter les déformations
-              minWidth: '100%',
-              minHeight: '100%',
-              maxWidth: 'none',
-              maxHeight: 'none'
+              backgroundImage: `url(${item.thumb})`,
+              opacity: (videoReady && item.type === 'VIDEO') ? 0 : (item.type === 'IMAGE' ? 1 : (videoReady ? 0 : 1)),
+              pointerEvents: 'none',
+              zIndex: 1
             }}
-            loop
-            muted
-            playsInline
-            preload="auto"
-            poster={item.thumb}
-            onClick={handleVideoClick}
-            onLoadStart={() => {
-              console.log('🎬 Vidéo en cours de chargement...')
-              setVideoError(null) // Réinitialiser l'erreur au début du chargement
-            }}
-            onCanPlay={() => {
-              console.log('✅ Vidéo prête à être lue')
-              setVideoError(null) // Pas d'erreur si la vidéo peut être lue
-            }}
-            onError={(e) => {
-              const target = e.target as HTMLVideoElement;
-              const error = target.error;
-              
-              // Vérifier si l'erreur existe
-              if (error) {
-                console.error('❌ Erreur vidéo:', {
-                  errorCode: error.code,
-                  errorMessage: error.message,
-                  src: target.src,
-                  networkState: target.networkState,
-                  readyState: target.readyState
-                });
-                setVideoError(`Erreur ${error.code}: ${error.message || 'Chargement impossible'}`)
-              } else {
-                // Si l'erreur est vide, essayer d'obtenir plus d'informations
-                console.error('❌ Erreur vidéo (détails non disponibles):', {
-                  src: target.src,
-                  networkState: target.networkState,
-                  readyState: target.readyState,
-                  videoUrl: item.url,
-                  videoThumb: item.thumb
-                });
-                setVideoError('Vidéo non disponible')
-              }
-            }}
-          >
-            <source src={item.url} type="video/mp4" />
-          </video>
-        ) : (
-          <div 
-            className="w-full h-full cursor-pointer flex items-center justify-center bg-black"
-            style={{ 
-              backgroundImage: item.thumb ? `url(${item.thumb})` : 'none',
-              backgroundColor: '#1a1a1a',
-              backgroundSize: 'cover',
-              backgroundPosition: 'center center',
-              backgroundRepeat: 'no-repeat',
-              minWidth: '100%',
-              minHeight: '100%'
+          />
+        )}
+
+        {/* Si c'est une IMAGE, ne pas essayer de la lire comme vidéo */}
+        {item.type === 'IMAGE' && (
+          <div
+            className="absolute inset-0 bg-cover bg-center"
+            style={{
+              backgroundImage: `url(${item.url})`,
+              zIndex: 2
             }}
             onClick={handleVideoClick}
-          >
-            {videoError ? (
-              <div className="text-center text-white/80">
-                <AlertTriangle className="w-16 h-16 mx-auto mb-2 text-red-500" />
-                <div className="text-sm font-medium mb-1">Vidéo non disponible</div>
-                <div className="text-xs text-white/50">{videoError}</div>
-              </div>
-            ) : (
-              <div className="text-center text-white/60">
-                <div className="text-4xl mb-2">🎬</div>
-                <div className="text-sm">Chargement...</div>
-              </div>
-            )}
+          />
+        )}
+
+        {/* Vidéo - chargée avec IntersectionObserver - seulement si TYPE = VIDEO */}
+        {item.type === 'VIDEO' && (
+        <video
+          aria-label="Lire/Pause média"
+          ref={videoRef}
+          className="w-full h-full cursor-pointer transition-opacity duration-500"
+          style={{
+            objectFit: 'cover',
+            objectPosition: 'center center',
+            minWidth: '100%',
+            minHeight: '100%',
+            maxWidth: 'none',
+            maxHeight: 'none',
+            opacity: videoReady ? 1 : 0,
+            zIndex: 2
+          }}
+          loop
+          muted={true}
+          playsInline
+          preload="metadata"
+          poster={item.thumb}
+          onClick={handleVideoClick}
+          onLoadStart={() => {
+            console.log('🎬 [VIDEO] LoadStart:', item.id, 'URL:', item.url)
+            setVideoError(null)
+            // Ne pas réinitialiser videoReady si déjà prêt (évite le clignotement)
+            // setVideoReady(false) → Supprimé car cause les écrans noirs
+          }}
+          onLoadedMetadata={() => {
+            console.log('📦 [VIDEO] Metadata loaded:', item.id)
+            // Métadonnées chargées - appliquer le mute global
+            if (videoRef.current) {
+              videoRef.current.muted = isMute
+            }
+          }}
+          onCanPlay={() => {
+            console.log('✅ [VIDEO] CanPlay:', item.id)
+            // Buffer suffisant pour commencer la lecture
+            setVideoReady(true)
+            setVideoError(null)
+            // S'assurer que le mute est appliqué
+            if (videoRef.current) {
+              videoRef.current.muted = isMute
+            }
+          }}
+          onWaiting={() => {
+            console.log('⏳ [VIDEO] Waiting (buffering):', item.id)
+          }}
+          onStalled={() => {
+            console.log('⚠️ [VIDEO] Stalled (network issue?):', item.id)
+          }}
+          onError={(e) => {
+            const target = e.target as HTMLVideoElement
+            const error = target.error
+
+            console.error('❌ [VIDEO] Error for:', item.id)
+            console.error('   URL:', item.url)
+            console.error('   Type:', item.type)
+            console.error('   Thumb:', item.thumb)
+            console.error('   Error code:', error?.code)
+            console.error('   Error message:', error?.message)
+            console.error('   Network state:', target.networkState)
+            console.error('   Ready state:', target.readyState)
+
+            if (error) {
+              setVideoError(`Erreur ${error.code}: ${error.message}`)
+            } else {
+              setVideoError('Vidéo non disponible')
+            }
+            setVideoReady(false)
+          }}
+        >
+          <source src={item.url} type="video/mp4" />
+        </video>
+        )}
+
+        {/* Overlay d'erreur si nécessaire - seulement pour vidéos */}
+        {item.type === 'VIDEO' && videoError && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/50 z-10">
+            <div className="text-center text-white/80">
+              <AlertTriangle className="w-16 h-16 mx-auto mb-2 text-red-500" />
+              <div className="text-sm font-medium mb-1">Vidéo non disponible</div>
+              <div className="text-xs text-white/50">{videoError}</div>
+            </div>
           </div>
         )}
-        
+
         {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 pointer-events-none" />
-        
-        {/* Menu de gestion des médias (propriétaire uniquement) */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 pointer-events-none" style={{ zIndex: 3 }} />
+      </div>
+
+      {/* Menu de gestion des médias (propriétaire uniquement) */}
         {isOwner && (
           <div className="absolute top-4 right-4 z-30 pointer-events-auto">
             <div className="relative">
@@ -564,7 +568,6 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
             </div>
           </div>
         )}
-      </div>
 
       {/* Animations */}
       <HeartAnimation 

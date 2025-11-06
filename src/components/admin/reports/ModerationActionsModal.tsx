@@ -75,40 +75,64 @@ export default function ModerationActionsModal({ isOpen, onClose, report, onActi
     }
   ]
 
-  async function handleSubmit() {
+  async function handleSubmit(e?: React.MouseEvent) {
+    console.log('🔍 [MODERATION] handleSubmit called')
+    console.log('🔍 [MODERATION] selectedAction:', selectedAction)
+    console.log('🔍 [MODERATION] report.id:', report.id)
+
+    // Prevent any default behavior
+    if (e) {
+      e.preventDefault()
+      e.stopPropagation()
+    }
+
     if (!selectedAction) {
+      console.error('❌ [MODERATION] No action selected')
       alert('Veuillez sélectionner une action')
       return
     }
 
+    console.log('✅ [MODERATION] Starting moderation action:', selectedAction)
     setSubmitting(true)
+
     try {
-      const res = await fetch(`/api/admin/reports/${report.id}/moderate`, {
+      const url = `/api/admin/reports/${report.id}/moderate`
+      console.log('🌐 [MODERATION] Calling API:', url)
+
+      const payload = {
+        action: selectedAction,
+        adminMessage,
+        notifyReporter,
+        notifyReported
+      }
+      console.log('📦 [MODERATION] Payload:', payload)
+
+      const res = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include', // ✅ Fix Chrome: transmettre les cookies httpOnly
-        body: JSON.stringify({
-          action: selectedAction,
-          adminMessage,
-          notifyReporter,
-          notifyReported
-        })
+        credentials: 'include',
+        body: JSON.stringify(payload)
       })
 
+      console.log('📡 [MODERATION] Response status:', res.status)
       const data = await res.json()
+      console.log('📡 [MODERATION] Response data:', data)
 
       if (data.success) {
+        console.log('✅ [MODERATION] Success!')
         alert('Action de modération effectuée avec succès')
         onActionComplete()
         onClose()
       } else {
+        console.error('❌ [MODERATION] API error:', data.error)
         alert(data.error || 'Erreur lors de l\'action')
       }
     } catch (error) {
-      console.error('Error moderating:', error)
+      console.error('❌ [MODERATION] Fetch error:', error)
       alert('Erreur de connexion')
     } finally {
       setSubmitting(false)
+      console.log('🏁 [MODERATION] handleSubmit completed')
     }
   }
 
@@ -260,7 +284,12 @@ export default function ModerationActionsModal({ isOpen, onClose, report, onActi
             Annuler
           </button>
           <button
-            onClick={handleSubmit}
+            onClick={(e) => {
+              console.log('🖱️ [MODERATION] Button clicked!')
+              console.log('🖱️ [MODERATION] selectedAction:', selectedAction)
+              console.log('🖱️ [MODERATION] submitting:', submitting)
+              handleSubmit(e)
+            }}
             disabled={!selectedAction || submitting}
             className="flex-1 py-3 px-6 rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 text-white font-medium hover:from-purple-600 hover:to-pink-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >

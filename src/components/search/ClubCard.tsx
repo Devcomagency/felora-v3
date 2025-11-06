@@ -20,6 +20,15 @@ export default function ClubCard({ club, onClick }: ClubCardProps) {
   // Note: On utilise l'avatar comme image principale car c'est la position 0 (photo de couverture dans le dashboard)
   const coverUrl = club.avatar || club.cover
 
+  // 🔍 DEBUG: Log pour voir les URLs
+  React.useEffect(() => {
+    console.log('🖼️ [CLUB CARD]', club.name, {
+      avatar: club.avatar,
+      cover: club.cover,
+      coverUrl: coverUrl
+    })
+  }, [club.name, club.avatar, club.cover, coverUrl])
+
   const getEstablishmentTypeLabel = (type: string) => {
     switch (type) {
       case 'salon_erotique': return 'Salon'
@@ -46,11 +55,18 @@ export default function ClubCard({ club, onClick }: ClubCardProps) {
       {/* Image de couverture */}
       <div className="relative w-full h-full">
         <img
-          key={`cover-${club.id}-${club.updatedAt}`}
+          key={`cover-${club.id}-${club.updatedAt}-${Date.now()}`}
           src={coverUrl}
           alt={club.name}
           className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
           onError={(e) => {
+            // 🔍 DEBUG: Log quand l'image fail
+            console.error('❌ [CLUB CARD] Image failed to load:', {
+              club: club.name,
+              originalSrc: coverUrl,
+              currentSrc: e.currentTarget.src
+            })
+
             // Fallback si l'image ne charge pas
             e.currentTarget.src = `https://picsum.photos/seed/club-${club.id}/600/400`
           }}

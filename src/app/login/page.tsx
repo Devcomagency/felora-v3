@@ -31,7 +31,22 @@ function LoginContent() {
     if (message) {
       setSuccessMessage(decodeURIComponent(message))
     }
-  }, [searchParams])
+
+    // Vérifier si l'utilisateur a été redirigé après suspension
+    const suspended = searchParams.get('suspended')
+    if (suspended === 'true') {
+      // Vérifier la session pour confirmer la suspension
+      getSession().then(session => {
+        if (!session || !session.user) {
+          // Seulement afficher le message si la session est vraiment nulle
+          setErrors(['Votre compte est suspendu. Veuillez réessayer plus tard.'])
+        } else {
+          // Session valide, nettoyer l'URL pour enlever le paramètre suspended
+          router.replace('/login')
+        }
+      })
+    }
+  }, [searchParams, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -61,21 +76,18 @@ function LoginContent() {
       })
 
       if (result?.error) {
-        setErrors(['Email ou mot de passe incorrect'])
+        // Afficher le message d'erreur exact (suspension, ban, ou identifiants invalides)
+        setErrors([result.error])
       } else {
-        // Récupérer la session pour connaître le rôle
-        const session = await getSession()
-        const userRole = session?.user?.role?.toLowerCase()
-
         // Vérifier s'il y a une redirection spécifique
         const redirect = searchParams.get('redirect')
         if (redirect) {
-          router.push(redirect)
+          window.location.href = redirect
           return
         }
 
-        // Redirection vers le dashboard escort profil pour éviter les erreurs de données manquantes
-        router.push('/dashboard-escort/profil')
+        // Redirection vers la page d'accueil après connexion (forcer avec window.location)
+        window.location.href = '/'
       }
     } catch (error) {
       setErrors(['Erreur de connexion'])

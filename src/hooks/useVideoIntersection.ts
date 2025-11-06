@@ -20,19 +20,31 @@ export function useVideoIntersection() {
       if (!videoElem) return
 
       if (!inView) {
-        // Pause et reset quand pas visible
+        // Pause, mute et reset quand pas visible
         videoElem.pause()
+        videoElem.muted = true
         videoElem.currentTime = 0
         return
       }
 
-      // Play et définir comme vidéo courante quand visible
+      // IMPORTANT : Pause l'ancienne vidéo avant de jouer la nouvelle
+      const previousVideo = currentVideo.videoRef?.current
+      if (previousVideo && previousVideo !== videoElem) {
+        previousVideo.pause()
+        previousVideo.muted = true
+        previousVideo.currentTime = 0
+      }
+
+      // Appliquer le mute global à la nouvelle vidéo
+      videoElem.muted = isMute
+
+      // Play et définir comme vidéo courante
       videoElem.play().catch(error => {
         console.warn('Autoplay failed:', error)
       })
       setCurrentVideo(videoRef, true)
     },
-    [setCurrentVideo]
+    [setCurrentVideo, currentVideo, isMute]
   )
 
   // Appliquer le mute/unmute à la vidéo courante

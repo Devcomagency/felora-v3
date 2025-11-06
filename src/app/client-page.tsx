@@ -42,6 +42,15 @@ export default function ClientFeedPage({ initialItems, initialCursor }: ClientFe
   // Store du feed pour la gestion globale
   const { setVideoContainerRef, isRestore } = useFeedStore()
 
+  // DÉSACTIVÉ : système de preloading trop lourd, cause des saccades
+  // const currentIndex = useCurrentVideoIndex(containerRef)
+  // const { getPreloadedVideo, loadingStatus } = useVideoPreloader({
+  //   items: items.map(item => ({ id: item.id, url: item.url, type: item.type })),
+  //   currentIndex,
+  //   preloadCount: 2,
+  //   unloadDistance: 3
+  // })
+
   
   // Chargement de plus d'items (pagination infinie avec API)
   const loadMoreItems = useCallback(async () => {
@@ -144,11 +153,15 @@ export default function ClientFeedPage({ initialItems, initialCursor }: ClientFe
       {items.map((item, index) => {
         const mediaId = stableMediaId({ rawId: item.id, profileId: item.author.id, url: item.url })
         const initialTotal = initialTotals[mediaId]
+
         // Clé composite pour garantir l'unicité : authorId + mediaId + index
         const uniqueKey = `${item.author.id}-${item.id}-${index}`
         return (
           <section key={uniqueKey} className="feed-item snap-start">
-            <VideoFeedCard item={item} initialTotal={initialTotal} />
+            <VideoFeedCard
+              item={item}
+              initialTotal={initialTotal}
+            />
           </section>
         )
       })}

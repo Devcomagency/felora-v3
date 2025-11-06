@@ -10,6 +10,7 @@ import CookieConsent from "@/components/CookieConsent";
 import FooterLegal from "@/components/FooterLegal";
 import ToastContainer from "@/components/ui/Toast";
 import ConditionalLayout from "@/components/layout/ConditionalLayout";
+import SuspensionChecker from "@/components/auth/SuspensionChecker";
 
 export const metadata: Metadata = {
   title: {
@@ -73,6 +74,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         )}
         <AnalyticsLoader websiteId={process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID} src={process.env.NEXT_PUBLIC_UMAMI_SRC} />
         <Providers>
+          <SuspensionChecker />
           <AgeGate />
           <AppGateway>
             <div data-app-shell style={{

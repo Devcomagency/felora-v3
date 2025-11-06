@@ -120,6 +120,27 @@ export async function GET(req: NextRequest) {
       baseDelay: 500
     }) : []
 
+    // Récupérer les avatars des clubs depuis la table Media (pos=0)
+    const clubAvatars = clubIds.length > 0 ? await dbOperationWithRetry(async () => {
+      return await prisma.media.findMany({
+        where: {
+          ownerType: 'CLUB',
+          ownerId: { in: clubIds },
+          pos: 0 // Avatar = position 0
+        },
+        select: {
+          ownerId: true,
+          url: true
+        }
+      })
+    }, {
+      maxRetries: 2,
+      baseDelay: 500
+    }) : []
+
+    // Créer un map des avatars clubs
+    const clubAvatarMap = new Map(clubAvatars.map(avatar => [avatar.ownerId, avatar.url]))
+
     // Créer un map unifié pour escorts et clubs
     const profileMap = new Map([
       ...escortProfiles.map(p => [p.id, { ...p, type: 'ESCORT' }]),
@@ -174,8 +195,9 @@ export async function GET(req: NextRequest) {
         ? (profile.details?.name || profile.companyName || 'Club')
         : (profile.stageName || profile.user?.name || 'Escort')
 
+      // Pour les clubs, utiliser d'abord l'avatar de la table Media, puis fallback sur details.avatarUrl
       const authorAvatar = isClub
-        ? (profile.details?.avatarUrl || 'https://picsum.photos/100/100?random=club')
+        ? (clubAvatarMap.get(profile.id) || profile.details?.avatarUrl || 'https://picsum.photos/100/100?random=club')
         : (profile.profilePhoto || 'https://picsum.photos/100/100?random=default')
 
       // Optimiser les URLs des médias

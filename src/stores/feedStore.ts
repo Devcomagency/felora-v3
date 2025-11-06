@@ -59,7 +59,15 @@ const createFeedSlice = (set: any): FeedSlice => ({
   videoContainerRef: null,
   currentVideo: { isPlaying: false, videoRef: null },
   
-  toggleMute: () => set((state: FeedSlice) => ({ isMute: !state.isMute })),
+  toggleMute: () => set((state: FeedSlice) => {
+    const newMuteState = !state.isMute
+    // Appliquer immédiatement à la vidéo courante
+    const currentVideoElem = state.currentVideo.videoRef?.current
+    if (currentVideoElem) {
+      currentVideoElem.muted = newMuteState
+    }
+    return { isMute: newMuteState }
+  }),
   setIsMute: (muted) => set(() => ({ isMute: muted })),
   setIsRestore: (isRestore) => set(() => ({ isRestore })),
   setPrevScroll: (scrollHeight) => set(() => ({ prevScroll: scrollHeight })),

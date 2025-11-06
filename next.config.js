@@ -9,6 +9,9 @@ const nextConfig = {
   eslint: { ignoreDuringBuilds: true },
   typescript: { ignoreBuildErrors: true },
 
+  // Fix pour le warning des lockfiles multiples
+  outputFileTracingRoot: __dirname,
+
   // Next.js 15+: paquets externes côté serveur
   serverExternalPackages: ['@prisma/client'],
 
@@ -45,8 +48,14 @@ const nextConfig = {
     ],
   },
 
-  // Désactive les expérimentations et la surcharge Webpack pour stabiliser le build prod
-  webpack: undefined,
+  // Fix recharts avec Next.js 15
+  webpack: (config) => {
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      'recharts': require.resolve('recharts'),
+    }
+    return config
+  },
 
   // Redirects: Canonical route consolidation
   async redirects() { return [] },
