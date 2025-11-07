@@ -9,6 +9,20 @@ import { createMuxDirectUpload } from '@/lib/mux'
  */
 export async function POST() {
   try {
+    // Debug: Vérifier les variables AVANT tout
+    console.log('🔍 DEBUG: MUX_TOKEN_ID =', process.env.MUX_TOKEN_ID ? 'EXISTS' : 'MISSING')
+    console.log('🔍 DEBUG: MUX_TOKEN_SECRET =', process.env.MUX_TOKEN_SECRET ? 'EXISTS' : 'MISSING')
+
+    if (!process.env.MUX_TOKEN_ID || !process.env.MUX_TOKEN_SECRET) {
+      return NextResponse.json({
+        error: 'Variables Mux manquantes sur Vercel',
+        debug: {
+          hasTokenId: !!process.env.MUX_TOKEN_ID,
+          hasTokenSecret: !!process.env.MUX_TOKEN_SECRET
+        }
+      }, { status: 500 })
+    }
+
     const session = await getServerSession(authOptions)
 
     if (!session?.user?.id) {
