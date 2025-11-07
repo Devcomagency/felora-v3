@@ -170,7 +170,7 @@ export default function ClientFeedPage({ initialItems, initialCursor }: ClientFe
   }, [loadMoreItems])
 
   return (
-    <main 
+    <main
       ref={containerRef}
       className="feed-container h-screen snap-y snap-mandatory overflow-y-scroll bg-black"
       style={{
@@ -184,9 +184,9 @@ export default function ClientFeedPage({ initialItems, initialCursor }: ClientFe
         // Fallback pour les navigateurs qui ne supportent pas dvh
         height: '100vh',
         minHeight: '100vh',
-        // Optimisation du scroll snap
-        scrollSnapType: 'y mandatory',
-        scrollBehavior: 'smooth'
+        // Optimisation du scroll snap - AUTO pour éviter les sauts
+        scrollSnapType: 'y proximity',
+        scrollBehavior: 'auto'
       }}
     >
       <style jsx>{`

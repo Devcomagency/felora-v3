@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
+import { convertToH264, generateVideoThumbnail } from '@/lib/video-converter'
 
 // Configuration pour augmenter la limite de body size (vidéos)
 export const runtime = 'nodejs'
@@ -69,14 +70,45 @@ export async function POST(request: NextRequest) {
 
     // Upload vers R2
     const bytes = await mediaFile.arrayBuffer()
-    const buffer = Buffer.from(bytes)
+    let buffer = Buffer.from(bytes)
+
+    // Si c'est une vidéo, convertir en H.264 si nécessaire
+    let thumbBuffer: Buffer | null = null
+    if (type === 'VIDEO' || mediaFile.type.includes('video')) {
+      console.log('🎬 Traitement vidéo...')
+
+      // Convertir en H.264 si HEVC
+      buffer = await convertToH264(buffer)
+      console.log('✅ Vidéo convertie/validée')
+
+      // Générer la thumbnail
+      thumbBuffer = await generateVideoThumbnail(buffer)
+      if (thumbBuffer) {
+        console.log('✅ Thumbnail générée')
+      }
+    }
 
     await s3Client.send(new PutObjectCommand({
       Bucket: process.env.CLOUDFLARE_R2_BUCKET,
       Key: key,
       Body: buffer,
-      ContentType: mediaFile.type,
+      ContentType: type === 'VIDEO' ? 'video/mp4' : mediaFile.type,
     }))
+
+    // Upload de la thumbnail si disponible
+    let thumbUrl: string | null = null
+    if (thumbBuffer) {
+      const thumbKey = key.replace(/\.mp4$/, '_thumb.jpg')
+      await s3Client.send(new PutObjectCommand({
+        Bucket: process.env.CLOUDFLARE_R2_BUCKET,
+        Key: thumbKey,
+        Body: thumbBuffer,
+        ContentType: 'image/jpeg',
+      }))
+      const baseUrl = process.env.CLOUDFLARE_R2_PUBLIC_URL || process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL || 'https://media.felora.ch'
+      thumbUrl = `${baseUrl}/${thumbKey}`
+      console.log('✅ Thumbnail uploadée:', thumbUrl)
+    }
 
     // URL publique du fichier - FORCER la valeur correcte
     const baseUrl = process.env.CLOUDFLARE_R2_PUBLIC_URL || process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL || 'https://media.felora.ch'
@@ -151,6 +183,7 @@ export async function POST(request: NextRequest) {
         ownerId: ownerId,
         type: type as any,
         url: publicUrl,
+        thumbUrl: thumbUrl, // Thumbnail générée automatiquement
         description: description || null,
         visibility: visibilityEnum,
         price: visibility === 'premium' && price ? parseInt(price) : null,
