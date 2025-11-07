@@ -206,15 +206,15 @@ export async function GET(req: NextRequest) {
         ? generateThumbnailUrl(media.thumbUrl)
         : generateThumbnailUrl(media.url)
 
-      // Générer des signed URLs pour sécuriser les médias (expiration 1 heure)
-      const signedUrl = generateSignedUrl(optimizedUrl, { expirySeconds: 3600 })
-      const signedThumb = generateSignedUrl(optimizedThumb, { expirySeconds: 3600 })
+      // DÉSACTIVÉ: Les signed URLs cassent les URLs R2 de Cloudflare
+      // const signedUrl = generateSignedUrl(optimizedUrl, { expirySeconds: 3600 })
+      // const signedThumb = generateSignedUrl(optimizedThumb, { expirySeconds: 3600 })
 
       return {
         id: media.id,
         type: mediaType,
-        url: signedUrl,
-        thumb: signedThumb,
+        url: optimizedUrl, // URL directe R2
+        thumb: optimizedThumb, // Thumbnail directe R2
         visibility: media.visibility,
         ownerType: isClub ? 'CLUB' : 'ESCORT', // Type de propriétaire
         clubHandle: isClub ? profile.handle : null, // Handle du club si applicable

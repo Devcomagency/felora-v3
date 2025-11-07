@@ -78,11 +78,10 @@ export function optimizeVideoUrl(
     return 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4'
   }
 
-  // ⚡ Utiliser le CDN pour les vidéos
+  // ⚡ Pour les URLs CDN, retourner directement l'URL sans modification
+  // Cloudflare R2 ne supporte pas les paramètres d'optimisation pour les vidéos
   if (isCdnUrl(originalUrl)) {
-    // Les vidéos sont déjà optimisées sur Cloudflare R2
-    // On retourne l'URL CDN telle quelle
-    return buildCdnUrl(originalUrl)
+    return originalUrl // URL directe, pas de buildCdnUrl car c'est déjà une URL complète
   }
 
   return originalUrl
@@ -95,8 +94,24 @@ export function generateThumbnailUrl(
   mediaUrl: string,
   options: { width?: number; height?: number; blur?: number } = {}
 ): string {
-  const { width = 400, height = 600, blur = 5 } = options
-  
+  // Si l'URL est vide ou invalide, retourner placeholder
+  if (!mediaUrl || mediaUrl === 'undefined' || mediaUrl === 'null') {
+    return 'https://picsum.photos/400/600?random=thumbnail'
+  }
+
+  // Si c'est déjà une thumbnail R2 (_thumb.jpg), retourner directement
+  if (mediaUrl.includes('_thumb.jpg') || mediaUrl.includes('_thumb.jpeg')) {
+    return mediaUrl
+  }
+
+  // Pour les vidéos R2, retourner l'URL directement (pas d'optimisation)
+  if (isCdnUrl(mediaUrl) && (mediaUrl.endsWith('.mp4') || mediaUrl.endsWith('.mov'))) {
+    return mediaUrl
+  }
+
+  // Sinon, optimiser comme image
+  const { width = 400, height = 600, blur = 0 } = options
+
   return optimizeImageUrl(mediaUrl, {
     width,
     height,

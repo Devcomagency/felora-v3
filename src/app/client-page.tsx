@@ -184,9 +184,9 @@ export default function ClientFeedPage({ initialItems, initialCursor }: ClientFe
         // Fallback pour les navigateurs qui ne supportent pas dvh
         height: '100vh',
         minHeight: '100vh',
-        // Optimisation du scroll snap - AUTO pour éviter les sauts
-        scrollSnapType: 'y proximity',
-        scrollBehavior: 'auto'
+        // Scroll snap MANDATORY pour caler sur chaque vidéo
+        scrollSnapType: 'y mandatory',
+        scrollBehavior: 'smooth'
       }}
     >
       <style jsx>{`
@@ -202,7 +202,14 @@ export default function ClientFeedPage({ initialItems, initialCursor }: ClientFe
         // Clé composite pour garantir l'unicité : authorId + mediaId + index
         const uniqueKey = `${item.author.id}-${item.id}-${index}`
         return (
-          <section key={uniqueKey} className="feed-item snap-start">
+          <section
+            key={uniqueKey}
+            className="feed-item snap-start snap-always"
+            style={{
+              scrollSnapStop: 'always',
+              scrollSnapAlign: 'start'
+            }}
+          >
             <VideoFeedCard
               item={item}
               initialTotal={initialTotal}
