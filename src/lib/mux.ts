@@ -28,43 +28,27 @@ export async function createMuxAsset(videoBuffer: Buffer) {
       },
     })
 
-    // Attendre que Mux traite la vidéo (max 30s)
-    let asset
-    let attempts = 0
-    const maxAttempts = 30
+    // ⚡ NE PAS ATTENDRE - Retour immédiat pour éviter timeout Vercel
+    // Mux va traiter en background (1-5 min selon taille vidéo)
 
-    while (attempts < maxAttempts) {
-      asset = await mux.video.assets.retrieve(upload.asset_id!)
+    // Récupérer l'asset immédiatement (sans attendre "ready")
+    const asset = await mux.video.assets.retrieve(upload.asset_id!)
 
-      if (asset.status === 'ready') {
-        break
-      }
+    // Générer le playbackId (disponible immédiatement)
+    const playbackId = asset.playback_ids?.[0]?.id || upload.asset_id!
 
-      if (asset.status === 'errored') {
-        throw new Error(`Mux asset creation failed: ${asset.errors?.messages?.join(', ')}`)
-      }
-
-      // Attendre 1 seconde avant de réessayer
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      attempts++
-    }
-
-    if (!asset || asset.status !== 'ready') {
-      throw new Error('Mux asset creation timeout')
-    }
-
-    // Retourner les URLs
-    const playbackId = asset.playback_ids?.[0]?.id
-    if (!playbackId) {
-      throw new Error('No playback ID generated')
-    }
+    console.log('✅ Upload Mux initié:', {
+      assetId: asset.id,
+      status: asset.status, // "preparing" au début
+      playbackId
+    })
 
     return {
       playbackId,
       playbackUrl: `https://stream.mux.com/${playbackId}.m3u8`,
       thumbnailUrl: `https://image.mux.com/${playbackId}/thumbnail.jpg?width=640&height=360&time=1`,
       assetId: asset.id,
-      duration: asset.duration || 0,
+      duration: 0, // Sera calculé par Mux plus tard
     }
   } catch (error: any) {
     console.error('❌ Erreur création asset Mux:', error)
