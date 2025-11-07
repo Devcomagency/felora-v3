@@ -5,9 +5,14 @@ import { prisma } from '@/lib/prisma'
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
 import { convertToH264, generateVideoThumbnail } from '@/lib/video-converter'
 
+// ⚡ LIMITES OPTIMISÉES POUR VERCEL FREE
+const MAX_VIDEO_SIZE = 45 * 1024 * 1024 // 45MB (sous la limite Vercel 50MB)
+const MAX_VIDEO_DURATION = 180 // 3 minutes max
+const MAX_IMAGE_SIZE = 10 * 1024 * 1024 // 10MB
+
 // Configuration pour augmenter la limite de body size (vidéos)
 export const runtime = 'nodejs'
-export const maxDuration = 60 // 60 secondes max pour l'upload
+export const maxDuration = 120 // 120 secondes max pour l'upload + conversion
 export const dynamic = 'force-dynamic'
 
 // API pour upload média vers le profil utilisateur (avec R2)
@@ -49,6 +54,19 @@ export async function POST(request: NextRequest) {
       price
     })
 
+    // ⚡ VALIDATION TAILLE FICHIER
+    const isVideo = type === 'VIDEO' || mediaFile.type.includes('video')
+    const maxSize = isVideo ? MAX_VIDEO_SIZE : MAX_IMAGE_SIZE
+
+    if (mediaFile.size > maxSize) {
+      const maxSizeMB = Math.floor(maxSize / 1024 / 1024)
+      return NextResponse.json({
+        success: false,
+        error: `Fichier trop volumineux. ${isVideo ? 'Vidéo' : 'Image'} max : ${maxSizeMB}MB`,
+        maxSize: maxSizeMB
+      }, { status: 413 })
+    }
+
     // Configuration S3/R2
     const s3Client = new S3Client({
       region: 'auto',
@@ -63,7 +81,7 @@ export async function POST(request: NextRequest) {
     const timestamp = Date.now()
     const randomString = Math.random().toString(36).substring(2, 15)
     const fileExtension = mediaFile.type.includes('video') ? 'mp4' : (mediaFile.type.includes('image') ? 'jpg' : 'bin')
-    const sanitizedFileName = `${type.toLowerCase()}_${pos}_${timestamp}-${randomString}.${fileExtension}`
+    const sanitizedFileName = `${timestamp}-${randomString}.${fileExtension}`
     const key = `profiles/${session.user.id}/${sanitizedFileName}`
 
     console.log('📤 Upload vers R2:', key)
@@ -112,13 +130,13 @@ export async function POST(request: NextRequest) {
 
     // URL publique du fichier - FORCER la valeur correcte
     const baseUrl = process.env.CLOUDFLARE_R2_PUBLIC_URL || process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL || 'https://media.felora.ch'
-    
+
     // VALIDATION CRITIQUE - Empêcher les URLs undefined
     if (!baseUrl || baseUrl === 'undefined' || baseUrl.includes('undefined')) {
       console.error('❌ ERREUR CRITIQUE: baseUrl invalide:', baseUrl)
       throw new Error('Configuration CDN invalide - baseUrl undefined')
     }
-    
+
     const publicUrl = `${baseUrl}/${key}`
 
     console.log('🔍 DEBUG URL génération:', {
@@ -244,6 +262,11 @@ export async function POST(request: NextRequest) {
 export async function GET() {
   return Response.json({
     success: true,
-    medias: []
+    limits: {
+      maxVideoSize: `${Math.floor(MAX_VIDEO_SIZE / 1024 / 1024)}MB`,
+      maxImageSize: `${Math.floor(MAX_IMAGE_SIZE / 1024 / 1024)}MB`,
+      maxVideoDuration: `${MAX_VIDEO_DURATION}s`,
+      timeout: `${maxDuration}s`
+    }
   })
 }
