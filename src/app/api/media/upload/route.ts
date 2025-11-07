@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
-import { convertToH264, generateVideoThumbnail } from '@/lib/video-converter'
+import { createMuxAsset } from '@/lib/mux'
 
 // ⚡ LIMITES OPTIMISÉES POUR VERCEL FREE
 const MAX_VIDEO_SIZE = 45 * 1024 * 1024 // 45MB (sous la limite Vercel 50MB)
@@ -86,78 +86,49 @@ export async function POST(request: NextRequest) {
 
     console.log('📤 Upload vers R2:', key)
 
-    // Upload vers R2
+    // Upload vers R2 ou Mux selon le type
     const bytes = await mediaFile.arrayBuffer()
     let buffer = Buffer.from(bytes)
-
-    // Si c'est une vidéo, générer une thumbnail uniquement
-    let thumbBuffer: Buffer | null = null
-    if (type === 'VIDEO' || mediaFile.type.includes('video')) {
-      console.log('🎬 Traitement vidéo...')
-
-      // ⚠️ CONVERSION DÉSACTIVÉE - Trop lent pour Vercel
-      // Les utilisateurs doivent uploader des vidéos H.264 directement
-      // buffer = await convertToH264(buffer)
-
-      // Générer la thumbnail
-      try {
-        thumbBuffer = await generateVideoThumbnail(buffer)
-        if (thumbBuffer) {
-          console.log('✅ Thumbnail générée')
-        }
-      } catch (error) {
-        console.error('⚠️ Erreur génération thumbnail (non bloquant):', error)
-      }
-    }
-
-    await s3Client.send(new PutObjectCommand({
-      Bucket: process.env.CLOUDFLARE_R2_BUCKET,
-      Key: key,
-      Body: buffer,
-      ContentType: type === 'VIDEO' ? 'video/mp4' : mediaFile.type,
-    }))
-
-    // Upload de la thumbnail si disponible
+    let publicUrl: string
     let thumbUrl: string | null = null
-    if (thumbBuffer) {
-      const thumbKey = key.replace(/\.mp4$/, '_thumb.jpg')
+
+    // 🎬 VIDÉO → Mux (conversion automatique)
+    if (type === 'VIDEO' || mediaFile.type.includes('video')) {
+      console.log('🎬 Upload vidéo vers Mux...')
+
+      const muxAsset = await createMuxAsset(buffer)
+
+      publicUrl = muxAsset.playbackUrl
+      thumbUrl = muxAsset.thumbnailUrl
+
+      console.log('✅ Vidéo uploadée sur Mux:', {
+        playbackUrl: publicUrl,
+        thumbnail: thumbUrl,
+        assetId: muxAsset.assetId,
+        duration: muxAsset.duration
+      })
+    }
+    // 📷 IMAGE → Cloudflare R2 (pas cher)
+    else {
+      console.log('📷 Upload image vers R2...')
+
       await s3Client.send(new PutObjectCommand({
         Bucket: process.env.CLOUDFLARE_R2_BUCKET,
-        Key: thumbKey,
-        Body: thumbBuffer,
-        ContentType: 'image/jpeg',
+        Key: key,
+        Body: buffer,
+        ContentType: mediaFile.type,
       }))
+
       const baseUrl = process.env.CLOUDFLARE_R2_PUBLIC_URL || process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL || 'https://media.felora.ch'
-      thumbUrl = `${baseUrl}/${thumbKey}`
-      console.log('✅ Thumbnail uploadée:', thumbUrl)
+
+      if (!baseUrl || baseUrl === 'undefined' || baseUrl.includes('undefined')) {
+        console.error('❌ ERREUR CRITIQUE: baseUrl invalide:', baseUrl)
+        throw new Error('Configuration CDN invalide - baseUrl undefined')
+      }
+
+      publicUrl = `${baseUrl}/${key}`
+      console.log('✅ Image uploadée sur R2:', publicUrl)
     }
-
-    // URL publique du fichier - FORCER la valeur correcte
-    const baseUrl = process.env.CLOUDFLARE_R2_PUBLIC_URL || process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL || 'https://media.felora.ch'
-
-    // VALIDATION CRITIQUE - Empêcher les URLs undefined
-    if (!baseUrl || baseUrl === 'undefined' || baseUrl.includes('undefined')) {
-      console.error('❌ ERREUR CRITIQUE: baseUrl invalide:', baseUrl)
-      throw new Error('Configuration CDN invalide - baseUrl undefined')
-    }
-
-    const publicUrl = `${baseUrl}/${key}`
-
-    console.log('🔍 DEBUG URL génération:', {
-      CLOUDFLARE_R2_PUBLIC_URL: process.env.CLOUDFLARE_R2_PUBLIC_URL,
-      NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL: process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL,
-      baseUrl,
-      key,
-      publicUrl,
-      isValid: !publicUrl.includes('undefined')
-    })
-
-    if (publicUrl.includes('undefined')) {
-      console.error('❌ ERREUR CRITIQUE: publicUrl contient undefined:', publicUrl)
-      throw new Error('URL publique invalide générée')
-    }
-
-    console.log('✅ Fichier uploadé sur R2:', publicUrl)
 
     // Déterminer le type de profil (escort ou club)
     let ownerType = 'ESCORT'

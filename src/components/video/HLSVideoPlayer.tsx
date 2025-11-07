@@ -38,7 +38,7 @@ export default function HLSVideoPlayer({
 
   // Construire l'URL source
   const src = playbackId
-    ? `https://livepeercdn.studio/hls/${playbackId}/index.m3u8`
+    ? `https://stream.mux.com/${playbackId}.m3u8` // Mux streaming
     : hlsUrl
 
   useEffect(() => {
