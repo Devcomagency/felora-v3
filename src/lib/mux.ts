@@ -1,9 +1,17 @@
 import Mux from '@mux/mux-node'
 
+// Debug: Vérifier si les variables sont chargées
+console.log('🔍 MUX_TOKEN_ID exists:', !!process.env.MUX_TOKEN_ID)
+console.log('🔍 MUX_TOKEN_SECRET exists:', !!process.env.MUX_TOKEN_SECRET)
+
+if (!process.env.MUX_TOKEN_ID || !process.env.MUX_TOKEN_SECRET) {
+  throw new Error('❌ ERREUR: Variables Mux manquantes ! Vérifiez Vercel Environment Variables.')
+}
+
 // Configuration Mux avec variables Vercel
 export const mux = new Mux({
-  tokenId: process.env.MUX_TOKEN_ID!,
-  tokenSecret: process.env.MUX_TOKEN_SECRET!,
+  tokenId: process.env.MUX_TOKEN_ID,
+  tokenSecret: process.env.MUX_TOKEN_SECRET,
 })
 
 // Fonction pour créer une URL d'upload direct Mux (client → Mux)
