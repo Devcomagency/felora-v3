@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   // 🔒 PROTECTION PAR MOT DE PASSE TEMPORAIRE
   const SITE_PASSWORD = process.env.SITE_PASSWORD
 

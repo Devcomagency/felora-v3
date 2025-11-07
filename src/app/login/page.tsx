@@ -32,19 +32,10 @@ function LoginContent() {
       setSuccessMessage(decodeURIComponent(message))
     }
 
-    // Vérifier si l'utilisateur a été redirigé après suspension
-    const suspended = searchParams.get('suspended')
-    if (suspended === 'true') {
-      // Vérifier la session pour confirmer la suspension
-      getSession().then(session => {
-        if (!session || !session.user) {
-          // Seulement afficher le message si la session est vraiment nulle
-          setErrors(['Votre compte est suspendu. Veuillez réessayer plus tard.'])
-        } else {
-          // Session valide, nettoyer l'URL pour enlever le paramètre suspended
-          router.replace('/login')
-        }
-      })
+    // Vérifier si l'utilisateur a été redirigé après suspension/bannissement
+    const error = searchParams.get('error')
+    if (error === 'suspended') {
+      setErrors(['Votre compte a été suspendu ou banni. Veuillez contacter le support si vous pensez qu\'il s\'agit d\'une erreur.'])
     }
   }, [searchParams, router])
 

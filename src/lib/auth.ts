@@ -1,11 +1,9 @@
 import type { NextAuthOptions } from 'next-auth'
-import { PrismaAdapter } from '@auth/prisma-adapter'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import { prisma } from './prisma'
 import bcrypt from 'bcryptjs'
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma),
   providers: [
     CredentialsProvider({
       name: 'credentials',
@@ -82,17 +80,6 @@ export const authOptions: NextAuthOptions = {
     strategy: 'jwt',
     maxAge: 24 * 60 * 60, // 24 heures
   },
-  cookies: {
-    sessionToken: {
-      name: 'next-auth.session-token',
-      options: {
-        httpOnly: true,
-        sameSite: 'lax',
-        path: '/',
-        secure: process.env.NODE_ENV === 'production'
-      }
-    }
-  },
   callbacks: {
     async signIn() {
       return true
@@ -124,59 +111,81 @@ export const authOptions: NextAuthOptions = {
       return token
     },
     async session({ session, token }) {
-      if (!token) {
+      if (!token?.sub) {
         return session
       }
 
-      // ✅ VÉRIFIER LA SUSPENSION À CHAQUE REQUÊTE (important avec stratégie JWT)
-      try {
-        const userId = token.sub as string
+      // ✅ VÉRIFIER LA SUSPENSION SEULEMENT TOUTES LES 5 MINUTES (cache dans le token)
+      const now = Date.now()
+      const lastCheck = (token as any).lastSuspensionCheck || 0
+      const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
 
-        const user = await prisma.user.findUnique({
-          where: { id: userId },
-          select: {
-            email: true,
-            bannedAt: true,
-            bannedReason: true,
-            suspendedUntil: true,
-            suspensionReason: true
-          }
-        })
+      if (now - lastCheck > CACHE_DURATION) {
+        try {
+          const userId = token.sub as string
 
-        if (user) {
-          // Bloquer si banni - retourner null pour forcer la déconnexion
-          if (user.bannedAt) {
-            console.log('🚨 [AUTH SESSION] User', user.email, 'is BANNED, forcing logout')
-            return null as any
-          }
+          const user = await prisma.user.findUnique({
+            where: { id: userId },
+            select: {
+              email: true,
+              bannedAt: true,
+              bannedReason: true,
+              suspendedUntil: true,
+              suspensionReason: true
+            }
+          })
 
-          // Bloquer si suspendu - retourner null pour forcer la déconnexion
-          if (user.suspendedUntil) {
-            const now = new Date()
-            if (user.suspendedUntil > now) {
-              console.log('🚨 [AUTH SESSION] User', user.email, 'is SUSPENDED until', user.suspendedUntil, 'forcing logout')
-              return null as any
-            } else {
-              // La suspension est expirée, on la supprime
-              console.log('✅ [AUTH SESSION] Suspension expired for', user.email, ', removing suspension')
-              await prisma.user.update({
-                where: { id: userId },
-                data: {
-                  suspendedUntil: null,
-                  suspensionReason: null
-                }
-              })
+          if (user) {
+            // Reset des flags
+            ;(token as any).isBanned = false
+            ;(token as any).isSuspended = false
+
+            // Bloquer si banni
+            if (user.bannedAt) {
+              console.log('🚨 [AUTH SESSION] User', user.email, 'is BANNED')
+              ;(token as any).isBanned = true
+              ;(token as any).bannedReason = user.bannedReason
+            }
+
+            // Bloquer si suspendu
+            if (user.suspendedUntil) {
+              const currentDate = new Date()
+              if (user.suspendedUntil > currentDate) {
+                console.log('🚨 [AUTH SESSION] User', user.email, 'is SUSPENDED until', user.suspendedUntil)
+                ;(token as any).isSuspended = true
+                ;(token as any).suspendedUntil = user.suspendedUntil.toISOString()
+                ;(token as any).suspensionReason = user.suspensionReason
+              } else {
+                // La suspension est expirée, on la supprime (async, sans attendre)
+                console.log('✅ [AUTH SESSION] Suspension expired for', user.email)
+                prisma.user.update({
+                  where: { id: userId },
+                  data: {
+                    suspendedUntil: null,
+                    suspensionReason: null
+                  }
+                }).catch(err => console.error('Error removing expired suspension:', err))
+              }
             }
           }
+
+          // Mettre à jour le timestamp de la dernière vérification
+          ;(token as any).lastSuspensionCheck = now
+        } catch (error) {
+          console.error('🚨 [AUTH SESSION] Suspension check error:', error)
         }
-      } catch (error) {
-        console.error('🚨 [AUTH SESSION] Suspension check error:', error)
-        // En cas d'erreur, on laisse passer pour ne pas bloquer l'utilisateur
       }
 
-      // ✅ TOUJOURS REMPLIR LA SESSION (même si erreur ci-dessus)
+      // ✅ TOUJOURS REMPLIR LA SESSION
       ;(session as any).user.id = token.sub as string
       ;(session as any).user.role = (token as any).role
+
+      // Ajouter les flags de suspension/bannissement (depuis le cache du token)
+      ;(session as any).user.isBanned = (token as any).isBanned || false
+      ;(session as any).user.isSuspended = (token as any).isSuspended || false
+      ;(session as any).user.bannedReason = (token as any).bannedReason
+      ;(session as any).user.suspendedUntil = (token as any).suspendedUntil
+      ;(session as any).user.suspensionReason = (token as any).suspensionReason
 
       // Récupérer le profil escort si l'utilisateur est escort
       if ((token as any).role === 'ESCORT') {

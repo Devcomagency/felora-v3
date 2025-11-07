@@ -36,8 +36,21 @@ export default function ClientFeedPage({ initialItems, initialCursor }: ClientFe
   const [items, setItems] = useState<MediaItem[]>(initialItems)
   const [nextCursor, setNextCursor] = useState<string | undefined>(initialCursor)
   const [isLoading, setIsLoading] = useState(false)
+  const [hasInitialLoad, setHasInitialLoad] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
   const [initialTotals, setInitialTotals] = useState<Record<string, number>>({})
+
+  // Refs pour éviter les re-créations du callback
+  const isLoadingRef = useRef(isLoading)
+  const nextCursorRef = useRef(nextCursor)
+  const hasInitialLoadRef = useRef(hasInitialLoad)
+
+  // Synchroniser les refs avec les states
+  useEffect(() => {
+    isLoadingRef.current = isLoading
+    nextCursorRef.current = nextCursor
+    hasInitialLoadRef.current = hasInitialLoad
+  }, [isLoading, nextCursor, hasInitialLoad])
 
   // Store du feed pour la gestion globale
   const { setVideoContainerRef, isRestore } = useFeedStore()
@@ -51,18 +64,33 @@ export default function ClientFeedPage({ initialItems, initialCursor }: ClientFe
   //   unloadDistance: 3
   // })
 
-  
+
   // Chargement de plus d'items (pagination infinie avec API)
   const loadMoreItems = useCallback(async () => {
-    if (isLoading || !nextCursor) return
-    
+    console.log('📱 [CLIENT PAGE] loadMoreItems appelé - isLoading:', isLoadingRef.current, 'nextCursor:', nextCursorRef.current, 'hasInitialLoad:', hasInitialLoadRef.current)
+
+    if (isLoadingRef.current) {
+      console.log('⏸️ [CLIENT PAGE] Déjà en cours de chargement, annulé')
+      return
+    }
+    if (!nextCursorRef.current && hasInitialLoadRef.current) {
+      console.log('⏸️ [CLIENT PAGE] Plus de contenu à charger, annulé')
+      return
+    }
+
     setIsLoading(true)
-    
+
     try {
-      console.log('📱 [CLIENT PAGE] Chargement de plus d\'items, cursor:', nextCursor)
-      
+      console.log('📱 [CLIENT PAGE] Chargement de plus d\'items, cursor:', nextCursorRef.current || 'initial')
+
       // Appeler l'API pour récupérer plus de médias
-      const response = await fetch(`/api/feed/public?cursor=${nextCursor}&limit=10`, {
+      const apiUrl = nextCursorRef.current && nextCursorRef.current !== 'initial'
+        ? `/api/feed/public?cursor=${nextCursorRef.current}&limit=10`
+        : `/api/feed/public?limit=10`
+
+      console.log('📱 [CLIENT PAGE] API URL:', apiUrl)
+
+      const response = await fetch(apiUrl, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -74,22 +102,36 @@ export default function ClientFeedPage({ initialItems, initialCursor }: ClientFe
         const data = await response.json()
         const newItems = data.items || []
         const newCursor = data.nextCursor || null
-        
-        console.log('📱 [CLIENT PAGE] Nouveaux médias récupérés:', newItems.length, 'items')
-        
+
+        console.log('📱 [CLIENT PAGE] Nouveaux médias récupérés:', newItems.length, 'items, nouveau cursor:', newCursor)
+
         setItems(prev => [...prev, ...newItems])
         setNextCursor(newCursor)
+        setHasInitialLoad(true)
       } else {
         console.error('❌ [CLIENT PAGE] Erreur API feed:', response.status)
-        // Pas de fallback mock ici, on garde ce qu'on a
+        setHasInitialLoad(true)
       }
     } catch (error) {
       console.error('❌ [CLIENT PAGE] Erreur récupération feed:', error)
-      // Pas de fallback mock ici, on garde ce qu'on a
+      setHasInitialLoad(true)
     } finally {
       setIsLoading(false)
+      console.log('✅ [CLIENT PAGE] Chargement terminé')
     }
-  }, [isLoading, nextCursor])
+  }, [])
+
+  // Chargement initial au montage du composant
+  useEffect(() => {
+    console.log('🚀 [CLIENT PAGE] useEffect montage - hasInitialLoad:', hasInitialLoad, 'items.length:', items.length, 'isLoading:', isLoading)
+    if (!hasInitialLoad && items.length === 0 && !isLoading) {
+      console.log('✅ [CLIENT PAGE] Conditions OK, lancement du chargement initial')
+      loadMoreItems()
+    } else {
+      console.log('❌ [CLIENT PAGE] Conditions pas remplies pour charger')
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // Seulement au montage, pas de dépendances
 
   // Initialiser le ref du conteneur dans le store
   useEffect(() => {
@@ -113,16 +155,19 @@ export default function ClientFeedPage({ initialItems, initialCursor }: ClientFe
 
     const handleScroll = () => {
       const { scrollTop, scrollHeight, clientHeight } = container
-      
+
       // Charger plus quand on approche de la fin (80% scrollé) - Scroll infini avec pagination
-      if (scrollTop + clientHeight >= scrollHeight * 0.8 && !isLoading && nextCursor) {
-        loadMoreItems()
+      if (scrollTop + clientHeight >= scrollHeight * 0.8) {
+        if (hasInitialLoadRef.current && !isLoadingRef.current && nextCursorRef.current && nextCursorRef.current !== 'initial') {
+          console.log('📜 [CLIENT PAGE] Scroll détecté, chargement de la page suivante')
+          loadMoreItems()
+        }
       }
     }
 
     container.addEventListener('scroll', handleScroll)
     return () => container.removeEventListener('scroll', handleScroll)
-  }, [loadMoreItems, isLoading])
+  }, [loadMoreItems])
 
   return (
     <main 
