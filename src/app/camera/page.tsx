@@ -130,8 +130,73 @@ function CameraPageContent() {
     setUploadProgress(0)
     console.log('📤 Publication en cours:', data)
 
+    const isVideo = data.file.type.startsWith('video/')
+
     try {
-      // 1. Récupérer le nombre de médias existants (avec retry)
+      // 🎬 VIDÉO → Upload direct vers Mux (rapide)
+      if (isVideo) {
+        toast.info('Upload vidéo vers Mux...', 0)
+
+        // 1. Obtenir URL upload Mux
+        const muxUrlRes = await fetchWithRetry('/api/media/mux-upload-url', {
+          method: 'POST',
+          credentials: 'include'
+        })
+
+        if (!muxUrlRes.ok) {
+          throw new Error('Échec création URL Mux')
+        }
+
+        const { uploadUrl, assetId } = await muxUrlRes.json()
+
+        // 2. Upload DIRECT vers Mux avec progress
+        await uploadWithProgress({
+          url: uploadUrl,
+          file: data.file,
+          method: 'PUT',
+          headers: { 'Content-Type': data.file.type },
+          onProgress: (progress) => {
+            setUploadProgress(progress)
+            console.log(`📊 Upload Mux: ${progress}%`)
+          },
+          maxAttempts: 3
+        })
+
+        toast.success('Vidéo uploadée ! Traitement par Mux...', 2000)
+
+        // 3. Confirmer et sauvegarder en DB
+        const confirmRes = await fetchWithRetry('/api/media/mux-confirm', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            assetId,
+            description: data.description || undefined,
+            visibility: data.visibility,
+            price: data.visibility === 'premium' && data.price ? data.price : undefined,
+            location: data.location || undefined
+          })
+        })
+
+        if (!confirmRes.ok) {
+          const errorData = await confirmRes.json()
+          throw new Error(errorData.error || 'Échec confirmation Mux')
+        }
+
+        const result = await confirmRes.json()
+
+        toast.success('Vidéo publiée !', 2000)
+        setUploadProgress(100)
+
+        setTimeout(() => {
+          router.push(result.redirectUrl || '/feed')
+        }, 1000)
+
+        return
+      }
+
+      // 📷 IMAGE → Upload vers R2 (comme avant)
+      // 1. Récupérer le nombre de médias existants
       const mediaResponse = await fetchWithRetry('/api/media/my', {
         credentials: 'include'
       })
@@ -139,7 +204,7 @@ function CameraPageContent() {
       const existingMediaCount = mediaData.items?.length || 0
       const newPos = Math.max(2, existingMediaCount + 2)
 
-      // 2. Obtenir presigned URL (avec retry)
+      // 2. Obtenir presigned URL R2
       const presignedRes = await fetchWithRetry('/api/media/presigned-url', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -157,34 +222,32 @@ function CameraPageContent() {
 
       const { presignedUrl, publicUrl, key } = await presignedRes.json()
 
-      // 3. Compression d'image si nécessaire
+      // 3. Compression d'image
       let fileToUpload = data.file
-      if (data.file.type.startsWith('image/')) {
-        toast.info('Compression de l\'image en cours...', 3000)
-        console.log('🗜️ Compression de l\'image...', {
-          originalSize: `${(data.file.size / 1024 / 1024).toFixed(2)}MB`
+      toast.info('Compression de l\'image en cours...', 3000)
+      console.log('🗜️ Compression de l\'image...', {
+        originalSize: `${(data.file.size / 1024 / 1024).toFixed(2)}MB`
+      })
+
+      const compressionResult = await compressImageIfNeeded(data.file, {
+        maxWidth: 1920,
+        maxHeight: 1920,
+        quality: 0.85
+      })
+
+      fileToUpload = compressionResult.file
+
+      if (compressionResult.compressionRatio > 0) {
+        console.log('✅ Image compressée:', {
+          originalSize: `${(compressionResult.originalSize / 1024 / 1024).toFixed(2)}MB`,
+          compressedSize: `${(compressionResult.compressedSize / 1024 / 1024).toFixed(2)}MB`,
+          saved: `${compressionResult.compressionRatio.toFixed(1)}%`
         })
-
-        const compressionResult = await compressImageIfNeeded(data.file, {
-          maxWidth: 1920,
-          maxHeight: 1920,
-          quality: 0.85
-        })
-
-        fileToUpload = compressionResult.file
-
-        if (compressionResult.compressionRatio > 0) {
-          console.log('✅ Image compressée:', {
-            originalSize: `${(compressionResult.originalSize / 1024 / 1024).toFixed(2)}MB`,
-            compressedSize: `${(compressionResult.compressedSize / 1024 / 1024).toFixed(2)}MB`,
-            saved: `${compressionResult.compressionRatio.toFixed(1)}%`
-          })
-          toast.success(`Image compressée : ${compressionResult.compressionRatio.toFixed(0)}% d'économie`, 2000)
-        }
+        toast.success(`Image compressée : ${compressionResult.compressionRatio.toFixed(0)}% d'économie`, 2000)
       }
 
-      // 4. Upload vers R2 avec progress bar et retry
-      toast.info('Upload en cours...', 0) // Toast persistant
+      // 4. Upload vers R2 avec progress
+      toast.info('Upload en cours...', 0)
       await uploadWithProgress({
         url: presignedUrl,
         file: fileToUpload,
@@ -197,7 +260,7 @@ function CameraPageContent() {
         maxAttempts: 3
       })
 
-      // 5. Confirmer et sauvegarder métadonnées (avec retry)
+      // 5. Confirmer et sauvegarder métadonnées
       const confirmRes = await fetchWithRetry('/api/media/confirm-upload', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -205,7 +268,7 @@ function CameraPageContent() {
         body: JSON.stringify({
           publicUrl,
           key,
-          type: data.file.type.startsWith('video/') ? 'VIDEO' : 'IMAGE',
+          type: 'IMAGE',
           visibility: data.visibility,
           pos: newPos,
           description: data.description || undefined,

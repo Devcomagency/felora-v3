@@ -6,53 +6,49 @@ export const mux = new Mux({
   tokenSecret: process.env.MUX_TOKEN_SECRET!,
 })
 
-// Fonction pour créer un asset vidéo Mux
-export async function createMuxAsset(videoBuffer: Buffer) {
+// Fonction pour créer une URL d'upload direct Mux (client → Mux)
+export async function createMuxDirectUpload() {
   try {
-    // Créer un upload direct
     const upload = await mux.video.uploads.create({
       new_asset_settings: {
         playback_policy: ['public'],
-        video_quality: 'plus', // HD quality
+        video_quality: 'plus',
         encoding_tier: 'smart',
         mp4_support: 'standard',
       },
+      cors_origin: '*', // Permet upload depuis le browser
     })
 
-    // Upload le fichier vers Mux
-    await fetch(upload.url, {
-      method: 'PUT',
-      body: videoBuffer,
-      headers: {
-        'Content-Type': 'video/mp4',
-      },
-    })
-
-    // ⚡ NE PAS ATTENDRE - Retour immédiat pour éviter timeout Vercel
-    // Mux va traiter en background (1-5 min selon taille vidéo)
-
-    // Récupérer l'asset immédiatement (sans attendre "ready")
-    const asset = await mux.video.assets.retrieve(upload.asset_id!)
-
-    // Générer le playbackId (disponible immédiatement)
-    const playbackId = asset.playback_ids?.[0]?.id || upload.asset_id!
-
-    console.log('✅ Upload Mux initié:', {
-      assetId: asset.id,
-      status: asset.status, // "preparing" au début
-      playbackId
-    })
+    console.log('✅ URL upload Mux créée:', upload.id)
 
     return {
-      playbackId,
-      playbackUrl: `https://stream.mux.com/${playbackId}.m3u8`,
-      thumbnailUrl: `https://image.mux.com/${playbackId}/thumbnail.jpg?width=640&height=360&time=1`,
-      assetId: asset.id,
-      duration: 0, // Sera calculé par Mux plus tard
+      uploadUrl: upload.url,
+      uploadId: upload.id,
+      assetId: upload.asset_id,
     }
   } catch (error: any) {
-    console.error('❌ Erreur création asset Mux:', error)
-    throw new Error(`Mux upload failed: ${error.message}`)
+    console.error('❌ Erreur création upload Mux:', error)
+    throw new Error(`Mux upload creation failed: ${error.message}`)
+  }
+}
+
+// Fonction pour vérifier le statut d'un asset Mux
+export async function getMuxAssetStatus(assetId: string) {
+  try {
+    const asset = await mux.video.assets.retrieve(assetId)
+
+    const playbackId = asset.playback_ids?.[0]?.id
+
+    return {
+      status: asset.status,
+      playbackId,
+      playbackUrl: playbackId ? `https://stream.mux.com/${playbackId}.m3u8` : null,
+      thumbnailUrl: playbackId ? `https://image.mux.com/${playbackId}/thumbnail.jpg?width=640&height=360&time=1` : null,
+      duration: asset.duration || 0,
+    }
+  } catch (error: any) {
+    console.error('❌ Erreur récupération asset Mux:', error)
+    throw error
   }
 }
 

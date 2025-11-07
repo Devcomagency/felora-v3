@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
-import { createMuxAsset } from '@/lib/mux'
+import { createMuxDirectUpload, getMuxAssetStatus } from '@/lib/mux'
 
 // ⚡ LIMITES OPTIMISÉES POUR VERCEL FREE
 const MAX_VIDEO_SIZE = 45 * 1024 * 1024 // 45MB (sous la limite Vercel 50MB)
@@ -86,26 +86,26 @@ export async function POST(request: NextRequest) {
 
     console.log('📤 Upload vers R2:', key)
 
-    // Upload vers R2 ou Mux selon le type
+    // Upload vers R2 (images) ou retour URL Mux (vidéos)
     const bytes = await mediaFile.arrayBuffer()
     let buffer = Buffer.from(bytes)
     let publicUrl: string
     let thumbUrl: string | null = null
+    let muxAssetId: string | null = null
 
-    // 🎬 VIDÉO → Mux (conversion automatique)
+    // 🎬 VIDÉO → Retourner URL pour upload DIRECT client → Mux
     if (type === 'VIDEO' || mediaFile.type.includes('video')) {
-      console.log('🎬 Upload vidéo vers Mux...')
+      console.log('🎬 Création URL upload Mux direct...')
 
-      const muxAsset = await createMuxAsset(buffer)
+      const muxUpload = await createMuxDirectUpload()
 
-      publicUrl = muxAsset.playbackUrl
-      thumbUrl = muxAsset.thumbnailUrl
-
-      console.log('✅ Vidéo uploadée sur Mux:', {
-        playbackUrl: publicUrl,
-        thumbnail: thumbUrl,
-        assetId: muxAsset.assetId,
-        duration: muxAsset.duration
+      // Retourner l'URL au client pour qu'il upload directement
+      return NextResponse.json({
+        success: true,
+        requiresClientUpload: true,
+        muxUploadUrl: muxUpload.uploadUrl,
+        muxAssetId: muxUpload.assetId,
+        message: 'Upload direct vers Mux depuis le client'
       })
     }
     // 📷 IMAGE → Cloudflare R2 (pas cher)

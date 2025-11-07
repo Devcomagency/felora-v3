@@ -1,0 +1,106 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
+import { prisma } from '@/lib/prisma'
+import { getMuxAssetStatus } from '@/lib/mux'
+
+/**
+ * API pour confirmer l'upload Mux et sauvegarder en DB
+ */
+export async function POST(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions)
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
+    }
+
+    const body = await request.json()
+    const { assetId, description, visibility, price, location } = body
+
+    if (!assetId) {
+      return NextResponse.json({ error: 'assetId manquant' }, { status: 400 })
+    }
+
+    console.log('🎬 Confirmation upload Mux:', assetId)
+
+    // Récupérer le statut de l'asset Mux
+    const muxAsset = await getMuxAssetStatus(assetId)
+
+    if (!muxAsset.playbackUrl) {
+      return NextResponse.json({
+        error: 'Asset Mux pas encore prêt',
+        status: muxAsset.status
+      }, { status: 400 })
+    }
+
+    // Déterminer le type de profil (escort ou club)
+    let ownerType = 'ESCORT'
+    let ownerId = session.user.id
+
+    const escortProfile = await prisma.escortProfile.findUnique({
+      where: { userId: session.user.id }
+    })
+
+    const clubProfile = await prisma.clubProfileV2.findUnique({
+      where: { userId: session.user.id }
+    })
+
+    if (clubProfile) {
+      ownerType = 'CLUB'
+      ownerId = clubProfile.id
+    } else if (escortProfile) {
+      ownerType = 'ESCORT'
+      ownerId = escortProfile.id
+    }
+
+    // Mapper la visibilité
+    let visibilityEnum: 'PUBLIC' | 'PREMIUM' | 'PRIVATE' = 'PUBLIC'
+    if (visibility === 'premium') visibilityEnum = 'PREMIUM'
+    else if (visibility === 'private') visibilityEnum = 'PRIVATE'
+
+    // Sauvegarder en base
+    const media = await prisma.media.create({
+      data: {
+        ownerType: ownerType as any,
+        ownerId: ownerId,
+        type: 'VIDEO',
+        url: muxAsset.playbackUrl,
+        thumbUrl: muxAsset.thumbnailUrl,
+        description: description || null,
+        visibility: visibilityEnum,
+        price: visibility === 'premium' && price ? parseInt(price) : null,
+        pos: 0,
+        createdAt: new Date()
+      }
+    })
+
+    console.log('💾 Vidéo Mux sauvegardée:', media.id)
+
+    // Déterminer l'URL de redirection
+    let redirectUrl = `/profile/${session.user.id}`
+    if (clubProfile) {
+      redirectUrl = `/profile-test/club/${clubProfile.handle}`
+    } else if (escortProfile) {
+      redirectUrl = `/profile/${escortProfile.id}`
+    }
+
+    return NextResponse.json({
+      success: true,
+      media: {
+        id: media.id,
+        url: media.url,
+        thumbUrl: media.thumbUrl,
+        type: media.type,
+      },
+      redirectUrl,
+      muxStatus: muxAsset.status
+    })
+  } catch (error: any) {
+    console.error('❌ Erreur confirmation Mux:', error)
+    return NextResponse.json({
+      success: false,
+      error: error.message || 'Erreur confirmation'
+    }, { status: 500 })
+  }
+}
