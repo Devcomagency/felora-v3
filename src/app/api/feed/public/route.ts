@@ -196,9 +196,10 @@ export async function GET(req: NextRequest) {
         : (profile.stageName || profile.user?.name || 'Escort')
 
       // Pour les clubs, utiliser d'abord l'avatar de la table Media, puis fallback sur details.avatarUrl
+      // Si aucun avatar n'est disponible, utiliser l'URL du premier média du club (pos=0 ou n'importe lequel)
       const authorAvatar = isClub
-        ? (clubAvatarMap.get(profile.id) || profile.details?.avatarUrl || 'https://picsum.photos/100/100?random=club')
-        : (profile.profilePhoto || 'https://picsum.photos/100/100?random=default')
+        ? (clubAvatarMap.get(profile.id) || profile.details?.avatarUrl || media.url || 'https://api.dicebear.com/7.x/initials/svg?seed=' + encodeURIComponent(profile.companyName || 'Club'))
+        : (profile.profilePhoto || 'https://api.dicebear.com/7.x/initials/svg?seed=' + encodeURIComponent(profile.stageName || 'Escort'))
 
       // Optimiser les URLs des médias
       const optimizedUrl = optimizeMediaUrl(media.url, mediaType)
