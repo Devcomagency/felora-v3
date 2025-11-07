@@ -1,6 +1,6 @@
 import Mux from '@mux/mux-node'
 
-// Configuration Mux
+// Configuration Mux avec variables Vercel
 export const mux = new Mux({
   tokenId: process.env.MUX_TOKEN_ID!,
   tokenSecret: process.env.MUX_TOKEN_SECRET!,
