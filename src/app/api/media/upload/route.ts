@@ -90,19 +90,23 @@ export async function POST(request: NextRequest) {
     const bytes = await mediaFile.arrayBuffer()
     let buffer = Buffer.from(bytes)
 
-    // Si c'est une vidéo, convertir en H.264 si nécessaire
+    // Si c'est une vidéo, générer une thumbnail uniquement
     let thumbBuffer: Buffer | null = null
     if (type === 'VIDEO' || mediaFile.type.includes('video')) {
       console.log('🎬 Traitement vidéo...')
 
-      // Convertir en H.264 si HEVC
-      buffer = await convertToH264(buffer)
-      console.log('✅ Vidéo convertie/validée')
+      // ⚠️ CONVERSION DÉSACTIVÉE - Trop lent pour Vercel
+      // Les utilisateurs doivent uploader des vidéos H.264 directement
+      // buffer = await convertToH264(buffer)
 
       // Générer la thumbnail
-      thumbBuffer = await generateVideoThumbnail(buffer)
-      if (thumbBuffer) {
-        console.log('✅ Thumbnail générée')
+      try {
+        thumbBuffer = await generateVideoThumbnail(buffer)
+        if (thumbBuffer) {
+          console.log('✅ Thumbnail générée')
+        }
+      } catch (error) {
+        console.error('⚠️ Erreur génération thumbnail (non bloquant):', error)
       }
     }
 
