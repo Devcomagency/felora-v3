@@ -46,17 +46,39 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    // Récupérer le statut de l'asset Mux
+    // Récupérer l'asset Mux et attendre qu'il soit prêt avec retry
     let muxAsset
-    try {
-      muxAsset = await getMuxAssetStatus(finalAssetId)
-    } catch (error) {
-      // Asset pas encore créé par Mux, on va créer des URLs temporaires
-      console.log('Asset Mux pas encore prêt, création URLs temporaires')
+    let playbackId: string | null = null
+
+    // Retry jusqu'à 5 fois (10 secondes max) pour obtenir le playback ID
+    for (let attempt = 0; attempt < 5; attempt++) {
+      try {
+        muxAsset = await getMuxAssetStatus(finalAssetId)
+        playbackId = muxAsset.playbackId
+
+        if (playbackId) {
+          console.log(`✅ Playback ID obtenu: ${playbackId}`)
+          break
+        }
+
+        console.log(`⏳ Tentative ${attempt + 1}/5: playback ID pas encore disponible...`)
+        await new Promise(resolve => setTimeout(resolve, 2000))
+      } catch (error) {
+        console.log(`⚠️ Tentative ${attempt + 1}/5: asset pas encore prêt`)
+        if (attempt < 4) {
+          await new Promise(resolve => setTimeout(resolve, 2000))
+        }
+      }
     }
 
-    // Créer les URLs (même si l'asset n'est pas prêt, elles seront valides plus tard)
-    const playbackId = muxAsset?.playbackId || finalAssetId
+    if (!playbackId) {
+      return NextResponse.json({
+        error: 'Vidéo en cours de traitement par Mux. Réessayez dans 30 secondes.',
+        assetId: finalAssetId
+      }, { status: 202 }) // 202 Accepted
+    }
+
+    // Créer les URLs avec le vrai playback ID
     const playbackUrl = `https://stream.mux.com/${playbackId}.m3u8`
     const thumbnailUrl = `https://image.mux.com/${playbackId}/thumbnail.jpg?width=640&height=360&time=1`
 

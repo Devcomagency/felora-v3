@@ -182,6 +182,13 @@ function CameraPageContent() {
             })
           })
 
+          if (confirmRes.status === 202) {
+            // Vidéo en cours de traitement, on redirige quand même
+            toast.info('Vidéo en cours de traitement. Elle sera disponible dans quelques minutes.', 3000)
+            setTimeout(() => router.push('/'), 1000)
+            return
+          }
+
           if (!confirmRes.ok) {
             const errorText = await confirmRes.text()
             console.error('❌ Erreur confirmation Mux:', errorText)
