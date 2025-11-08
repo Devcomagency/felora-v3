@@ -47,18 +47,18 @@ export async function POST(request: NextRequest) {
     }
 
     // Récupérer le statut de l'asset Mux
-    const muxAsset = await getMuxAssetStatus(finalAssetId)
-
-    // Créer une URL temporaire même si l'asset n'est pas prêt
-    // L'URL sera valide une fois le traitement terminé
-    const playbackUrl = muxAsset.playbackUrl || (muxAsset.playbackId ? `https://stream.mux.com/${muxAsset.playbackId}.m3u8` : null)
-    const thumbnailUrl = muxAsset.thumbnailUrl || (muxAsset.playbackId ? `https://image.mux.com/${muxAsset.playbackId}/thumbnail.jpg?width=640&height=360&time=1` : null)
-
-    if (!playbackUrl) {
-      return NextResponse.json({
-        error: 'Asset Mux pas encore disponible'
-      }, { status: 400 })
+    let muxAsset
+    try {
+      muxAsset = await getMuxAssetStatus(finalAssetId)
+    } catch (error) {
+      // Asset pas encore créé par Mux, on va créer des URLs temporaires
+      console.log('Asset Mux pas encore prêt, création URLs temporaires')
     }
+
+    // Créer les URLs (même si l'asset n'est pas prêt, elles seront valides plus tard)
+    const playbackId = muxAsset?.playbackId || finalAssetId
+    const playbackUrl = `https://stream.mux.com/${playbackId}.m3u8`
+    const thumbnailUrl = `https://image.mux.com/${playbackId}/thumbnail.jpg?width=640&height=360&time=1`
 
     // Déterminer le type de profil (escort ou club)
     let ownerType = 'ESCORT'
@@ -119,7 +119,7 @@ export async function POST(request: NextRequest) {
         type: media.type,
       },
       redirectUrl,
-      muxStatus: muxAsset.status
+      muxStatus: muxAsset?.status || 'preparing'
     })
   } catch (error: any) {
     console.error('❌ Erreur confirmation Mux:', error)

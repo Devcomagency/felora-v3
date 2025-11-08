@@ -162,11 +162,12 @@ function CameraPageContent() {
           maxAttempts: 3
         })
 
-        toast.success('Vidéo uploadée ! Traitement par Mux...', 2000)
+        setUploadProgress(100)
+        toast.success('Vidéo uploadée ! Publication en cours...', 1000)
 
-        // 3. Confirmer et sauvegarder en DB
-        // Utiliser uploadId si assetId n'est pas disponible
-        const confirmRes = await fetchWithRetry('/api/media/mux-confirm', {
+        // 3. Confirmer et sauvegarder en DB en arrière-plan
+        // Ne pas attendre la fin du traitement Mux
+        fetchWithRetry('/api/media/mux-confirm', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
@@ -178,21 +179,12 @@ function CameraPageContent() {
             price: data.visibility === 'premium' && data.price ? data.price : undefined,
             location: data.location || undefined
           })
+        }).catch(err => {
+          console.error('Erreur sauvegarde en DB (background):', err)
         })
 
-        if (!confirmRes.ok) {
-          const errorData = await confirmRes.json()
-          throw new Error(errorData.error || 'Échec confirmation Mux')
-        }
-
-        const result = await confirmRes.json()
-
-        toast.success('Vidéo publiée !', 2000)
-        setUploadProgress(100)
-
-        setTimeout(() => {
-          router.push(result.redirectUrl || '/feed')
-        }, 1000)
+        // Redirection immédiate vers l'accueil
+        router.push('/')
 
         return
       }
