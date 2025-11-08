@@ -42,15 +42,17 @@ export async function createMuxDirectUpload() {
     console.log('✅ [createMuxDirectUpload] Client Mux initialisé, Video:', !!client.Video)
 
     console.log('📡 [createMuxDirectUpload] Appel API Mux uploads.create...')
-    const upload = await client.Video.Uploads.create({
+
+    const uploadParams = {
       new_asset_settings: {
         playback_policy: ['public'],
-        video_quality: 'plus',
-        encoding_tier: 'smart',
-        mp4_support: 'standard',
       },
-      cors_origin: '*', // Permet upload depuis le browser
-    })
+      cors_origin: '*',
+    }
+
+    console.log('📋 Paramètres upload:', JSON.stringify(uploadParams))
+
+    const upload = await client.Video.Uploads.create(uploadParams)
 
     console.log('✅ URL upload Mux créée:', upload.id)
 
