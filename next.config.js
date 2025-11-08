@@ -75,6 +75,10 @@ const nextConfig = {
       'https://*.r2.dev',
       'https://media.felora.ch',
 
+      // Mux Video Upload & Streaming
+      'https://*.mux.com',
+      'https://*.production.mux.com',
+
       // Maps & Location Services
       'https://api.mapbox.com',
       'https://events.mapbox.com',
