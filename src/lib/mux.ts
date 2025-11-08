@@ -3,7 +3,7 @@ import Mux from '@mux/mux-node'
 // Initialisation lazy du client Mux pour éviter les erreurs au build
 let muxClient: Mux | null = null
 
-function getMuxClient() {
+export function getMuxClient(): Mux {
   if (!muxClient) {
     if (!process.env.MUX_TOKEN_ID || !process.env.MUX_TOKEN_SECRET) {
       throw new Error('❌ Variables Mux manquantes ! MUX_TOKEN_ID ou MUX_TOKEN_SECRET non défini.')
@@ -18,12 +18,12 @@ function getMuxClient() {
   return muxClient
 }
 
-// Export pour compatibilité
-export const mux = new Proxy({} as Mux, {
-  get(target, prop) {
-    return getMuxClient()[prop as keyof Mux]
+// Export direct du client (sera initialisé à la première utilisation)
+export const mux = {
+  get video() {
+    return getMuxClient().video
   }
-})
+}
 
 // Fonction pour créer une URL d'upload direct Mux (client → Mux)
 export async function createMuxDirectUpload() {
