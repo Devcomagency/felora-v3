@@ -163,28 +163,43 @@ function CameraPageContent() {
         })
 
         setUploadProgress(100)
-        toast.success('Vidéo uploadée ! Publication en cours...', 1000)
+        toast.success('Vidéo uploadée ! Sauvegarde en cours...', 2000)
 
-        // 3. Confirmer et sauvegarder en DB en arrière-plan
-        // Ne pas attendre la fin du traitement Mux
-        fetchWithRetry('/api/media/mux-confirm', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({
-            uploadId: uploadId,
-            assetId: assetId || undefined,
-            description: data.description || undefined,
-            visibility: data.visibility,
-            price: data.visibility === 'premium' && data.price ? data.price : undefined,
-            location: data.location || undefined
+        // 3. Confirmer et sauvegarder en DB
+        // IMPORTANT: On attend maintenant pour s'assurer que la vidéo est bien sauvegardée
+        try {
+          const confirmRes = await fetchWithRetry('/api/media/mux-confirm', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({
+              uploadId: uploadId,
+              assetId: assetId || undefined,
+              description: data.description || undefined,
+              visibility: data.visibility,
+              price: data.visibility === 'premium' && data.price ? data.price : undefined,
+              location: data.location || undefined
+            })
           })
-        }).catch(err => {
-          console.error('Erreur sauvegarde en DB (background):', err)
-        })
 
-        // Redirection immédiate vers l'accueil
-        router.push('/')
+          if (!confirmRes.ok) {
+            const errorText = await confirmRes.text()
+            console.error('❌ Erreur confirmation Mux:', errorText)
+            throw new Error('Échec sauvegarde vidéo')
+          }
+
+          const result = await confirmRes.json()
+          console.log('✅ Vidéo sauvegardée:', result)
+
+          toast.success('Vidéo publiée !', 1500)
+
+          // Redirection vers l'accueil
+          setTimeout(() => router.push('/'), 500)
+        } catch (error: any) {
+          console.error('❌ Erreur sauvegarde:', error)
+          toast.error('Erreur lors de la publication. Réessayez.')
+          setUploadStep('configure')
+        }
 
         return
       }
