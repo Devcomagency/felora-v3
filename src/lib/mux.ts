@@ -35,11 +35,9 @@ export async function createMuxDirectUpload() {
     const upload = await client.Video.Uploads.create({
       new_asset_settings: {
         playback_policy: ['public'],
-        // 🎬 FORCE le re-encode pour compatibilité HEVC/H.265
-        // Sans ça, Mux refuse les vidéos iPhone (HEVC)
-        encoding_tier: 'baseline', // Force conversion H.264
-        video_quality: 'basic', // Optimise pour mobile
-        normalize_audio: true, // Normalise l'audio
+        // 🎬 Mux va automatiquement convertir les formats incompatibles
+        // HEVC/H.265 sera converti en H.264
+        mp4_support: 'standard', // Génère aussi MP4 pour fallback
       },
       cors_origin: '*',
     })
