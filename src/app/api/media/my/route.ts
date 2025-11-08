@@ -14,18 +14,33 @@ export async function GET(req: NextRequest) {
     const url = new URL(req.url)
     const visibility = (url.searchParams.get('visibility') || undefined) as MediaVisibility | undefined
     
-    // Vérifier si l'utilisateur est un club
+    // Vérifier si l'utilisateur est un club ou escort
     const clubProfile = await prisma.clubProfileV2.findUnique({
       where: { userId }
     })
-    
-    const ownerType = clubProfile ? 'CLUB' : 'ESCORT'
-    
+
+    const escortProfile = await prisma.escortProfile.findUnique({
+      where: { userId }
+    })
+
+    let ownerType: 'CLUB' | 'ESCORT' = 'ESCORT'
+    let ownerId = userId
+
+    if (clubProfile) {
+      ownerType = 'CLUB'
+      ownerId = clubProfile.id
+    } else if (escortProfile) {
+      ownerType = 'ESCORT'
+      ownerId = escortProfile.id
+    }
+
+    console.log(`🔍 Recherche médias: ownerType=${ownerType}, ownerId=${ownerId}`)
+
     // Récupérer les médias depuis la table Media (nouveau système)
     const mediaFromTable = await prisma.media.findMany({
       where: {
         ownerType: ownerType,
-        ownerId: userId,
+        ownerId: ownerId,
         ...(visibility && { visibility: visibility })
       },
       orderBy: { createdAt: 'desc' }
