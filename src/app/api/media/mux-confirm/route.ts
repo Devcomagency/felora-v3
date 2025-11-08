@@ -54,6 +54,26 @@ export async function POST(request: NextRequest) {
     for (let attempt = 0; attempt < 5; attempt++) {
       try {
         muxAsset = await getMuxAssetStatus(finalAssetId)
+
+        // 🚨 Vérifier si Mux a retourné une erreur
+        if (muxAsset.status === 'errored') {
+          console.error(`❌ Mux asset en erreur: ${finalAssetId}`)
+
+          // Supprimer l'asset Mux défaillant
+          try {
+            const client = (await import('@/lib/mux')).getMuxClient()
+            await client.Video.Assets.delete(finalAssetId)
+            console.log(`🗑️ Asset Mux défaillant supprimé: ${finalAssetId}`)
+          } catch (deleteError) {
+            console.error('⚠️ Erreur suppression asset Mux:', deleteError)
+          }
+
+          return NextResponse.json({
+            error: 'Format vidéo incompatible. Veuillez utiliser l\'upload depuis votre galerie ou réessayer avec une vidéo différente.',
+            errorCode: 'MUX_ENCODING_ERROR'
+          }, { status: 400 })
+        }
+
         playbackId = muxAsset.playbackId || null
 
         if (playbackId) {
