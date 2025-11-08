@@ -27,10 +27,23 @@ export async function POST(request: NextRequest) {
     // Récupérer le statut de l'asset Mux
     const muxAsset = await getMuxAssetStatus(assetId)
 
-    if (!muxAsset.playbackUrl) {
+    console.log('📊 Statut asset Mux:', {
+      assetId,
+      status: muxAsset.status,
+      hasPlaybackUrl: !!muxAsset.playbackUrl,
+      playbackId: muxAsset.playbackId
+    })
+
+    // Créer une URL temporaire même si l'asset n'est pas prêt
+    // L'URL sera valide une fois le traitement terminé
+    const playbackUrl = muxAsset.playbackUrl || (muxAsset.playbackId ? `https://stream.mux.com/${muxAsset.playbackId}.m3u8` : null)
+    const thumbnailUrl = muxAsset.thumbnailUrl || (muxAsset.playbackId ? `https://image.mux.com/${muxAsset.playbackId}/thumbnail.jpg?width=640&height=360&time=1` : null)
+
+    if (!playbackUrl) {
       return NextResponse.json({
-        error: 'Asset Mux pas encore prêt',
-        status: muxAsset.status
+        error: 'Asset Mux pas encore disponible - playbackId manquant',
+        status: muxAsset.status,
+        debug: { assetId, muxStatus: muxAsset.status }
       }, { status: 400 })
     }
 
@@ -65,8 +78,8 @@ export async function POST(request: NextRequest) {
         ownerType: ownerType as any,
         ownerId: ownerId,
         type: 'VIDEO',
-        url: muxAsset.playbackUrl,
-        thumbUrl: muxAsset.thumbnailUrl,
+        url: playbackUrl,
+        thumbUrl: thumbnailUrl,
         description: description || null,
         visibility: visibilityEnum,
         price: visibility === 'premium' && price ? parseInt(price) : null,
