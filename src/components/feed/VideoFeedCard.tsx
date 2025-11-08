@@ -11,6 +11,7 @@ import useReactions from '@/hooks/useReactions'
 import { stableMediaId } from '@/lib/reactions/stableMediaId'
 import ResponsiveVideoContainer, { useScreenCharacteristics } from './ResponsiveVideoContainer'
 import { useSession } from 'next-auth/react'
+import Hls from 'hls.js'
 
 // Types pour le feed
 interface MediaAuthor {
@@ -131,6 +132,7 @@ function PlayPauseAnimation({
 export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps) {
   // Refs et états
   const videoRef = useRef<HTMLVideoElement>(null)
+  const hlsRef = useRef<Hls | null>(null)
   const trackedRef = useRef(false)
   const [showHeart, setShowHeart] = useState(false)
   const [heartPosition, setHeartPosition] = useState({ x: 0, y: 0 })
@@ -140,12 +142,12 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
   const [radialOpen, setRadialOpen] = useState(false)
   const [explosionEmojis, setExplosionEmojis] = useState<{id: number; emoji: string}[]>([])
   const pillRef = useRef<HTMLDivElement>(null)
-  
+
   // États pour le menu de gestion
   const [showMediaMenu, setShowMediaMenu] = useState(false)
   const [isManaging, setIsManaging] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
-  
+
   // États pour l'optimisation vidéo
   const [videoError, setVideoError] = useState<string | null>(null)
   const [videoReady, setVideoReady] = useState(false)
@@ -155,6 +157,63 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
   useEffect(() => {
     console.log(`🎥 [${item.id}] videoReady changed:`, videoReady)
   }, [videoReady, item.id])
+
+  // 🎬 HLS.js setup pour compatibilité tous navigateurs (Samsung Internet, etc.)
+  useEffect(() => {
+    const video = videoRef.current
+    if (!video || item.type !== 'VIDEO') return
+
+    const videoUrl = item.url
+    const isHLS = videoUrl.includes('.m3u8')
+
+    if (!isHLS) {
+      // Vidéo normale (MP4, etc.) - pas besoin de hls.js
+      video.src = videoUrl
+      return
+    }
+
+    // Vidéo HLS - utiliser hls.js si nécessaire
+    if (Hls.isSupported()) {
+      // hls.js supporté (la plupart des navigateurs sauf Safari)
+      console.log(`🎬 [HLS.js] Initialisation pour ${item.id}`)
+
+      const hls = new Hls({
+        enableWorker: true,
+        lowLatencyMode: false,
+        backBufferLength: 30,
+      })
+
+      hls.loadSource(videoUrl)
+      hls.attachMedia(video)
+
+      hls.on(Hls.Events.MANIFEST_PARSED, () => {
+        console.log(`✅ [HLS.js] Manifest chargé pour ${item.id}`)
+      })
+
+      hls.on(Hls.Events.ERROR, (event, data) => {
+        console.error(`❌ [HLS.js] Erreur pour ${item.id}:`, data)
+        if (data.fatal) {
+          setVideoError(`Erreur HLS: ${data.type}`)
+        }
+      })
+
+      hlsRef.current = hls
+
+      return () => {
+        console.log(`🧹 [HLS.js] Cleanup pour ${item.id}`)
+        hls.destroy()
+        hlsRef.current = null
+      }
+    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      // Safari natif HLS support
+      console.log(`🍎 [Safari HLS] Support natif pour ${item.id}`)
+      video.src = videoUrl
+    } else {
+      // Aucun support HLS
+      console.error(`❌ [HLS] Pas de support HLS pour ${item.id}`)
+      setVideoError('Format vidéo non supporté par ce navigateur')
+    }
+  }, [item.url, item.type, item.id])
 
   // Hooks
   const { handleIntersectingChange, togglePlayPause, currentVideo, isMute } = useVideoIntersection()
@@ -431,9 +490,7 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
             }
             setVideoReady(false)
           }}
-        >
-          <source src={item.url} type="video/mp4" />
-        </video>
+        />
         )}
 
         {/* Overlay d'erreur si nécessaire - seulement pour vidéos */}
