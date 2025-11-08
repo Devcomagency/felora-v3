@@ -38,8 +38,8 @@ export default function CameraCapturePro({ onCapture, onClose, mode }: CameraPro
         input.capture = 'environment' // Caméra directe OK pour photos
       } else if (mode === 'upload') {
         input.accept = 'image/*,video/*'
-        // Forcer ouverture galerie (pas caméra)
-        input.setAttribute('capture', 'false')
+        // NE PAS ajouter d'attribut capture
+        // Ça force l'ouverture de la galerie uniquement
       }
 
       input.onchange = (e: any) => {
