@@ -28,7 +28,12 @@ export const mux = {
 // Fonction pour créer une URL d'upload direct Mux (client → Mux)
 export async function createMuxDirectUpload() {
   try {
-    const upload = await mux.video.uploads.create({
+    console.log('🔧 [createMuxDirectUpload] Initialisation client Mux...')
+    const client = getMuxClient()
+    console.log('✅ [createMuxDirectUpload] Client Mux initialisé')
+
+    console.log('📡 [createMuxDirectUpload] Appel API Mux uploads.create...')
+    const upload = await client.video.uploads.create({
       new_asset_settings: {
         playback_policy: ['public'],
         video_quality: 'plus',
@@ -54,7 +59,8 @@ export async function createMuxDirectUpload() {
 // Fonction pour vérifier le statut d'un asset Mux
 export async function getMuxAssetStatus(assetId: string) {
   try {
-    const asset = await mux.video.assets.retrieve(assetId)
+    const client = getMuxClient()
+    const asset = await client.video.assets.retrieve(assetId)
 
     const playbackId = asset.playback_ids?.[0]?.id
 
@@ -74,7 +80,8 @@ export async function getMuxAssetStatus(assetId: string) {
 // Fonction pour supprimer un asset Mux
 export async function deleteMuxAsset(assetId: string) {
   try {
-    await mux.video.assets.delete(assetId)
+    const client = getMuxClient()
+    await client.video.assets.delete(assetId)
     console.log('✅ Asset Mux supprimé:', assetId)
   } catch (error: any) {
     console.error('❌ Erreur suppression asset Mux:', error)
