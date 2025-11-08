@@ -77,7 +77,7 @@ export async function createMuxDirectUpload() {
 export async function getMuxAssetStatus(assetId: string) {
   try {
     const client = getMuxClient()
-    const asset = await client.Video.Assets.retrieve(assetId)
+    const asset = await client.Video.Assets.get(assetId)
 
     const playbackId = asset.playback_ids?.[0]?.id
 
