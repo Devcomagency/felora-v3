@@ -147,7 +147,7 @@ function CameraPageContent() {
           throw new Error('Échec création URL Mux')
         }
 
-        const { uploadUrl, assetId } = await muxUrlRes.json()
+        const { uploadUrl, uploadId, assetId } = await muxUrlRes.json()
 
         // 2. Upload DIRECT vers Mux avec progress
         await uploadWithProgress({
@@ -165,12 +165,14 @@ function CameraPageContent() {
         toast.success('Vidéo uploadée ! Traitement par Mux...', 2000)
 
         // 3. Confirmer et sauvegarder en DB
+        // Utiliser uploadId si assetId n'est pas disponible
         const confirmRes = await fetchWithRetry('/api/media/mux-confirm', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
           body: JSON.stringify({
-            assetId,
+            uploadId: uploadId,
+            assetId: assetId || undefined,
             description: data.description || undefined,
             visibility: data.visibility,
             price: data.visibility === 'premium' && data.price ? data.price : undefined,

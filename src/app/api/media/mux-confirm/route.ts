@@ -16,16 +16,30 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { assetId, description, visibility, price, location } = body
+    const { uploadId, assetId, description, visibility, price, location } = body
 
-    if (!assetId) {
-      return NextResponse.json({ error: 'assetId manquant' }, { status: 400 })
+    console.log('🎬 Confirmation upload Mux - uploadId:', uploadId, 'assetId:', assetId)
+
+    // Si on a un uploadId, récupérer l'upload pour obtenir l'assetId
+    let finalAssetId = assetId
+
+    if (!finalAssetId && uploadId) {
+      console.log('📡 Récupération de l\'upload Mux:', uploadId)
+      const client = (await import('@/lib/mux')).getMuxClient()
+      const upload = await client.Video.Uploads.retrieve(uploadId)
+      finalAssetId = upload.asset_id
+      console.log('✅ Asset ID récupéré depuis upload:', finalAssetId)
     }
 
-    console.log('🎬 Confirmation upload Mux:', assetId)
+    if (!finalAssetId) {
+      return NextResponse.json({
+        error: 'assetId ou uploadId manquant',
+        debug: { hasUploadId: !!uploadId, hasAssetId: !!assetId }
+      }, { status: 400 })
+    }
 
     // Récupérer le statut de l'asset Mux
-    const muxAsset = await getMuxAssetStatus(assetId)
+    const muxAsset = await getMuxAssetStatus(finalAssetId)
 
     console.log('📊 Statut asset Mux:', {
       assetId,
