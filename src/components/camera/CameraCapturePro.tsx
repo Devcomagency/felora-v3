@@ -29,16 +29,16 @@ export default function CameraCapturePro({ onCapture, onClose, mode }: CameraPro
 
       // Définir le type de fichier accepté
       if (mode === 'video') {
+        // 🎬 VIDÉO : Toujours passer par upload galerie (pas capture directe)
+        // Raison: Compatibilité formats (HEVC/H.265 → H.264)
         input.accept = 'video/*'
+        // PAS de capture="environment" pour vidéo
       } else if (mode === 'photo') {
         input.accept = 'image/*'
+        input.capture = 'environment' // Caméra directe OK pour photos
       } else if (mode === 'upload') {
         input.accept = 'image/*,video/*'
-      }
-
-      // Utiliser capture="environment" seulement pour photo/video (pas pour upload)
-      if (mode === 'photo' || mode === 'video') {
-        input.capture = 'environment'
+        // PAS de capture pour upload
       }
 
       input.onchange = (e: any) => {

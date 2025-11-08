@@ -7,8 +7,7 @@ import { useSession, signOut } from 'next-auth/react'
 import Image from 'next/image'
 import {
   Home, Search, MessageCircle, User, Settings, Bell, Menu,
-  Map, Globe, LogIn, UserPlus, BarChart3, Calendar, Heart, Plus,
-  Camera, Video, Upload
+  Map, Globe, LogIn, UserPlus, BarChart3, Calendar, Heart, Plus
 } from 'lucide-react'
 import NotificationBell from '@/components/notifications/NotificationBell'
 
@@ -34,18 +33,6 @@ export default function StaticNavBar() {
   const [currentLanguage, setCurrentLanguage] = useState('fr')
   const [hasNotifications, setHasNotifications] = useState(false)
   const [unreadConversations, setUnreadConversations] = useState(0)
-  const [showCreateMenu, setShowCreateMenu] = useState(false)
-  const [isMobile, setIsMobile] = useState(true)
-
-  // Détecter si on est sur mobile ou desktop
-  useEffect(() => {
-    const checkIfMobile = () => {
-      setIsMobile(window.innerWidth < 768)
-    }
-    checkIfMobile()
-    window.addEventListener('resize', checkIfMobile)
-    return () => window.removeEventListener('resize', checkIfMobile)
-  }, [])
 
   // Charger la langue sauvegardée
   useEffect(() => {
@@ -103,20 +90,6 @@ export default function StaticNavBar() {
     }
   }, [showMenu])
 
-  // Fermer le menu créer en cliquant à l'extérieur
-  useEffect(() => {
-    if (showCreateMenu) {
-      const handleClickOutside = (event: MouseEvent) => {
-        const target = event.target as Element
-        if (!target.closest('[data-create-menu]')) {
-          setShowCreateMenu(false)
-        }
-      }
-      document.addEventListener('click', handleClickOutside)
-      return () => document.removeEventListener('click', handleClickOutside)
-    }
-  }, [showCreateMenu])
-
   // Contrôle global du menu via événements (pour bouton burger dans les pages)
   useEffect(() => {
     const onOpen = () => setShowMenu(true)
@@ -160,13 +133,9 @@ export default function StaticNavBar() {
         icon: Plus,
         label: 'Créer',
         onClick: () => {
-          // Sur desktop : ouvrir directement l'upload
-          if (!isMobile) {
-            router.push('/camera?mode=upload')
-          } else {
-            // Sur mobile : afficher le menu avec les 3 options
-            setShowCreateMenu(!showCreateMenu)
-          }
+          // 📸 TOUJOURS ouvrir directement l'upload (photos + vidéos)
+          // Plus simple, plus rapide, compatible tous formats
+          router.push('/camera?mode=upload')
         },
         active: pathname === '/camera',
         special: true
@@ -214,7 +183,6 @@ export default function StaticNavBar() {
                 whileTap={{ scale: 0.9 }}
                 whileHover={item.special ? { scale: 1.05, boxShadow: '0 8px 16px rgba(255, 107, 157, 0.4)' } : {}}
                 onClick={() => item.onClick ? item.onClick() : router.push(item.href)}
-                data-create-menu={item.id === 'create' ? true : undefined}
                 className={`
                   relative flex flex-col items-center justify-center px-3 py-2 rounded-xl
                   transition-all duration-300 min-w-[60px]
@@ -243,72 +211,6 @@ export default function StaticNavBar() {
         </div>
       </div>
 
-      {/* Menu radial au-dessus du + */}
-      <AnimatePresence>
-        {showCreateMenu && (
-          <>
-            {/* Backdrop */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              onClick={() => setShowCreateMenu(false)}
-              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
-            />
-
-            {/* Boutons en arc de cercle - Visible uniquement sur mobile (< 768px) */}
-            <div className="md:hidden fixed bottom-20 left-0 right-0 z-50 flex justify-center" data-create-menu>
-              <div className="relative">
-                {/* Bouton Photo (gauche) */}
-                <motion.button
-                  initial={{ opacity: 0, scale: 0, x: 0, y: 0 }}
-                  animate={{ opacity: 1, scale: 1, x: -80, y: -60 }}
-                  exit={{ opacity: 0, scale: 0, x: 0, y: 0 }}
-                  transition={{ type: "spring", stiffness: 260, damping: 20 }}
-                  onClick={() => {
-                    setShowCreateMenu(false)
-                    router.push('/camera?mode=photo')
-                  }}
-                  className="absolute w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg hover:shadow-xl hover:scale-110 transition-all"
-                >
-                  <Camera size={28} className="text-white" />
-                </motion.button>
-
-                {/* Bouton Vidéo (milieu haut) */}
-                <motion.button
-                  initial={{ opacity: 0, scale: 0, x: 0, y: 0 }}
-                  animate={{ opacity: 1, scale: 1, x: 0, y: -80 }}
-                  exit={{ opacity: 0, scale: 0, x: 0, y: 0 }}
-                  transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.05 }}
-                  onClick={() => {
-                    setShowCreateMenu(false)
-                    router.push('/camera?mode=video')
-                  }}
-                  className="absolute w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg hover:shadow-xl hover:scale-110 transition-all"
-                >
-                  <Video size={28} className="text-white" />
-                </motion.button>
-
-                {/* Bouton Upload (droite) */}
-                <motion.button
-                  initial={{ opacity: 0, scale: 0, x: 0, y: 0 }}
-                  animate={{ opacity: 1, scale: 1, x: 80, y: -60 }}
-                  exit={{ opacity: 0, scale: 0, x: 0, y: 0 }}
-                  transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.1 }}
-                  onClick={() => {
-                    setShowCreateMenu(false)
-                    router.push('/camera?mode=upload')
-                  }}
-                  className="absolute w-16 h-16 rounded-full bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center shadow-lg hover:shadow-xl hover:scale-110 transition-all"
-                >
-                  <Upload size={28} className="text-white" />
-                </motion.button>
-              </div>
-            </div>
-          </>
-        )}
-      </AnimatePresence>
 
       {/* Notification Bell - Uniquement pour les utilisateurs connectés (pas admin, pas /messages) */}
       {!isMessages && isAuthenticated && !pathname?.startsWith('/admin') && (
