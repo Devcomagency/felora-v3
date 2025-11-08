@@ -18,13 +18,10 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { uploadId, assetId, description, visibility, price, location } = body
 
-    console.log('🎬 Confirmation upload Mux - uploadId:', uploadId, 'assetId:', assetId)
-
     // Si on a un uploadId, récupérer l'upload pour obtenir l'assetId
     let finalAssetId = assetId
 
     if (!finalAssetId && uploadId) {
-      console.log('📡 Récupération de l\'upload Mux:', uploadId)
       const client = (await import('@/lib/mux')).getMuxClient()
 
       // Retry jusqu'à 3 fois avec délai car l'asset peut ne pas être créé immédiatement
@@ -33,15 +30,10 @@ export async function POST(request: NextRequest) {
           const upload = await client.Video.Uploads.get(uploadId)
           finalAssetId = upload.asset_id
 
-          if (finalAssetId) {
-            console.log('✅ Asset ID récupéré depuis upload:', finalAssetId)
-            break
-          }
+          if (finalAssetId) break
 
-          console.log(`⏳ Tentative ${attempt + 1}/3: asset_id pas encore disponible, attente 2s...`)
           await new Promise(resolve => setTimeout(resolve, 2000))
         } catch (error: any) {
-          console.error(`❌ Erreur récupération upload (tentative ${attempt + 1}/3):`, error.message)
           if (attempt === 2) throw error
           await new Promise(resolve => setTimeout(resolve, 2000))
         }
@@ -50,20 +42,12 @@ export async function POST(request: NextRequest) {
 
     if (!finalAssetId) {
       return NextResponse.json({
-        error: 'Asset Mux pas encore créé - réessayez dans quelques secondes',
-        debug: { hasUploadId: !!uploadId, hasAssetId: !!assetId }
+        error: 'Asset Mux pas encore créé - réessayez dans quelques secondes'
       }, { status: 400 })
     }
 
     // Récupérer le statut de l'asset Mux
     const muxAsset = await getMuxAssetStatus(finalAssetId)
-
-    console.log('📊 Statut asset Mux:', {
-      assetId,
-      status: muxAsset.status,
-      hasPlaybackUrl: !!muxAsset.playbackUrl,
-      playbackId: muxAsset.playbackId
-    })
 
     // Créer une URL temporaire même si l'asset n'est pas prêt
     // L'URL sera valide une fois le traitement terminé
@@ -72,9 +56,7 @@ export async function POST(request: NextRequest) {
 
     if (!playbackUrl) {
       return NextResponse.json({
-        error: 'Asset Mux pas encore disponible - playbackId manquant',
-        status: muxAsset.status,
-        debug: { assetId, muxStatus: muxAsset.status }
+        error: 'Asset Mux pas encore disponible'
       }, { status: 400 })
     }
 
@@ -119,7 +101,6 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    console.log('💾 Vidéo Mux sauvegardée:', media.id)
 
     // Déterminer l'URL de redirection
     let redirectUrl = `/profile/${session.user.id}`
