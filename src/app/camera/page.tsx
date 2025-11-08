@@ -190,9 +190,25 @@ function CameraPageContent() {
           }
 
           if (!confirmRes.ok) {
-            const errorText = await confirmRes.text()
-            console.error('❌ Erreur confirmation Mux:', errorText)
-            throw new Error('Échec sauvegarde vidéo')
+            try {
+              const errorData = await confirmRes.json()
+              console.error('❌ Erreur confirmation Mux:', errorData)
+
+              // Afficher le message d'erreur détaillé de Mux
+              const errorMessage = errorData.error || 'Échec sauvegarde vidéo'
+              toast.error(errorMessage, 6000)
+
+              if (errorData.tip) {
+                setTimeout(() => toast.info(errorData.tip, 5000), 1000)
+              }
+
+              setIsPublishing(false)
+              setUploadProgress(0)
+              return
+            } catch {
+              // Si le JSON parse échoue, utiliser le message générique
+              throw new Error('Échec sauvegarde vidéo')
+            }
           }
 
           const result = await confirmRes.json()
@@ -205,7 +221,8 @@ function CameraPageContent() {
         } catch (error: any) {
           console.error('❌ Erreur sauvegarde:', error)
           toast.error('Erreur lors de la publication. Réessayez.')
-          setUploadStep('configure')
+          setIsPublishing(false)
+          setUploadProgress(0)
         }
 
         return
