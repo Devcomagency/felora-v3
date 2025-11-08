@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
     for (let attempt = 0; attempt < 5; attempt++) {
       try {
         muxAsset = await getMuxAssetStatus(finalAssetId)
-        playbackId = muxAsset.playbackId
+        playbackId = muxAsset.playbackId || null
 
         if (playbackId) {
           console.log(`✅ Playback ID obtenu: ${playbackId}`)
