@@ -26,14 +26,31 @@ export async function POST(request: NextRequest) {
     if (!finalAssetId && uploadId) {
       console.log('📡 Récupération de l\'upload Mux:', uploadId)
       const client = (await import('@/lib/mux')).getMuxClient()
-      const upload = await client.Video.Uploads.retrieve(uploadId)
-      finalAssetId = upload.asset_id
-      console.log('✅ Asset ID récupéré depuis upload:', finalAssetId)
+
+      // Retry jusqu'à 3 fois avec délai car l'asset peut ne pas être créé immédiatement
+      for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+          const upload = await client.Video.Uploads.get(uploadId)
+          finalAssetId = upload.asset_id
+
+          if (finalAssetId) {
+            console.log('✅ Asset ID récupéré depuis upload:', finalAssetId)
+            break
+          }
+
+          console.log(`⏳ Tentative ${attempt + 1}/3: asset_id pas encore disponible, attente 2s...`)
+          await new Promise(resolve => setTimeout(resolve, 2000))
+        } catch (error: any) {
+          console.error(`❌ Erreur récupération upload (tentative ${attempt + 1}/3):`, error.message)
+          if (attempt === 2) throw error
+          await new Promise(resolve => setTimeout(resolve, 2000))
+        }
+      }
     }
 
     if (!finalAssetId) {
       return NextResponse.json({
-        error: 'assetId ou uploadId manquant',
+        error: 'Asset Mux pas encore créé - réessayez dans quelques secondes',
         debug: { hasUploadId: !!uploadId, hasAssetId: !!assetId }
       }, { status: 400 })
     }
