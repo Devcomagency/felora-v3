@@ -1,27 +1,36 @@
 import Mux from '@mux/mux-node'
 
-// Initialisation lazy du client Mux pour éviter les erreurs au build
-let muxClient: Mux | null = null
+// Type pour le client Mux
+type MuxClient = InstanceType<typeof Mux>
 
-export function getMuxClient(): Mux {
+// Initialisation lazy du client Mux pour éviter les erreurs au build
+let muxClient: MuxClient | null = null
+
+export function getMuxClient(): MuxClient {
   if (!muxClient) {
     if (!process.env.MUX_TOKEN_ID || !process.env.MUX_TOKEN_SECRET) {
       throw new Error('❌ Variables Mux manquantes ! MUX_TOKEN_ID ou MUX_TOKEN_SECRET non défini.')
     }
 
     console.log('✅ Initialisation client Mux...')
-    muxClient = new Mux({
-      tokenId: process.env.MUX_TOKEN_ID,
-      tokenSecret: process.env.MUX_TOKEN_SECRET,
-    })
+    console.log('🔑 MUX_TOKEN_ID length:', process.env.MUX_TOKEN_ID.length)
+    console.log('🔑 MUX_TOKEN_SECRET length:', process.env.MUX_TOKEN_SECRET.length)
+
+    // Utiliser new Mux() selon la documentation
+    muxClient = new Mux(
+      process.env.MUX_TOKEN_ID,
+      process.env.MUX_TOKEN_SECRET
+    )
+
+    console.log('✅ Client Mux créé, Video API:', !!muxClient.Video)
   }
   return muxClient
 }
 
 // Export direct du client (sera initialisé à la première utilisation)
 export const mux = {
-  get video() {
-    return getMuxClient().video
+  get Video() {
+    return getMuxClient().Video
   }
 }
 
@@ -30,10 +39,10 @@ export async function createMuxDirectUpload() {
   try {
     console.log('🔧 [createMuxDirectUpload] Initialisation client Mux...')
     const client = getMuxClient()
-    console.log('✅ [createMuxDirectUpload] Client Mux initialisé')
+    console.log('✅ [createMuxDirectUpload] Client Mux initialisé, Video:', !!client.Video)
 
     console.log('📡 [createMuxDirectUpload] Appel API Mux uploads.create...')
-    const upload = await client.video.uploads.create({
+    const upload = await client.Video.Uploads.create({
       new_asset_settings: {
         playback_policy: ['public'],
         video_quality: 'plus',
@@ -60,7 +69,7 @@ export async function createMuxDirectUpload() {
 export async function getMuxAssetStatus(assetId: string) {
   try {
     const client = getMuxClient()
-    const asset = await client.video.assets.retrieve(assetId)
+    const asset = await client.Video.Assets.retrieve(assetId)
 
     const playbackId = asset.playback_ids?.[0]?.id
 
@@ -81,7 +90,7 @@ export async function getMuxAssetStatus(assetId: string) {
 export async function deleteMuxAsset(assetId: string) {
   try {
     const client = getMuxClient()
-    await client.video.assets.delete(assetId)
+    await client.Video.Assets.delete(assetId)
     console.log('✅ Asset Mux supprimé:', assetId)
   } catch (error: any) {
     console.error('❌ Erreur suppression asset Mux:', error)
