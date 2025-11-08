@@ -60,8 +60,14 @@ export async function createMuxDirectUpload() {
       assetId: upload.asset_id,
     }
   } catch (error: any) {
-    console.error('❌ Erreur création upload Mux:', error)
-    throw new Error(`Mux upload creation failed: ${error.message}`)
+    console.error('❌ Erreur création upload Mux - FULL ERROR:', {
+      error,
+      message: error.message,
+      type: error.type,
+      messages: error.messages,
+      stack: error.stack
+    })
+    throw new Error(`Mux upload creation failed: ${error.message || error.type || JSON.stringify(error)}`)
   }
 }
 
