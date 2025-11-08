@@ -35,9 +35,6 @@ export async function createMuxDirectUpload() {
     const upload = await client.Video.Uploads.create({
       new_asset_settings: {
         playback_policy: ['public'],
-        // 🎬 Mux va automatiquement convertir les formats incompatibles
-        // HEVC/H.265 sera converti en H.264
-        mp4_support: 'standard', // Génère aussi MP4 pour fallback
       },
       cors_origin: '*',
     })
