@@ -62,15 +62,16 @@ export async function POST(request: NextRequest) {
           // Supprimer l'asset Mux défaillant
           try {
             const client = (await import('@/lib/mux')).getMuxClient()
-            await client.Video.Assets.delete(finalAssetId)
+            await client.video.assets.delete(finalAssetId)
             console.log(`🗑️ Asset Mux défaillant supprimé: ${finalAssetId}`)
           } catch (deleteError) {
             console.error('⚠️ Erreur suppression asset Mux:', deleteError)
           }
 
           return NextResponse.json({
-            error: 'Format vidéo incompatible. Veuillez utiliser l\'upload depuis votre galerie ou réessayer avec une vidéo différente.',
-            errorCode: 'MUX_ENCODING_ERROR'
+            error: '🎬 Format vidéo incompatible avec votre téléphone. Veuillez ré-enregistrer la vidéo ou essayer une autre vidéo de votre galerie.',
+            errorCode: 'MUX_ENCODING_ERROR',
+            tip: 'Les vidéos plus anciennes dans votre galerie fonctionnent souvent mieux'
           }, { status: 400 })
         }
 
