@@ -9,11 +9,14 @@ import { createMuxDirectUpload } from '@/lib/mux'
  */
 export async function POST() {
   try {
+    console.log('🎬 [MUX-UPLOAD-URL] Début de la requête')
+
     // Debug: Vérifier les variables AVANT tout
     console.log('🔍 DEBUG: MUX_TOKEN_ID =', process.env.MUX_TOKEN_ID ? 'EXISTS' : 'MISSING')
     console.log('🔍 DEBUG: MUX_TOKEN_SECRET =', process.env.MUX_TOKEN_SECRET ? 'EXISTS' : 'MISSING')
 
     if (!process.env.MUX_TOKEN_ID || !process.env.MUX_TOKEN_SECRET) {
+      console.error('❌ Variables Mux manquantes')
       return NextResponse.json({
         error: 'Variables Mux manquantes sur Vercel',
         debug: {
@@ -23,15 +26,20 @@ export async function POST() {
       }, { status: 500 })
     }
 
+    console.log('✅ Variables Mux présentes')
+
     const session = await getServerSession(authOptions)
+    console.log('🔐 Session récupérée:', session?.user?.id || 'NO SESSION')
 
     if (!session?.user?.id) {
+      console.error('❌ Non authentifié')
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
     }
 
     console.log('🎬 Création URL upload Mux pour user:', session.user.id)
 
     // Créer une URL d'upload direct Mux
+    console.log('📡 Appel API Mux...')
     const muxUpload = await createMuxDirectUpload()
 
     console.log('✅ URL Mux créée:', muxUpload.uploadId)
@@ -43,10 +51,20 @@ export async function POST() {
       assetId: muxUpload.assetId,
     })
   } catch (error: any) {
-    console.error('❌ Erreur création URL Mux:', error)
+    console.error('❌ Erreur COMPLÈTE création URL Mux:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name,
+      code: error.code
+    })
     return NextResponse.json({
       success: false,
-      error: error.message || 'Erreur création URL upload'
+      error: error.message || 'Erreur création URL upload',
+      errorDetails: {
+        name: error.name,
+        code: error.code,
+        message: error.message
+      }
     }, { status: 500 })
   }
 }
