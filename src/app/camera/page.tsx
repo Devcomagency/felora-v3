@@ -133,7 +133,7 @@ function CameraPageContent() {
     const isVideo = data.file.type.startsWith('video/')
 
     try {
-      // 🎬 VIDÉO → Upload direct vers Mux (rapide)
+      // 🎬 VIDÉO → Upload direct vers Mux (support HEVC depuis octobre 2025)
       if (isVideo) {
         toast.info('Upload vidéo vers Mux...', 0)
 
@@ -156,75 +156,66 @@ function CameraPageContent() {
           method: 'PUT',
           headers: { 'Content-Type': data.file.type },
           onProgress: (progress) => {
-            setUploadProgress(progress)
+            setUploadProgress(Math.min(progress, 90)) // Max 90% avant confirmation
             console.log(`📊 Upload Mux: ${progress}%`)
           },
           maxAttempts: 3
         })
 
-        setUploadProgress(100)
+        setUploadProgress(95)
         toast.success('Vidéo uploadée ! Sauvegarde en cours...', 2000)
 
         // 3. Confirmer et sauvegarder en DB
-        // IMPORTANT: On attend maintenant pour s'assurer que la vidéo est bien sauvegardée
-        try {
-          const confirmRes = await fetchWithRetry('/api/media/mux-confirm', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify({
-              uploadId: uploadId,
-              assetId: assetId || undefined,
-              description: data.description || undefined,
-              visibility: data.visibility,
-              price: data.visibility === 'premium' && data.price ? data.price : undefined,
-              location: data.location || undefined
-            })
+        const confirmRes = await fetchWithRetry('/api/media/mux-confirm', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            uploadId: uploadId,
+            assetId: assetId || undefined,
+            description: data.description || undefined,
+            visibility: data.visibility,
+            price: data.visibility === 'premium' && data.price ? data.price : undefined,
+            location: data.location || undefined
           })
+        })
 
-          if (confirmRes.status === 202) {
-            // Vidéo en cours de traitement, on redirige quand même
-            toast.info('Vidéo en cours de traitement. Elle sera disponible dans quelques minutes.', 3000)
-            setTimeout(() => router.push('/'), 1000)
-            return
-          }
-
-          if (!confirmRes.ok) {
-            try {
-              const errorData = await confirmRes.json()
-              console.error('❌ Erreur confirmation Mux:', errorData)
-
-              // Afficher le message d'erreur détaillé de Mux
-              const errorMessage = errorData.error || 'Échec sauvegarde vidéo'
-              toast.error(errorMessage, 6000)
-
-              if (errorData.tip) {
-                setTimeout(() => toast.info(errorData.tip, 5000), 1000)
-              }
-
-              setIsPublishing(false)
-              setUploadProgress(0)
-              return
-            } catch {
-              // Si le JSON parse échoue, utiliser le message générique
-              throw new Error('Échec sauvegarde vidéo')
-            }
-          }
-
-          const result = await confirmRes.json()
-          console.log('✅ Vidéo sauvegardée:', result)
-
-          toast.success('Vidéo publiée !', 1500)
-
-          // Redirection vers l'accueil
-          setTimeout(() => router.push('/'), 500)
-        } catch (error: any) {
-          console.error('❌ Erreur sauvegarde:', error)
-          toast.error('Erreur lors de la publication. Réessayez.')
-          setIsPublishing(false)
-          setUploadProgress(0)
+        if (confirmRes.status === 202) {
+          // Vidéo en cours de traitement, on redirige quand même
+          toast.info('Vidéo en cours de traitement. Elle sera disponible dans quelques minutes.', 3000)
+          setTimeout(() => router.push('/'), 1000)
+          return
         }
 
+        if (!confirmRes.ok) {
+          try {
+            const errorData = await confirmRes.json()
+            console.error('❌ Erreur confirmation Mux:', errorData)
+
+            // Afficher le message d'erreur détaillé de Mux
+            const errorMessage = errorData.error || 'Échec sauvegarde vidéo'
+            toast.error(errorMessage, 6000)
+
+            if (errorData.tip) {
+              setTimeout(() => toast.info(errorData.tip, 5000), 1000)
+            }
+
+            setIsPublishing(false)
+            setUploadProgress(0)
+            return
+          } catch {
+            // Si le JSON parse échoue, utiliser le message générique
+            throw new Error('Échec sauvegarde vidéo')
+          }
+        }
+
+        const result = await confirmRes.json()
+        console.log('✅ Vidéo sauvegardée:', result)
+
+        toast.success('Vidéo publiée !', 1500)
+
+        // Redirection vers l'accueil
+        setTimeout(() => router.push('/'), 500)
         return
       }
 

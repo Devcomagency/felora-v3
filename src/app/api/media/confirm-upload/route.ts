@@ -80,6 +80,11 @@ export async function POST(request: NextRequest) {
 
     console.log('🔍 Visibilité mappée:', { input: visibility, output: visibilityEnum })
 
+    // Pour les vidéos R2, thumbUrl peut être null (pas de thumbnail automatique)
+    // Pour les images, thumbUrl = url
+    const isVideo = type === 'VIDEO' || (type || '').toUpperCase() === 'VIDEO'
+    const thumbUrl = isVideo ? null : publicUrl
+
     // Sauvegarder en base de données
     const media = await prisma.media.create({
       data: {
@@ -87,6 +92,7 @@ export async function POST(request: NextRequest) {
         ownerId: ownerId,
         type: (type || 'VIDEO') as any,
         url: publicUrl,
+        thumbUrl: thumbUrl,
         description: description || null,
         visibility: visibilityEnum,
         price: visibility === 'premium' && price ? parseInt(price) : null,
@@ -118,6 +124,7 @@ export async function POST(request: NextRequest) {
       media: {
         id: media.id,
         url: publicUrl,
+        thumbUrl: media.thumbUrl,
         type: media.type,
         pos: media.pos
       },

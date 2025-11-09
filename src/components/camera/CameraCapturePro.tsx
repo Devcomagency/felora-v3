@@ -29,16 +29,17 @@ export default function CameraCapturePro({ onCapture, onClose, mode }: CameraPro
 
       // Définir le type de fichier accepté
       if (mode === 'video') {
-        // 🎬 VIDÉO : Toujours passer par upload galerie (pas capture directe)
-        // Raison: Compatibilité formats (HEVC/H.265 → H.264)
+        // 🎬 VIDÉO : Capture directe depuis la caméra (Mux supporte HEVC)
         input.accept = 'video/*'
-        // PAS de capture="environment" pour vidéo
+        input.capture = 'environment' // Capture directe depuis la caméra
       } else if (mode === 'photo') {
+        // 📷 PHOTO : Capture directe depuis la caméra
         input.accept = 'image/*'
-        input.capture = 'environment' // Caméra directe OK pour photos
+        input.capture = 'environment' // Caméra directe
       } else if (mode === 'upload') {
+        // 📤 UPLOAD : Galerie uniquement (pas de capture)
         input.accept = 'image/*,video/*'
-        // NE PAS ajouter d'attribut capture
+        // NE PAS ajouter d'attribut capture pour mode upload
         // Ça force l'ouverture de la galerie uniquement
       }
 
@@ -107,7 +108,7 @@ export default function CameraCapturePro({ onCapture, onClose, mode }: CameraPro
               const input = document.createElement('input')
               input.type = 'file'
               input.accept = 'video/*'
-              input.capture = 'environment'
+              input.capture = 'environment' // Réactivé: capture directe depuis la caméra
               input.onchange = (e: any) => {
                 const file = e.target.files?.[0]
                 if (file && onCapture) {

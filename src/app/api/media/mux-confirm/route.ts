@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { getMuxAssetStatus } from '@/lib/mux'
+import { getMuxAssetStatus, deleteMuxAsset } from '@/lib/mux'
 
 /**
  * API pour confirmer l'upload Mux et sauvegarder en DB
@@ -61,17 +61,15 @@ export async function POST(request: NextRequest) {
 
           // Supprimer l'asset Mux défaillant
           try {
-            const client = (await import('@/lib/mux')).getMuxClient()
-            await client.video.assets.delete(finalAssetId)
+            await deleteMuxAsset(finalAssetId)
             console.log(`🗑️ Asset Mux défaillant supprimé: ${finalAssetId}`)
           } catch (deleteError) {
             console.error('⚠️ Erreur suppression asset Mux:', deleteError)
           }
 
           return NextResponse.json({
-            error: '🎬 Format vidéo incompatible avec votre téléphone. Veuillez ré-enregistrer la vidéo ou essayer une autre vidéo de votre galerie.',
-            errorCode: 'MUX_ENCODING_ERROR',
-            tip: 'Les vidéos plus anciennes dans votre galerie fonctionnent souvent mieux'
+            error: 'Une erreur est survenue lors du traitement de la vidéo. Veuillez réessayer avec une autre vidéo.',
+            errorCode: 'MUX_ENCODING_ERROR'
           }, { status: 400 })
         }
 
