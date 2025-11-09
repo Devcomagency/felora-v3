@@ -81,6 +81,8 @@ interface CapturedMedia {
   previewUrl: string
   /** Type de média */
   type: 'image' | 'video'
+  /** Si c'est une capture directe depuis la caméra (probable HEVC) */
+  isCameraCapture?: boolean
 }
 
 /**
@@ -108,10 +110,16 @@ function CameraPageContent() {
     const isVideo = file.type.startsWith('video/')
     const previewUrl = URL.createObjectURL(file)
 
+    // Détecter si c'est une capture directe depuis la caméra (très probablement HEVC sur Samsung)
+    // On peut détecter ça via le nom du fichier ou d'autres métadonnées
+    const isCameraCapture = file.name.includes('VID') || file.name.includes('MOV') || 
+                           file.name.match(/^[0-9]{8}_[0-9]{6}/) // Format Samsung/Android
+
     setCapturedMedia({
       file,
       previewUrl,
-      type: isVideo ? 'video' : 'image'
+      type: isVideo ? 'video' : 'image',
+      isCameraCapture // Stocker cette info pour décider du provider
     })
   }, [])
 

@@ -75,7 +75,7 @@ export async function getMuxAssetStatus(assetId: string) {
 export async function deleteMuxAsset(assetId: string) {
   try {
     const client = getMuxClient()
-    await client.Video.Assets.delete(assetId)
+    await client.video.assets.delete(assetId)  // Utilise lowercase: video.assets.delete()
     console.log('✅ Asset Mux supprimé:', assetId)
   } catch (error: any) {
     console.error('❌ Erreur suppression asset Mux:', error)
