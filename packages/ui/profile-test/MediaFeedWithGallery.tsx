@@ -10,6 +10,7 @@ import { useMediaInteractions } from '../../../src/hooks/useProfileInteractions'
 import ReactionBar from '../../../src/components/reactions/ReactionBar'
 import { stableMediaId } from '@/lib/reactions/stableMediaId'
 import MediaManagementModal from '../../../src/components/MediaManagementModal'
+import { useHLS } from '../../../src/hooks/useHLS'
 
 interface MediaItem {
   id?: string
@@ -67,6 +68,10 @@ function MediaPlayer({ id, type, url, thumb, poster, index, isActive, profileId,
   const [isPlaying, setIsPlaying] = useState(false)
   const [error, setError] = useState(false)
   const [guestId, setGuestId] = useState<string | null>(null)
+
+  // Hook HLS pour supporter les vidéos Bunny.net (.m3u8)
+  useHLS(videoRef, url, isActive && type === 'video')
+
   useEffect(() => {
     try {
       const key = 'felora-user-id'
@@ -77,7 +82,7 @@ function MediaPlayer({ id, type, url, thumb, poster, index, isActive, profileId,
   }, [])
   const effectiveUserId = useMemo(() => userId ?? guestId ?? 'felora-guest', [userId, guestId])
   const mediaId = useMemo(() => stableMediaId({ rawId: null, profileId, url }), [id, profileId, url])
-  
+
   const { stats, userHasLiked, userReactions, toggleReaction } = useReactions(mediaId, effectiveUserId, refreshTrigger)
   
 
@@ -145,7 +150,7 @@ function MediaPlayer({ id, type, url, thumb, poster, index, isActive, profileId,
           poster={poster || thumb}
           onError={() => setError(true)}
         >
-          <source src={url} type="video/mp4" />
+          {/* HLS.js injectera automatiquement la source */}
         </video>
 
         <button
