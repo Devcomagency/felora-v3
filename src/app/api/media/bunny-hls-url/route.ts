@@ -1,66 +1,55 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getBunnyVideoStatus } from '@/lib/bunny'
 
 /**
- * API pour extraire l'URL HLS réelle depuis l'iframe Bunny
- *
- * Bunny Stream utilise des URLs CDN signées qui ne sont pas accessibles directement.
- * Cette API fetch l'iframe embed et extrait l'URL HLS du player.
+ * API pour récupérer l'URL HLS d'une vidéo Bunny
+ * Utilisé par le polling de FloatingUploadCard
  *
  * Query params:
  * - videoId: ID de la vidéo Bunny
- * - libraryId: ID de la librairie (défaut: 538306)
  */
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const videoId = searchParams.get('videoId')
-    const libraryId = searchParams.get('libraryId') || '538306'
 
     if (!videoId) {
-      return NextResponse.json({ error: 'videoId manquant' }, { status: 400 })
-    }
-
-    // Fetch l'iframe embed
-    const iframeUrl = `https://iframe.mediadelivery.net/embed/${libraryId}/${videoId}`
-    const iframeResponse = await fetch(iframeUrl)
-
-    if (!iframeResponse.ok) {
       return NextResponse.json({
-        error: 'Impossible de charger la vidéo Bunny'
-      }, { status: 404 })
+        success: false,
+        error: 'videoId manquant'
+      }, { status: 400 })
     }
 
-    const iframeHtml = await iframeResponse.text()
+    // Récupérer le statut de la vidéo Bunny
+    const bunnyVideo = await getBunnyVideoStatus(videoId)
 
-    // Extraire l'URL HLS du HTML
-    // Format: https://vz-xxxxx.b-cdn.net/{videoId}/playlist.m3u8
-    const hlsMatch = iframeHtml.match(/https:\/\/vz-[^"']+\/[^"']+\/playlist\.m3u8[^"']*/i)
-
-    if (!hlsMatch) {
-      return NextResponse.json({
-        error: 'URL HLS introuvable dans l\'iframe'
-      }, { status: 404 })
-    }
-
-    const hlsUrl = hlsMatch[0].replace(/['";]$/, '') // Nettoyer les quotes
-
-    // Extraire aussi l'URL du thumbnail si disponible
-    const thumbMatch = iframeHtml.match(/https:\/\/vz-[^"']+\/[^"']+\/thumbnail\.(jpg|png)[^"']*/i)
-    const thumbnailUrl = thumbMatch ? thumbMatch[0].replace(/['";]$/, '') : null
-
-    return NextResponse.json({
-      success: true,
-      videoId,
-      hlsUrl,
-      thumbnailUrl,
-      iframeUrl
+    console.log(`🔍 Status vidéo ${videoId}:`, {
+      status: bunnyVideo.status,
+      hasHlsUrl: !!bunnyVideo.hlsUrl,
+      hasThumbnail: !!bunnyVideo.thumbnailUrl
     })
 
-  } catch (error: any) {
-    console.error('❌ Erreur extraction URL HLS Bunny:', error)
+    // Vérifier si la vidéo est prête
+    if (bunnyVideo.status === 'ready' && bunnyVideo.hlsUrl) {
+      return NextResponse.json({
+        success: true,
+        hlsUrl: bunnyVideo.hlsUrl,
+        thumbnailUrl: bunnyVideo.thumbnailUrl,
+        status: bunnyVideo.status
+      })
+    }
+
+    // Vidéo encore en traitement
     return NextResponse.json({
       success: false,
-      error: error.message || 'Erreur extraction URL'
+      status: bunnyVideo.status,
+      message: 'Vidéo en cours de traitement'
+    }, { status: 202 })
+  } catch (error: any) {
+    console.error('❌ Erreur récupération HLS URL:', error)
+    return NextResponse.json({
+      success: false,
+      error: error.message || 'Erreur serveur'
     }, { status: 500 })
   }
 }
