@@ -157,13 +157,13 @@ export async function getBunnyVideoStatus(videoId: string) {
 
     const video = await response.json()
 
-    // Bunny statuses:
+    // Bunny statuses (documentation officielle):
     // 0 = Created
     // 1 = Uploaded
     // 2 = Processing
     // 3 = Encoding Queued
-    // 4 = Encoding
-    // 5 = Finished (Ready)
+    // 4 = Ready (vidéo prête à diffuser) ✅
+    // 5 = Transcoded (optimisations supplémentaires)
     // 6 = Failed
 
     const statusMap: Record<number, string> = {
@@ -171,8 +171,8 @@ export async function getBunnyVideoStatus(videoId: string) {
       1: 'uploaded',
       2: 'processing',
       3: 'queued',
-      4: 'encoding',
-      5: 'ready',
+      4: 'ready',      // ✅ Status 4 = Ready (pas 5 !)
+      5: 'transcoded',
       6: 'failed',
     }
 
@@ -180,12 +180,13 @@ export async function getBunnyVideoStatus(videoId: string) {
 
     // URL directe HLS playlist (compatible avec <video> + HLS.js)
     // Utilise la Pull Zone CDN Stream: vz-cf0fe97d-915.b-cdn.net
-    const hlsUrl = video.status >= 5
+    // Disponible dès que status >= 4 (Ready)
+    const hlsUrl = video.status >= 4
       ? `https://vz-cf0fe97d-915.b-cdn.net/${videoId}/playlist.m3u8`
       : null
 
     // URL iframe embed (pour <iframe> seulement)
-    const playbackUrl = video.status >= 5
+    const playbackUrl = video.status >= 4
       ? `https://iframe.mediadelivery.net/embed/${libraryId}/${videoId}?autoplay=false&preload=true`
       : null
 
