@@ -343,13 +343,10 @@ function CameraPageContent() {
       const result = await confirmRes.json()
 
       if (result.success) {
-        toast.success('Publication réussie ! 🎉', 3000)
-        const redirectUrl = result.redirectUrl || (result.userType === 'CLUB' ? '/club/profile' : '/dashboard-escort/profil')
+        toast.success('Publication réussie ! 🎉', 1500)
 
-        // Petit délai pour que l'utilisateur voie le message de succès
-        setTimeout(() => {
-          router.push(redirectUrl)
-        }, 500)
+        // Redirection immédiate vers le feed
+        router.push('/')
       } else {
         throw new Error(result.error || 'Erreur inconnue')
       }

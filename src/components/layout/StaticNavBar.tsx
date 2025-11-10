@@ -554,7 +554,7 @@ export default function StaticNavBar() {
                     whileTap={{ scale: 0.98 }}
                     onClick={() => {
                       setShowCameraMenu(false)
-                      router.push('/camera?mode=camera')
+                      router.push('/camera?mode=photo')
                     }}
                     className="w-full flex items-center gap-4 p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl transition-all group"
                   >
@@ -566,7 +566,7 @@ export default function StaticNavBar() {
                     </div>
                     <div className="flex-1 text-left">
                       <h4 className="font-semibold text-white group-hover:text-cyan-400 transition-colors">Photo</h4>
-                      <p className="text-sm text-white/60">Prendre une photo ou importer</p>
+                      <p className="text-sm text-white/60">Prendre une photo</p>
                     </div>
                     <svg className="w-5 h-5 text-white/40 group-hover:text-white/60 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -579,7 +579,7 @@ export default function StaticNavBar() {
                     whileTap={{ scale: 0.98 }}
                     onClick={() => {
                       setShowCameraMenu(false)
-                      router.push('/camera?mode=upload')
+                      router.push('/camera?mode=video')
                     }}
                     className="w-full flex items-center gap-4 p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl transition-all group"
                   >
@@ -590,7 +590,31 @@ export default function StaticNavBar() {
                     </div>
                     <div className="flex-1 text-left">
                       <h4 className="font-semibold text-white group-hover:text-pink-400 transition-colors">Vidéo</h4>
-                      <p className="text-sm text-white/60">Importer une vidéo</p>
+                      <p className="text-sm text-white/60">Filmer une vidéo</p>
+                    </div>
+                    <svg className="w-5 h-5 text-white/40 group-hover:text-white/60 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </motion.button>
+
+                  {/* Upload */}
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => {
+                      setShowCameraMenu(false)
+                      router.push('/camera?mode=upload')
+                    }}
+                    className="w-full flex items-center gap-4 p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl transition-all group"
+                  >
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-violet-500 flex items-center justify-center">
+                      <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                      </svg>
+                    </div>
+                    <div className="flex-1 text-left">
+                      <h4 className="font-semibold text-white group-hover:text-purple-400 transition-colors">Upload</h4>
+                      <p className="text-sm text-white/60">Importer photo/vidéo</p>
                     </div>
                     <svg className="w-5 h-5 text-white/40 group-hover:text-white/60 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
