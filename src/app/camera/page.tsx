@@ -141,46 +141,48 @@ function CameraPageContent() {
     const isVideo = data.file.type.startsWith('video/')
 
     try {
-      // 🎬 VIDÉO → Upload direct vers Mux (support HEVC depuis octobre 2025)
+      // 🎬 VIDÉO → Upload direct vers Bunny.net (support HEVC natif)
       if (isVideo) {
-        toast.info('Upload vidéo vers Mux...', 0)
+        toast.info('Upload vidéo vers Bunny.net...', 0)
 
-        // 1. Obtenir URL upload Mux
-        const muxUrlRes = await fetchWithRetry('/api/media/mux-upload-url', {
+        // 1. Obtenir URL upload Bunny
+        const bunnyUrlRes = await fetchWithRetry('/api/media/bunny-upload-url', {
           method: 'POST',
           credentials: 'include'
         })
 
-        if (!muxUrlRes.ok) {
-          throw new Error('Échec création URL Mux')
+        if (!bunnyUrlRes.ok) {
+          throw new Error('Échec création URL Bunny')
         }
 
-        const { uploadUrl, uploadId, assetId } = await muxUrlRes.json()
+        const { uploadUrl, videoId, libraryId } = await bunnyUrlRes.json()
 
-        // 2. Upload DIRECT vers Mux avec progress
+        // 2. Upload DIRECT vers Bunny avec progress
         await uploadWithProgress({
           url: uploadUrl,
           file: data.file,
           method: 'PUT',
-          headers: { 'Content-Type': data.file.type },
+          headers: {
+            'AccessKey': process.env.NEXT_PUBLIC_BUNNY_STREAM_API_KEY || '',
+            'Content-Type': 'application/octet-stream',
+          },
           onProgress: (progress) => {
             setUploadProgress(Math.min(progress, 90)) // Max 90% avant confirmation
-            console.log(`📊 Upload Mux: ${progress}%`)
+            console.log(`📊 Upload Bunny: ${progress}%`)
           },
           maxAttempts: 3
         })
 
         setUploadProgress(95)
-        toast.success('Vidéo uploadée ! Sauvegarde en cours...', 2000)
+        toast.success('Vidéo uploadée ! Traitement en cours...', 2000)
 
         // 3. Confirmer et sauvegarder en DB
-        const confirmRes = await fetchWithRetry('/api/media/mux-confirm', {
+        const confirmRes = await fetchWithRetry('/api/media/bunny-confirm', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
           body: JSON.stringify({
-            uploadId: uploadId,
-            assetId: assetId || undefined,
+            videoId: videoId,
             description: data.description || undefined,
             visibility: data.visibility,
             price: data.visibility === 'premium' && data.price ? data.price : undefined,
@@ -198,15 +200,11 @@ function CameraPageContent() {
         if (!confirmRes.ok) {
           try {
             const errorData = await confirmRes.json()
-            console.error('❌ Erreur confirmation Mux:', errorData)
+            console.error('❌ Erreur confirmation Bunny:', errorData)
 
-            // Afficher le message d'erreur détaillé de Mux
+            // Afficher le message d'erreur détaillé de Bunny
             const errorMessage = errorData.error || 'Échec sauvegarde vidéo'
             toast.error(errorMessage, 6000)
-
-            if (errorData.tip) {
-              setTimeout(() => toast.info(errorData.tip, 5000), 1000)
-            }
 
             setIsPublishing(false)
             setUploadProgress(0)

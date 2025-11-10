@@ -91,6 +91,7 @@ export default function ClientRegisterPage() {
         name: formData.name,
         email: formData.email,
         password: formData.password,
+        confirm: formData.confirmPassword,
         pseudo,
         isAdult: formData.isAdult,
         acceptTos: formData.acceptTos,

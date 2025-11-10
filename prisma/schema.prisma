@@ -677,6 +677,8 @@ model Media {
   pos             Int?
   likeCount       Int             @default(0)
   reactCount      Int             @default(0)
+  // External video ID (Bunny.net videoId, Mux assetId, etc.)
+  externalId      String?
   // Moderation fields (simplified)
   reportCount     Int             @default(0)
   reportReason    String?
@@ -692,6 +694,7 @@ model Media {
   @@index([reportCount])
   @@index([ownerType, ownerId])
   @@index([deletedAt])
+  @@index([externalId])
   @@map("media")
 }
 
