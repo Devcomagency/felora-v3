@@ -12,6 +12,7 @@ import ToastContainer from "@/components/ui/Toast";
 import ConditionalLayout from "@/components/layout/ConditionalLayout";
 import SuspensionChecker from "@/components/auth/SuspensionChecker";
 import UploadMonitor from "@/components/upload/UploadMonitor";
+import { Toaster } from 'react-hot-toast';
 
 export const metadata: Metadata = {
   title: {
@@ -95,6 +96,30 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <CookieConsent />
           <ToastContainer />
           <UploadMonitor />
+          <Toaster
+            position="top-center"
+            toastOptions={{
+              duration: 4000,
+              style: {
+                background: '#1A1A1A',
+                color: '#fff',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                borderRadius: '12px',
+              },
+              success: {
+                iconTheme: {
+                  primary: '#10b981',
+                  secondary: '#fff',
+                },
+              },
+              error: {
+                iconTheme: {
+                  primary: '#ef4444',
+                  secondary: '#fff',
+                },
+              },
+            }}
+          />
         </Providers>
       </body>
     </html>
