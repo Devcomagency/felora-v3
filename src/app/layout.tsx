@@ -11,6 +11,7 @@ import FooterLegal from "@/components/FooterLegal";
 import ToastContainer from "@/components/ui/Toast";
 import ConditionalLayout from "@/components/layout/ConditionalLayout";
 import SuspensionChecker from "@/components/auth/SuspensionChecker";
+import UploadMonitor from "@/components/upload/UploadMonitor";
 
 export const metadata: Metadata = {
   title: {
@@ -93,6 +94,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </AppGateway>
           <CookieConsent />
           <ToastContainer />
+          <UploadMonitor />
         </Providers>
       </body>
     </html>

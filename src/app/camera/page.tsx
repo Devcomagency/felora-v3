@@ -46,6 +46,7 @@ import dynamic from 'next/dynamic'
 import { compressImageIfNeeded } from '@/utils/imageCompression'
 import { uploadWithProgress, fetchWithRetry } from '@/utils/uploadWithProgress'
 import { useToast } from '@/components/ui/Toast'
+import { useUploadStore } from '@/stores/uploadStore'
 
 const CameraCapturePro = dynamic(() => import('@/components/camera/CameraCapturePro'), {
   ssr: false,
@@ -174,9 +175,8 @@ function CameraPageContent() {
         })
 
         setUploadProgress(95)
-        toast.success('Vidéo uploadée ! Traitement en cours...', 2000)
 
-        // 3. Confirmer et sauvegarder en DB
+        // 3. Confirmer et sauvegarder en DB (ou démarrer le traitement)
         const confirmRes = await fetchWithRetry('/api/media/bunny-confirm', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -190,37 +190,37 @@ function CameraPageContent() {
           })
         })
 
-        if (confirmRes.status === 202) {
-          // Vidéo en cours de traitement, on redirige quand même
-          toast.info('Vidéo en cours de traitement. Elle sera disponible dans quelques minutes.', 3000)
-          setTimeout(() => router.push('/'), 1000)
+        const result = await confirmRes.json()
+
+        if (confirmRes.status === 202 && result.processing) {
+          // Vidéo en cours de traitement → Activer FloatingUploadCard
+          console.log('⏳ Vidéo en traitement, activation monitoring')
+
+          const { setUpload } = useUploadStore.getState()
+          setUpload({
+            videoId: result.videoId,
+            thumbnailUrl: result.thumbnailUrl,
+            fileName: data.file.name,
+            pendingData: result.pendingData
+          })
+
+          // Redirection immédiate vers home
+          toast.info('📤 Vidéo en traitement...', 2000)
+          router.push('/')
           return
         }
 
         if (!confirmRes.ok) {
-          try {
-            const errorData = await confirmRes.json()
-            console.error('❌ Erreur confirmation Bunny:', errorData)
-
-            // Afficher le message d'erreur détaillé de Bunny
-            const errorMessage = errorData.error || 'Échec sauvegarde vidéo'
-            toast.error(errorMessage, 6000)
-
-            setIsPublishing(false)
-            setUploadProgress(0)
-            return
-          } catch {
-            // Si le JSON parse échoue, utiliser le message générique
-            throw new Error('Échec sauvegarde vidéo')
-          }
+          const errorMessage = result.error || 'Échec sauvegarde vidéo'
+          toast.error(errorMessage, 6000)
+          setIsPublishing(false)
+          setUploadProgress(0)
+          return
         }
 
-        const result = await confirmRes.json()
-        console.log('✅ Vidéo sauvegardée:', result)
-
-        toast.success('Vidéo publiée !', 1500)
-
-        // Redirection vers l'accueil
+        // Vidéo immédiatement prête (rare mais possible)
+        console.log('✅ Vidéo prête immédiatement:', result)
+        toast.success('✅ Vidéo publiée !', 1500)
         setTimeout(() => router.push('/'), 500)
         return
       }
