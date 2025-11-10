@@ -2,7 +2,7 @@
 
 import { useUploadStore } from '@/stores/uploadStore'
 import FloatingUploadCard from './FloatingUploadCard'
-import { useToast } from '@/hooks/useToast'
+import toast from 'react-hot-toast'
 import { useRouter } from 'next/navigation'
 
 /**
@@ -11,7 +11,6 @@ import { useRouter } from 'next/navigation'
  */
 export default function UploadMonitor() {
   const { videoId, thumbnailUrl, fileName, pendingData, isUploading, clearUpload } = useUploadStore()
-  const toast = useToast()
   const router = useRouter()
 
   if (!isUploading || !videoId || !pendingData) {
@@ -19,7 +18,7 @@ export default function UploadMonitor() {
   }
 
   const handleComplete = (mediaId: string) => {
-    toast.success('✅ Vidéo publiée avec succès !')
+    toast.success('✅ Vidéo publiée avec succès !', { duration: 4000 })
     clearUpload()
 
     // Refresh le feed pour afficher la nouvelle vidéo
@@ -27,7 +26,7 @@ export default function UploadMonitor() {
   }
 
   const handleError = (error: string) => {
-    toast.error(`❌ Échec de l'upload : ${error}`)
+    toast.error(`❌ Échec de l'upload : ${error}`, { duration: 6000 })
     // Ne pas clear pour permettre de retry si nécessaire
   }
 
