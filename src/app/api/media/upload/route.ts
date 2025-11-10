@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
-import { createMuxDirectUpload, getMuxAssetStatus } from '@/lib/mux'
+// Mux removed - replaced by Bunny.net
 
 // ⚡ LIMITES OPTIMISÉES POUR VERCEL FREE
 const MAX_VIDEO_SIZE = 45 * 1024 * 1024 // 45MB (sous la limite Vercel 50MB)
@@ -93,20 +93,15 @@ export async function POST(request: NextRequest) {
     let thumbUrl: string | null = null
     let muxAssetId: string | null = null
 
-    // 🎬 VIDÉO → Retourner URL pour upload DIRECT client → Mux
+    // 🎬 VIDÉO → Use Bunny.net instead (see /api/media/bunny-upload-url)
     if (type === 'VIDEO' || mediaFile.type.includes('video')) {
-      console.log('🎬 Création URL upload Mux direct...')
+      console.log('❌ Vidéos ne sont plus supportées par cet endpoint')
+      console.log('→ Utilisez /api/media/bunny-upload-url à la place')
 
-      const muxUpload = await createMuxDirectUpload()
-
-      // Retourner l'URL au client pour qu'il upload directement
       return NextResponse.json({
-        success: true,
-        requiresClientUpload: true,
-        muxUploadUrl: muxUpload.uploadUrl,
-        muxAssetId: muxUpload.assetId,
-        message: 'Upload direct vers Mux depuis le client'
-      })
+        error: 'Cet endpoint ne supporte plus les vidéos. Utilisez /api/media/bunny-upload-url',
+        bunnyEndpoint: '/api/media/bunny-upload-url'
+      }, { status: 400 })
     }
     // 📷 IMAGE → Cloudflare R2 (pas cher)
     else {
