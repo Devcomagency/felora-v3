@@ -75,11 +75,8 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Créer les URLs (même si pas encore prêtes)
-    // Si pas de HLS URL, on utilise une URL de placeholder qui sera mise à jour
-    const playbackUrl = hlsUrl || `https://vz-cf0fe97d-915.b-cdn.net/${videoId}/playlist.m3u8`
-    const thumbnailUrl = bunnyVideo?.thumbnailUrl || null
     const videoStatus = bunnyVideo?.status || 'processing'
+    const thumbnailUrl = bunnyVideo?.thumbnailUrl || null
 
     console.log('📊 Statut vidéo Bunny:', {
       videoId,
@@ -87,6 +84,30 @@ export async function POST(request: NextRequest) {
       hasHlsUrl: !!hlsUrl,
       hasThumbnail: !!thumbnailUrl
     })
+
+    // Si vidéo PAS encore prête, retourner 202 SANS sauvegarder en DB
+    if (!hlsUrl) {
+      console.log('⏳ Vidéo en traitement, pas encore sauvegardée en DB')
+
+      return NextResponse.json({
+        success: true,
+        processing: true,
+        message: 'Vidéo en cours de traitement...',
+        videoId: videoId,
+        thumbnailUrl: thumbnailUrl,
+        bunnyStatus: videoStatus,
+        // Métadonnées pour sauvegarde ultérieure
+        pendingData: {
+          description,
+          visibility,
+          price,
+          location
+        }
+      }, { status: 202 }) // 202 Accepted
+    }
+
+    // Vidéo PRÊTE → Sauvegarder en DB
+    console.log('✅ Vidéo prête, sauvegarde en DB')
 
     // Déterminer le type de profil (escort ou club)
     let ownerType = 'ESCORT'
@@ -119,14 +140,13 @@ export async function POST(request: NextRequest) {
         ownerType: ownerType as any,
         ownerId: ownerId,
         type: 'VIDEO',
-        url: playbackUrl,
+        url: hlsUrl,
         thumbUrl: thumbnailUrl,
         description: description || null,
         visibility: visibilityEnum,
         price: visibility === 'premium' && price ? parseInt(price) : null,
         pos: 0,
         createdAt: new Date(),
-        // Stocker le videoId Bunny pour référence
         externalId: videoId,
       }
     })
@@ -146,25 +166,9 @@ export async function POST(request: NextRequest) {
       redirectUrl = `/profile/${escortProfile.id}`
     }
 
-    // Si vidéo pas encore prête, retourner statut 202 pour que le frontend sache
-    if (!hlsUrl) {
-      return NextResponse.json({
-        success: true,
-        processing: true,
-        message: 'Vidéo enregistrée, transcoding en cours...',
-        media: {
-          id: media.id,
-          url: media.url,
-          thumbUrl: media.thumbUrl,
-          type: media.type,
-        },
-        redirectUrl,
-        bunnyStatus: videoStatus
-      }, { status: 202 }) // 202 Accepted
-    }
-
     return NextResponse.json({
       success: true,
+      processing: false,
       media: {
         id: media.id,
         url: media.url,
