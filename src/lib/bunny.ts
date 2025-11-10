@@ -9,24 +9,73 @@
  * - Direct upload from client
  * - Automatic transcoding
  * - HLS streaming
+ * - Token Authentication (signed URLs)
  */
+
+import crypto from 'crypto'
 
 const BUNNY_STREAM_API_URL = 'https://video.bunnycdn.com'
 
 interface BunnyStreamLibraryConfig {
   libraryId: string
   apiKey: string
+  tokenAuthKey?: string
 }
 
 function getBunnyConfig(): BunnyStreamLibraryConfig {
   const libraryId = process.env.BUNNY_STREAM_LIBRARY_ID
   const apiKey = process.env.BUNNY_STREAM_API_KEY
+  const tokenAuthKey = process.env.BUNNY_STREAM_TOKEN_AUTH_KEY
 
   if (!libraryId || !apiKey) {
     throw new Error('Variables Bunny manquantes ! Vérifiez BUNNY_STREAM_LIBRARY_ID et BUNNY_STREAM_API_KEY.')
   }
 
-  return { libraryId, apiKey }
+  return { libraryId, apiKey, tokenAuthKey }
+}
+
+/**
+ * Signer une URL Bunny avec Token Authentication
+ *
+ * Documentation: https://docs.bunny.net/docs/stream-security
+ *
+ * @param url - URL à signer (sans token)
+ * @param expirationTimeInSeconds - Durée de validité du token (défaut: 1 heure)
+ * @returns URL signée avec token
+ */
+export function signBunnyUrl(url: string, expirationTimeInSeconds: number = 3600): string {
+  const { tokenAuthKey } = getBunnyConfig()
+
+  if (!tokenAuthKey) {
+    // Pas de token auth configuré, retourner l'URL telle quelle
+    return url
+  }
+
+  // Expiration timestamp (epoch)
+  const expires = Math.floor(Date.now() / 1000) + expirationTimeInSeconds
+
+  // Extraire le path de l'URL
+  // Ex: https://vz-538306.b-cdn.net/video-id/playlist.m3u8 -> /video-id/playlist.m3u8
+  const urlObj = new URL(url)
+  const path = urlObj.pathname
+
+  // Créer la signature selon la formule Bunny:
+  // Base64(SHA256_RAW(token_key + path + expires))
+  const hashString = tokenAuthKey + path + expires
+  const hash = crypto
+    .createHash('sha256')
+    .update(hashString)
+    .digest('base64') // Base64 du hash RAW (pas hex)
+    .replace(/\n/g, '') // Supprimer les newlines
+    .replace(/\+/g, '-') // URL-safe Base64
+    .replace(/\//g, '_')
+    .replace(/=/g, '')
+
+  // Ajouter les paramètres token et expires à l'URL
+  urlObj.searchParams.set('token', hash)
+  urlObj.searchParams.set('expires', expires.toString())
+
+  return urlObj.toString()
 }
 
 /**
@@ -38,7 +87,7 @@ export async function createBunnyDirectUpload(title?: string) {
   try {
     const { libraryId, apiKey } = getBunnyConfig()
 
-    // 1. Créer la vidéo sur Bunny
+    // 1. Créer la vidéo sur Bunny (en mode public par défaut)
     const response = await fetch(`${BUNNY_STREAM_API_URL}/library/${libraryId}/videos`, {
       method: 'POST',
       headers: {
@@ -56,20 +105,39 @@ export async function createBunnyDirectUpload(title?: string) {
     }
 
     const data = await response.json()
+    const videoId = data.guid
 
     console.log('✅ Bunny video created:', {
-      videoId: data.guid,
+      videoId: videoId,
       collectionId: data.collectionId
     })
 
-    // 2. Retourner les infos nécessaires pour l'upload
+    // 2. Mettre la vidéo en mode public immédiatement après création
+    try {
+      await fetch(`${BUNNY_STREAM_API_URL}/library/${libraryId}/videos/${videoId}`, {
+        method: 'POST',
+        headers: {
+          'AccessKey': apiKey,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          isPublic: true
+        })
+      })
+      console.log('✅ Vidéo Bunny définie en mode public')
+    } catch (publicError) {
+      console.warn('⚠️ Impossible de mettre la vidéo en public:', publicError)
+      // Continue quand même, on gérera la visibilité plus tard
+    }
+
+    // 3. Retourner les infos nécessaires pour l'upload
     // L'URL d'upload direct Bunny est construite comme suit :
     // PUT https://video.bunnycdn.com/library/{libraryId}/videos/{videoId}
-    const uploadUrl = `${BUNNY_STREAM_API_URL}/library/${libraryId}/videos/${data.guid}`
+    const uploadUrl = `${BUNNY_STREAM_API_URL}/library/${libraryId}/videos/${videoId}`
 
     return {
       uploadUrl,
-      videoId: data.guid,
+      videoId: videoId,
       collectionId: data.collectionId,
       libraryId,
     }
