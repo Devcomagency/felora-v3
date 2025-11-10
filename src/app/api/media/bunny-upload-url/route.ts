@@ -31,11 +31,13 @@ export async function POST(request: NextRequest) {
       libraryId: bunnyUpload.libraryId
     })
 
+    // Retourner aussi l'API key pour l'upload (sécurisé car endpoint requiert auth)
     return NextResponse.json({
       uploadUrl: bunnyUpload.uploadUrl,
       videoId: bunnyUpload.videoId,
       collectionId: bunnyUpload.collectionId,
       libraryId: bunnyUpload.libraryId,
+      apiKey: process.env.BUNNY_STREAM_API_KEY, // Nécessaire pour l'upload client
       message: 'Upload direct vers Bunny depuis le client'
     })
   } catch (error: any) {

@@ -155,7 +155,7 @@ function CameraPageContent() {
           throw new Error('Échec création URL Bunny')
         }
 
-        const { uploadUrl, videoId, libraryId } = await bunnyUrlRes.json()
+        const { uploadUrl, videoId, libraryId, apiKey } = await bunnyUrlRes.json()
 
         // 2. Upload DIRECT vers Bunny avec progress
         await uploadWithProgress({
@@ -163,7 +163,7 @@ function CameraPageContent() {
           file: data.file,
           method: 'PUT',
           headers: {
-            'AccessKey': process.env.NEXT_PUBLIC_BUNNY_STREAM_API_KEY || '',
+            'AccessKey': apiKey, // API key retournée par le serveur
             'Content-Type': 'application/octet-stream',
           },
           onProgress: (progress) => {
