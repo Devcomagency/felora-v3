@@ -257,7 +257,7 @@ export default function BadgesShowcasePage() {
             <BadgeCard
               title="Club Officiel"
               subtitle="Variante I — Ruban de coin"
-              description="Badge carré avec ruban "nouveauté"."
+              description="Badge carré avec ruban nouveauté."
               badge={
                 <div className="relative inline-flex">
                   <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-white/6 border border-white/12">
