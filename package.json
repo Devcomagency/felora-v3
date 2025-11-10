@@ -35,6 +35,8 @@
     "@capacitor/core": "^7.4.3",
     "@capacitor/haptics": "^7.0.2",
     "@capacitor/ios": "^7.4.3",
+    "@ffmpeg/ffmpeg": "^0.12.15",
+    "@ffmpeg/util": "^0.12.2",
     "@livepeer/react": "^4.3.6",
     "@mux/mux-node": "^7.3.3",
     "@prisma/client": "^6.14.0",

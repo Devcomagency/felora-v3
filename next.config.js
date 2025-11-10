@@ -84,6 +84,9 @@ const nextConfig = {
       'https://*.b-cdn.net',
       'https://iframe.mediadelivery.net',
 
+      // FFmpeg.wasm (video compression)
+      'https://unpkg.com',
+
       // Maps & Location Services
       'https://api.mapbox.com',
       'https://events.mapbox.com',
@@ -137,6 +140,9 @@ const nextConfig = {
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
           // Autoriser la caméra et microphone pour l'écran caméra
           { key: 'Permissions-Policy', value: 'geolocation=(self), microphone=(self), camera=(self)' },
+          // Headers nécessaires pour FFmpeg.wasm (SharedArrayBuffer)
+          { key: 'Cross-Origin-Embedder-Policy', value: 'require-corp' },
+          { key: 'Cross-Origin-Opener-Policy', value: 'same-origin' },
         ],
       },
     ]

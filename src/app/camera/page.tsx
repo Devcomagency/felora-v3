@@ -44,6 +44,7 @@ import { useState, useCallback, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import { compressImageIfNeeded } from '@/utils/imageCompression'
+import { compressVideoIfNeeded } from '@/utils/videoCompression'
 import { uploadWithProgress, fetchWithRetry } from '@/utils/uploadWithProgress'
 import { useToast } from '@/components/ui/Toast'
 import { useUploadStore } from '@/stores/uploadStore'
@@ -144,9 +145,37 @@ function CameraPageContent() {
     try {
       // 🎬 VIDÉO → Upload direct vers Bunny.net (support HEVC natif)
       if (isVideo) {
+        // 1. Compresser la vidéo si nécessaire (accélère l'encodage Bunny)
+        toast.info('Optimisation de la vidéo...', 3000)
+        const compressionResult = await compressVideoIfNeeded(
+          data.file,
+          {
+            maxWidth: 1920,
+            maxHeight: 1080,
+            videoBitrate: '2500k',
+            preset: 'fast'
+          },
+          (progress) => {
+            setUploadProgress(Math.min(progress * 0.3, 30)) // 0-30% pour compression
+            console.log(`🗜️ Compression: ${progress}%`)
+          }
+        )
+
+        const fileToUpload = compressionResult.file
+
+        if (compressionResult.compressionRatio > 0) {
+          console.log('✅ Vidéo compressée:', {
+            original: `${(compressionResult.originalSize / 1024 / 1024).toFixed(2)} MB`,
+            compressed: `${(compressionResult.compressedSize / 1024 / 1024).toFixed(2)} MB`,
+            saved: `${compressionResult.compressionRatio.toFixed(1)}%`
+          })
+          toast.success(`Vidéo optimisée : ${compressionResult.compressionRatio.toFixed(0)}% plus légère`, 2000)
+        }
+
+        setUploadProgress(30)
         toast.info('Upload vidéo vers Bunny.net...', 0)
 
-        // 1. Obtenir URL upload Bunny
+        // 2. Obtenir URL upload Bunny
         const bunnyUrlRes = await fetchWithRetry('/api/media/bunny-upload-url', {
           method: 'POST',
           credentials: 'include'
@@ -158,17 +187,18 @@ function CameraPageContent() {
 
         const { uploadUrl, videoId, libraryId, apiKey } = await bunnyUrlRes.json()
 
-        // 2. Upload DIRECT vers Bunny avec progress
+        // 3. Upload DIRECT vers Bunny avec progress
         await uploadWithProgress({
           url: uploadUrl,
-          file: data.file,
+          file: fileToUpload,
           method: 'PUT',
           headers: {
-            'AccessKey': apiKey, // API key retournée par le serveur
+            'AccessKey': apiKey,
             'Content-Type': 'application/octet-stream',
           },
           onProgress: (progress) => {
-            setUploadProgress(Math.min(progress, 90)) // Max 90% avant confirmation
+            // 30-90% pour upload
+            setUploadProgress(30 + Math.min(progress * 0.6, 60))
             console.log(`📊 Upload Bunny: ${progress}%`)
           },
           maxAttempts: 3

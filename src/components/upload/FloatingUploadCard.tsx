@@ -113,8 +113,8 @@ export default function FloatingUploadCard({
       }
     }, 2000) // Toutes les 2 secondes
 
-    // Poll toutes les 5 secondes
-    pollInterval = setInterval(checkVideoStatus, 5000)
+    // Poll toutes les 3 secondes (détecte plus vite quand vidéo ready)
+    pollInterval = setInterval(checkVideoStatus, 3000)
 
     // Check immédiatement
     checkVideoStatus()
