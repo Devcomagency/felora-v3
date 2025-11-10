@@ -87,7 +87,7 @@ export async function createBunnyDirectUpload(title?: string) {
   try {
     const { libraryId, apiKey } = getBunnyConfig()
 
-    // 1. Créer la vidéo sur Bunny (en mode public par défaut)
+    // 1. Créer la vidéo sur Bunny en mode public dès le départ
     const response = await fetch(`${BUNNY_STREAM_API_URL}/library/${libraryId}/videos`, {
       method: 'POST',
       headers: {
@@ -96,6 +96,9 @@ export async function createBunnyDirectUpload(title?: string) {
       },
       body: JSON.stringify({
         title: title || `Video ${Date.now()}`,
+        collectionId: '',
+        thumbnailTime: 0,
+        isPublic: true  // ✅ Créer directement en public
       })
     })
 
@@ -107,30 +110,13 @@ export async function createBunnyDirectUpload(title?: string) {
     const data = await response.json()
     const videoId = data.guid
 
-    console.log('✅ Bunny video created:', {
+    console.log('✅ Bunny video created (public):', {
       videoId: videoId,
-      collectionId: data.collectionId
+      collectionId: data.collectionId,
+      isPublic: data.isPublic
     })
 
-    // 2. Mettre la vidéo en mode public immédiatement après création
-    try {
-      await fetch(`${BUNNY_STREAM_API_URL}/library/${libraryId}/videos/${videoId}`, {
-        method: 'POST',
-        headers: {
-          'AccessKey': apiKey,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          isPublic: true
-        })
-      })
-      console.log('✅ Vidéo Bunny définie en mode public')
-    } catch (publicError) {
-      console.warn('⚠️ Impossible de mettre la vidéo en public:', publicError)
-      // Continue quand même, on gérera la visibilité plus tard
-    }
-
-    // 3. Retourner les infos nécessaires pour l'upload
+    // 2. Retourner les infos nécessaires pour l'upload
     // L'URL d'upload direct Bunny est construite comme suit :
     // PUT https://video.bunnycdn.com/library/{libraryId}/videos/{videoId}
     const uploadUrl = `${BUNNY_STREAM_API_URL}/library/${libraryId}/videos/${videoId}`
