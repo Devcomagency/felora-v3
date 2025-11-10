@@ -253,7 +253,10 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
   const toggleReaction = reactionsRes?.toggleReaction || (async (_t: any) => {})
 
   // États dérivés (UI)
-  const totalDisplay = stats?.total ?? (initialTotal ?? 0)
+  // Afficher sous le bouton like uniquement le nombre de likes (pas le total des réactions)
+  const likeDisplay = (stats?.reactions && typeof stats.reactions.LIKE === 'number')
+    ? stats.reactions.LIKE
+    : (initialTotal ?? 0)
 
   // Gestion des clics
   const handleSingleClick = useCallback(() => {
@@ -745,7 +748,7 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
             >
               <Heart size={18} className={userHasLiked ? 'fill-current' : ''} />
             </button>
-            <span className="text-xs text-white/90">{totalDisplay}</span>
+            <span className="text-xs text-white/90">{likeDisplay}</span>
           </div>
 
           {/* Réactions */}

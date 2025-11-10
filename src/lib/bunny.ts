@@ -124,14 +124,14 @@ export async function getBunnyVideoStatus(videoId: string) {
 
     const status = statusMap[video.status] || 'unknown'
 
-    // URL de lecture HLS
-    const playbackUrl = video.status >= 5
-      ? `https://iframe.mediadelivery.net/embed/${libraryId}/${videoId}?autoplay=false&preload=true`
+    // URL directe HLS playlist (compatible avec <video> + HLS.js)
+    const hlsUrl = video.status >= 5
+      ? `https://vz-${libraryId}.b-cdn.net/${videoId}/playlist.m3u8`
       : null
 
-    // URL directe HLS
-    const hlsUrl = video.status >= 5
-      ? `https://iframe.mediadelivery.net/play/${libraryId}/${videoId}`
+    // URL iframe embed (pour <iframe> seulement)
+    const playbackUrl = video.status >= 5
+      ? `https://iframe.mediadelivery.net/embed/${libraryId}/${videoId}?autoplay=false&preload=true`
       : null
 
     // Thumbnail
