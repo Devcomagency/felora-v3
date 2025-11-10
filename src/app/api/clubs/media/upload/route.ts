@@ -2,8 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { writeFile } from 'fs/promises'
-import path from 'path'
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
 
 export async function POST(request: NextRequest) {
   try {
@@ -49,25 +48,42 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Déterminer le type de média
-    const mediaType = slot === 'image' ? 'IMAGE' : 'VIDEO'
+    // Déterminer le type média correctement à partir du slot
+    // video -> VIDEO, profile/photo -> IMAGE
+    const mediaType = slot === 'video' ? 'VIDEO' : 'IMAGE'
 
-    // Sauvegarder le fichier réellement sur le disque
+    // Upload vers Cloudflare R2 (compatible Vercel)
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
 
-    // Créer un nom de fichier unique
     const timestamp = Date.now()
-    const fileName = `${club.id}_${slot}_${pos}_${timestamp}_${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`
-    const filePath = path.join(process.cwd(), 'public', 'uploads', 'clubs', fileName)
+    const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_')
+    const key = `clubs/${club.id}/${slot}_${pos}_${timestamp}_${sanitizedName}`
 
-    // Sauvegarder le fichier
-    await writeFile(filePath, buffer)
+    const s3Client = new S3Client({
+      region: 'auto',
+      endpoint: process.env.CLOUDFLARE_R2_ENDPOINT,
+      credentials: {
+        accessKeyId: process.env.CLOUDFLARE_R2_ACCESS_KEY || '',
+        secretAccessKey: process.env.CLOUDFLARE_R2_SECRET_KEY || ''
+      }
+    })
 
-    // Créer l'URL locale
-    const fileUrl = `/uploads/clubs/${fileName}`
+    await s3Client.send(new PutObjectCommand({
+      Bucket: process.env.CLOUDFLARE_R2_BUCKET,
+      Key: key,
+      Body: buffer,
+      ContentType: file.type || 'application/octet-stream'
+    }))
 
-    console.log(`✅ Upload RÉEL pour club ${club.id}: ${mediaType} slot ${pos}, fichier: ${file.name} -> ${filePath}`)
+    const baseUrl = process.env.CLOUDFLARE_R2_PUBLIC_URL || process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL || 'https://media.felora.ch'
+    if (!baseUrl || baseUrl === 'undefined' || baseUrl.includes('undefined')) {
+      console.error('❌ ERREUR CRITIQUE (clubs/upload): baseUrl invalide:', baseUrl)
+      throw new Error('Configuration CDN invalide - baseUrl undefined')
+    }
+    const fileUrl = `${baseUrl}/${key}`
+
+    console.log(`✅ Upload R2 pour club ${club.id}: ${mediaType} slot ${pos}, fichier: ${file.name} -> ${fileUrl}`)
 
     // Chercher s'il existe déjà un média pour cette position
     const existingMedia = await prisma.media.findFirst({

@@ -75,9 +75,14 @@ const nextConfig = {
       'https://*.r2.dev',
       'https://media.felora.ch',
 
-      // Mux Video Upload & Streaming
+      // Mux Video Upload & Streaming (legacy)
       'https://*.mux.com',
       'https://*.production.mux.com',
+
+      // Bunny.net Stream (video hosting)
+      'https://*.bunnycdn.com',
+      'https://*.b-cdn.net',
+      'https://iframe.mediadelivery.net',
 
       // Maps & Location Services
       'https://api.mapbox.com',
