@@ -30,6 +30,7 @@ export default function StaticNavBar() {
   // États pour le menu burger - AVANT le return conditionnel
   const [showMenu, setShowMenu] = useState(false)
   const [showLanguageSelector, setShowLanguageSelector] = useState(false)
+  const [showCameraMenu, setShowCameraMenu] = useState(false)
   const [currentLanguage, setCurrentLanguage] = useState('fr')
   const [hasNotifications, setHasNotifications] = useState(false)
   const [unreadConversations, setUnreadConversations] = useState(0)
@@ -133,9 +134,8 @@ export default function StaticNavBar() {
         icon: Plus,
         label: 'Créer',
         onClick: () => {
-          // 📸 TOUJOURS ouvrir directement l'upload (photos + vidéos)
-          // Plus simple, plus rapide, compatible tous formats
-          router.push('/camera?mode=upload')
+          // Ouvrir le menu de sélection Photo/Vidéo
+          setShowCameraMenu(true)
         },
         active: pathname === '/camera',
         special: true
@@ -515,6 +515,102 @@ export default function StaticNavBar() {
             onClick={() => setShowMenu(false)}
             className="fixed inset-0 bg-black/20 backdrop-blur-sm z-[1001]"
           />
+        )}
+      </AnimatePresence>
+
+      {/* Menu Créer (Photo/Vidéo) */}
+      <AnimatePresence>
+        {showCameraMenu && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowCameraMenu(false)}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9998]"
+            />
+
+            {/* Action Sheet */}
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+              className="fixed bottom-0 left-0 right-0 z-[9999] pb-safe"
+            >
+              <div className="bg-gradient-to-b from-[#1A1A1A] to-[#0D0D0D] border-t border-white/10 rounded-t-3xl shadow-2xl">
+                {/* Header */}
+                <div className="px-6 py-4 border-b border-white/5">
+                  <h3 className="text-lg font-semibold text-white">Créer un contenu</h3>
+                  <p className="text-sm text-white/60 mt-1">Choisissez le type de média</p>
+                </div>
+
+                {/* Options */}
+                <div className="p-4 space-y-2">
+                  {/* Photo */}
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => {
+                      setShowCameraMenu(false)
+                      router.push('/camera?mode=camera')
+                    }}
+                    className="w-full flex items-center gap-4 p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl transition-all group"
+                  >
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
+                      <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                    </div>
+                    <div className="flex-1 text-left">
+                      <h4 className="font-semibold text-white group-hover:text-cyan-400 transition-colors">Photo</h4>
+                      <p className="text-sm text-white/60">Prendre une photo ou importer</p>
+                    </div>
+                    <svg className="w-5 h-5 text-white/40 group-hover:text-white/60 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </motion.button>
+
+                  {/* Vidéo */}
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => {
+                      setShowCameraMenu(false)
+                      router.push('/camera?mode=upload')
+                    }}
+                    className="w-full flex items-center gap-4 p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl transition-all group"
+                  >
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center">
+                      <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                    <div className="flex-1 text-left">
+                      <h4 className="font-semibold text-white group-hover:text-pink-400 transition-colors">Vidéo</h4>
+                      <p className="text-sm text-white/60">Importer une vidéo</p>
+                    </div>
+                    <svg className="w-5 h-5 text-white/40 group-hover:text-white/60 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </motion.button>
+                </div>
+
+                {/* Annuler */}
+                <div className="p-4 pt-2">
+                  <motion.button
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => setShowCameraMenu(false)}
+                    className="w-full py-3 text-white/80 hover:text-white font-medium transition-colors"
+                  >
+                    Annuler
+                  </motion.button>
+                </div>
+              </div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
     </>
