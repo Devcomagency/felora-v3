@@ -66,6 +66,27 @@ export async function POST(request: NextRequest) {
     if (visibility === 'premium') visibilityEnum = 'PREMIUM'
     else if (visibility === 'private') visibilityEnum = 'PRIVATE'
 
+    // Trouver la position maximale actuelle pour cet owner
+    const maxPosMedia = await prisma.media.findFirst({
+      where: {
+        ownerType: ownerType as any,
+        ownerId: ownerId,
+        deletedAt: null
+      },
+      orderBy: { pos: 'desc' },
+      select: { pos: true }
+    })
+
+    // Nouvelle position = max + 1 (ou 1 si aucun média)
+    const newPos = (maxPosMedia?.pos ?? 0) + 1
+
+    console.log('📍 Position calculée:', {
+      maxPos: maxPosMedia?.pos ?? 0,
+      newPos,
+      ownerType,
+      ownerId
+    })
+
     // Sauvegarder en base
     const media = await prisma.media.create({
       data: {
@@ -77,7 +98,7 @@ export async function POST(request: NextRequest) {
         description: description || null,
         visibility: visibilityEnum,
         price: visibility === 'premium' && price ? parseInt(price) : null,
-        pos: 0,
+        pos: newPos,
         createdAt: new Date(),
         externalId: videoId,
       }
