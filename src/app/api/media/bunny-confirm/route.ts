@@ -75,18 +75,18 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    if (!hlsUrl) {
-      // La vidéo est encore en processing
-      return NextResponse.json({
-        error: 'Vidéo en cours de traitement. Elle sera disponible dans quelques minutes.',
-        videoId: videoId,
-        status: bunnyVideo?.status || 'processing'
-      }, { status: 202 }) // 202 Accepted
-    }
-
-    // Créer les URLs
-    const playbackUrl = hlsUrl
+    // Créer les URLs (même si pas encore prêtes)
+    // Si pas de HLS URL, on utilise une URL de placeholder qui sera mise à jour
+    const playbackUrl = hlsUrl || `https://iframe.mediadelivery.net/play/538306/${videoId}`
     const thumbnailUrl = bunnyVideo?.thumbnailUrl || null
+    const videoStatus = bunnyVideo?.status || 'processing'
+
+    console.log('📊 Statut vidéo Bunny:', {
+      videoId,
+      status: videoStatus,
+      hasHlsUrl: !!hlsUrl,
+      hasThumbnail: !!thumbnailUrl
+    })
 
     // Déterminer le type de profil (escort ou club)
     let ownerType = 'ESCORT'
@@ -146,6 +146,23 @@ export async function POST(request: NextRequest) {
       redirectUrl = `/profile/${escortProfile.id}`
     }
 
+    // Si vidéo pas encore prête, retourner statut 202 pour que le frontend sache
+    if (!hlsUrl) {
+      return NextResponse.json({
+        success: true,
+        processing: true,
+        message: 'Vidéo enregistrée, transcoding en cours...',
+        media: {
+          id: media.id,
+          url: media.url,
+          thumbUrl: media.thumbUrl,
+          type: media.type,
+        },
+        redirectUrl,
+        bunnyStatus: videoStatus
+      }, { status: 202 }) // 202 Accepted
+    }
+
     return NextResponse.json({
       success: true,
       media: {
@@ -155,7 +172,7 @@ export async function POST(request: NextRequest) {
         type: media.type,
       },
       redirectUrl,
-      bunnyStatus: bunnyVideo?.status || 'ready'
+      bunnyStatus: videoStatus
     })
   } catch (error: any) {
     console.error('❌ Erreur confirmation Bunny:', error)
