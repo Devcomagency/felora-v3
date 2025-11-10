@@ -42,11 +42,20 @@ export default function FloatingUploadCard({
 
     const checkVideoStatus = async () => {
       try {
+        console.log('🔍 Polling vidéo:', videoId)
         const response = await fetch(`/api/media/bunny-hls-url?videoId=${videoId}`)
         const data = await response.json()
 
+        console.log('📡 Réponse polling:', {
+          success: data.success,
+          status: data.status,
+          hasHlsUrl: !!data.hlsUrl,
+          httpStatus: response.status
+        })
+
         if (data.success && data.hlsUrl) {
           // Vidéo prête ! Finaliser la sauvegarde
+          console.log('✅ Vidéo prête ! Finalisation...')
           clearInterval(pollInterval)
           clearInterval(progressInterval)
           setProgress(100)
@@ -66,6 +75,7 @@ export default function FloatingUploadCard({
           const finalizeData = await finalizeResponse.json()
 
           if (finalizeData.success) {
+            console.log('💾 Vidéo sauvegardée en DB:', finalizeData.media.id)
             onComplete(finalizeData.media.id)
 
             // Auto-dismiss après 3 secondes
@@ -75,9 +85,11 @@ export default function FloatingUploadCard({
           } else {
             throw new Error(finalizeData.error || 'Erreur finalisation')
           }
+        } else {
+          console.log(`⏳ Vidéo en traitement (status: ${data.status})`)
         }
       } catch (error: any) {
-        console.error('Erreur polling vidéo:', error)
+        console.error('❌ Erreur polling vidéo:', error)
         clearInterval(pollInterval)
         clearInterval(progressInterval)
         setStatus('error')
