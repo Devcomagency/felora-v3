@@ -27,6 +27,7 @@ export default function FloatingUploadCard({
   pendingData
 }: FloatingUploadCardProps) {
   const [status, setStatus] = useState<'processing' | 'ready' | 'error'>('processing')
+  const [bunnyStatus, setBunnyStatus] = useState<string>('queued')
   const [progress, setProgress] = useState(0)
   const [isMinimized, setIsMinimized] = useState(false)
   const [isDismissed, setIsDismissed] = useState(false)
@@ -52,6 +53,11 @@ export default function FloatingUploadCard({
           hasHlsUrl: !!data.hlsUrl,
           httpStatus: response.status
         })
+
+        // Mettre à jour le statut Bunny pour l'affichage
+        if (data.status) {
+          setBunnyStatus(data.status)
+        }
 
         if (data.success && data.hlsUrl) {
           // Vidéo prête ! Finaliser la sauvegarde
@@ -97,14 +103,15 @@ export default function FloatingUploadCard({
       }
     }
 
-    // Simuler la progression (0-90% pendant le traitement)
+    // Simuler la progression basée sur le statut Bunny
     let currentProgress = 0
     progressInterval = setInterval(() => {
-      if (currentProgress < 90) {
-        currentProgress += Math.random() * 5
-        setProgress(Math.min(currentProgress, 90))
+      // Progression progressive jusqu'à 95% max pendant l'encodage
+      if (currentProgress < 95) {
+        currentProgress += Math.random() * 2 // Plus lent
+        setProgress(Math.min(currentProgress, 95))
       }
-    }, 1000)
+    }, 2000) // Toutes les 2 secondes
 
     // Poll toutes les 5 secondes
     pollInterval = setInterval(checkVideoStatus, 5000)
@@ -112,13 +119,13 @@ export default function FloatingUploadCard({
     // Check immédiatement
     checkVideoStatus()
 
-    // Timeout après 5 minutes
+    // Timeout après 10 minutes (vidéos lourdes peuvent prendre du temps)
     timeoutId = setTimeout(() => {
       clearInterval(pollInterval)
       clearInterval(progressInterval)
       setStatus('error')
-      onError('Timeout: La vidéo prend trop de temps à traiter')
-    }, 5 * 60 * 1000)
+      onError('Timeout: La vidéo prend trop de temps à traiter (>10min)')
+    }, 10 * 60 * 1000)
 
     return () => {
       clearInterval(pollInterval)
@@ -172,12 +179,21 @@ export default function FloatingUploadCard({
 
               <div>
                 <h3 className="text-sm font-semibold text-white">
-                  {status === 'processing' && 'Traitement en cours...'}
+                  {status === 'processing' && (
+                    bunnyStatus === 'queued' ? 'En attente...' :
+                    bunnyStatus === 'encoding' ? 'Encodage vidéo...' :
+                    'Traitement en cours...'
+                  )}
                   {status === 'ready' && 'Vidéo publiée ! ✨'}
                   {status === 'error' && 'Erreur d\'upload'}
                 </h3>
                 <p className="text-xs text-white/60 truncate max-w-[200px]">
-                  {fileName}
+                  {status === 'processing' && (
+                    bunnyStatus === 'encoding' ? 'Conversion en cours, cela peut prendre quelques minutes...' :
+                    fileName
+                  )}
+                  {status === 'ready' && fileName}
+                  {status === 'error' && fileName}
                 </p>
               </div>
             </div>
