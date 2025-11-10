@@ -254,13 +254,22 @@ export async function GET(
         pos: mediaItem.pos,
         visibility: mediaItem.visibility || 'PUBLIC',
         isPrivate: mediaItem.visibility === 'PRIVATE',
-        price: mediaItem.price || undefined
+        price: mediaItem.price || undefined,
+        createdAt: mediaItem.createdAt
       }
     })
 
     // Combiner les médias (galleryPhotos + table Media)
+    // Trier par date de création DESC (plus récents en premier)
     const allMedia = [...mediaFromTableFormatted, ...media]
-      .sort((a, b) => a.pos - b.pos)
+      .sort((a, b) => {
+        // Si les deux ont createdAt, trier par date DESC
+        if (a.createdAt && b.createdAt) {
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        }
+        // Sinon fallback sur position croissante
+        return a.pos - b.pos
+      })
 
     console.log(`[DEBUG] Profile ${profileId} - Total media: ${allMedia.length} (${media.length} from galleryPhotos + ${mediaFromTableFormatted.length} from Media table)`)
 
