@@ -193,9 +193,9 @@ export async function getBunnyVideoStatus(videoId: string) {
     const status = statusMap[video.status] || 'unknown'
 
     // URL directe HLS playlist (compatible avec <video> + HLS.js)
-    // Utilise la Pull Zone CDN personnalisée: felora.b-cdn.net
+    // Utilise la Pull Zone CDN Stream: vz-cf0fe97d-915.b-cdn.net
     const hlsUrl = video.status >= 5
-      ? `https://felora.b-cdn.net/${videoId}/playlist.m3u8`
+      ? `https://vz-cf0fe97d-915.b-cdn.net/${videoId}/playlist.m3u8`
       : null
 
     // URL iframe embed (pour <iframe> seulement)
@@ -203,9 +203,9 @@ export async function getBunnyVideoStatus(videoId: string) {
       ? `https://iframe.mediadelivery.net/embed/${libraryId}/${videoId}?autoplay=false&preload=true`
       : null
 
-    // Thumbnail (utilise aussi la Pull Zone personnalisée)
+    // Thumbnail (utilise aussi la Pull Zone Stream)
     const thumbnailUrl = video.thumbnailFileName
-      ? `https://felora.b-cdn.net/${videoId}/${video.thumbnailFileName}`
+      ? `https://vz-cf0fe97d-915.b-cdn.net/${videoId}/${video.thumbnailFileName}`
       : null
 
     return {

@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
 
     // Créer les URLs (même si pas encore prêtes)
     // Si pas de HLS URL, on utilise une URL de placeholder qui sera mise à jour
-    const playbackUrl = hlsUrl || `https://felora.b-cdn.net/${videoId}/playlist.m3u8`
+    const playbackUrl = hlsUrl || `https://vz-cf0fe97d-915.b-cdn.net/${videoId}/playlist.m3u8`
     const thumbnailUrl = bunnyVideo?.thumbnailUrl || null
     const videoStatus = bunnyVideo?.status || 'processing'
 
