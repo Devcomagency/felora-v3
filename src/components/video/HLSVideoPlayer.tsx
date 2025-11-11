@@ -7,8 +7,7 @@ import { Play, Settings } from 'lucide-react'
 import type Player from 'video.js/dist/types/player'
 
 interface HLSVideoPlayerProps {
-  playbackId?: string
-  hlsUrl?: string
+  hlsUrl: string
   poster?: string
   title?: string
   className?: string
@@ -23,7 +22,6 @@ interface HLSVideoPlayerProps {
  * Support natif HLS + qualité adaptative
  */
 export default function HLSVideoPlayer({
-  playbackId,
   hlsUrl,
   poster,
   title,
@@ -37,9 +35,7 @@ export default function HLSVideoPlayer({
   const playerRef = useRef<Player | null>(null)
 
   // Construire l'URL source
-  const src = playbackId
-    ? `https://stream.mux.com/${playbackId}.m3u8` // Mux streaming
-    : hlsUrl
+  const src = hlsUrl
 
   useEffect(() => {
     if (!videoRef.current || !src) return
@@ -168,7 +164,6 @@ export default function HLSVideoPlayer({
  * Version compacte pour thumbnails
  */
 export function HLSVideoThumbnail({
-  playbackId,
   hlsUrl,
   poster,
   title,
