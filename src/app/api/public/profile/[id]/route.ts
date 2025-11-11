@@ -203,7 +203,17 @@ export async function GET(
 
     // Construire la galerie media depuis les slots
     const media = gallerySlots
-      .filter(slot => slot?.url) // Seulement les slots avec URL
+      .filter(slot => {
+        // Seulement les slots avec URL ET qui ne sont PAS des URLs Mux obsolètes
+        if (!slot?.url) return false
+        const url = slot.url.toLowerCase()
+        // Filtrer les URLs Mux (obsolètes)
+        if (url.includes('mux.com') || url.includes('muxed.s3')) {
+          console.log(`⚠️ [FILTER] URL Mux obsolète ignorée: ${slot.url.substring(0, 60)}...`)
+          return false
+        }
+        return true
+      })
       .map((slot, index) => {
         const detectedType = detectMediaType(slot.url)
         // Déterminer la visibilité
@@ -238,7 +248,14 @@ export async function GET(
       where: {
         ownerType: 'ESCORT',
         ownerId: profileId,
-        deletedAt: null // Exclure les médias supprimés
+        deletedAt: null, // Exclure les médias supprimés
+        // Exclure les URLs Mux obsolètes
+        NOT: {
+          OR: [
+            { url: { contains: 'mux.com' } },
+            { url: { contains: 'muxed.s3' } }
+          ]
+        }
       },
       orderBy: { createdAt: 'desc' }
     })

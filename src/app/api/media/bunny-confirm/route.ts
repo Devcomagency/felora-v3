@@ -134,6 +134,37 @@ export async function POST(request: NextRequest) {
     if (visibility === 'premium') visibilityEnum = 'PREMIUM'
     else if (visibility === 'private') visibilityEnum = 'PRIVATE'
 
+    // Utiliser la position 1 pour les nouvelles publications (feed)
+    // pos 0 = avatar dashboard (SEUL protégé), pos >= 1 = feed
+    const finalPos = 1
+
+    console.log('📍 Position utilisée pour vidéo Bunny:', {
+      finalPos,
+      ownerType,
+      ownerId,
+      note: 'Nouvelle publication toujours en position 1 (en tête du feed)'
+    })
+
+    // Décaler tous les médias existants >= à cette position
+    // SAUF pos 0 qui est l'avatar dashboard et ne doit JAMAIS être décalé
+    console.log('🔄 Décalage des médias existants à partir de la position', finalPos)
+
+    await prisma.media.updateMany({
+      where: {
+        ownerType: ownerType as any,
+        ownerId: ownerId,
+        pos: { gte: finalPos },
+        deletedAt: null,
+        // Ne JAMAIS décaler pos 0 (avatar)
+        NOT: { pos: 0 }
+      },
+      data: {
+        pos: { increment: 1 }
+      }
+    })
+
+    console.log('✅ Médias décalés (pos 0 préservé)')
+
     // Sauvegarder en base
     const media = await prisma.media.create({
       data: {
@@ -145,7 +176,7 @@ export async function POST(request: NextRequest) {
         description: description || null,
         visibility: visibilityEnum,
         price: visibility === 'premium' && price ? parseInt(price) : null,
-        pos: 0,
+        pos: finalPos,
         createdAt: new Date(),
         externalId: videoId,
       }
