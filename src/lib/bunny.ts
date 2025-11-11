@@ -98,7 +98,10 @@ export async function createBunnyDirectUpload(title?: string) {
         title: title || `Video ${Date.now()}`,
         collectionId: '',
         thumbnailTime: 0,
-        isPublic: true  // ✅ Créer directement en public
+        isPublic: true,  // ✅ Créer directement en public
+        // Paramètres de qualité optimaux
+        storageClass: 'standard',
+        // Bunny encode automatiquement en multi-résolutions (1080p, 720p, 480p, 360p)
       })
     })
 

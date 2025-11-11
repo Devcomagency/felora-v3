@@ -145,34 +145,11 @@ function CameraPageContent() {
     try {
       // 🎬 VIDÉO → Upload direct vers Bunny.net (support HEVC natif)
       if (isVideo) {
-        // 1. Compresser la vidéo si nécessaire (accélère l'encodage Bunny)
-        toast.info('Optimisation de la vidéo...', 3000)
-        const compressionResult = await compressVideoIfNeeded(
-          data.file,
-          {
-            maxWidth: 1920,
-            maxHeight: 1080,
-            videoBitrate: '2500k',
-            preset: 'fast'
-          },
-          (progress) => {
-            setUploadProgress(Math.min(progress * 0.3, 30)) // 0-30% pour compression
-            console.log(`🗜️ Compression: ${progress}%`)
-          }
-        )
+        // Pas de compression côté client - Bunny gère tout l'encodage de manière optimale
+        // Cela évite les blocages longs et la dégradation de qualité
+        const fileToUpload = data.file
 
-        const fileToUpload = compressionResult.file
-
-        if (compressionResult.compressionRatio > 0) {
-          console.log('✅ Vidéo compressée:', {
-            original: `${(compressionResult.originalSize / 1024 / 1024).toFixed(2)} MB`,
-            compressed: `${(compressionResult.compressedSize / 1024 / 1024).toFixed(2)} MB`,
-            saved: `${compressionResult.compressionRatio.toFixed(1)}%`
-          })
-          toast.success(`Vidéo optimisée : ${compressionResult.compressionRatio.toFixed(0)}% plus légère`, 2000)
-        }
-
-        setUploadProgress(30)
+        setUploadProgress(5)
         toast.info('Upload vidéo vers Bunny.net...', 0)
 
         // 2. Obtenir URL upload Bunny
@@ -197,8 +174,8 @@ function CameraPageContent() {
             'Content-Type': 'application/octet-stream',
           },
           onProgress: (progress) => {
-            // 30-90% pour upload
-            setUploadProgress(30 + Math.min(progress * 0.6, 60))
+            // 5-95% pour upload (pas de compression avant)
+            setUploadProgress(5 + Math.min(progress * 0.9, 90))
             console.log(`📊 Upload Bunny: ${progress}%`)
           },
           maxAttempts: 3
