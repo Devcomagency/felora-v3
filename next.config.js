@@ -29,6 +29,10 @@ const nextConfig = {
       { protocol: 'https', hostname: '*.r2.dev', port: '', pathname: '/**' },
       { protocol: 'https', hostname: 'media.felora.ch', port: '', pathname: '/**' },
 
+      // Bunny.net CDN (video thumbnails)
+      { protocol: 'https', hostname: '*.b-cdn.net', port: '', pathname: '/**' },
+      { protocol: 'https', hostname: '*.bunnycdn.com', port: '', pathname: '/**' },
+
       // Fallback/legacy storage
       { protocol: 'https', hostname: '*.amazonaws.com', port: '', pathname: '/**' },
       { protocol: 'https', hostname: '*.supabase.co', port: '', pathname: '/**' },
@@ -36,13 +40,13 @@ const nextConfig = {
       // Production app domains
       { protocol: 'https', hostname: 'felora-v3.vercel.app', port: '', pathname: '/**' },
       { protocol: 'https', hostname: 'felora.ch', port: '', pathname: '/**' },
-      
+
       // Development/testing only
       { protocol: 'https', hostname: 'picsum.photos', port: '', pathname: '/**' },
       { protocol: 'https', hostname: 'fastly.picsum.photos', port: '', pathname: '/**' },
       { protocol: 'https', hostname: 'images.unsplash.com', port: '', pathname: '/**' },
       { protocol: 'https', hostname: 'commondatastorage.googleapis.com', port: '', pathname: '/**' },
-      
+
       // CMS (if used)
       { protocol: 'https', hostname: 'cdn.sanity.io', port: '', pathname: '/**' },
     ],
