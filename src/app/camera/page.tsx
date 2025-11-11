@@ -256,15 +256,7 @@ function CameraPageContent() {
       }
 
       // 📷 IMAGE → Upload vers R2 (comme avant)
-      // 1. Récupérer le nombre de médias existants
-      const mediaResponse = await fetchWithRetry('/api/media/my', {
-        credentials: 'include'
-      })
-      const mediaData = await mediaResponse.json()
-      const existingMediaCount = mediaData.items?.length || 0
-      const newPos = Math.max(2, existingMediaCount + 2)
-
-      // 2. Obtenir presigned URL R2
+      // 1. Obtenir presigned URL R2
       const presignedRes = await fetchWithRetry('/api/media/presigned-url', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -321,6 +313,7 @@ function CameraPageContent() {
       })
 
       // 5. Confirmer et sauvegarder métadonnées
+      // L'API calcule automatiquement la position (pos >= 2 pour le feed)
       const confirmRes = await fetchWithRetry('/api/media/confirm-upload', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -330,7 +323,7 @@ function CameraPageContent() {
           key,
           type: 'IMAGE',
           visibility: data.visibility,
-          pos: newPos,
+          // pos non fourni → l'API calcule automatiquement (max + 1, minimum 2)
           description: data.description || undefined,
           price: data.visibility === 'premium' && data.price ? data.price : undefined
         })
