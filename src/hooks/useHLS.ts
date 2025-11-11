@@ -15,7 +15,9 @@ export function useHLS(
 
   useEffect(() => {
     const video = videoRef.current
-    if (!video || !url) return
+    if (!video || !url || !isActive) return
+
+    console.log('🎬 useHLS triggered:', { url: url.substring(0, 60), isActive })
 
     // Détecter si c'est une vidéo HLS
     const isHLS = url.includes('.m3u8')
@@ -27,6 +29,11 @@ export function useHLS(
         const Hls = (await import('hls.js')).default
 
         if (Hls.isSupported()) {
+          // Détruire l'instance précédente si elle existe
+          if (hlsRef.current) {
+            hlsRef.current.destroy()
+          }
+
           const hls = new Hls({
             enableWorker: true,
             lowLatencyMode: true,
@@ -62,6 +69,7 @@ export function useHLS(
           })
         } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
           // Support natif HLS (Safari)
+          console.log('🍎 Using native HLS support (Safari)')
           video.src = url
         }
       }
@@ -69,17 +77,19 @@ export function useHLS(
       loadHLS()
     } else {
       // MP4 classique
+      console.log('🎥 Loading MP4 video:', url.substring(0, 60))
       video.src = url
     }
 
     // Cleanup
     return () => {
       if (hlsRef.current) {
+        console.log('🧹 Cleaning up HLS instance')
         hlsRef.current.destroy()
         hlsRef.current = null
       }
     }
-  }, [url, videoRef])
+  }, [url, videoRef, isActive])
 
   return hlsRef
 }
