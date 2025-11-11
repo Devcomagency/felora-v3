@@ -283,17 +283,11 @@ export async function GET(
     })
 
     // Combiner les médias (galleryPhotos + table Media)
-    // IMPORTANT: Trier par position ASC (pos 0 = avatar, pos 1 = profil, pos >= 2 = feed)
+    // IMPORTANT: Trier uniquement par date de création DESC (le plus récent en premier)
+    // Peu importe le type (photo ou vidéo), le dernier uploadé apparaît en premier
     const allMedia = [...mediaFromTableFormatted, ...media]
       .sort((a, b) => {
-        // Normaliser positions: undefined/null en fin de liste
-        const posA = (typeof a.pos === 'number' && !Number.isNaN(a.pos)) ? a.pos : 999
-        const posB = (typeof b.pos === 'number' && !Number.isNaN(b.pos)) ? b.pos : 999
-        // Priorité 1: Trier par position (ASC)
-        if (posA !== posB) {
-          return posA - posB
-        }
-        // Priorité 2: Si même position, trier par date DESC
+        // Trier par date de création DESC (plus récent en premier)
         if (a.createdAt && b.createdAt) {
           return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         }
