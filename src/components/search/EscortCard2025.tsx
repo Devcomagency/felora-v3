@@ -50,7 +50,11 @@ export default function EscortCard2025({ escort, onLike, isLiked = false, priori
   }
 
   const getMediaUrl = () => {
-    const rawUrl = escort.heroMedia?.url || escort.profilePhoto
+    // Pour les vidéos, utiliser le thumbnail au lieu de l'URL playlist
+    const rawUrl = escort.heroMedia?.type === 'VIDEO'
+      ? (escort.heroMedia?.thumb || escort.heroMedia?.url || escort.profilePhoto)
+      : (escort.heroMedia?.url || escort.profilePhoto)
+
     if (!rawUrl) return null
 
     // buildCdnUrl gère déjà le nettoyage des préfixes "undefined/" et "null/"
