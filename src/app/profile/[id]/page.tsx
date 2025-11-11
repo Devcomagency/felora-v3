@@ -694,16 +694,18 @@ export default function EscortProfilePage() {
 
       {/* Contenu principal avec padding-top pour header fixe + safe-area (~72px) */}
       <div className="pt-0" style={{ paddingTop: 'calc(72px + env(safe-area-inset-top, 0px))' }}>
-        {/* Séparation des médias : media[0] = photo de profil, media[1-5] = posts feed */}
+        {/* Séparation des médias : pos=0 = avatar, pos>=1 = galerie (triés par date DESC) */}
         {(() => {
-          const profilePhoto = profile.media && profile.media.length > 0 ? profile.media[0] : null
+          // Trouver l'avatar (média avec pos=0)
+          const profilePhoto = profile.media?.find((m: any) => m.pos === 0) || null
           // Pour les vidéos, utiliser le thumbnail au lieu de l'URL de la vidéo
           const finalAvatar = profilePhoto?.type === 'video'
             ? (profilePhoto?.thumb || profilePhoto?.url || profile.avatar)
             : (profilePhoto?.url || profile.avatar)
-          
+
+          // Galerie = tous les médias SAUF l'avatar (pos !== 0)
           const feedMedia = profile.media
-            ? profile.media.slice(1).map((item) => ({
+            ? profile.media.filter((m: any) => m.pos !== 0).map((item) => ({
                 ...item,
                 isPrivate: Boolean(item?.isPrivate || (typeof (item as any)?.visibility === 'string' && (item as any).visibility.toUpperCase() === 'PRIVATE')),
                 price: typeof item?.price === 'number'
