@@ -35,15 +35,16 @@ export default function FloatingUploadCard({
   const y = useMotionValue(0)
   const opacity = useTransform(y, [-100, 0], [0, 1])
 
-  // Polling pour vérifier le statut de la vidéo
+  // Polling pour vérifier le statut de la vidéo (polling exponentiel optimisé)
   useEffect(() => {
-    let pollInterval: NodeJS.Timeout
+    let pollTimeout: NodeJS.Timeout
     let progressInterval: NodeJS.Timeout
     let timeoutId: NodeJS.Timeout
+    let pollAttempts = 0
 
     const checkVideoStatus = async () => {
       try {
-        console.log('🔍 Polling vidéo:', videoId)
+        console.log(`🔍 Polling vidéo (attempt ${pollAttempts + 1}):`, videoId)
         const response = await fetch(`/api/media/bunny-hls-url?videoId=${videoId}`)
         const data = await response.json()
 
@@ -62,7 +63,7 @@ export default function FloatingUploadCard({
         if (data.success && data.hlsUrl) {
           // Vidéo prête ! Finaliser la sauvegarde
           console.log('✅ Vidéo prête ! Finalisation...')
-          clearInterval(pollInterval)
+          clearTimeout(pollTimeout)
           clearInterval(progressInterval)
           setProgress(100)
           setStatus('ready')
@@ -84,51 +85,53 @@ export default function FloatingUploadCard({
             console.log('💾 Vidéo sauvegardée en DB:', finalizeData.media.id)
             onComplete(finalizeData.media.id)
 
-            // Auto-dismiss après 3 secondes
+            // Auto-dismiss après 1 seconde (plus rapide)
             setTimeout(() => {
               setIsDismissed(true)
-            }, 3000)
+            }, 1000)
           } else {
             throw new Error(finalizeData.error || 'Erreur finalisation')
           }
         } else {
+          // Vidéo pas encore prête, continuer le polling avec backoff exponentiel
           console.log(`⏳ Vidéo en traitement (status: ${data.status})`)
+          pollAttempts++
+
+          // Polling exponentiel: 500ms → 1s → 2s → 3s max
+          const nextDelay = Math.min(500 * Math.pow(1.5, pollAttempts), 3000)
+          pollTimeout = setTimeout(checkVideoStatus, nextDelay)
         }
       } catch (error: any) {
         console.error('❌ Erreur polling vidéo:', error)
-        clearInterval(pollInterval)
+        clearTimeout(pollTimeout)
         clearInterval(progressInterval)
         setStatus('error')
         onError(error.message || 'Erreur inconnue')
       }
     }
 
-    // Simuler la progression basée sur le statut Bunny
+    // Progression plus rapide et réaliste
     let currentProgress = 0
     progressInterval = setInterval(() => {
-      // Progression progressive jusqu'à 95% max pendant l'encodage
-      if (currentProgress < 95) {
-        currentProgress += Math.random() * 2 // Plus lent
-        setProgress(Math.min(currentProgress, 95))
+      if (currentProgress < 90) {
+        currentProgress += Math.random() * 5 // Plus rapide
+        setProgress(Math.min(currentProgress, 90))
       }
-    }, 2000) // Toutes les 2 secondes
+    }, 800) // Toutes les 800ms (plus rapide)
 
-    // Poll toutes les 3 secondes (détecte plus vite quand vidéo ready)
-    pollInterval = setInterval(checkVideoStatus, 3000)
-
-    // Check immédiatement
+    // Check immédiatement (pas d'attente initiale)
     checkVideoStatus()
 
-    // Timeout après 10 minutes (vidéos lourdes peuvent prendre du temps)
+    // Timeout après 5 minutes (optimisé, Bunny est rapide)
     timeoutId = setTimeout(() => {
-      clearInterval(pollInterval)
+      clearTimeout(pollTimeout)
       clearInterval(progressInterval)
       setStatus('error')
-      onError('Timeout: La vidéo prend trop de temps à traiter (>10min)')
-    }, 10 * 60 * 1000)
+      onError('Timeout: La vidéo prend trop de temps à traiter (>5min)')
+    }, 5 * 60 * 1000)
 
     return () => {
-      clearInterval(pollInterval)
+      clearTimeout(pollTimeout)
       clearInterval(progressInterval)
       clearTimeout(timeoutId)
     }
