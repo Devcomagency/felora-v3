@@ -914,46 +914,22 @@ export default function MediaFeedWithGallery({
             </div>
 
             <div className="w-full h-full max-w-md max-h-screen bg-black relative border-radius-20">
-              {(() => {
-                const isVideo = fullscreenMedia && (
-                  fullscreenMedia.includes('.mp4') ||
-                  fullscreenMedia.includes('.webm') ||
-                  fullscreenMedia.includes('.mov') ||
-                  fullscreenMedia.includes('.avi') ||
-                  fullscreenMedia.includes('.mkv') ||
-                  fullscreenMedia.includes('.m4v') ||
-                  fullscreenMedia.includes('data:video/')
-                )
-                return isVideo
-              })() ? (
-                <div className="relative w-full h-full">
-                  <video
-                    src={fullscreenMedia}
-                    controls
-                    autoPlay
-                    muted
-                    loop
-                    playsInline
-                    preload="auto"
-                    disablePictureInPicture
-                    webkit-playsinline="true"
-                    x5-video-player-type="h5"
-                    x5-video-player-fullscreen="true"
-                    className="w-full h-full object-cover"
-                    style={{
-                      willChange: 'transform',
-                      backfaceVisibility: 'hidden',
-                      WebkitBackfaceVisibility: 'hidden'
-                    }}
-                  />
-                </div>
-              ) : (
-                <Image
-                  src={fullscreenMedia || ''}
-                  alt={`Media ${fullscreenIndex + 1}`}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 768px) 100vw, 50vw"
+              {fullscreenMedia && mixedContent[fullscreenIndex] && (
+                <MediaPlayer
+                  {...mixedContent[fullscreenIndex]}
+                  index={fullscreenIndex}
+                  isActive={true}
+                  profileId={profileId}
+                  userId={userId}
+                  onLike={onLike ? () => onLike(fullscreenIndex) : undefined}
+                  onSave={onSave ? () => onSave(fullscreenIndex) : undefined}
+                  onReactionChange={onReactionChange}
+                  refreshTrigger={globalRefreshTrigger}
+                  optimisticDelta={optimistic[fullscreenMediaId] || 0}
+                  viewerIsOwner={viewerIsOwner}
+                  onDeleteMedia={onDeleteMedia}
+                  onEditMedia={onEditMedia}
+                  onUpdateMedia={onUpdateMedia}
                 />
               )}
             </div>
