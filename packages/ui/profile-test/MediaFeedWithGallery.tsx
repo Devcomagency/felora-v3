@@ -155,18 +155,18 @@ function MediaPlayer({ id, type, url, thumb, poster, index, isActive, profileId,
       return (
         <div className="relative w-full h-full bg-black rounded-none overflow-hidden group">
           {thumb ? (
-            <Image
+            // Utiliser <img> natif au lieu de Next.js Image pour bypasser l'optimisation
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
               src={thumb}
               alt={`Video thumbnail ${index + 1}`}
-              fill
               loading="lazy"
-              className={`object-cover ${isPrivate ? 'blur-xl brightness-30' : ''}`}
+              className={`w-full h-full object-cover ${isPrivate ? 'blur-xl brightness-30' : ''}`}
               onError={(e) => {
-                console.error('❌ Image thumbnail failed to load:', { thumb, error: e })
+                console.error('❌ Native img thumbnail failed to load:', { thumb, error: e })
                 setError(true)
               }}
-              onLoad={() => console.log('✅ Image thumbnail loaded successfully:', thumb)}
-              sizes="(max-width: 768px) 50vw, 33vw"
+              onLoad={() => console.log('✅ Native img thumbnail loaded successfully:', thumb)}
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900">
