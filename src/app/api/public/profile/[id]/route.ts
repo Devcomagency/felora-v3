@@ -276,6 +276,7 @@ export async function GET(
       })
 
     console.log(`[DEBUG] Profile ${profileId} - Total media: ${allMedia.length} (${media.length} from galleryPhotos + ${mediaFromTableFormatted.length} from Media table)`)
+    console.log(`[DEBUG] Profile ${profileId} - First 3 media:`, allMedia.slice(0, 3).map(m => ({ pos: m.pos, type: m.type, url: m.url?.substring(0, 60) })))
 
     const normalizedSchedule = normalizeScheduleData(escort.timeSlots)
 
