@@ -132,10 +132,26 @@ function MediaPlayer({ id, type, url, thumb, poster, index, isActive, profileId,
     }
   }, [])
 
+  // 🔍 DEBUG LOGS
+  useEffect(() => {
+    console.log('🎬 MediaFeedWithGallery - Media Info:', {
+      index,
+      type,
+      isActive,
+      hasThumb: !!thumb,
+      thumbUrl: thumb?.substring(0, 80),
+      videoUrl: url?.substring(0, 80),
+      isPrivate,
+      error
+    })
+  }, [index, type, isActive, thumb, url, isPrivate, error])
+
   if (type === 'video') {
     // Dans la grille (isActive=false), TOUJOURS afficher le thumbnail (jamais la vidéo)
     // Cela évite les écrans noirs et optimise les performances
     if (!isActive) {
+      console.log('📺 Rendering VIDEO in GRID mode (thumbnail):', { index, hasThumb: !!thumb, thumb })
+
       return (
         <div className="relative w-full h-full bg-black rounded-none overflow-hidden group">
           {thumb ? (
@@ -145,7 +161,11 @@ function MediaPlayer({ id, type, url, thumb, poster, index, isActive, profileId,
               fill
               loading="lazy"
               className={`object-cover ${isPrivate ? 'blur-xl brightness-30' : ''}`}
-              onError={() => setError(true)}
+              onError={(e) => {
+                console.error('❌ Image thumbnail failed to load:', { thumb, error: e })
+                setError(true)
+              }}
+              onLoad={() => console.log('✅ Image thumbnail loaded successfully:', thumb)}
               sizes="(max-width: 768px) 50vw, 33vw"
             />
           ) : (

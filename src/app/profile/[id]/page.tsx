@@ -248,18 +248,36 @@ export default function EscortProfilePage() {
 
         const data = await response.json()
 
+        console.log('🔍 [Profile Page] Raw API data.media:', data.media?.slice(0, 3))
+
         const normalizedMedia = Array.isArray(data.media)
-          ? data.media.map((item: any) => ({
-              ...item,
-              visibility: typeof item?.visibility === 'string' ? item.visibility.toUpperCase() : 'PUBLIC',
-              isPrivate: Boolean(item?.isPrivate || (typeof item?.visibility === 'string' && item.visibility.toUpperCase() === 'PRIVATE')),
-              price: typeof item?.price === 'number'
-                ? item.price
-                : typeof item?.price === 'string' && item.price.trim() !== ''
-                  ? Number(item.price)
-                  : undefined
-            }))
+          ? data.media.map((item: any, idx: number) => {
+              const normalized = {
+                ...item,
+                visibility: typeof item?.visibility === 'string' ? item.visibility.toUpperCase() : 'PUBLIC',
+                isPrivate: Boolean(item?.isPrivate || (typeof item?.visibility === 'string' && item.visibility.toUpperCase() === 'PRIVATE')),
+                price: typeof item?.price === 'number'
+                  ? item.price
+                  : typeof item?.price === 'string' && item.price.trim() !== ''
+                    ? Number(item.price)
+                    : undefined
+              }
+
+              if (idx < 3) {
+                console.log(`🔍 [Profile Page] Normalized media ${idx}:`, {
+                  type: normalized.type,
+                  hasThumb: !!normalized.thumb,
+                  thumb: normalized.thumb?.substring(0, 80),
+                  url: normalized.url?.substring(0, 80),
+                  pos: normalized.pos
+                })
+              }
+
+              return normalized
+            })
           : []
+
+        console.log('🔍 [Profile Page] Total normalized media:', normalizedMedia.length)
 
         // Déterminer l'avatar : priorité à profilePhoto, sinon premier média
         const avatar = data.profilePhoto 
