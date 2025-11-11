@@ -721,6 +721,21 @@ export default function MediaFeedWithGallery({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[9999] bg-black flex items-center justify-center"
+            drag="x"
+            dragConstraints={{ left: 0, right: 0 }}
+            dragElastic={0.2}
+            onDragEnd={(e, { offset, velocity }) => {
+              const swipeThreshold = 50
+              const swipeVelocity = 500
+
+              if (offset.x > swipeThreshold || velocity.x > swipeVelocity) {
+                // Swipe vers la droite → média précédent
+                prevMedia()
+              } else if (offset.x < -swipeThreshold || velocity.x < -swipeVelocity) {
+                // Swipe vers la gauche → média suivant
+                nextMedia()
+              }
+            }}
           >
             <div className="absolute top-0 left-0 right-0 p-6 bg-gradient-to-b from-black/80 to-transparent safe-area-inset-top z-[10000]">
               <div className="flex items-center justify-between">
