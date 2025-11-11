@@ -256,7 +256,26 @@ function CameraPageContent() {
       }
 
       // 📷 IMAGE → Upload vers R2 (comme avant)
-      // 1. Obtenir presigned URL R2
+      // 1. Calculer la position pour le feed (pos >= 2)
+      const mediaResponse = await fetchWithRetry('/api/media/my?visibility=PUBLIC', {
+        credentials: 'include'
+      })
+      const mediaData = await mediaResponse.json()
+      // Filtrer uniquement les médias du feed (pos >= 2)
+      const feedMedia = (mediaData.items || []).filter((m: any) => m.pos >= 2)
+      const maxFeedPos = feedMedia.length > 0
+        ? Math.max(...feedMedia.map((m: any) => m.pos))
+        : 1
+      const newPos = maxFeedPos + 1
+
+      console.log('📍 Position calculée pour le feed:', {
+        totalMedia: mediaData.items?.length || 0,
+        feedMedia: feedMedia.length,
+        maxFeedPos,
+        newPos
+      })
+
+      // 2. Obtenir presigned URL R2
       const presignedRes = await fetchWithRetry('/api/media/presigned-url', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -313,7 +332,6 @@ function CameraPageContent() {
       })
 
       // 5. Confirmer et sauvegarder métadonnées
-      // L'API calcule automatiquement la position (pos >= 2 pour le feed)
       const confirmRes = await fetchWithRetry('/api/media/confirm-upload', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -323,7 +341,7 @@ function CameraPageContent() {
           key,
           type: 'IMAGE',
           visibility: data.visibility,
-          // pos non fourni → l'API calcule automatiquement (max + 1, minimum 2)
+          pos: newPos, // Position calculée pour le feed (>= 2)
           description: data.description || undefined,
           price: data.visibility === 'premium' && data.price ? data.price : undefined
         })

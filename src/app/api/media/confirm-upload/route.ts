@@ -56,33 +56,13 @@ export async function POST(request: NextRequest) {
     if (visibility === 'premium') visibilityEnum = 'PREMIUM'
     else if (visibility === 'private') visibilityEnum = 'PRIVATE'
 
-    // Trouver la position maximale actuelle pour cet owner
-    // IMPORTANT: Seuls les médias avec pos >= 2 sont dans le feed
-    // pos 0 = avatar dashboard, pos 1 = première photo profil
-    const maxPosMedia = await prisma.media.findFirst({
-      where: {
-        ownerType: ownerType as any,
-        ownerId: ownerId,
-        deletedAt: null,
-        pos: { gte: 2 } // Seulement les médias du feed
-      },
-      orderBy: { pos: 'desc' },
-      select: { pos: true }
-    })
+    // Utiliser la position fournie ou 0 par défaut
+    // pos 0 = avatar dashboard, pos 1 = photo profil, pos >= 2 = feed
+    const finalPos = pos !== undefined ? parseInt(pos) : 0
 
-    // Si pos fourni et >= 2, l'utiliser. Sinon, calculer automatiquement
-    let newPos: number
-    if (pos !== undefined && parseInt(pos) >= 2) {
-      newPos = parseInt(pos)
-    } else {
-      // Nouvelle position = max + 1, minimum 2 (début du feed)
-      newPos = Math.max(2, (maxPosMedia?.pos ?? 1) + 1)
-    }
-
-    console.log('📍 Position calculée:', {
-      maxPos: maxPosMedia?.pos ?? 1,
-      newPos,
+    console.log('📍 Position utilisée:', {
       providedPos: pos,
+      finalPos,
       ownerType,
       ownerId
     })
@@ -98,7 +78,7 @@ export async function POST(request: NextRequest) {
         description: description || null,
         visibility: visibilityEnum,
         price: visibility === 'premium' && price ? parseInt(price) : null,
-        pos: newPos,
+        pos: finalPos,
         createdAt: new Date(),
       }
     })
