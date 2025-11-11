@@ -133,6 +133,44 @@ function MediaPlayer({ id, type, url, thumb, poster, index, isActive, profileId,
   }, [])
 
   if (type === 'video') {
+    // Dans la grille (isActive=false), afficher le thumbnail au lieu de la vidéo
+    if (!isActive && thumb) {
+      return (
+        <div className="relative w-full h-full bg-black rounded-none overflow-hidden group">
+          <Image
+            src={thumb}
+            alt={`Video thumbnail ${index + 1}`}
+            fill
+            loading="lazy"
+            className={`object-cover ${isPrivate ? 'blur-xl brightness-30' : ''}`}
+            onError={() => setError(true)}
+            sizes="(max-width: 768px) 50vw, 33vw"
+          />
+
+          <button
+            onClick={() => {
+              onFullscreen && onFullscreen()
+              trackMediaView(url, index)
+            }}
+            className="absolute inset-0 bg-transparent group-hover:bg-black/20 transition-colors duration-200 flex items-center justify-center"
+            aria-label="Lire la vidéo"
+          >
+            <div className="w-16 h-16 bg-black/70 backdrop-blur-sm rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
+              {isPrivate ? <Crown size={24} className="text-white" /> : <Play size={24} className="text-white ml-1" />}
+            </div>
+          </button>
+
+          <div className="absolute bottom-2 right-2">
+            <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-black/70 backdrop-blur-sm text-white text-xs">
+              <Flame className="w-4 h-4 text-violet-300" />
+              <span>{(stats?.total ?? 0) + (optimisticDelta || 0)}</span>
+            </div>
+          </div>
+        </div>
+      )
+    }
+
+    // Dans le feed (isActive=true), afficher la vraie vidéo
     return (
       <div className="relative w-full h-full bg-black rounded-none overflow-hidden group">
         <video
@@ -175,7 +213,7 @@ function MediaPlayer({ id, type, url, thumb, poster, index, isActive, profileId,
           </div>
         </div>
 
-        
+
 
       </div>
     )
