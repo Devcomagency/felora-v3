@@ -679,7 +679,10 @@ export default function EscortProfilePage() {
         {/* Séparation des médias : media[0] = photo de profil, media[1-5] = posts feed */}
         {(() => {
           const profilePhoto = profile.media && profile.media.length > 0 ? profile.media[0] : null
-          const finalAvatar = profilePhoto?.url || profile.avatar
+          // Pour les vidéos, utiliser le thumbnail au lieu de l'URL de la vidéo
+          const finalAvatar = profilePhoto?.type === 'video'
+            ? (profilePhoto?.thumb || profilePhoto?.url || profile.avatar)
+            : (profilePhoto?.url || profile.avatar)
           
           const feedMedia = profile.media
             ? profile.media.slice(1).map((item) => ({
