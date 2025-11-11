@@ -279,6 +279,14 @@ function MediaPlayer({ id, type, url, thumb, poster, index, isActive, profileId,
   // Pour les vidéos, utiliser le thumbnail au lieu de l'URL .m3u8
   const displaySrc = type === 'video' ? (thumb || url) : url
 
+  console.log('🖼️ Rendering fallback Image component:', {
+    index,
+    type,
+    displaySrc: displaySrc?.substring(0, 60),
+    isVideo: type === 'video',
+    hasThumb: !!thumb
+  })
+
   return (
     <div className="relative w-full h-full bg-black rounded-none overflow-hidden group">
       <Image
@@ -287,7 +295,10 @@ function MediaPlayer({ id, type, url, thumb, poster, index, isActive, profileId,
         fill
         loading="lazy"
         className={`object-cover ${isPrivate ? 'blur-xl brightness-30' : ''}`}
-        onError={() => setError(true)}
+        onError={(e) => {
+          console.error('❌ Fallback Image failed:', { displaySrc, error: e })
+          setError(true)
+        }}
         sizes="(max-width: 768px) 50vw, 33vw"
       />
 
