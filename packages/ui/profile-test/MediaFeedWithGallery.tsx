@@ -181,10 +181,13 @@ function MediaPlayer({ id, type, url, thumb, poster, index, isActive, profileId,
     )
   }
 
+  // Pour les vidéos, utiliser le thumbnail au lieu de l'URL .m3u8
+  const displaySrc = type === 'video' ? (thumb || url) : url
+
   return (
     <div className="relative w-full h-full bg-black rounded-none overflow-hidden group">
       <Image
-        src={url}
+        src={displaySrc}
         alt={`Media ${index + 1}`}
         fill
         loading="lazy"
