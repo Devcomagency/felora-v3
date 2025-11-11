@@ -221,10 +221,13 @@ function MediaPlayer({ type, url, thumb, poster, index, isActive, onLike, onSave
   }
 
   // Image player
+  // Utiliser le thumbnail pour les vidéos, sinon l'URL directe
+  const imageSrc = thumb || url
+
   return (
     <div className="relative w-full h-full bg-black rounded-lg overflow-hidden group">
       <Image
-        src={url}
+        src={imageSrc}
         alt={`Media ${index + 1}`}
         fill
         className="object-cover"
