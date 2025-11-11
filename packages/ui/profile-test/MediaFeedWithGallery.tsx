@@ -108,11 +108,28 @@ function MediaPlayer({ id, type, url, thumb, poster, index, isActive, profileId,
     const video = videoRef.current
     if (!video || type !== 'video') return
 
+    console.log('🎮 Video play control:', {
+      isActive,
+      isPrivate,
+      hasVideo: !!video,
+      videoSrc: video.src?.substring(0, 60),
+      readyState: video.readyState,
+      networkState: video.networkState
+    })
+
     if (isActive && !isPrivate) {
+      console.log('▶️ Attempting to play video...')
       video.play()
-        .then(() => setIsPlaying(true))
-        .catch(() => setError(true))
+        .then(() => {
+          console.log('✅ Video playing successfully')
+          setIsPlaying(true)
+        })
+        .catch((err) => {
+          console.error('❌ Video play failed:', err)
+          setError(true)
+        })
     } else {
+      console.log('⏸️ Pausing video')
       video.pause()
       setIsPlaying(false)
     }
@@ -132,18 +149,21 @@ function MediaPlayer({ id, type, url, thumb, poster, index, isActive, profileId,
     }
   }, [])
 
-  // 🔍 DEBUG LOGS
+  // 🔍 DEBUG LOGS - Log isActive changes
   useEffect(() => {
-    console.log('🎬 MediaFeedWithGallery - Media Info:', {
-      index,
-      type,
-      isActive,
-      hasThumb: !!thumb,
-      thumbUrl: thumb?.substring(0, 80),
-      videoUrl: url?.substring(0, 80),
-      isPrivate,
-      error
-    })
+    if (type === 'video') {
+      console.log('🎬 MediaFeedWithGallery - State Change:', {
+        index,
+        type,
+        isActive,
+        hasThumb: !!thumb,
+        thumbUrl: thumb?.substring(0, 80),
+        videoUrl: url?.substring(0, 80),
+        isPrivate,
+        error,
+        hasVideoRef: !!videoRef.current
+      })
+    }
   }, [index, type, isActive, thumb, url, isPrivate, error])
 
   if (type === 'video') {
@@ -179,6 +199,13 @@ function MediaPlayer({ id, type, url, thumb, poster, index, isActive, profileId,
 
           <button
             onClick={() => {
+              console.log('👆 Click on video thumbnail:', {
+                index,
+                url: url?.substring(0, 60),
+                thumb: thumb?.substring(0, 60),
+                isActive,
+                type
+              })
               onFullscreen && onFullscreen()
               trackMediaView(url, index)
             }}
