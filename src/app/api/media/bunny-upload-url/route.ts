@@ -21,14 +21,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
     }
 
-    console.log('🎬 Création URL upload Bunny pour user:', session.user.id)
+    const uploadStartTime = Date.now()
+    console.log(`🎬 [BUNNY PERF] Création URL upload Bunny pour user: ${session.user.id} (timestamp: ${uploadStartTime})`)
 
     // Créer la vidéo sur Bunny et obtenir l'URL d'upload
     const bunnyUpload = await createBunnyDirectUpload()
 
-    console.log('✅ URL upload Bunny créée:', {
+    console.log('✅ [BUNNY PERF] URL upload Bunny créée:', {
       videoId: bunnyUpload.videoId,
-      libraryId: bunnyUpload.libraryId
+      libraryId: bunnyUpload.libraryId,
+      uploadStartTime
     })
 
     // Retourner aussi l'API key pour l'upload (sécurisé car endpoint requiert auth)

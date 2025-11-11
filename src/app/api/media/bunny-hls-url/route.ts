@@ -21,16 +21,21 @@ export async function GET(request: NextRequest) {
     }
 
     // Récupérer le statut de la vidéo Bunny
+    const startTime = Date.now()
     const bunnyVideo = await getBunnyVideoStatus(videoId)
+    const apiLatency = Date.now() - startTime
 
-    console.log(`🔍 Status vidéo ${videoId}:`, {
+    console.log(`🔍 [BUNNY PERF] Status vidéo ${videoId}:`, {
       status: bunnyVideo.status,
+      rawStatus: bunnyVideo.rawStatus,
       hasHlsUrl: !!bunnyVideo.hlsUrl,
-      hasThumbnail: !!bunnyVideo.thumbnailUrl
+      hasThumbnail: !!bunnyVideo.thumbnailUrl,
+      apiLatency: `${apiLatency}ms`
     })
 
     // Vérifier si la vidéo est prête
     if (bunnyVideo.status === 'ready' && bunnyVideo.hlsUrl) {
+      console.log(`✅ [BUNNY PERF] Vidéo ${videoId} PRÊTE ! Status: ready (rawStatus: ${bunnyVideo.rawStatus})`)
       return NextResponse.json({
         success: true,
         hlsUrl: bunnyVideo.hlsUrl,
