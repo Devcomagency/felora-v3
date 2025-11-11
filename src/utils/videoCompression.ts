@@ -72,8 +72,8 @@ export async function compressVideoIfNeeded(
   const {
     maxWidth = 1920,    // 1080p max
     maxHeight = 1080,
-    videoBitrate = '2500k', // 2.5 Mbps
-    audioBitrate = '128k',
+    videoBitrate = '4500k', // 4.5 Mbps pour réduire le banding/halo
+    audioBitrate = '160k',
     fps = 30,
     preset = 'fast' // Compromis vitesse/qualité
   } = options
@@ -122,6 +122,10 @@ export async function compressVideoIfNeeded(
       '-i', 'input.mp4',
       '-vf', `scale='min(${maxWidth},iw)':'min(${maxHeight},ih)':force_original_aspect_ratio=decrease`,
       '-c:v', 'libx264',
+      '-pix_fmt', 'yuv420p',            // Compatibilité player, évite artefacts
+      '-profile:v', 'high',
+      '-g', '48',                       // GOP pour playback fluide (~1.6s à 30fps)
+      '-bf', '2',                       // B-frames pour qualité
       '-preset', preset,
       '-b:v', videoBitrate,
       '-maxrate', videoBitrate,

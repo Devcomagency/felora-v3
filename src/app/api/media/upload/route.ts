@@ -35,7 +35,8 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData()
     const mediaFile = formData.get('media') as File
     const type = formData.get('type') as string || 'IMAGE'
-    const pos = formData.get('pos') as string || '0'
+    // Ne jamais par défaut à '0' (avatar). Utiliser '2' comme première position feed.
+    const pos = (formData.get('pos') as string) || '2'
     const description = formData.get('description') as string || ''
     const visibility = formData.get('visibility') as string || 'public'
     const location = formData.get('location') as string || ''

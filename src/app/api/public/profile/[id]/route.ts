@@ -197,8 +197,13 @@ export async function GET(
     const detectMediaType = (url: string): 'video' | 'image' => {
       if (!url) return 'image'
       const lowerUrl = url.toLowerCase()
-      const videoExtensions = ['.mp4', '.webm', '.mov', '.avi', '.mkv', '.m4v']
-      return videoExtensions.some(ext => lowerUrl.includes(ext)) ? 'video' : 'image'
+
+      // Check for video file extensions + HLS streaming formats
+      const videoExtensions = ['.mp4', '.webm', '.mov', '.avi', '.mkv', '.m4v', '.m3u8', '.ts']
+      // Also check for Bunny.net CDN video URLs (format: https://vz-*.b-cdn.net/{videoId}/playlist.m3u8)
+      const isBunnyVideo = lowerUrl.includes('b-cdn.net') && lowerUrl.includes('playlist.m3u8')
+
+      return (videoExtensions.some(ext => lowerUrl.includes(ext)) || isBunnyVideo) ? 'video' : 'image'
     }
 
     // Construire la galerie media depuis les slots
@@ -262,10 +267,11 @@ export async function GET(
 
     // Ajouter les médias de la table Media à la liste existante
     const mediaFromTableFormatted = mediaFromTable.map(mediaItem => {
-      const detectedType = detectMediaType(mediaItem.url)
+      // Utiliser le type de la base de données (plus fiable) plutôt que la détection
+      // Le type est déjà stocké correctement lors de l'upload
       return {
         id: mediaItem.id,
-        type: detectedType,
+        type: mediaItem.type.toLowerCase() as 'video' | 'image',
         url: mediaItem.url,
         thumb: mediaItem.thumbUrl || undefined,
         pos: mediaItem.pos,
@@ -280,10 +286,12 @@ export async function GET(
     // IMPORTANT: Trier par position ASC (pos 0 = avatar, pos 1 = profil, pos >= 2 = feed)
     const allMedia = [...mediaFromTableFormatted, ...media]
       .sort((a, b) => {
+        // Normaliser positions: undefined/null en fin de liste
+        const posA = (typeof a.pos === 'number' && !Number.isNaN(a.pos)) ? a.pos : 999
+        const posB = (typeof b.pos === 'number' && !Number.isNaN(b.pos)) ? b.pos : 999
         // Priorité 1: Trier par position (ASC)
-        // pos 0 doit être en premier (avatar dashboard)
-        if (a.pos !== b.pos) {
-          return a.pos - b.pos
+        if (posA !== posB) {
+          return posA - posB
         }
         // Priorité 2: Si même position, trier par date DESC
         if (a.createdAt && b.createdAt) {

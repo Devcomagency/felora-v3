@@ -56,9 +56,12 @@ export async function POST(request: NextRequest) {
     if (visibility === 'premium') visibilityEnum = 'PREMIUM'
     else if (visibility === 'private') visibilityEnum = 'PRIVATE'
 
-    // Utiliser la position fournie ou 0 par défaut
+    // Utiliser la position fournie ou 2 par défaut
     // pos 0 = avatar dashboard (SEUL protégé), pos >= 1 = feed
-    const finalPos = pos !== undefined ? parseInt(pos) : 0
+    // IMPORTANT: ne jamais défaut à 0 (sinon écrase l'avatar)
+    const finalPos = (pos !== undefined && pos !== null && `${pos}`.trim() !== '')
+      ? parseInt(pos)
+      : 2
 
     console.log('📍 Position utilisée:', {
       providedPos: pos,
