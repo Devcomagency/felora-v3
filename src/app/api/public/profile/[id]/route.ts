@@ -260,15 +260,19 @@ export async function GET(
     })
 
     // Combiner les médias (galleryPhotos + table Media)
-    // Trier par date de création DESC (plus récents en premier)
+    // IMPORTANT: Trier par position ASC (pos 0 = avatar, pos 1 = profil, pos >= 2 = feed)
     const allMedia = [...mediaFromTableFormatted, ...media]
       .sort((a, b) => {
-        // Si les deux ont createdAt, trier par date DESC
+        // Priorité 1: Trier par position (ASC)
+        // pos 0 doit être en premier (avatar dashboard)
+        if (a.pos !== b.pos) {
+          return a.pos - b.pos
+        }
+        // Priorité 2: Si même position, trier par date DESC
         if (a.createdAt && b.createdAt) {
           return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         }
-        // Sinon fallback sur position croissante
-        return a.pos - b.pos
+        return 0
       })
 
     console.log(`[DEBUG] Profile ${profileId} - Total media: ${allMedia.length} (${media.length} from galleryPhotos + ${mediaFromTableFormatted.length} from Media table)`)
