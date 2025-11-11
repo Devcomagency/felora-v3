@@ -256,23 +256,15 @@ function CameraPageContent() {
       }
 
       // 📷 IMAGE → Upload vers R2 (comme avant)
-      // 1. Calculer la position pour le feed (pos >= 2)
-      const mediaResponse = await fetchWithRetry('/api/media/my?visibility=PUBLIC', {
-        credentials: 'include'
-      })
-      const mediaData = await mediaResponse.json()
-      // Filtrer uniquement les médias du feed (pos >= 2)
-      const feedMedia = (mediaData.items || []).filter((m: any) => m.pos >= 2)
-      const maxFeedPos = feedMedia.length > 0
-        ? Math.max(...feedMedia.map((m: any) => m.pos))
-        : 1
-      const newPos = maxFeedPos + 1
+      // 1. Calculer la position pour le feed
+      // IMPORTANT: Les nouveaux médias doivent toujours aller en position 2
+      // (juste après pos 0 = avatar et pos 1 = photo profil)
+      // On décale tous les autres médias existants
+      const newPos = 2
 
       console.log('📍 Position calculée pour le feed:', {
-        totalMedia: mediaData.items?.length || 0,
-        feedMedia: feedMedia.length,
-        maxFeedPos,
-        newPos
+        newPos,
+        note: 'Nouvelle publication toujours en position 2 (en tête du feed)'
       })
 
       // 2. Obtenir presigned URL R2

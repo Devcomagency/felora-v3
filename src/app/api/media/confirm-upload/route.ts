@@ -67,6 +67,25 @@ export async function POST(request: NextRequest) {
       ownerId
     })
 
+    // Si on insère en position >= 2 (feed), décaler tous les médias existants >= à cette position
+    if (finalPos >= 2) {
+      console.log('🔄 Décalage des médias existants à partir de la position', finalPos)
+
+      await prisma.media.updateMany({
+        where: {
+          ownerType: ownerType as any,
+          ownerId: ownerId,
+          pos: { gte: finalPos },
+          deletedAt: null
+        },
+        data: {
+          pos: { increment: 1 }
+        }
+      })
+
+      console.log('✅ Médias décalés')
+    }
+
     // Sauvegarder en base
     const media = await prisma.media.create({
       data: {
