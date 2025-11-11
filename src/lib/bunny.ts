@@ -191,9 +191,10 @@ export async function getBunnyVideoStatus(videoId: string) {
       : null
 
     // Thumbnail (utilise aussi la Pull Zone Stream)
+    // Bunny génère toujours un thumbnail.jpg par défaut
     const thumbnailUrl = video.thumbnailFileName
       ? `https://vz-cf0fe97d-915.b-cdn.net/${videoId}/${video.thumbnailFileName}`
-      : null
+      : `https://vz-cf0fe97d-915.b-cdn.net/${videoId}/thumbnail.jpg` // Fallback sur thumbnail.jpg par défaut
 
     return {
       status,
