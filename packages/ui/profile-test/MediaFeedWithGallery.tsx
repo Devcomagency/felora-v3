@@ -133,19 +133,29 @@ function MediaPlayer({ id, type, url, thumb, poster, index, isActive, profileId,
   }, [])
 
   if (type === 'video') {
-    // Dans la grille (isActive=false), afficher le thumbnail au lieu de la vidéo
-    if (!isActive && thumb) {
+    // Dans la grille (isActive=false), TOUJOURS afficher le thumbnail (jamais la vidéo)
+    // Cela évite les écrans noirs et optimise les performances
+    if (!isActive) {
       return (
         <div className="relative w-full h-full bg-black rounded-none overflow-hidden group">
-          <Image
-            src={thumb}
-            alt={`Video thumbnail ${index + 1}`}
-            fill
-            loading="lazy"
-            className={`object-cover ${isPrivate ? 'blur-xl brightness-30' : ''}`}
-            onError={() => setError(true)}
-            sizes="(max-width: 768px) 50vw, 33vw"
-          />
+          {thumb ? (
+            <Image
+              src={thumb}
+              alt={`Video thumbnail ${index + 1}`}
+              fill
+              loading="lazy"
+              className={`object-cover ${isPrivate ? 'blur-xl brightness-30' : ''}`}
+              onError={() => setError(true)}
+              sizes="(max-width: 768px) 50vw, 33vw"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900">
+              <div className="text-center">
+                <Play size={48} className="text-white/50 mx-auto mb-2" />
+                <span className="text-white/50 text-sm">Thumbnail en cours...</span>
+              </div>
+            </div>
+          )}
 
           <button
             onClick={() => {
