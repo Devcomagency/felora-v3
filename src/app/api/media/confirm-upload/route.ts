@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
     else if (visibility === 'private') visibilityEnum = 'PRIVATE'
 
     // Utiliser la position fournie ou 0 par défaut
-    // pos 0 = avatar dashboard, pos 1 = photo profil, pos >= 2 = feed
+    // pos 0 = avatar dashboard (SEUL protégé), pos >= 1 = feed
     const finalPos = pos !== undefined ? parseInt(pos) : 0
 
     console.log('📍 Position utilisée:', {
@@ -67,8 +67,9 @@ export async function POST(request: NextRequest) {
       ownerId
     })
 
-    // Si on insère en position >= 2 (feed), décaler tous les médias existants >= à cette position
-    if (finalPos >= 2) {
+    // Si on insère en position >= 1 (feed), décaler tous les médias existants >= à cette position
+    // SAUF pos 0 qui est l'avatar dashboard et ne doit JAMAIS être décalé
+    if (finalPos >= 1) {
       console.log('🔄 Décalage des médias existants à partir de la position', finalPos)
 
       await prisma.media.updateMany({
@@ -76,14 +77,16 @@ export async function POST(request: NextRequest) {
           ownerType: ownerType as any,
           ownerId: ownerId,
           pos: { gte: finalPos },
-          deletedAt: null
+          deletedAt: null,
+          // Ne JAMAIS décaler pos 0 (avatar)
+          NOT: { pos: 0 }
         },
         data: {
           pos: { increment: 1 }
         }
       })
 
-      console.log('✅ Médias décalés')
+      console.log('✅ Médias décalés (pos 0 préservé)')
     }
 
     // Sauvegarder en base

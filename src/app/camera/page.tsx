@@ -257,14 +257,14 @@ function CameraPageContent() {
 
       // 📷 IMAGE → Upload vers R2 (comme avant)
       // 1. Calculer la position pour le feed
-      // IMPORTANT: Les nouveaux médias doivent toujours aller en position 2
-      // (juste après pos 0 = avatar et pos 1 = photo profil)
+      // IMPORTANT: Les nouveaux médias doivent toujours aller en position 1 (en tête du feed)
+      // Seul pos 0 (avatar dashboard) est protégé et ne peut être changé que via le dashboard
       // On décale tous les autres médias existants
-      const newPos = 2
+      const newPos = 1
 
       console.log('📍 Position calculée pour le feed:', {
         newPos,
-        note: 'Nouvelle publication toujours en position 2 (en tête du feed)'
+        note: 'Nouvelle publication toujours en position 1 (en tête du feed)'
       })
 
       // 2. Obtenir presigned URL R2
