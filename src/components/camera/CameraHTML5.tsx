@@ -338,7 +338,7 @@ export default function CameraHTML5({ onClose, onCapture, initialMode = 'photo' 
   }
 
   return (
-    <div className="fixed inset-0 z-[100] bg-black">
+    <div className="fixed inset-0 z-[100] bg-black overflow-hidden">
       {/* Video stream */}
       <video
         ref={videoRef}
@@ -348,199 +348,272 @@ export default function CameraHTML5({ onClose, onCapture, initialMode = 'photo' 
         className="absolute inset-0 w-full h-full object-cover"
       />
 
+      {/* Gradient overlay subtil pour améliorer la lisibilité */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60 pointer-events-none" />
+
       {/* Overlay avec contrôles */}
       <div className="absolute inset-0 flex flex-col">
-        {/* Header */}
-        <div className="p-4 bg-gradient-to-b from-black/80 to-transparent">
+        {/* Header - Design ultra épuré */}
+        <motion.div
+          initial={{ y: -100, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ type: "spring", damping: 20 }}
+          className="p-6"
+        >
           <div className="flex items-center justify-between">
-            {/* Bouton Fermer - Style Felora Glassmorphism */}
-            <button
+            {/* Bouton Fermer - Premium Glassmorphism */}
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               onClick={onClose}
-              className="w-12 h-12 rounded-full flex items-center justify-center transition-all active:scale-95 group"
+              className="w-11 h-11 rounded-2xl flex items-center justify-center relative group overflow-hidden"
               style={{
-                background: 'rgba(255, 255, 255, 0.05)',
-                backdropFilter: 'blur(20px)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
+                background: 'rgba(0, 0, 0, 0.3)',
+                backdropFilter: 'blur(30px) saturate(180%)',
+                border: '1px solid rgba(255, 255, 255, 0.15)',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
               }}
               title="Fermer"
             >
-              <X className="text-white group-hover:text-[#FF6B9D] transition-colors" size={24} />
-            </button>
+              <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <X className="text-white/90 relative z-10" size={20} strokeWidth={2.5} />
+            </motion.button>
 
-            {/* Timer d'enregistrement */}
+            {/* Timer d'enregistrement - Design premium */}
             <AnimatePresence>
               {isRecording && (
                 <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  exit={{ scale: 0 }}
-                  className="flex items-center gap-2 px-4 py-2 rounded-full"
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0, opacity: 0 }}
+                  transition={{ type: "spring", damping: 15 }}
+                  className="flex items-center gap-3 px-5 py-2.5 rounded-2xl relative overflow-hidden"
                   style={{
-                    background: 'linear-gradient(135deg, rgba(255, 107, 157, 0.9), rgba(183, 148, 246, 0.9))',
-                    backdropFilter: 'blur(20px)',
-                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    background: 'rgba(0, 0, 0, 0.5)',
+                    backdropFilter: 'blur(30px) saturate(180%)',
+                    border: '1px solid rgba(255, 107, 157, 0.3)',
+                    boxShadow: '0 8px 32px rgba(255, 107, 157, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
                   }}
                 >
-                  <div className="w-3 h-3 bg-white rounded-full animate-pulse" />
-                  <span className="text-white font-mono font-bold">
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#FF6B9D]/20 via-[#B794F6]/20 to-[#FF6B9D]/20 animate-pulse" />
+                  <motion.div
+                    animate={{ scale: [1, 1.2, 1] }}
+                    transition={{ repeat: Infinity, duration: 1.5 }}
+                    className="w-2.5 h-2.5 bg-white rounded-full shadow-lg shadow-white/50 relative z-10"
+                  />
+                  <span className="text-white font-mono font-bold text-sm tracking-wider relative z-10">
                     {formatTime(recordingTime)}
                   </span>
                 </motion.div>
               )}
             </AnimatePresence>
 
-            {/* Bouton Retourner caméra - Style Felora Glassmorphism */}
-            <button
-              onClick={switchCamera}
-              className="w-12 h-12 rounded-full flex items-center justify-center transition-all active:scale-95 group"
-              style={{
-                background: 'rgba(255, 255, 255, 0.05)',
-                backdropFilter: 'blur(20px)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-              }}
-              title="Retourner la caméra"
-            >
-              <RotateCw className="text-white group-hover:text-[#4FD1C7] transition-colors" size={24} />
-            </button>
+            {/* Spacer invisible pour centrer le timer */}
+            <div className="w-11" />
           </div>
-        </div>
+        </motion.div>
 
         {/* Espace central */}
         <div className="flex-1" />
 
-        {/* Contrôles en bas */}
-        <div className="p-8 bg-gradient-to-t from-black/60 to-transparent">
-          {/* Loading ou Error */}
-          {(isLoading || error) && (
-            <div className="text-center mb-6">
-              {isLoading && (
-                <div className="flex items-center justify-center gap-3">
-                  <Loader className="w-5 h-5 text-white animate-spin" />
-                  <span className="text-white">Chargement de la caméra...</span>
-                </div>
-              )}
-              {error && (
-                <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-3">
-                  <p className="text-red-200 text-sm">{error}</p>
-                  <p className="text-red-200 text-xs mt-2">
-                    Vérifiez les permissions dans les réglages du navigateur ou utilisez l’option “Galerie”.
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
+        {/* Contrôles en bas - Design premium */}
+        <motion.div
+          initial={{ y: 100, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ type: "spring", damping: 20, delay: 0.1 }}
+          className="p-8 pb-safe"
+        >
+          {/* Loading ou Error - Style moderne */}
+          <AnimatePresence>
+            {(isLoading || error) && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="text-center mb-8"
+              >
+                {isLoading && (
+                  <div className="flex items-center justify-center gap-3 px-6 py-3 rounded-2xl mx-auto max-w-xs"
+                    style={{
+                      background: 'rgba(0, 0, 0, 0.5)',
+                      backdropFilter: 'blur(30px) saturate(180%)',
+                      border: '1px solid rgba(255, 255, 255, 0.15)',
+                      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+                    }}
+                  >
+                    <Loader className="w-5 h-5 text-white animate-spin" />
+                    <span className="text-white/90 text-sm font-medium">Initialisation...</span>
+                  </div>
+                )}
+                {error && (
+                  <div className="px-6 py-4 rounded-2xl mx-auto max-w-sm"
+                    style={{
+                      background: 'rgba(220, 38, 38, 0.15)',
+                      backdropFilter: 'blur(30px) saturate(180%)',
+                      border: '1px solid rgba(220, 38, 38, 0.3)',
+                      boxShadow: '0 8px 32px rgba(220, 38, 38, 0.3)',
+                    }}
+                  >
+                    <p className="text-red-200 text-sm font-medium">{error}</p>
+                    <p className="text-red-200/70 text-xs mt-2">
+                      Vérifiez les permissions ou utilisez "Galerie"
+                    </p>
+                  </div>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Layout avec 3 colonnes : Flip | Photo/Video + Capture | Upload */}
-          <div className="flex items-end justify-between gap-4">
+          <div className="flex items-end justify-between gap-6">
             {/* Colonne gauche : Bouton Flip Camera */}
-            {!isRecording && (
-              <div className="flex flex-col items-center gap-2">
-                <button
-                  onClick={switchCamera}
-                  className="w-14 h-14 rounded-full flex items-center justify-center transition-all active:scale-95 group"
-                  style={{
-                    background: 'rgba(255, 255, 255, 0.05)',
-                    backdropFilter: 'blur(20px)',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                  }}
-                  title="Retourner la caméra"
-                >
-                  <RotateCw className="text-white group-hover:text-[#4FD1C7] transition-colors" size={24} />
-                </button>
-              </div>
+            {!isRecording ? (
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={switchCamera}
+                className="w-14 h-14 rounded-2xl flex items-center justify-center relative group overflow-hidden"
+                style={{
+                  background: 'rgba(0, 0, 0, 0.3)',
+                  backdropFilter: 'blur(30px) saturate(180%)',
+                  border: '1px solid rgba(79, 209, 199, 0.3)',
+                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+                }}
+                title="Retourner la caméra"
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-[#4FD1C7]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                <RotateCw className="text-white/90 group-hover:text-[#4FD1C7] transition-colors relative z-10" size={22} strokeWidth={2.5} />
+              </motion.button>
+            ) : (
+              <div className="w-14" />
             )}
-            {isRecording && <div className="w-14" />}
 
             {/* Colonne centre : Sélecteur mode + Bouton capture */}
-            <div className="flex flex-col items-center gap-4 flex-1">
-              {/* Sélecteur mode Photo/Vidéo */}
+            <div className="flex flex-col items-center gap-5 flex-1">
+              {/* Sélecteur mode Photo/Vidéo - Design premium */}
               {!isRecording && (
-                <div className="flex items-center justify-center gap-3">
-                  <button
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="flex items-center gap-2 p-1.5 rounded-2xl"
+                  style={{
+                    background: 'rgba(0, 0, 0, 0.3)',
+                    backdropFilter: 'blur(30px) saturate(180%)',
+                    border: '1px solid rgba(255, 255, 255, 0.15)',
+                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+                  }}
+                >
+                  <motion.button
+                    whileTap={{ scale: 0.95 }}
                     onClick={() => setMode('photo')}
-                    className="px-6 py-2 rounded-full font-medium transition-all active:scale-95"
+                    className="px-6 py-2.5 rounded-xl font-semibold text-sm relative overflow-hidden transition-all"
                     style={mode === 'photo' ? {
                       background: 'linear-gradient(135deg, #FF6B9D, #B794F6)',
-                      border: '1px solid rgba(255, 255, 255, 0.2)',
+                      boxShadow: '0 4px 16px rgba(255, 107, 157, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
                     } : {
-                      background: 'rgba(255, 255, 255, 0.05)',
-                      backdropFilter: 'blur(20px)',
-                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                      background: 'transparent',
                     }}
                   >
-                    <span className="text-white">Photo</span>
-                  </button>
-                  <button
+                    <span className={mode === 'photo' ? 'text-white' : 'text-white/60'}>Photo</span>
+                  </motion.button>
+                  <motion.button
+                    whileTap={{ scale: 0.95 }}
                     onClick={() => setMode('video')}
-                    className="px-6 py-2 rounded-full font-medium transition-all active:scale-95"
+                    className="px-6 py-2.5 rounded-xl font-semibold text-sm relative overflow-hidden transition-all"
                     style={mode === 'video' ? {
                       background: 'linear-gradient(135deg, #FF6B9D, #B794F6)',
-                      border: '1px solid rgba(255, 255, 255, 0.2)',
+                      boxShadow: '0 4px 16px rgba(255, 107, 157, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
                     } : {
-                      background: 'rgba(255, 255, 255, 0.05)',
-                      backdropFilter: 'blur(20px)',
-                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                      background: 'transparent',
                     }}
                   >
-                    <span className="text-white">Vidéo</span>
-                  </button>
-                </div>
+                    <span className={mode === 'video' ? 'text-white' : 'text-white/60'}>Vidéo</span>
+                  </motion.button>
+                </motion.div>
               )}
 
-              {/* Bouton capture */}
+              {/* Bouton capture - Design premium avec effet néon */}
               <div className="flex items-center justify-center">
-            {mode === 'photo' ? (
-              <button
-                onClick={takePhoto}
-                disabled={isLoading || !!error || !isVideoReady}
-                className="w-20 h-20 rounded-full bg-white border-4 border-white/30 hover:scale-110 active:scale-95 transition-transform disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-              >
-                <Camera className="text-black" size={32} />
-              </button>
-            ) : (
-              <button
-                onClick={isRecording ? stopRecording : startRecording}
-                disabled={isLoading || !!error || (!isRecording && !isVideoReady)}
-                className={`w-20 h-20 rounded-full border-4 border-white/30 hover:scale-110 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center ${
-                  isRecording ? 'bg-red-500' : 'bg-white'
-                }`}
-              >
-                {isRecording ? (
-                  <div className="w-6 h-6 bg-white rounded-sm" />
+                {mode === 'photo' ? (
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={takePhoto}
+                    disabled={isLoading || !!error || !isVideoReady}
+                    className="w-20 h-20 rounded-full flex items-center justify-center relative overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed"
+                    style={{
+                      background: 'linear-gradient(135deg, #FFFFFF, #F0F0F0)',
+                      boxShadow: '0 0 0 4px rgba(255, 255, 255, 0.2), 0 8px 32px rgba(255, 107, 157, 0.3)',
+                    }}
+                  >
+                    <Camera className="text-black" size={32} strokeWidth={2.5} />
+                  </motion.button>
                 ) : (
-                  <Video className="text-black" size={32} />
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={isRecording ? stopRecording : startRecording}
+                    disabled={isLoading || !!error || (!isRecording && !isVideoReady)}
+                    className="w-20 h-20 rounded-full flex items-center justify-center relative overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed"
+                    style={isRecording ? {
+                      background: 'linear-gradient(135deg, #EF4444, #DC2626)',
+                      boxShadow: '0 0 0 4px rgba(255, 255, 255, 0.2), 0 8px 32px rgba(239, 68, 68, 0.5)',
+                    } : {
+                      background: 'linear-gradient(135deg, #FFFFFF, #F0F0F0)',
+                      boxShadow: '0 0 0 4px rgba(255, 255, 255, 0.2), 0 8px 32px rgba(255, 107, 157, 0.3)',
+                    }}
+                  >
+                    {isRecording ? (
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
+                        className="w-7 h-7 bg-white rounded-md"
+                      />
+                    ) : (
+                      <Video className="text-black" size={32} strokeWidth={2.5} />
+                    )}
+                  </motion.button>
                 )}
-              </button>
-            )}
               </div>
 
-              {isRecording && (
-                <p className="text-center text-white/60 text-sm mt-2">
-                  Appuyez pour arrêter l'enregistrement
-                </p>
-              )}
+              {/* Message d'enregistrement */}
+              <AnimatePresence>
+                {isRecording && (
+                  <motion.p
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="text-center text-white/70 text-sm font-medium"
+                  >
+                    Touchez pour arrêter
+                  </motion.p>
+                )}
+              </AnimatePresence>
             </div>
 
             {/* Colonne droite : Bouton Upload/Galerie */}
-            {!isRecording && (
-              <div className="flex flex-col items-center gap-2">
-                <button
-                  onClick={() => fileInputRef.current?.click()}
-                  className="w-14 h-14 rounded-full flex items-center justify-center transition-all active:scale-95 group"
-                  style={{
-                    background: 'rgba(255, 255, 255, 0.05)',
-                    backdropFilter: 'blur(20px)',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                  }}
-                  title="Importer depuis la galerie"
-                >
-                  <Upload className="text-white group-hover:text-[#B794F6] transition-colors" size={24} />
-                </button>
-              </div>
+            {!isRecording ? (
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => fileInputRef.current?.click()}
+                className="w-14 h-14 rounded-2xl flex items-center justify-center relative group overflow-hidden"
+                style={{
+                  background: 'rgba(0, 0, 0, 0.3)',
+                  backdropFilter: 'blur(30px) saturate(180%)',
+                  border: '1px solid rgba(183, 148, 246, 0.3)',
+                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+                }}
+                title="Importer depuis la galerie"
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-[#B794F6]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                <Upload className="text-white/90 group-hover:text-[#B794F6] transition-colors relative z-10" size={22} strokeWidth={2.5} />
+              </motion.button>
+            ) : (
+              <div className="w-14" />
             )}
-            {isRecording && <div className="w-14" />}
           </div>
-        </div>
+        </motion.div>
 
         {/* Input file caché pour upload galerie */}
         <input
