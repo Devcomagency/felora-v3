@@ -124,8 +124,11 @@ export default function CameraHTML5({ onClose, onCapture, initialMode = 'photo' 
   // Prendre une photo
   const takePhoto = () => {
     console.log('📸 takePhoto appelé')
+    alert('📸 Prise de photo en cours...') // DEBUG MOBILE
+
     if (!videoRef.current) {
       console.error('❌ videoRef.current est null')
+      alert('❌ Erreur: videoRef null') // DEBUG MOBILE
       return
     }
 
@@ -163,6 +166,7 @@ export default function CameraHTML5({ onClose, onCapture, initialMode = 'photo' 
       stopCamera()
 
       console.log('📤 Appel onCapture avec le fichier')
+      alert('✅ Photo capturée ! Redirection...') // DEBUG MOBILE
       onCapture(file)
     }, 'image/jpeg', 0.95)
   }
