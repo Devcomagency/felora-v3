@@ -44,10 +44,10 @@ import { useState, useCallback, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import { compressImageIfNeeded } from '@/utils/imageCompression'
-import { compressVideoIfNeeded } from '@/utils/videoCompression'
 import { uploadWithProgress, fetchWithRetry } from '@/utils/uploadWithProgress'
 import { useToast } from '@/components/ui/Toast'
 import { useUploadStore } from '@/stores/uploadStore'
+import { useBackgroundUpload } from '@/hooks/useBackgroundUpload'
 
 const CameraCapturePro = dynamic(() => import('@/components/camera/CameraCapturePro'), {
   ssr: false,
@@ -96,6 +96,7 @@ function CameraPageContent() {
   const searchParams = useSearchParams()
   const mode = searchParams.get('mode') as 'photo' | 'video' | 'upload' | null
   const toast = useToast()
+  const { startVideoUpload } = useBackgroundUpload()
 
   const [capturedMedia, setCapturedMedia] = useState<CapturedMedia | null>(null)
   const [isPublishing, setIsPublishing] = useState(false)
@@ -143,100 +144,21 @@ function CameraPageContent() {
     const isVideo = data.file.type.startsWith('video/')
 
     try {
-      // 🎬 VIDÉO → Upload direct vers Bunny.net (720p optimisé à la capture)
+      // 🎬 VIDÉO → Upload en arrière-plan + redirection immédiate
       if (isVideo) {
-        const fileToUpload = data.file
-
         // REDIRECTION IMMÉDIATE VERS ACCUEIL
         router.push('/')
 
-        // Upload en arrière-plan via store global
-        const { setProgress, setStatus } = useUploadStore.getState()
-        setProgress(5, 'Upload en cours...')
-        console.log(`📦 Upload vidéo: ${(fileToUpload.size / 1024 / 1024).toFixed(2)}MB`)
-
-        // 2. Obtenir URL upload Bunny
-        const bunnyUrlRes = await fetchWithRetry('/api/media/bunny-upload-url', {
-          method: 'POST',
-          credentials: 'include'
+        // Upload en arrière-plan (NON bloquant)
+        startVideoUpload({
+          file: data.file,
+          description: data.description,
+          visibility: data.visibility,
+          price: data.price,
+          location: data.location
         })
 
-        if (!bunnyUrlRes.ok) {
-          throw new Error('Échec création URL Bunny')
-        }
-
-        const { uploadUrl, videoId, libraryId, apiKey } = await bunnyUrlRes.json()
-
-        // 3. Upload DIRECT vers Bunny avec progress (compression optimisée)
-        // Note: Pour vidéos >10MB, envisager compression FFmpeg avant upload
-        console.log(`📦 Taille fichier: ${(fileToUpload.size / 1024 / 1024).toFixed(2)}MB`)
-
-        await uploadWithProgress({
-          url: uploadUrl,
-          file: fileToUpload,
-          method: 'PUT',
-          headers: {
-            'AccessKey': apiKey,
-            'Content-Type': 'application/octet-stream',
-          },
-          onProgress: (progress) => {
-            // Mettre à jour la barre globale
-            const globalProgress = 5 + Math.min(progress * 0.90, 90)
-            setProgress(globalProgress, `Upload ${progress}%...`)
-            console.log(`📊 Upload: ${progress}%`)
-          },
-          maxAttempts: 3
-        })
-
-        setUploadProgress(95)
-
-        // 3. Confirmer et sauvegarder en DB (ou démarrer le traitement)
-        const confirmRes = await fetchWithRetry('/api/media/bunny-confirm', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({
-            videoId: videoId,
-            description: data.description || undefined,
-            visibility: data.visibility,
-            price: data.visibility === 'premium' && data.price ? data.price : undefined,
-            location: data.location || undefined
-          })
-        })
-
-        const result = await confirmRes.json()
-
-        if (confirmRes.status === 202 && result.processing) {
-          // Vidéo en cours de traitement → Activer FloatingUploadCard
-          console.log('⏳ Vidéo en traitement, activation monitoring')
-
-          const { setUpload } = useUploadStore.getState()
-          setUpload({
-            videoId: result.videoId,
-            thumbnailUrl: result.thumbnailUrl,
-            fileName: data.file.name,
-            pendingData: result.pendingData
-          })
-
-          // Redirection immédiate vers home
-          toast.info('📤 Vidéo en traitement...', 2000)
-          router.push('/')
-          return
-        }
-
-        if (!confirmRes.ok) {
-          const errorMessage = result.error || 'Échec sauvegarde vidéo'
-          toast.error(errorMessage, 6000)
-          setIsPublishing(false)
-          setUploadProgress(0)
-          return
-        }
-
-        // Vidéo immédiatement prête (rare mais possible)
-        console.log('✅ Vidéo prête immédiatement:', result)
-        toast.success('✅ Vidéo publiée !', 1500)
-        setTimeout(() => router.push('/'), 500)
-        return
+        return // Sortie immédiate, upload continue en arrière-plan
       }
 
       // 📷 IMAGE → Upload vers R2 (comme avant)

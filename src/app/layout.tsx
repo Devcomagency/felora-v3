@@ -12,6 +12,7 @@ import ToastContainer from "@/components/ui/Toast";
 import ConditionalLayout from "@/components/layout/ConditionalLayout";
 import SuspensionChecker from "@/components/auth/SuspensionChecker";
 import UploadMonitor from "@/components/upload/UploadMonitor";
+import GlobalUploadProgress from "@/components/upload/GlobalUploadProgress";
 import { Toaster } from 'react-hot-toast';
 
 export const metadata: Metadata = {
@@ -96,6 +97,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <CookieConsent />
           <ToastContainer />
           <UploadMonitor />
+          <GlobalUploadProgress />
           <Toaster
             position="top-center"
             toastOptions={{
