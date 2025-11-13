@@ -1,9 +1,9 @@
 'use client'
 
-import React, { useState, useRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import React, { useRef } from 'react'
+import { motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
-import { Camera, Video, Image, X, Upload } from 'lucide-react'
+import { Upload } from 'lucide-react'
 
 interface MediaUploadButtonProps {
   className?: string
@@ -11,80 +11,24 @@ interface MediaUploadButtonProps {
 
 export default function MediaUploadButton({ className }: MediaUploadButtonProps) {
   const router = useRouter()
-  const [isOpen, setIsOpen] = useState(false)
-
-  // Refs pour les inputs cachés
-  const photoInputRef = useRef<HTMLInputElement>(null)
-  const videoInputRef = useRef<HTMLInputElement>(null)
-  const uploadInputRef = useRef<HTMLInputElement>(null)
+  const mediaInputRef = useRef<HTMLInputElement>(null)
 
   // Handler pour traiter le fichier sélectionné
   const handleFileSelected = (file: File) => {
     if (!file) return
 
-    // Créer une URL temporaire pour la preview
-    const previewUrl = URL.createObjectURL(file)
-    const isVideo = file.type.startsWith('video/')
-
-    // Stocker le fichier et l'URL dans sessionStorage pour /camera
-    sessionStorage.setItem('pendingUpload', JSON.stringify({
-      fileName: file.name,
-      fileType: file.type,
-      fileSize: file.size,
-      previewUrl: previewUrl,
-      timestamp: Date.now()
-    }))
-
-    // Stocker le fichier réel dans une variable globale temporaire
-    // (sessionStorage ne peut pas stocker les File objects)
+    // Stocker le fichier dans une variable globale temporaire
     (window as any).__pendingFile = file
 
-    // Fermer le modal et rediriger vers /camera
-    setIsOpen(false)
+    // Rediriger vers /camera
     router.push('/camera?fromUpload=true')
   }
 
-  const uploadOptions = [
-    {
-      id: 'photo',
-      label: 'Photo',
-      icon: Camera,
-      color: 'from-blue-500 to-cyan-500',
-      description: 'Prendre une photo',
-      onClick: () => {
-        setIsOpen(false)
-        setTimeout(() => photoInputRef.current?.click(), 100)
-      }
-    },
-    {
-      id: 'video',
-      label: 'Vidéo',
-      icon: Video,
-      color: 'from-purple-500 to-pink-500',
-      description: 'Filmer une vidéo',
-      onClick: () => {
-        setIsOpen(false)
-        setTimeout(() => videoInputRef.current?.click(), 100)
-      }
-    },
-    {
-      id: 'upload',
-      label: 'Fichier',
-      icon: Image,
-      color: 'from-emerald-500 to-teal-500',
-      description: 'Depuis galerie',
-      onClick: () => {
-        setIsOpen(false)
-        setTimeout(() => uploadInputRef.current?.click(), 100)
-      }
-    }
-  ]
-
   return (
     <>
-      {/* Bouton principal flottant */}
+      {/* Bouton principal flottant - Clic direct ouvre le picker */}
       <motion.button
-        onClick={() => setIsOpen(true)}
+        onClick={() => mediaInputRef.current?.click()}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         className={`
@@ -100,115 +44,17 @@ export default function MediaUploadButton({ className }: MediaUploadButtonProps)
         <Upload className="w-6 h-6" />
       </motion.button>
 
-      {/* Overlay et modal */}
-      <AnimatePresence>
-        {isOpen && (
-          <>
-            {/* Overlay */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsOpen(false)}
-              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
-            />
-
-            {/* Modal */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="fixed inset-0 flex items-center justify-center z-50 p-4"
-            >
-              <div className="bg-black/90 backdrop-blur-xl border border-white/10 rounded-2xl p-6 w-full max-w-md">
-                {/* Header */}
-                <div className="flex items-center justify-between mb-6">
-                  <div>
-                    <h3 className="text-white text-lg font-semibold">
-                      Ajouter un média
-                    </h3>
-                    <p className="text-white/60 text-sm">
-                      Téléchargez une photo ou vidéo
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => setIsOpen(false)}
-                    className="p-2 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition-colors"
-                  >
-                    <X size={20} />
-                  </button>
-                </div>
-
-                {/* Options de téléchargement */}
-                <div className="grid gap-3">
-                  {uploadOptions.map((option) => {
-                    const Icon = option.icon
-                    return (
-                      <motion.button
-                        key={option.id}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        onClick={option.onClick}
-                        className="flex items-center gap-4 p-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all duration-200 text-left"
-                      >
-                        <div className={`w-12 h-12 rounded-xl bg-gradient-to-r ${option.color} flex items-center justify-center`}>
-                          <Icon className="w-6 h-6 text-white" />
-                        </div>
-                        <div>
-                          <h4 className="text-white font-medium">
-                            {option.label}
-                          </h4>
-                          <p className="text-white/60 text-sm">
-                            {option.description}
-                          </p>
-                        </div>
-                      </motion.button>
-                    )
-                  })}
-                </div>
-
-                {/* Note */}
-                <div className="mt-6 p-3 rounded-lg bg-blue-500/10 border border-blue-500/20">
-                  <p className="text-blue-300 text-xs">
-                    💡 Vos médias seront visibles dans votre profil et le feed après validation.
-                  </p>
-                </div>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
-
-      {/* Inputs cachés pour photo/vidéo/upload */}
+      {/* Input caché - Accepte photos ET vidéos */}
       <input
-        ref={photoInputRef}
-        type="file"
-        accept="image/*"
-        className="hidden"
-        onChange={(e) => {
-          const file = e.target.files?.[0]
-          if (file) handleFileSelected(file)
-        }}
-      />
-      <input
-        ref={videoInputRef}
-        type="file"
-        accept="video/*"
-        className="hidden"
-        onChange={(e) => {
-          const file = e.target.files?.[0]
-          if (file) handleFileSelected(file)
-        }}
-      />
-      <input
-        ref={uploadInputRef}
+        ref={mediaInputRef}
         type="file"
         accept="image/*,video/*"
         className="hidden"
         onChange={(e) => {
           const file = e.target.files?.[0]
           if (file) handleFileSelected(file)
+          // Reset input pour permettre de sélectionner le même fichier deux fois
+          e.target.value = ''
         }}
       />
     </>
