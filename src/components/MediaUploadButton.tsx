@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 import { Camera, Video, Image, X, Upload } from 'lucide-react'
@@ -13,6 +13,37 @@ export default function MediaUploadButton({ className }: MediaUploadButtonProps)
   const router = useRouter()
   const [isOpen, setIsOpen] = useState(false)
 
+  // Refs pour les inputs cachés
+  const photoInputRef = useRef<HTMLInputElement>(null)
+  const videoInputRef = useRef<HTMLInputElement>(null)
+  const uploadInputRef = useRef<HTMLInputElement>(null)
+
+  // Handler pour traiter le fichier sélectionné
+  const handleFileSelected = (file: File) => {
+    if (!file) return
+
+    // Créer une URL temporaire pour la preview
+    const previewUrl = URL.createObjectURL(file)
+    const isVideo = file.type.startsWith('video/')
+
+    // Stocker le fichier et l'URL dans sessionStorage pour /camera
+    sessionStorage.setItem('pendingUpload', JSON.stringify({
+      fileName: file.name,
+      fileType: file.type,
+      fileSize: file.size,
+      previewUrl: previewUrl,
+      timestamp: Date.now()
+    }))
+
+    // Stocker le fichier réel dans une variable globale temporaire
+    // (sessionStorage ne peut pas stocker les File objects)
+    (window as any).__pendingFile = file
+
+    // Fermer le modal et rediriger vers /camera
+    setIsOpen(false)
+    router.push('/camera?fromUpload=true')
+  }
+
   const uploadOptions = [
     {
       id: 'photo',
@@ -20,7 +51,10 @@ export default function MediaUploadButton({ className }: MediaUploadButtonProps)
       icon: Camera,
       color: 'from-blue-500 to-cyan-500',
       description: 'Prendre une photo',
-      onClick: () => router.push('/camera?mode=photo')
+      onClick: () => {
+        setIsOpen(false)
+        setTimeout(() => photoInputRef.current?.click(), 100)
+      }
     },
     {
       id: 'video',
@@ -28,7 +62,10 @@ export default function MediaUploadButton({ className }: MediaUploadButtonProps)
       icon: Video,
       color: 'from-purple-500 to-pink-500',
       description: 'Filmer une vidéo',
-      onClick: () => router.push('/camera?mode=video')
+      onClick: () => {
+        setIsOpen(false)
+        setTimeout(() => videoInputRef.current?.click(), 100)
+      }
     },
     {
       id: 'upload',
@@ -36,7 +73,10 @@ export default function MediaUploadButton({ className }: MediaUploadButtonProps)
       icon: Image,
       color: 'from-emerald-500 to-teal-500',
       description: 'Depuis galerie',
-      onClick: () => router.push('/camera?mode=upload')
+      onClick: () => {
+        setIsOpen(false)
+        setTimeout(() => uploadInputRef.current?.click(), 100)
+      }
     }
   ]
 
@@ -139,6 +179,38 @@ export default function MediaUploadButton({ className }: MediaUploadButtonProps)
           </>
         )}
       </AnimatePresence>
+
+      {/* Inputs cachés pour photo/vidéo/upload */}
+      <input
+        ref={photoInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0]
+          if (file) handleFileSelected(file)
+        }}
+      />
+      <input
+        ref={videoInputRef}
+        type="file"
+        accept="video/*"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0]
+          if (file) handleFileSelected(file)
+        }}
+      />
+      <input
+        ref={uploadInputRef}
+        type="file"
+        accept="image/*,video/*"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0]
+          if (file) handleFileSelected(file)
+        }}
+      />
     </>
   )
 }

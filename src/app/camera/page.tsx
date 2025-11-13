@@ -40,7 +40,7 @@
  */
 'use client'
 
-import { useState, useCallback, Suspense } from 'react'
+import { useState, useCallback, useEffect, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import { compressImageIfNeeded } from '@/utils/imageCompression'
@@ -95,6 +95,7 @@ function CameraPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const mode = searchParams.get('mode') as 'photo' | 'video' | 'upload' | null
+  const fromUpload = searchParams.get('fromUpload') === 'true'
   const toast = useToast()
   const { startVideoUpload } = useBackgroundUpload()
 
@@ -115,7 +116,7 @@ function CameraPageContent() {
 
     // Détecter si c'est une capture directe depuis la caméra (très probablement HEVC sur Samsung)
     // On peut détecter ça via le nom du fichier ou d'autres métadonnées
-    const isCameraCapture = file.name.includes('VID') || file.name.includes('MOV') || 
+    const isCameraCapture = file.name.includes('VID') || file.name.includes('MOV') ||
                            file.name.match(/^[0-9]{8}_[0-9]{6}/) // Format Samsung/Android
 
     setCapturedMedia({
@@ -125,6 +126,21 @@ function CameraPageContent() {
       isCameraCapture // Stocker cette info pour décider du provider
     })
   }, [])
+
+  // Gérer le fichier venant de MediaUploadButton (via inputs cachés)
+  useEffect(() => {
+    if (fromUpload && typeof window !== 'undefined') {
+      const pendingFile = (window as any).__pendingFile as File | undefined
+      if (pendingFile) {
+        console.log('📁 Fichier depuis MediaUploadButton:', pendingFile.name)
+        // Traiter le fichier comme s'il venait de la caméra
+        handleCameraCapture(pendingFile)
+        // Nettoyer
+        delete (window as any).__pendingFile
+        sessionStorage.removeItem('pendingUpload')
+      }
+    }
+  }, [fromUpload, handleCameraCapture])
 
   /**
    * Handler pour la publication avec retry automatique et progress bar
