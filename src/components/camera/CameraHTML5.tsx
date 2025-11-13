@@ -205,26 +205,12 @@ export default function CameraHTML5({ onClose, onCapture, initialMode = 'photo' 
     try {
       console.log('🎥 Démarrage enregistrement vidéo...')
 
-      // Obtenir le stream audio si pas déjà présent
-      if (!streamRef.current.getAudioTracks().length) {
-        try {
-          console.log('🎤 Demande autorisation audio...')
-          const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true })
-          audioStream.getAudioTracks().forEach(track => {
-            streamRef.current?.addTrack(track)
-          })
-          console.log('✅ Audio autorisé')
-        } catch (audioErr) {
-          console.warn('⚠️ Audio non disponible, enregistrement vidéo seule:', audioErr)
-          // Continuer sans audio
-        }
-      }
-
       chunksRef.current = []
 
       // Créer le MediaRecorder avec haute qualité
       let mimeType = ''
       let videoBitsPerSecond = 8000000 // 8 Mbps par défaut
+      let hasAudio = false
 
       // Tester les codecs dans l'ordre de préférence
       const codecs = [
@@ -249,13 +235,49 @@ export default function CameraHTML5({ onClose, onCapture, initialMode = 'photo' 
         throw new Error('Aucun codec vidéo supporté')
       }
 
-      console.log('🎬 MediaRecorder config:', { mimeType, videoBitsPerSecond })
+      // Tenter d'obtenir le stream audio seulement si le codec le supporte
+      // VP8 sur Firefox ne supporte pas l'audio, donc on enregistre vidéo seule
+      let recordingStream = streamRef.current
 
-      const mediaRecorder = new MediaRecorder(streamRef.current, {
+      if (!mimeType.includes('vp8')) {
+        // Essayer d'ajouter l'audio seulement si ce n'est pas vp8
+        if (!streamRef.current.getAudioTracks().length) {
+          try {
+            console.log('🎤 Demande autorisation audio...')
+            const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true })
+            audioStream.getAudioTracks().forEach(track => {
+              streamRef.current?.addTrack(track)
+            })
+            hasAudio = true
+            console.log('✅ Audio autorisé')
+          } catch (audioErr) {
+            console.warn('⚠️ Audio non disponible, enregistrement vidéo seule:', audioErr)
+          }
+        } else {
+          hasAudio = true
+        }
+      } else {
+        // VP8: créer un nouveau stream avec vidéo uniquement
+        console.log('⚠️ VP8 détecté: enregistrement vidéo seule (pas d\'audio)')
+        const videoTrack = streamRef.current.getVideoTracks()[0]
+        if (videoTrack) {
+          recordingStream = new MediaStream([videoTrack])
+        }
+      }
+
+      const recorderOptions: MediaRecorderOptions = {
         mimeType,
-        videoBitsPerSecond,
-        audioBitsPerSecond: 128000 // 128 kbps audio
-      })
+        videoBitsPerSecond
+      }
+
+      // Ajouter audioBitsPerSecond seulement si on a de l'audio
+      if (hasAudio) {
+        recorderOptions.audioBitsPerSecond = 128000
+      }
+
+      console.log('🎬 MediaRecorder config:', recorderOptions, 'hasAudio:', hasAudio)
+
+      const mediaRecorder = new MediaRecorder(recordingStream, recorderOptions)
 
       mediaRecorder.ondataavailable = (event) => {
         if (event.data.size > 0) {
