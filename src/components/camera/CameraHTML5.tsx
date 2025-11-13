@@ -123,28 +123,46 @@ export default function CameraHTML5({ onClose, onCapture, initialMode = 'photo' 
 
   // Prendre une photo
   const takePhoto = () => {
-    if (!videoRef.current) return
+    console.log('📸 takePhoto appelé')
+    if (!videoRef.current) {
+      console.error('❌ videoRef.current est null')
+      return
+    }
 
     const video = videoRef.current
+    console.log('📹 Dimensions vidéo:', video.videoWidth, 'x', video.videoHeight)
+
     const canvas = document.createElement('canvas')
     canvas.width = video.videoWidth
     canvas.height = video.videoHeight
 
     const ctx = canvas.getContext('2d')
-    if (!ctx) return
+    if (!ctx) {
+      console.error('❌ Impossible de créer le contexte canvas')
+      return
+    }
 
     // Dessiner l'image de la vidéo sur le canvas
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
+    console.log('✅ Image dessinée sur canvas')
 
     // Convertir en Blob puis File
     canvas.toBlob((blob) => {
-      if (!blob) return
+      if (!blob) {
+        console.error('❌ Blob est null')
+        return
+      }
 
+      console.log('✅ Blob créé:', blob.size, 'bytes')
       const file = new File([blob], `photo_${Date.now()}.jpg`, {
         type: 'image/jpeg'
       })
+      console.log('✅ File créé:', file.name, file.size, 'bytes')
 
+      console.log('🛑 Arrêt caméra')
       stopCamera()
+
+      console.log('📤 Appel onCapture avec le fichier')
       onCapture(file)
     }, 'image/jpeg', 0.95)
   }
