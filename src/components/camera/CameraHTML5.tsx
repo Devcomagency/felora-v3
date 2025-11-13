@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 interface CameraHTML5Props {
   onClose: () => void
   onCapture: (file: File) => void
+  initialMode?: 'photo' | 'video'
 }
 
 /**
@@ -14,13 +15,13 @@ interface CameraHTML5Props {
  * Permet de capturer photo/vidéo directement dans le navigateur
  * sans passer par les menus natifs du système
  */
-export default function CameraHTML5({ onClose, onCapture }: CameraHTML5Props) {
+export default function CameraHTML5({ onClose, onCapture, initialMode = 'photo' }: CameraHTML5Props) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const chunksRef = useRef<Blob[]>([])
   const streamRef = useRef<MediaStream | null>(null)
 
-  const [mode, setMode] = useState<'photo' | 'video'>('photo')
+  const [mode, setMode] = useState<'photo' | 'video'>(initialMode)
   const [isRecording, setIsRecording] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -42,39 +43,58 @@ export default function CameraHTML5({ onClose, onCapture }: CameraHTML5Props) {
 
   // Initialiser la caméra
   useEffect(() => {
+    console.log('🎥 Initialisation caméra - facingMode:', facingMode)
     startCamera()
     return () => {
+      console.log('🛑 Arrêt caméra')
       stopCamera()
     }
   }, [facingMode])
 
+  useEffect(() => {
+    console.log('📱 Mode changé:', initialMode)
+    setMode(initialMode)
+  }, [initialMode])
+
   const startCamera = async () => {
+    console.log('▶️ startCamera appelé')
     setIsLoading(true)
     setError(null)
 
     try {
-      // Demander l'accès à la caméra
+      if (!navigator.mediaDevices?.getUserMedia) {
+        throw new Error('getUserMedia non supporté sur ce navigateur')
+      }
+
+      console.log('📹 Demande accès caméra...')
+
+      // Demander l'accès à la caméra - SIMPLIFIER les contraintes
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
-          facingMode: facingMode,
-          width: { ideal: 1920 },
-          height: { ideal: 1080 }
+          facingMode: facingMode
         },
-        audio: mode === 'video' // Audio uniquement en mode vidéo
+        audio: false // Pas d'audio pour l'instant
       })
 
+      console.log('✅ Stream obtenu:', stream)
       streamRef.current = stream
 
       // Attacher le stream à la vidéo
       if (videoRef.current) {
+        console.log('📺 Attachement du stream à la vidéo')
         videoRef.current.srcObject = stream
-        videoRef.current.play()
+        await videoRef.current.play()
+        console.log('▶️ Vidéo en lecture')
+      } else {
+        console.error('❌ videoRef.current est null')
       }
 
       setIsLoading(false)
     } catch (err: any) {
       console.error('❌ Erreur accès caméra:', err)
-      setError('Impossible d\'accéder à la caméra. Vérifiez les permissions.')
+      console.error('Code erreur:', err.name)
+      console.error('Message:', err.message)
+      setError(`Erreur: ${err.name} - ${err.message}`)
       setIsLoading(false)
     }
   }
@@ -133,8 +153,17 @@ export default function CameraHTML5({ onClose, onCapture }: CameraHTML5Props) {
       chunksRef.current = []
 
       // Créer le MediaRecorder
+      let mimeType = ''
+      if (MediaRecorder.isTypeSupported('video/webm;codecs=vp9')) {
+        mimeType = 'video/webm;codecs=vp9'
+      } else if (MediaRecorder.isTypeSupported('video/webm;codecs=vp8')) {
+        mimeType = 'video/webm;codecs=vp8'
+      } else {
+        mimeType = 'video/webm'
+      }
+
       const mediaRecorder = new MediaRecorder(streamRef.current, {
-        mimeType: 'video/webm;codecs=vp9'
+        mimeType
       })
 
       mediaRecorder.ondataavailable = (event) => {
@@ -144,9 +173,11 @@ export default function CameraHTML5({ onClose, onCapture }: CameraHTML5Props) {
       }
 
       mediaRecorder.onstop = () => {
-        const blob = new Blob(chunksRef.current, { type: 'video/webm' })
-        const file = new File([blob], `video_${Date.now()}.webm`, {
-          type: 'video/webm'
+        const blobType = mediaRecorderRef.current?.mimeType || 'video/webm'
+        const extension = blobType.includes('mp4') ? 'mp4' : 'webm'
+        const blob = new Blob(chunksRef.current, { type: blobType })
+        const file = new File([blob], `video_${Date.now()}.${extension}`, {
+          type: blobType
         })
 
         stopCamera()
@@ -248,6 +279,9 @@ export default function CameraHTML5({ onClose, onCapture }: CameraHTML5Props) {
               {error && (
                 <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-3">
                   <p className="text-red-200 text-sm">{error}</p>
+                  <p className="text-red-200 text-xs mt-2">
+                    Vérifiez les permissions dans les réglages du navigateur ou utilisez l’option “Galerie”.
+                  </p>
                 </div>
               )}
             </div>

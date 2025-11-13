@@ -3,7 +3,7 @@
 import React, { useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useRouter } from 'next/navigation'
-import { Upload, Camera, Image, X } from 'lucide-react'
+import { Upload, Camera, Image, X, Video } from 'lucide-react'
 import dynamic from 'next/dynamic'
 
 const CameraHTML5 = dynamic(() => import('./camera/CameraHTML5'), { ssr: false })
@@ -17,6 +17,7 @@ export default function MediaUploadButton({ className }: MediaUploadButtonProps)
   const galleryInputRef = useRef<HTMLInputElement>(null)
   const [isOpen, setIsOpen] = useState(false)
   const [showCamera, setShowCamera] = useState(false)
+  const [cameraMode, setCameraMode] = useState<'photo' | 'video' | null>(null)
 
   // Handler pour traiter le fichier sélectionné (depuis galerie ou caméra)
   const handleFileSelected = (file: File) => {
@@ -31,22 +32,39 @@ export default function MediaUploadButton({ className }: MediaUploadButtonProps)
 
   const uploadOptions = [
     {
-      id: 'camera',
-      label: 'Caméra',
+      id: 'photo',
+      label: 'Prendre une photo',
       icon: Camera,
       color: 'from-purple-500 to-pink-500',
-      description: 'Photo ou vidéo',
+      description: 'Caméra directe',
       onClick: () => {
         setIsOpen(false)
-        setTimeout(() => setShowCamera(true), 300)
+        setTimeout(() => {
+          setCameraMode('photo')
+          setShowCamera(true)
+        }, 250)
+      }
+    },
+    {
+      id: 'video',
+      label: 'Filmer une vidéo',
+      icon: Video,
+      color: 'from-rose-500 to-orange-500',
+      description: 'Caméra avec son',
+      onClick: () => {
+        setIsOpen(false)
+        setTimeout(() => {
+          setCameraMode('video')
+          setShowCamera(true)
+        }, 250)
       }
     },
     {
       id: 'gallery',
-      label: 'Galerie',
+      label: 'Choisir dans la galerie',
       icon: Image,
       color: 'from-blue-500 to-cyan-500',
-      description: 'Depuis vos fichiers',
+      description: 'Photos ou vidéos',
       onClick: () => {
         setIsOpen(false)
         setTimeout(() => galleryInputRef.current?.click(), 100)
@@ -149,11 +167,16 @@ export default function MediaUploadButton({ className }: MediaUploadButtonProps)
 
       {/* Caméra HTML5 */}
       <AnimatePresence>
-        {showCamera && (
+        {showCamera && cameraMode && (
           <CameraHTML5
-            onClose={() => setShowCamera(false)}
+            initialMode={cameraMode}
+            onClose={() => {
+              setShowCamera(false)
+              setCameraMode(null)
+            }}
             onCapture={(file) => {
               setShowCamera(false)
+              setCameraMode(null)
               handleFileSelected(file)
             }}
           />
