@@ -190,7 +190,14 @@ export default function OptimizedVideoPlayer({
           minWidth: '100%',
           minHeight: '100%',
           maxWidth: 'none',
-          maxHeight: 'none'
+          maxHeight: 'none',
+          // Forcer le rendu GPU propre pour Chrome
+          transform: 'translateZ(0)',
+          willChange: 'transform',
+          backfaceVisibility: 'hidden',
+          WebkitBackfaceVisibility: 'hidden',
+          // Éviter les artefacts de pixelisation
+          imageRendering: 'auto'
         }}
       >
         <source src={src} type="video/mp4" />

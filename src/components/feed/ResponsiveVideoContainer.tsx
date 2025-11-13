@@ -71,6 +71,11 @@ export default function ResponsiveVideoContainer({
         paddingRight: 'env(safe-area-inset-right, 0px)',
         paddingTop: 'env(safe-area-inset-top, 0px)',
         paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+        // Fix pour Chrome : forcer accélération GPU propre
+        transform: 'translateZ(0)',
+        WebkitTransform: 'translateZ(0)',
+        isolation: 'isolate',
+        willChange: 'transform',
       }}
     >
       {children}
