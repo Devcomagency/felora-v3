@@ -147,9 +147,13 @@ function CameraPageContent() {
       if (isVideo) {
         const fileToUpload = data.file
 
-        setUploadProgress(5)
+        // REDIRECTION IMMÉDIATE VERS ACCUEIL
+        router.push('/')
+
+        // Upload en arrière-plan via store global
+        const { setProgress, setStatus } = useUploadStore.getState()
+        setProgress(5, 'Upload en cours...')
         console.log(`📦 Upload vidéo: ${(fileToUpload.size / 1024 / 1024).toFixed(2)}MB`)
-        toast.info(`Upload ${(fileToUpload.size / 1024 / 1024).toFixed(0)}MB...`, 0)
 
         // 2. Obtenir URL upload Bunny
         const bunnyUrlRes = await fetchWithRetry('/api/media/bunny-upload-url', {
@@ -176,9 +180,10 @@ function CameraPageContent() {
             'Content-Type': 'application/octet-stream',
           },
           onProgress: (progress) => {
-            // 5-95% pour upload
-            setUploadProgress(5 + Math.min(progress * 0.90, 90))
-            console.log(`📊 Upload: ${progress}% (${((fileToUpload.size * progress / 100) / 1024 / 1024).toFixed(1)}/${(fileToUpload.size / 1024 / 1024).toFixed(1)}MB)`)
+            // Mettre à jour la barre globale
+            const globalProgress = 5 + Math.min(progress * 0.90, 90)
+            setProgress(globalProgress, `Upload ${progress}%...`)
+            console.log(`📊 Upload: ${progress}%`)
           },
           maxAttempts: 3
         })

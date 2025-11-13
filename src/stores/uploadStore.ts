@@ -12,12 +12,17 @@ interface UploadState {
     location?: string
   } | null
   isUploading: boolean
+  progress: number
+  status: 'uploading' | 'processing' | 'success' | 'error' | null
+  message: string
   setUpload: (data: {
     videoId: string
     thumbnailUrl: string | null
     fileName: string
     pendingData: any
   }) => void
+  setProgress: (progress: number, message?: string) => void
+  setStatus: (status: 'uploading' | 'processing' | 'success' | 'error', message?: string) => void
   clearUpload: () => void
 }
 
@@ -29,6 +34,9 @@ export const useUploadStore = create<UploadState>()(
       fileName: '',
       pendingData: null,
       isUploading: false,
+      progress: 0,
+      status: null,
+      message: '',
 
       setUpload: (data) => {
         console.log('📦 Store: setUpload appelé', data)
@@ -37,7 +45,24 @@ export const useUploadStore = create<UploadState>()(
           thumbnailUrl: data.thumbnailUrl,
           fileName: data.fileName,
           pendingData: data.pendingData,
-          isUploading: true
+          isUploading: true,
+          progress: 0,
+          status: 'uploading',
+          message: 'Upload en cours...'
+        })
+      },
+
+      setProgress: (progress, message) => {
+        set((state) => ({
+          progress,
+          message: message || state.message
+        }))
+      },
+
+      setStatus: (status, message) => {
+        set({
+          status,
+          message: message || ''
         })
       },
 
@@ -48,7 +73,10 @@ export const useUploadStore = create<UploadState>()(
           thumbnailUrl: null,
           fileName: '',
           pendingData: null,
-          isUploading: false
+          isUploading: false,
+          progress: 0,
+          status: null,
+          message: ''
         })
       }
     }),
