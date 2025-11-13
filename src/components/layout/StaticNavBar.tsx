@@ -42,8 +42,14 @@ export default function StaticNavBar() {
   const galleryInputRef = useRef<HTMLInputElement>(null)
 
   const handleFileSelected = (file: File | null) => {
-    if (!file) return
+    console.log('📁 handleFileSelected appelé avec:', file)
+    if (!file) {
+      console.warn('⚠️ Aucun fichier fourni')
+      return
+    }
+    console.log('✅ Stockage du fichier:', file.name, file.type, file.size)
     ;(window as any).__pendingFile = file
+    console.log('🚀 Redirection vers /camera?fromUpload=true')
     router.push('/camera?fromUpload=true')
   }
 
