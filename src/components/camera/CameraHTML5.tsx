@@ -196,12 +196,21 @@ export default function CameraHTML5({ onClose, onCapture, initialMode = 'photo' 
     if (!streamRef.current) return
 
     try {
+      console.log('🎥 Démarrage enregistrement vidéo...')
+
       // Obtenir le stream audio si pas déjà présent
       if (!streamRef.current.getAudioTracks().length) {
-        const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true })
-        audioStream.getAudioTracks().forEach(track => {
-          streamRef.current?.addTrack(track)
-        })
+        try {
+          console.log('🎤 Demande autorisation audio...')
+          const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true })
+          audioStream.getAudioTracks().forEach(track => {
+            streamRef.current?.addTrack(track)
+          })
+          console.log('✅ Audio autorisé')
+        } catch (audioErr) {
+          console.warn('⚠️ Audio non disponible, enregistrement vidéo seule:', audioErr)
+          // Continuer sans audio
+        }
       }
 
       chunksRef.current = []
@@ -210,17 +219,27 @@ export default function CameraHTML5({ onClose, onCapture, initialMode = 'photo' 
       let mimeType = ''
       let videoBitsPerSecond = 8000000 // 8 Mbps par défaut
 
-      if (MediaRecorder.isTypeSupported('video/webm;codecs=vp9')) {
-        mimeType = 'video/webm;codecs=vp9'
-        videoBitsPerSecond = 10000000 // 10 Mbps pour VP9
-      } else if (MediaRecorder.isTypeSupported('video/webm;codecs=vp8')) {
-        mimeType = 'video/webm;codecs=vp8'
-        videoBitsPerSecond = 8000000 // 8 Mbps pour VP8
-      } else if (MediaRecorder.isTypeSupported('video/mp4')) {
-        mimeType = 'video/mp4'
-        videoBitsPerSecond = 8000000 // 8 Mbps pour MP4
-      } else {
-        mimeType = 'video/webm'
+      // Tester les codecs dans l'ordre de préférence
+      const codecs = [
+        { type: 'video/webm;codecs=vp9', bitrate: 10000000 },
+        { type: 'video/webm;codecs=vp8', bitrate: 8000000 },
+        { type: 'video/webm;codecs=h264', bitrate: 8000000 },
+        { type: 'video/mp4;codecs=h264', bitrate: 8000000 },
+        { type: 'video/webm', bitrate: 8000000 },
+        { type: 'video/mp4', bitrate: 8000000 }
+      ]
+
+      for (const codec of codecs) {
+        if (MediaRecorder.isTypeSupported(codec.type)) {
+          mimeType = codec.type
+          videoBitsPerSecond = codec.bitrate
+          console.log('✅ Codec supporté:', codec.type)
+          break
+        }
+      }
+
+      if (!mimeType) {
+        throw new Error('Aucun codec vidéo supporté')
       }
 
       console.log('🎬 MediaRecorder config:', { mimeType, videoBitsPerSecond })
@@ -234,10 +253,12 @@ export default function CameraHTML5({ onClose, onCapture, initialMode = 'photo' 
       mediaRecorder.ondataavailable = (event) => {
         if (event.data.size > 0) {
           chunksRef.current.push(event.data)
+          console.log('📦 Chunk reçu:', event.data.size, 'bytes')
         }
       }
 
       mediaRecorder.onstop = () => {
+        console.log('⏹️ Enregistrement arrêté, chunks:', chunksRef.current.length)
         const blobType = mediaRecorderRef.current?.mimeType || 'video/webm'
         const extension = blobType.includes('mp4') ? 'mp4' : 'webm'
         const blob = new Blob(chunksRef.current, { type: blobType })
@@ -245,16 +266,25 @@ export default function CameraHTML5({ onClose, onCapture, initialMode = 'photo' 
           type: blobType
         })
 
+        console.log('✅ Vidéo créée:', file.name, file.size, 'bytes')
         stopCamera()
         onCapture(file)
       }
 
+      mediaRecorder.onerror = (event: any) => {
+        console.error('❌ MediaRecorder error:', event.error)
+        setError('Erreur lors de l\'enregistrement')
+        setIsRecording(false)
+      }
+
       mediaRecorderRef.current = mediaRecorder
-      mediaRecorder.start()
+      mediaRecorder.start(1000) // Chunk toutes les 1s
       setIsRecording(true)
-    } catch (err) {
+      console.log('▶️ Enregistrement démarré')
+    } catch (err: any) {
       console.error('❌ Erreur enregistrement:', err)
-      setError('Impossible d\'enregistrer la vidéo')
+      console.error('Type:', err.name, 'Message:', err.message)
+      setError(`Impossible d'enregistrer: ${err.message}`)
     }
   }
 

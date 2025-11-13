@@ -2,14 +2,25 @@
 
 import { motion, AnimatePresence } from 'framer-motion'
 import { useUploadStore } from '@/stores/uploadStore'
-import { CheckCircle2, XCircle } from 'lucide-react'
+import { CheckCircle2, XCircle, X } from 'lucide-react'
 
 /**
  * Barre de progression globale fine en haut de l'écran
  * Style Instagram/TikTok - minimaliste et professionnel
  */
 export default function GlobalUploadProgress() {
-  const { isUploading, progress, status, message } = useUploadStore()
+  const { isUploading, progress, status, message, clearUpload } = useUploadStore()
+
+  const handleCancel = () => {
+    if (status === 'uploading') {
+      const confirmed = confirm('Voulez-vous vraiment annuler l\'upload ?')
+      if (confirmed) {
+        clearUpload()
+      }
+    } else {
+      clearUpload()
+    }
+  }
 
   return (
     <AnimatePresence>
@@ -46,9 +57,20 @@ export default function GlobalUploadProgress() {
               </span>
             </div>
 
-            <span className="text-white/60 font-mono tabular-nums">
-              {progress}%
-            </span>
+            <div className="flex items-center gap-3">
+              <span className="text-white/60 font-mono tabular-nums">
+                {progress}%
+              </span>
+
+              {/* Bouton annuler */}
+              <button
+                onClick={handleCancel}
+                className="p-1 hover:bg-white/10 rounded-full transition-colors group"
+                title="Fermer / Annuler"
+              >
+                <X className="w-4 h-4 text-white/60 group-hover:text-white transition-colors" />
+              </button>
+            </div>
           </div>
         </motion.div>
       )}
