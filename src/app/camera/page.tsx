@@ -143,13 +143,35 @@ function CameraPageContent() {
     const isVideo = data.file.type.startsWith('video/')
 
     try {
-      // 🎬 VIDÉO → Upload direct vers Bunny.net (support HEVC natif)
+      // 🎬 VIDÉO → Upload direct vers Bunny.net avec compression client si >20MB
       if (isVideo) {
-        // Pas de compression côté client - Bunny gère tout l'encodage de manière optimale
-        // Cela évite les blocages longs et la dégradation de qualité
-        const fileToUpload = data.file
+        toast.info('Préparation vidéo...', 0)
+        setUploadProgress(2)
 
-        setUploadProgress(5)
+        // Compresser si nécessaire (vidéos téléphone souvent 50-200MB)
+        const compressionResult = await compressVideoIfNeeded(
+          data.file,
+          {
+            maxWidth: 1920,
+            maxHeight: 1080,
+            videoBitrate: '4500k', // 4.5 Mbps pour qualité optimale
+            preset: 'fast'
+          },
+          (progress) => {
+            // 2-25% pour compression
+            setUploadProgress(2 + Math.round(progress * 0.23))
+            console.log(`🗜️ Compression: ${progress}%`)
+          }
+        )
+
+        const fileToUpload = compressionResult.file
+        const wasCompressed = compressionResult.compressionRatio > 0
+
+        if (wasCompressed) {
+          toast.success(`✨ Vidéo optimisée (-${compressionResult.compressionRatio.toFixed(0)}%)`, 2000)
+        }
+
+        setUploadProgress(25)
         toast.info('Upload vidéo vers Bunny.net...', 0)
 
         // 2. Obtenir URL upload Bunny
@@ -177,8 +199,8 @@ function CameraPageContent() {
             'Content-Type': 'application/octet-stream',
           },
           onProgress: (progress) => {
-            // 5-95% pour upload
-            setUploadProgress(5 + Math.min(progress * 0.9, 90))
+            // 25-95% pour upload (après compression)
+            setUploadProgress(25 + Math.min(progress * 0.70, 70))
             console.log(`📊 Upload Bunny: ${progress}% (${((fileToUpload.size * progress / 100) / 1024 / 1024).toFixed(2)}MB/${(fileToUpload.size / 1024 / 1024).toFixed(2)}MB)`)
           },
           maxAttempts: 3
