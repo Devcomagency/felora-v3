@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef, useState, useEffect } from 'react'
-import { Camera, Video, X, RotateCw, Loader } from 'lucide-react'
+import { Camera, Video, X, RotateCw, Loader, Upload } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 interface CameraHTML5Props {
@@ -20,6 +20,7 @@ export default function CameraHTML5({ onClose, onCapture, initialMode = 'photo' 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const chunksRef = useRef<Blob[]>([])
   const streamRef = useRef<MediaStream | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [mode, setMode] = useState<'photo' | 'video'>(initialMode)
   const [isRecording, setIsRecording] = useState(false)
@@ -407,42 +408,65 @@ export default function CameraHTML5({ onClose, onCapture, initialMode = 'photo' 
             </div>
           )}
 
-          {/* Sélecteur mode Photo/Vidéo - Style Felora */}
-          {!isRecording && (
-            <div className="flex items-center justify-center gap-3 mb-6">
-              <button
-                onClick={() => setMode('photo')}
-                className="px-6 py-2 rounded-full font-medium transition-all active:scale-95"
-                style={mode === 'photo' ? {
-                  background: 'linear-gradient(135deg, #FF6B9D, #B794F6)',
-                  border: '1px solid rgba(255, 255, 255, 0.2)',
-                } : {
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  backdropFilter: 'blur(20px)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                }}
-              >
-                <span className="text-white">Photo</span>
-              </button>
-              <button
-                onClick={() => setMode('video')}
-                className="px-6 py-2 rounded-full font-medium transition-all active:scale-95"
-                style={mode === 'video' ? {
-                  background: 'linear-gradient(135deg, #FF6B9D, #B794F6)',
-                  border: '1px solid rgba(255, 255, 255, 0.2)',
-                } : {
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  backdropFilter: 'blur(20px)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                }}
-              >
-                <span className="text-white">Vidéo</span>
-              </button>
-            </div>
-          )}
+          {/* Layout avec 3 colonnes : Flip | Photo/Video + Capture | Upload */}
+          <div className="flex items-end justify-between gap-4">
+            {/* Colonne gauche : Bouton Flip Camera */}
+            {!isRecording && (
+              <div className="flex flex-col items-center gap-2">
+                <button
+                  onClick={switchCamera}
+                  className="w-14 h-14 rounded-full flex items-center justify-center transition-all active:scale-95 group"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    backdropFilter: 'blur(20px)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                  }}
+                  title="Retourner la caméra"
+                >
+                  <RotateCw className="text-white group-hover:text-[#4FD1C7] transition-colors" size={24} />
+                </button>
+              </div>
+            )}
+            {isRecording && <div className="w-14" />}
 
-          {/* Bouton capture */}
-          <div className="flex items-center justify-center">
+            {/* Colonne centre : Sélecteur mode + Bouton capture */}
+            <div className="flex flex-col items-center gap-4 flex-1">
+              {/* Sélecteur mode Photo/Vidéo */}
+              {!isRecording && (
+                <div className="flex items-center justify-center gap-3">
+                  <button
+                    onClick={() => setMode('photo')}
+                    className="px-6 py-2 rounded-full font-medium transition-all active:scale-95"
+                    style={mode === 'photo' ? {
+                      background: 'linear-gradient(135deg, #FF6B9D, #B794F6)',
+                      border: '1px solid rgba(255, 255, 255, 0.2)',
+                    } : {
+                      background: 'rgba(255, 255, 255, 0.05)',
+                      backdropFilter: 'blur(20px)',
+                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                    }}
+                  >
+                    <span className="text-white">Photo</span>
+                  </button>
+                  <button
+                    onClick={() => setMode('video')}
+                    className="px-6 py-2 rounded-full font-medium transition-all active:scale-95"
+                    style={mode === 'video' ? {
+                      background: 'linear-gradient(135deg, #FF6B9D, #B794F6)',
+                      border: '1px solid rgba(255, 255, 255, 0.2)',
+                    } : {
+                      background: 'rgba(255, 255, 255, 0.05)',
+                      backdropFilter: 'blur(20px)',
+                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                    }}
+                  >
+                    <span className="text-white">Vidéo</span>
+                  </button>
+                </div>
+              )}
+
+              {/* Bouton capture */}
+              <div className="flex items-center justify-center">
             {mode === 'photo' ? (
               <button
                 onClick={takePhoto}
@@ -466,14 +490,51 @@ export default function CameraHTML5({ onClose, onCapture, initialMode = 'photo' 
                 )}
               </button>
             )}
-          </div>
+              </div>
 
-          {isRecording && (
-            <p className="text-center text-white/60 text-sm mt-4">
-              Appuyez pour arrêter l'enregistrement
-            </p>
-          )}
+              {isRecording && (
+                <p className="text-center text-white/60 text-sm mt-2">
+                  Appuyez pour arrêter l'enregistrement
+                </p>
+              )}
+            </div>
+
+            {/* Colonne droite : Bouton Upload/Galerie */}
+            {!isRecording && (
+              <div className="flex flex-col items-center gap-2">
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-14 h-14 rounded-full flex items-center justify-center transition-all active:scale-95 group"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    backdropFilter: 'blur(20px)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                  }}
+                  title="Importer depuis la galerie"
+                >
+                  <Upload className="text-white group-hover:text-[#B794F6] transition-colors" size={24} />
+                </button>
+              </div>
+            )}
+            {isRecording && <div className="w-14" />}
+          </div>
         </div>
+
+        {/* Input file caché pour upload galerie */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*,video/*"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0]
+            if (file) {
+              stopCamera()
+              onCapture(file)
+            }
+            e.target.value = ''
+          }}
+        />
       </div>
     </div>
   )
