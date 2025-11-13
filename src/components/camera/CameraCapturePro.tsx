@@ -29,18 +29,18 @@ export default function CameraCapturePro({ onCapture, onClose, mode }: CameraPro
 
       // Définir le type de fichier accepté
       if (mode === 'video') {
-        // 🎬 VIDÉO : Capture directe depuis la caméra (Mux supporte HEVC)
+        // 🎬 VIDÉO : Seulement vidéo, pas d'attribut capture
+        // Le navigateur ouvrira directement la caméra sans menu
         input.accept = 'video/*'
-        input.capture = 'environment' // Capture directe depuis la caméra
+        // NE PAS mettre capture="environment" pour éviter le double menu
       } else if (mode === 'photo') {
-        // 📷 PHOTO : Capture directe depuis la caméra
+        // 📷 PHOTO : Seulement image, pas d'attribut capture
         input.accept = 'image/*'
-        input.capture = 'environment' // Caméra directe
+        // NE PAS mettre capture="environment" pour éviter le double menu
       } else if (mode === 'upload') {
         // 📤 UPLOAD : Galerie uniquement (pas de capture)
         input.accept = 'image/*,video/*'
-        // NE PAS ajouter d'attribut capture pour mode upload
-        // Ça force l'ouverture de la galerie uniquement
+        // Pas d'attribut capture = ouverture de la galerie
       }
 
       input.onchange = (e: any) => {
@@ -108,7 +108,7 @@ export default function CameraCapturePro({ onCapture, onClose, mode }: CameraPro
               const input = document.createElement('input')
               input.type = 'file'
               input.accept = 'video/*'
-              input.capture = 'environment' // Réactivé: capture directe depuis la caméra
+              // Pas d'attribut capture pour éviter le double menu
               input.onchange = (e: any) => {
                 const file = e.target.files?.[0]
                 if (file && onCapture) {
@@ -131,7 +131,7 @@ export default function CameraCapturePro({ onCapture, onClose, mode }: CameraPro
               const input = document.createElement('input')
               input.type = 'file'
               input.accept = 'image/*'
-              input.capture = 'environment'
+              // Pas d'attribut capture pour éviter le double menu
               input.onchange = (e: any) => {
                 const file = e.target.files?.[0]
                 if (file && onCapture) {
