@@ -135,7 +135,7 @@ export default function CameraHTML5({ onClose, onCapture, initialMode = 'photo' 
 
     if (!videoRef.current) {
       console.error('❌ videoRef.current est null')
-      alert('❌ Erreur: videoRef null')
+      
       return
     }
 
@@ -145,11 +145,11 @@ export default function CameraHTML5({ onClose, onCapture, initialMode = 'photo' 
     // VÉRIFICATION CRITIQUE: Dimensions valides
     if (video.videoWidth === 0 || video.videoHeight === 0) {
       console.error('❌ Vidéo pas prête! Dimensions:', video.videoWidth, 'x', video.videoHeight)
-      alert('⚠️ Caméra pas prête, réessayez dans 1 seconde...')
+      
       return
     }
 
-    alert('📸 Capture en cours...')
+    
 
     const canvas = document.createElement('canvas')
     canvas.width = video.videoWidth
@@ -182,7 +182,7 @@ export default function CameraHTML5({ onClose, onCapture, initialMode = 'photo' 
       stopCamera()
 
       console.log('📤 Appel onCapture avec le fichier')
-      alert('✅ Photo capturée ! Redirection...') // DEBUG MOBILE
+      
       onCapture(file)
     }, 'image/jpeg', 0.95)
   }
