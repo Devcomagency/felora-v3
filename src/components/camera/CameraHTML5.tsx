@@ -326,7 +326,8 @@ export default function CameraHTML5({ onClose, onCapture, initialMode = 'photo' 
           <div className="flex items-center justify-between">
             <button
               onClick={onClose}
-              className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-white/20 transition-colors"
+              className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/30 transition-all active:scale-95 border border-white/30"
+              title="Fermer"
             >
               <X className="text-white" size={24} />
             </button>
@@ -350,9 +351,10 @@ export default function CameraHTML5({ onClose, onCapture, initialMode = 'photo' 
 
             <button
               onClick={switchCamera}
-              className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-white/20 transition-colors"
+              className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/30 transition-all active:scale-95 border border-white/30"
+              title="Retourner la caméra"
             >
-              <RotateCw className="text-white" size={20} />
+              <RotateCw className="text-white" size={24} />
             </button>
           </div>
         </div>
