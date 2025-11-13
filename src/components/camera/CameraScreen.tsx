@@ -108,10 +108,11 @@ export default function CameraScreen({ onClose, onCapture }: CameraScreenProps) 
         }
 
         const stream = await navigator.mediaDevices.getUserMedia({
-          video: { 
+          video: {
             facingMode: isFrontCamera ? 'user' : 'environment',
-            width: { ideal: 1080 },
-            height: { ideal: 1920 }
+            width: { ideal: 720 },   // 720p au lieu de 1080p = fichiers 3x plus légers
+            height: { ideal: 1280 },  // Qualité excellente sur mobile, upload rapide
+            frameRate: { ideal: 30, max: 30 }
           },
           audio: true
         })
@@ -163,10 +164,11 @@ export default function CameraScreen({ onClose, onCapture }: CameraScreenProps) 
           setTimeout(async () => {
             try {
               const stream = await navigator.mediaDevices.getUserMedia({
-                video: { 
+                video: {
                   facingMode: isFrontCamera ? 'user' : 'environment',
-                  width: { ideal: 1080 },
-                  height: { ideal: 1920 }
+                  width: { ideal: 720 },
+                  height: { ideal: 1280 },
+                  frameRate: { ideal: 30, max: 30 }
                 },
                 audio: true
               })
