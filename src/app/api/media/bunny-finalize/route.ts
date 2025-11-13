@@ -87,6 +87,29 @@ export async function POST(request: NextRequest) {
       ownerId
     })
 
+    // Vérifier si cette vidéo existe déjà (éviter doublons)
+    const existingMedia = await prisma.media.findFirst({
+      where: {
+        externalId: videoId,
+        ownerType: ownerType as any,
+        ownerId: ownerId
+      }
+    })
+
+    if (existingMedia) {
+      console.log('⚠️ Vidéo déjà sauvegardée, retour média existant:', existingMedia.id)
+      return NextResponse.json({
+        success: true,
+        media: {
+          id: existingMedia.id,
+          url: existingMedia.url,
+          thumbUrl: existingMedia.thumbUrl,
+          type: existingMedia.type,
+        },
+        alreadyExists: true
+      })
+    }
+
     // Sauvegarder en base
     const media = await prisma.media.create({
       data: {

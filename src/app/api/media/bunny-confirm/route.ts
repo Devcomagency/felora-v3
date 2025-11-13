@@ -165,6 +165,41 @@ export async function POST(request: NextRequest) {
 
     console.log('✅ Médias décalés (pos 0 préservé)')
 
+    // Vérifier si cette vidéo existe déjà (éviter doublons si retry)
+    const existingMedia = await prisma.media.findFirst({
+      where: {
+        externalId: videoId,
+        ownerType: ownerType as any,
+        ownerId: ownerId
+      }
+    })
+
+    if (existingMedia) {
+      console.log('⚠️ Vidéo déjà sauvegardée (retry détecté), retour média existant:', existingMedia.id)
+
+      // Déterminer l'URL de redirection
+      let redirectUrl = `/profile/${session.user.id}`
+      if (clubProfile) {
+        redirectUrl = `/profile-test/club/${clubProfile.handle}`
+      } else if (escortProfile) {
+        redirectUrl = `/profile/${escortProfile.id}`
+      }
+
+      return NextResponse.json({
+        success: true,
+        processing: false,
+        media: {
+          id: existingMedia.id,
+          url: existingMedia.url,
+          thumbUrl: existingMedia.thumbUrl,
+          type: existingMedia.type,
+        },
+        redirectUrl,
+        bunnyStatus: videoStatus,
+        alreadyExists: true
+      })
+    }
+
     // Sauvegarder en base
     const media = await prisma.media.create({
       data: {
