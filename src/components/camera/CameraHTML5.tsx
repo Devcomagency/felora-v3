@@ -43,13 +43,13 @@ export default function CameraHTML5({ onClose, onCapture, initialMode = 'photo' 
 
   // Initialiser la caméra
   useEffect(() => {
-    console.log('🎥 Initialisation caméra - facingMode:', facingMode)
+    console.log('🎥 Initialisation caméra - facingMode:', facingMode, 'mode:', mode)
     startCamera()
     return () => {
       console.log('🛑 Arrêt caméra')
       stopCamera()
     }
-  }, [facingMode])
+  }, [facingMode, mode])
 
   useEffect(() => {
     console.log('📱 Mode changé:', initialMode)
@@ -62,6 +62,11 @@ export default function CameraHTML5({ onClose, onCapture, initialMode = 'photo' 
     setError(null)
 
     try {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop())
+        streamRef.current = null
+      }
+
       if (!navigator.mediaDevices?.getUserMedia) {
         throw new Error('getUserMedia non supporté sur ce navigateur')
       }
@@ -73,7 +78,7 @@ export default function CameraHTML5({ onClose, onCapture, initialMode = 'photo' 
         video: {
           facingMode: facingMode
         },
-        audio: false // Pas d'audio pour l'instant
+        audio: mode === 'video'
       })
 
       console.log('✅ Stream obtenu:', stream)
