@@ -32,6 +32,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!api|_next|_next/static|_next/image|_next/webpack-hmr|favicon.ico|auth-check).*)',
+    '/((?!api|_next|_next/static|_next/image|_next/webpack-hmr|favicon.ico|auth-check|camera).*)',
   ],
 }
