@@ -102,6 +102,7 @@ function CameraPageContent() {
   const [capturedMedia, setCapturedMedia] = useState<CapturedMedia | null>(null)
   const [isPublishing, setIsPublishing] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
+  const [loadingTimeout, setLoadingTimeout] = useState(false)
 
   /**
    * Handler appelé quand un fichier est capturé depuis la caméra
@@ -158,16 +159,28 @@ function CameraPageContent() {
             } else {
               console.error('❌ Fichier toujours introuvable après retry')
               sessionStorage.removeItem('hasPendingFile')
-              router.push('/')
+              setLoadingTimeout(true)
             }
           }, 100)
           return () => clearTimeout(timeout)
         }
       } else {
-        console.log('⚠️ Pas de flag hasPendingFile')
+        console.log('⚠️ Pas de flag hasPendingFile - redirect immédiat')
+        setLoadingTimeout(true)
       }
+
+      // Timeout de sécurité : si après 2s toujours rien, redirect
+      const safetyTimeout = setTimeout(() => {
+        if (!capturedMedia) {
+          console.error('⏱️ Timeout de sécurité - redirect vers accueil')
+          sessionStorage.removeItem('hasPendingFile')
+          setLoadingTimeout(true)
+        }
+      }, 2000)
+
+      return () => clearTimeout(safetyTimeout)
     }
-  }, [fromUpload, handleCameraCapture, router])
+  }, [fromUpload, handleCameraCapture, router, capturedMedia])
 
   /**
    * Handler pour la publication avec retry automatique et progress bar
@@ -322,11 +335,28 @@ function CameraPageContent() {
     )
   }
 
-  // Fallback : si fromUpload sans média, retour immédiat
-  if (fromUpload && !capturedMedia) {
-    // Pas de loader infini - retour direct si pas de média après le useEffect
-    router.push('/')
-    return null
+  // Fallback : si fromUpload, attendre que useEffect charge le média
+  if (fromUpload) {
+    // Si timeout atteint, redirect vers accueil
+    if (loadingTimeout) {
+      router.push('/')
+      return null
+    }
+
+    if (capturedMedia) {
+      // Le média est chargé, afficher l'éditeur (géré plus haut)
+      return null
+    }
+
+    // Attendre que le useEffect charge le fichier
+    return (
+      <div className="fixed inset-0 bg-black flex items-center justify-center z-50">
+        <div className="text-white text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500 mx-auto mb-4"></div>
+          <p className="text-sm mt-2">Chargement...</p>
+        </div>
+      </div>
+    )
   }
 
   // Fallback : pas de mode ni de fichier, retour en arrière
