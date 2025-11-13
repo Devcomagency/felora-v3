@@ -164,7 +164,10 @@ function CameraPageContent() {
 
         const { uploadUrl, videoId, libraryId, apiKey } = await bunnyUrlRes.json()
 
-        // 3. Upload DIRECT vers Bunny avec progress
+        // 3. Upload DIRECT vers Bunny avec progress (compression optimisée)
+        // Note: Pour vidéos >10MB, envisager compression FFmpeg avant upload
+        console.log(`📦 Taille fichier: ${(fileToUpload.size / 1024 / 1024).toFixed(2)}MB`)
+
         await uploadWithProgress({
           url: uploadUrl,
           file: fileToUpload,
@@ -174,9 +177,9 @@ function CameraPageContent() {
             'Content-Type': 'application/octet-stream',
           },
           onProgress: (progress) => {
-            // 5-95% pour upload (pas de compression avant)
+            // 5-95% pour upload
             setUploadProgress(5 + Math.min(progress * 0.9, 90))
-            console.log(`📊 Upload Bunny: ${progress}%`)
+            console.log(`📊 Upload Bunny: ${progress}% (${((fileToUpload.size * progress / 100) / 1024 / 1024).toFixed(2)}MB/${(fileToUpload.size / 1024 / 1024).toFixed(2)}MB)`)
           },
           maxAttempts: 3
         })

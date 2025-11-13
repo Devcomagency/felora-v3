@@ -109,8 +109,8 @@ export async function uploadWithProgress(options: UploadOptions): Promise<void> 
         xhr.setRequestHeader(key, value)
       })
 
-      // Timeout 5 minutes
-      xhr.timeout = 5 * 60 * 1000
+      // Timeout 10 minutes (pour grosses vidéos)
+      xhr.timeout = 10 * 60 * 1000
 
       // Envoyer le fichier
       xhr.send(file)
