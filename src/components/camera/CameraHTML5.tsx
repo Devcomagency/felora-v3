@@ -27,6 +27,7 @@ export default function CameraHTML5({ onClose, onCapture, initialMode = 'photo' 
   const [error, setError] = useState<string | null>(null)
   const [facingMode, setFacingMode] = useState<'user' | 'environment'>('environment')
   const [recordingTime, setRecordingTime] = useState(0)
+  const [isVideoReady, setIsVideoReady] = useState(false)
 
   // Timer pour l'enregistrement vidéo
   useEffect(() => {
@@ -95,6 +96,13 @@ export default function CameraHTML5({ onClose, onCapture, initialMode = 'photo' 
       if (videoRef.current) {
         console.log('📺 Attachement du stream à la vidéo')
         videoRef.current.srcObject = stream
+
+        // Attendre que la vidéo soit prête (métadonnées chargées)
+        videoRef.current.onloadedmetadata = () => {
+          console.log('✅ Métadonnées vidéo chargées')
+          setIsVideoReady(true)
+        }
+
         await videoRef.current.play()
         console.log('▶️ Vidéo en lecture')
       } else {
@@ -124,16 +132,24 @@ export default function CameraHTML5({ onClose, onCapture, initialMode = 'photo' 
   // Prendre une photo
   const takePhoto = () => {
     console.log('📸 takePhoto appelé')
-    alert('📸 Prise de photo en cours...') // DEBUG MOBILE
 
     if (!videoRef.current) {
       console.error('❌ videoRef.current est null')
-      alert('❌ Erreur: videoRef null') // DEBUG MOBILE
+      alert('❌ Erreur: videoRef null')
       return
     }
 
     const video = videoRef.current
     console.log('📹 Dimensions vidéo:', video.videoWidth, 'x', video.videoHeight)
+
+    // VÉRIFICATION CRITIQUE: Dimensions valides
+    if (video.videoWidth === 0 || video.videoHeight === 0) {
+      console.error('❌ Vidéo pas prête! Dimensions:', video.videoWidth, 'x', video.videoHeight)
+      alert('⚠️ Caméra pas prête, réessayez dans 1 seconde...')
+      return
+    }
+
+    alert('📸 Capture en cours...')
 
     const canvas = document.createElement('canvas')
     canvas.width = video.videoWidth
@@ -363,7 +379,7 @@ export default function CameraHTML5({ onClose, onCapture, initialMode = 'photo' 
             {mode === 'photo' ? (
               <button
                 onClick={takePhoto}
-                disabled={isLoading || !!error}
+                disabled={isLoading || !!error || !isVideoReady}
                 className="w-20 h-20 rounded-full bg-white border-4 border-white/30 hover:scale-110 active:scale-95 transition-transform disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
               >
                 <Camera className="text-black" size={32} />
@@ -371,7 +387,7 @@ export default function CameraHTML5({ onClose, onCapture, initialMode = 'photo' 
             ) : (
               <button
                 onClick={isRecording ? stopRecording : startRecording}
-                disabled={isLoading || !!error}
+                disabled={isLoading || !!error || (!isRecording && !isVideoReady)}
                 className={`w-20 h-20 rounded-full border-4 border-white/30 hover:scale-110 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center ${
                   isRecording ? 'bg-red-500' : 'bg-white'
                 }`}
