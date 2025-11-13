@@ -15,10 +15,11 @@ interface UploadVideoParams {
  */
 export function useBackgroundUpload() {
   const startVideoUpload = async (params: UploadVideoParams) => {
-    const { setProgress, setStatus, setUpload, clearUpload } = useUploadStore.getState()
+    const store = useUploadStore.getState()
 
     try {
-      setProgress(5, 'Upload en cours...')
+      // Activer l'upload et initialiser la barre de progression
+      useUploadStore.setState({ isUploading: true, progress: 5, message: 'Upload en cours...', status: 'uploading' })
 
       // 1. Obtenir URL upload Bunny
       const bunnyUrlRes = await fetchWithRetry('/api/media/bunny-upload-url', {
@@ -43,12 +44,12 @@ export function useBackgroundUpload() {
         },
         onProgress: (progress) => {
           const globalProgress = 5 + Math.min(progress * 0.85, 85)
-          setProgress(globalProgress, `Upload ${progress}%`)
+          useUploadStore.setState({ progress: globalProgress, message: `Upload ${progress}%` })
         },
         maxAttempts: 3
       })
 
-      setProgress(90, 'Traitement...')
+      useUploadStore.setState({ progress: 90, message: 'Traitement...' })
 
       // 3. Confirmer l'upload
       const confirmRes = await fetchWithRetry('/api/media/bunny-confirm', {
@@ -67,14 +68,14 @@ export function useBackgroundUpload() {
       const result = await confirmRes.json()
 
       if (confirmRes.status === 202 && result.processing) {
-        // Vidéo en traitement → Activer polling
-        setUpload({
+        // Vidéo en traitement → Activer polling via setUpload
+        useUploadStore.getState().setUpload({
           videoId: result.videoId,
           thumbnailUrl: result.thumbnailUrl,
           fileName: params.file.name,
           pendingData: result.pendingData
         })
-        setProgress(95, 'Encodage...')
+        useUploadStore.setState({ progress: 95, message: 'Encodage...' })
         return { success: true, processing: true }
       }
 
@@ -83,16 +84,22 @@ export function useBackgroundUpload() {
       }
 
       // Succès immédiat
-      setProgress(100, '✓ Publié')
-      setStatus('success', '✓ Publié avec succès')
-      setTimeout(() => clearUpload(), 3000)
+      useUploadStore.setState({
+        progress: 100,
+        message: '✓ Publié',
+        status: 'success'
+      })
+      setTimeout(() => useUploadStore.getState().clearUpload(), 3000)
 
       return { success: true, processing: false }
 
     } catch (error: any) {
       console.error('❌ Erreur upload:', error)
-      setStatus('error', `✗ Erreur: ${error.message}`)
-      setTimeout(() => clearUpload(), 5000)
+      useUploadStore.setState({
+        status: 'error',
+        message: `✗ Erreur: ${error.message}`
+      })
+      setTimeout(() => useUploadStore.getState().clearUpload(), 5000)
       return { success: false, error: error.message }
     }
   }
