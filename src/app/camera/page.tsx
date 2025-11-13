@@ -129,12 +129,15 @@ function CameraPageContent() {
 
   // Gérer le fichier venant de MediaUploadButton ou CameraHTML5
   useEffect(() => {
+    console.log('🔍 useEffect fromUpload:', fromUpload, 'window:', typeof window)
+
     if (fromUpload && typeof window !== 'undefined') {
       const hasPending = sessionStorage.getItem('hasPendingFile')
+      const pendingFile = (window as any).__pendingFile as File | undefined
+
+      console.log('🔍 hasPending:', hasPending, 'pendingFile:', pendingFile?.name)
 
       if (hasPending) {
-        const pendingFile = (window as any).__pendingFile as File | undefined
-
         if (pendingFile) {
           console.log('✅ Fichier reçu:', pendingFile.name, pendingFile.type, pendingFile.size)
           handleCameraCapture(pendingFile)
@@ -143,20 +146,25 @@ function CameraPageContent() {
           delete (window as any).__pendingFile
           sessionStorage.removeItem('hasPendingFile')
         } else {
+          console.log('⏳ Fichier pas encore disponible, réessai dans 100ms...')
           // Réessayer une fois après un délai court
           const timeout = setTimeout(() => {
             const retryFile = (window as any).__pendingFile as File | undefined
             if (retryFile) {
+              console.log('✅ Fichier reçu après retry:', retryFile.name)
               handleCameraCapture(retryFile)
               delete (window as any).__pendingFile
               sessionStorage.removeItem('hasPendingFile')
             } else {
-              console.error('❌ Fichier introuvable')
+              console.error('❌ Fichier toujours introuvable après retry')
+              sessionStorage.removeItem('hasPendingFile')
               router.push('/')
             }
           }, 100)
           return () => clearTimeout(timeout)
         }
+      } else {
+        console.log('⚠️ Pas de flag hasPendingFile')
       }
     }
   }, [fromUpload, handleCameraCapture, router])
@@ -314,16 +322,11 @@ function CameraPageContent() {
     )
   }
 
-  // Fallback : si fromUpload, on attend le fichier
-  if (fromUpload) {
-    return (
-      <div className="fixed inset-0 bg-black flex items-center justify-center z-50">
-        <div className="text-white text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500 mx-auto mb-4"></div>
-          <p>Chargement du média...</p>
-        </div>
-      </div>
-    )
+  // Fallback : si fromUpload sans média, retour immédiat
+  if (fromUpload && !capturedMedia) {
+    // Pas de loader infini - retour direct si pas de média après le useEffect
+    router.push('/')
+    return null
   }
 
   // Fallback : pas de mode ni de fichier, retour en arrière
