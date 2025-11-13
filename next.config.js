@@ -23,6 +23,11 @@ const nextConfig = {
   images: {
     domains: ['localhost'],
     unoptimized: process.env.NODE_ENV !== 'production', // Désactiver l'optimisation en dev pour éviter le cache
+    dangerouslyAllowSVG: true,
+    contentDispositionType: 'attachment',
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+    // Fix COEP error for Bunny/R2 images
+    loader: 'default',
     remotePatterns: [
       // Production storage - Cloudflare R2
       { protocol: 'https', hostname: '*.r2.cloudflarestorage.com', port: '', pathname: '/**' },
@@ -135,21 +140,7 @@ const nextConfig = {
     ].filter(Boolean).join('; ')
 
     return [
-      // Pages avec FFmpeg.wasm (besoin de SharedArrayBuffer)
-      {
-        source: '/camera/:path*',
-        headers: [
-          { key: 'Content-Security-Policy', value: csp },
-          { key: 'X-Frame-Options', value: 'DENY' },
-          { key: 'X-Content-Type-Options', value: 'nosniff' },
-          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-          { key: 'Permissions-Policy', value: 'geolocation=(self), microphone=(self), camera=(self)' },
-          // Headers nécessaires pour FFmpeg.wasm (SharedArrayBuffer)
-          { key: 'Cross-Origin-Embedder-Policy', value: 'require-corp' },
-          { key: 'Cross-Origin-Opener-Policy', value: 'same-origin' },
-        ],
-      },
-      // Toutes les autres pages (sans COEP pour permettre les images R2)
+      // Toutes les pages - SANS COEP pour permettre images Bunny/R2
       {
         source: '/:path*',
         headers: [
@@ -158,7 +149,7 @@ const nextConfig = {
           { key: 'X-Content-Type-Options', value: 'nosniff' },
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
           { key: 'Permissions-Policy', value: 'geolocation=(self), microphone=(self), camera=(self)' },
-          // PAS de Cross-Origin-Embedder-Policy ici pour permettre les images R2
+          // PAS de Cross-Origin-Embedder-Policy pour éviter ERR_BLOCKED_BY_RESPONSE
         ],
       },
     ]
