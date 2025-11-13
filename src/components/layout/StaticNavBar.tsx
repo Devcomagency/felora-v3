@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useSession, signOut } from 'next-auth/react'
@@ -10,6 +10,7 @@ import {
   Map, Globe, LogIn, UserPlus, BarChart3, Calendar, Heart, Plus
 } from 'lucide-react'
 import NotificationBell from '@/components/notifications/NotificationBell'
+import dynamic from 'next/dynamic'
 
 const languages = [
   { code: 'fr', label: 'Français', flag: '🇫🇷' },
@@ -17,6 +18,8 @@ const languages = [
   { code: 'de', label: 'Deutsch', flag: '🇩🇪' },
   { code: 'it', label: 'Italiano', flag: '🇮🇹' }
 ]
+
+const CameraHTML5 = dynamic(() => import('../camera/CameraHTML5'), { ssr: false })
 
 export default function StaticNavBar() {
   const router = useRouter()
@@ -34,6 +37,26 @@ export default function StaticNavBar() {
   const [currentLanguage, setCurrentLanguage] = useState('fr')
   const [hasNotifications, setHasNotifications] = useState(false)
   const [unreadConversations, setUnreadConversations] = useState(0)
+  const [showCameraOverlay, setShowCameraOverlay] = useState(false)
+  const [cameraMode, setCameraMode] = useState<'photo' | 'video' | null>(null)
+  const galleryInputRef = useRef<HTMLInputElement>(null)
+
+  const handleFileSelected = (file: File | null) => {
+    if (!file) return
+    ;(window as any).__pendingFile = file
+    router.push('/camera?fromUpload=true')
+  }
+
+  const openCamera = (mode: 'photo' | 'video') => {
+    setShowCameraMenu(false)
+    setCameraMode(mode)
+    setShowCameraOverlay(true)
+  }
+
+  const openGalleryPicker = () => {
+    setShowCameraMenu(false)
+    requestAnimationFrame(() => galleryInputRef.current?.click())
+  }
 
   // Charger la langue sauvegardée
   useEffect(() => {
@@ -504,6 +527,34 @@ export default function StaticNavBar() {
           </motion.div>
         )}
       </AnimatePresence>
+      <AnimatePresence>
+        {showCameraOverlay && cameraMode && (
+          <CameraHTML5
+            initialMode={cameraMode}
+            onClose={() => {
+              setShowCameraOverlay(false)
+              setCameraMode(null)
+            }}
+            onCapture={(file) => {
+              setShowCameraOverlay(false)
+              setCameraMode(null)
+              handleFileSelected(file)
+            }}
+          />
+        )}
+      </AnimatePresence>
+      <input
+        ref={galleryInputRef}
+        type="file"
+        accept="image/*,video/*"
+        className="hidden"
+        multiple={false}
+        onChange={(event) => {
+          const file = event.target.files?.[0] || null
+          handleFileSelected(file)
+          event.target.value = ''
+        }}
+      />
 
       {/* Overlay pour fermer le menu */}
       <AnimatePresence>
@@ -552,10 +603,7 @@ export default function StaticNavBar() {
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    onClick={() => {
-                      setShowCameraMenu(false)
-                      router.push('/camera?mode=photo')
-                    }}
+                    onClick={() => openCamera('photo')}
                     className="w-full flex items-center gap-4 p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl transition-all group"
                   >
                     <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
@@ -577,10 +625,7 @@ export default function StaticNavBar() {
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    onClick={() => {
-                      setShowCameraMenu(false)
-                      router.push('/camera?mode=video')
-                    }}
+                    onClick={() => openCamera('video')}
                     className="w-full flex items-center gap-4 p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl transition-all group"
                   >
                     <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center">
@@ -601,10 +646,7 @@ export default function StaticNavBar() {
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    onClick={() => {
-                      setShowCameraMenu(false)
-                      router.push('/camera?mode=upload')
-                    }}
+                    onClick={openGalleryPicker}
                     className="w-full flex items-center gap-4 p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl transition-all group"
                   >
                     <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-violet-500 flex items-center justify-center">
