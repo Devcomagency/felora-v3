@@ -391,8 +391,8 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
     >
       <ResponsiveVideoContainer
         aspectRatio="9:16"
-        maxHeight="100vh"
-        minHeight="100vh"
+        maxHeight="calc(100vh - 64px)"
+        minHeight="calc(100vh - 64px)"
         className="bg-black"
       >
       {/* Vidéo Background */}
@@ -413,9 +413,12 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
         {/* Si c'est une IMAGE, ne pas essayer de la lire comme vidéo */}
         {item.type === 'IMAGE' && (
           <div
-            className="absolute inset-0 bg-cover bg-center"
+            className="absolute inset-0"
             style={{
               backgroundImage: `url(${item.url})`,
+              backgroundSize: 'contain',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat',
               zIndex: 2
             }}
             onClick={handleVideoClick}
@@ -429,12 +432,8 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
           ref={videoRef}
           className="w-full h-full cursor-pointer transition-opacity duration-500"
           style={{
-            objectFit: 'cover',
+            objectFit: 'contain',
             objectPosition: 'center center',
-            minWidth: '100%',
-            minHeight: '100%',
-            maxWidth: 'none',
-            maxHeight: 'none',
             opacity: videoReady ? 1 : 0,
             zIndex: 2
           }}
@@ -673,26 +672,38 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
       {/* Content Overlay */}
       <div className="relative z-10 flex h-full pointer-events-none">
         {/* Profile Info - Left */}
-        <div className="flex-1 flex flex-col justify-end p-4 pb-24">
+        <div className="flex-1 flex flex-col justify-end p-4 pb-20">
           <div className="space-y-3 pointer-events-auto">
-            {/* Author Info */}
-            <div className="flex items-center gap-2">
+            {/* Author Info avec fond glassmorphism */}
+            <div className="flex items-center gap-2 px-3 py-2 rounded-xl"
+              style={{
+                background: 'rgba(0, 0, 0, 0.4)',
+                backdropFilter: 'blur(20px) saturate(180%)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+              }}
+            >
               <div>
-                <h2 className="text-lg font-semibold text-white drop-shadow-lg">
+                <h2 className="text-lg font-semibold text-white">
                   {item.author.name}
                 </h2>
               </div>
-              <Crown className="w-4 h-4 text-[#FF6B9D] drop-shadow" />
-              <Diamond className="w-3.5 h-3.5 text-[#4FD1C7] drop-shadow" />
+              <Crown className="w-4 h-4 text-[#FF6B9D]" />
+              <Diamond className="w-3.5 h-3.5 text-[#4FD1C7]" />
             </div>
 
-            {/* Type de média */}
-            <div className="space-y-2 text-white drop-shadow">
-              <div className="text-xs">
-                <span className="text-[#5FE1D7] font-semibold">
-                  {item.type === 'VIDEO' ? 'Vidéo' : 'Photo'}
-                </span>
-              </div>
+            {/* Type de média avec fond glassmorphism */}
+            <div className="inline-flex px-3 py-1.5 rounded-lg"
+              style={{
+                background: 'rgba(0, 0, 0, 0.4)',
+                backdropFilter: 'blur(20px) saturate(180%)',
+                border: '1px solid rgba(79, 225, 215, 0.3)',
+                boxShadow: '0 4px 16px rgba(79, 225, 215, 0.2)',
+              }}
+            >
+              <span className="text-[#5FE1D7] font-semibold text-xs">
+                {item.type === 'VIDEO' ? 'Vidéo' : 'Photo'}
+              </span>
             </div>
           </div>
         </div>
