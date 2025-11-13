@@ -71,14 +71,21 @@ export default function CameraHTML5({ onClose, onCapture, initialMode = 'photo' 
         throw new Error('getUserMedia non supporté sur ce navigateur')
       }
 
-      console.log('📹 Demande accès caméra...')
+      console.log('📹 Demande accès caméra avec qualité HD...')
 
-      // Demander l'accès à la caméra - SIMPLIFIER les contraintes
+      // Demander l'accès à la caméra avec contraintes HD
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
-          facingMode: facingMode
+          facingMode: facingMode,
+          width: { ideal: 1920, min: 1280 },
+          height: { ideal: 1080, min: 720 },
+          frameRate: { ideal: 30, min: 24 }
         },
-        audio: mode === 'video'
+        audio: mode === 'video' ? {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
+        } : false
       })
 
       console.log('✅ Stream obtenu:', stream)
@@ -157,18 +164,29 @@ export default function CameraHTML5({ onClose, onCapture, initialMode = 'photo' 
 
       chunksRef.current = []
 
-      // Créer le MediaRecorder
+      // Créer le MediaRecorder avec haute qualité
       let mimeType = ''
+      let videoBitsPerSecond = 8000000 // 8 Mbps par défaut
+
       if (MediaRecorder.isTypeSupported('video/webm;codecs=vp9')) {
         mimeType = 'video/webm;codecs=vp9'
+        videoBitsPerSecond = 10000000 // 10 Mbps pour VP9
       } else if (MediaRecorder.isTypeSupported('video/webm;codecs=vp8')) {
         mimeType = 'video/webm;codecs=vp8'
+        videoBitsPerSecond = 8000000 // 8 Mbps pour VP8
+      } else if (MediaRecorder.isTypeSupported('video/mp4')) {
+        mimeType = 'video/mp4'
+        videoBitsPerSecond = 8000000 // 8 Mbps pour MP4
       } else {
         mimeType = 'video/webm'
       }
 
+      console.log('🎬 MediaRecorder config:', { mimeType, videoBitsPerSecond })
+
       const mediaRecorder = new MediaRecorder(streamRef.current, {
-        mimeType
+        mimeType,
+        videoBitsPerSecond,
+        audioBitsPerSecond: 128000 // 128 kbps audio
       })
 
       mediaRecorder.ondataavailable = (event) => {
