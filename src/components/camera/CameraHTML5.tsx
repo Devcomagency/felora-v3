@@ -111,10 +111,14 @@ export default function CameraHTML5({ onClose, onCapture, initialMode = 'photo' 
 
       setIsLoading(false)
     } catch (err: any) {
-      console.error('❌ Erreur accès caméra:', err)
-      console.error('Code erreur:', err.name)
-      console.error('Message:', err.message)
-      setError(`Erreur: ${err.name} - ${err.message}`)
+      // Ignorer les AbortError (navigation rapide pendant chargement)
+      if (err.name === 'AbortError') {
+        console.log('⚠️ Chargement caméra interrompu (normal en dev)')
+        return
+      }
+
+      console.error('❌ Erreur caméra:', err.name, err.message)
+      setError(`Impossible d'accéder à la caméra`)
       setIsLoading(false)
     }
   }

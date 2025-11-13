@@ -65,10 +65,10 @@ const toastIcons = {
 }
 
 const toastColors = {
-  success: 'from-green-500 to-emerald-600',
-  error: 'from-red-500 to-rose-600',
-  warning: 'from-yellow-500 to-orange-600',
-  info: 'from-blue-500 to-cyan-600'
+  success: 'from-[#4FD1C7] to-[#00F5FF]',
+  error: 'from-[#FF6B9D] to-[#B794F6]',
+  warning: 'from-[#FFB347] to-[#FF6B9D]',
+  info: 'from-[#7C3AED] to-[#B794F6]'
 }
 
 function ToastItem({ toast }: { toast: Toast }) {
@@ -78,33 +78,31 @@ function ToastItem({ toast }: { toast: Toast }) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: -20, scale: 0.95 }}
+      initial={{ opacity: 0, y: -20, scale: 0.9 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, x: 100, scale: 0.95 }}
-      transition={{ duration: 0.2 }}
-      className="flex items-start gap-3 w-full max-w-md p-4 rounded-xl shadow-2xl backdrop-blur-xl border border-white/10"
+      exit={{ opacity: 0, scale: 0.8, transition: { duration: 0.15 } }}
+      transition={{ type: "spring", stiffness: 300, damping: 25 }}
+      className="flex items-center gap-3 px-4 py-3 rounded-2xl shadow-xl backdrop-blur-xl border border-white/5"
       style={{
-        background: 'rgba(20, 20, 30, 0.95)'
+        background: 'rgba(13, 13, 13, 0.92)'
       }}
     >
-      {/* Icône avec gradient */}
-      <div className={`flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br ${colorClass} flex items-center justify-center`}>
-        <Icon size={20} className="text-white" />
+      {/* Icône minimaliste */}
+      <div className={`flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br ${colorClass} flex items-center justify-center`}>
+        <Icon size={16} className="text-white" strokeWidth={2.5} />
       </div>
 
-      {/* Message */}
-      <div className="flex-1 pt-1">
-        <p className="text-sm text-white font-medium leading-relaxed">
-          {toast.message}
-        </p>
-      </div>
+      {/* Message compact */}
+      <p className="text-sm text-white/95 font-medium tracking-tight">
+        {toast.message}
+      </p>
 
-      {/* Bouton fermer */}
+      {/* Bouton fermer subtil */}
       <button
         onClick={() => removeToast(toast.id)}
-        className="flex-shrink-0 p-1 hover:bg-white/10 rounded-lg transition-colors"
+        className="flex-shrink-0 ml-2 p-1 hover:bg-white/5 rounded-full transition-colors"
       >
-        <X size={16} className="text-gray-400 hover:text-white" />
+        <X size={14} className="text-white/40 hover:text-white/70" strokeWidth={2} />
       </button>
     </motion.div>
   )
@@ -117,7 +115,7 @@ export default function ToastContainer() {
   const toasts = useToastStore((state) => state.toasts)
 
   return (
-    <div className="fixed top-4 right-4 z-[99999] flex flex-col gap-3 pointer-events-none">
+    <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[99999] flex flex-col gap-2 pointer-events-none w-full max-w-sm px-4">
       <AnimatePresence mode="popLayout">
         {toasts.map((toast) => (
           <div key={toast.id} className="pointer-events-auto">

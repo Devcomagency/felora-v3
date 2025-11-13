@@ -42,14 +42,15 @@ export default function StaticNavBar() {
   const galleryInputRef = useRef<HTMLInputElement>(null)
 
   const handleFileSelected = (file: File | null) => {
-    console.log('📁 handleFileSelected appelé avec:', file)
-    if (!file) {
-      console.warn('⚠️ Aucun fichier fourni')
-      return
-    }
-    console.log('✅ Stockage du fichier:', file.name, file.type, file.size)
+    if (!file) return
+
+    // Stocker le fichier dans window (survit à la navigation client-side de Next.js)
     ;(window as any).__pendingFile = file
-    console.log('🚀 Redirection vers /camera?fromUpload=true')
+
+    // Flag pour indiquer qu'un fichier attend
+    sessionStorage.setItem('hasPendingFile', 'true')
+
+    // Rediriger vers l'éditeur
     router.push('/camera?fromUpload=true')
   }
 

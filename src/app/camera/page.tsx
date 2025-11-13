@@ -127,20 +127,39 @@ function CameraPageContent() {
     })
   }, [])
 
-  // Gérer le fichier venant de MediaUploadButton (via inputs cachés)
+  // Gérer le fichier venant de MediaUploadButton ou CameraHTML5
   useEffect(() => {
     if (fromUpload && typeof window !== 'undefined') {
-      const pendingFile = (window as any).__pendingFile as File | undefined
-      if (pendingFile) {
-        console.log('📁 Fichier depuis MediaUploadButton:', pendingFile.name)
-        // Traiter le fichier comme s'il venait de la caméra
-        handleCameraCapture(pendingFile)
-        // Nettoyer
-        delete (window as any).__pendingFile
-        sessionStorage.removeItem('pendingUpload')
+      const hasPending = sessionStorage.getItem('hasPendingFile')
+
+      if (hasPending) {
+        const pendingFile = (window as any).__pendingFile as File | undefined
+
+        if (pendingFile) {
+          console.log('✅ Fichier reçu:', pendingFile.name, pendingFile.type, pendingFile.size)
+          handleCameraCapture(pendingFile)
+
+          // Nettoyer
+          delete (window as any).__pendingFile
+          sessionStorage.removeItem('hasPendingFile')
+        } else {
+          // Réessayer une fois après un délai court
+          const timeout = setTimeout(() => {
+            const retryFile = (window as any).__pendingFile as File | undefined
+            if (retryFile) {
+              handleCameraCapture(retryFile)
+              delete (window as any).__pendingFile
+              sessionStorage.removeItem('hasPendingFile')
+            } else {
+              console.error('❌ Fichier introuvable')
+              router.push('/')
+            }
+          }, 100)
+          return () => clearTimeout(timeout)
+        }
       }
     }
-  }, [fromUpload, handleCameraCapture])
+  }, [fromUpload, handleCameraCapture, router])
 
   /**
    * Handler pour la publication avec retry automatique et progress bar
@@ -209,30 +228,14 @@ function CameraPageContent() {
 
       // 3. Compression d'image
       let fileToUpload = data.file
-      toast.info('Compression de l\'image en cours...', 3000)
-      console.log('🗜️ Compression de l\'image...', {
-        originalSize: `${(data.file.size / 1024 / 1024).toFixed(2)}MB`
-      })
-
       const compressionResult = await compressImageIfNeeded(data.file, {
         maxWidth: 1920,
         maxHeight: 1920,
         quality: 0.85
       })
-
       fileToUpload = compressionResult.file
 
-      if (compressionResult.compressionRatio > 0) {
-        console.log('✅ Image compressée:', {
-          originalSize: `${(compressionResult.originalSize / 1024 / 1024).toFixed(2)}MB`,
-          compressedSize: `${(compressionResult.compressedSize / 1024 / 1024).toFixed(2)}MB`,
-          saved: `${compressionResult.compressionRatio.toFixed(1)}%`
-        })
-        toast.success(`Image compressée : ${compressionResult.compressionRatio.toFixed(0)}% d'économie`, 2000)
-      }
-
       // 4. Upload vers R2 avec progress
-      toast.info('Upload en cours...', 0)
       await uploadWithProgress({
         url: presignedUrl,
         file: fileToUpload,
@@ -240,7 +243,6 @@ function CameraPageContent() {
         headers: { 'Content-Type': fileToUpload.type },
         onProgress: (progress) => {
           setUploadProgress(progress)
-          console.log(`📊 Upload progress: ${progress}%`)
         },
         maxAttempts: 3
       })
@@ -268,8 +270,7 @@ function CameraPageContent() {
       const result = await confirmRes.json()
 
       if (result.success) {
-        toast.success('Publication réussie ! 🎉', 1500)
-
+        toast.success('Publié !', 1500)
         // Redirection immédiate vers le feed
         router.push('/')
       } else {
@@ -313,7 +314,19 @@ function CameraPageContent() {
     )
   }
 
-  // Fallback : pas de mode, retour en arrière
+  // Fallback : si fromUpload, on attend le fichier
+  if (fromUpload) {
+    return (
+      <div className="fixed inset-0 bg-black flex items-center justify-center z-50">
+        <div className="text-white text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500 mx-auto mb-4"></div>
+          <p>Chargement du média...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Fallback : pas de mode ni de fichier, retour en arrière
   router.back()
   return null
 }
