@@ -266,3 +266,10 @@ body::-webkit-scrollbar {
   animation: skeleton-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
+
+/* Cacher la navbar quand la caméra est active */
+body[data-camera-active] [data-static-nav],
+body[data-camera-active] [data-top-nav] {
+  transform: translateY(100%) !important;
+  pointer-events: none;
+}

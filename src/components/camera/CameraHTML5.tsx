@@ -46,9 +46,15 @@ export default function CameraHTML5({ onClose, onCapture, initialMode = 'photo' 
   useEffect(() => {
     console.log('🎥 Initialisation caméra - facingMode:', facingMode, 'mode:', mode)
     startCamera()
+
+    // Cacher la navbar pendant l'utilisation de la caméra
+    document.body.setAttribute('data-camera-active', 'true')
+
     return () => {
       console.log('🛑 Arrêt caméra')
       stopCamera()
+      // Réafficher la navbar
+      document.body.removeAttribute('data-camera-active')
     }
   }, [facingMode, mode])
 
@@ -322,14 +328,20 @@ export default function CameraHTML5({ onClose, onCapture, initialMode = 'photo' 
       {/* Overlay avec contrôles */}
       <div className="absolute inset-0 flex flex-col">
         {/* Header */}
-        <div className="p-4 bg-gradient-to-b from-black/60 to-transparent">
+        <div className="p-4 bg-gradient-to-b from-black/80 to-transparent">
           <div className="flex items-center justify-between">
+            {/* Bouton Fermer - Style Felora Glassmorphism */}
             <button
               onClick={onClose}
-              className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/30 transition-all active:scale-95 border border-white/30"
+              className="w-12 h-12 rounded-full flex items-center justify-center transition-all active:scale-95 group"
+              style={{
+                background: 'rgba(255, 255, 255, 0.05)',
+                backdropFilter: 'blur(20px)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+              }}
               title="Fermer"
             >
-              <X className="text-white" size={24} />
+              <X className="text-white group-hover:text-[#FF6B9D] transition-colors" size={24} />
             </button>
 
             {/* Timer d'enregistrement */}
@@ -339,7 +351,12 @@ export default function CameraHTML5({ onClose, onCapture, initialMode = 'photo' 
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   exit={{ scale: 0 }}
-                  className="flex items-center gap-2 bg-red-500/90 backdrop-blur-sm px-4 py-2 rounded-full"
+                  className="flex items-center gap-2 px-4 py-2 rounded-full"
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(255, 107, 157, 0.9), rgba(183, 148, 246, 0.9))',
+                    backdropFilter: 'blur(20px)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                  }}
                 >
                   <div className="w-3 h-3 bg-white rounded-full animate-pulse" />
                   <span className="text-white font-mono font-bold">
@@ -349,12 +366,18 @@ export default function CameraHTML5({ onClose, onCapture, initialMode = 'photo' 
               )}
             </AnimatePresence>
 
+            {/* Bouton Retourner caméra - Style Felora Glassmorphism */}
             <button
               onClick={switchCamera}
-              className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/30 transition-all active:scale-95 border border-white/30"
+              className="w-12 h-12 rounded-full flex items-center justify-center transition-all active:scale-95 group"
+              style={{
+                background: 'rgba(255, 255, 255, 0.05)',
+                backdropFilter: 'blur(20px)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+              }}
               title="Retourner la caméra"
             >
-              <RotateCw className="text-white" size={24} />
+              <RotateCw className="text-white group-hover:text-[#4FD1C7] transition-colors" size={24} />
             </button>
           </div>
         </div>
@@ -384,28 +407,36 @@ export default function CameraHTML5({ onClose, onCapture, initialMode = 'photo' 
             </div>
           )}
 
-          {/* Sélecteur mode Photo/Vidéo */}
+          {/* Sélecteur mode Photo/Vidéo - Style Felora */}
           {!isRecording && (
-            <div className="flex items-center justify-center gap-4 mb-6">
+            <div className="flex items-center justify-center gap-3 mb-6">
               <button
                 onClick={() => setMode('photo')}
-                className={`px-6 py-2 rounded-full font-medium transition-all ${
-                  mode === 'photo'
-                    ? 'bg-white text-black'
-                    : 'bg-white/10 text-white hover:bg-white/20'
-                }`}
+                className="px-6 py-2 rounded-full font-medium transition-all active:scale-95"
+                style={mode === 'photo' ? {
+                  background: 'linear-gradient(135deg, #FF6B9D, #B794F6)',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                } : {
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  backdropFilter: 'blur(20px)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                }}
               >
-                Photo
+                <span className="text-white">Photo</span>
               </button>
               <button
                 onClick={() => setMode('video')}
-                className={`px-6 py-2 rounded-full font-medium transition-all ${
-                  mode === 'video'
-                    ? 'bg-white text-black'
-                    : 'bg-white/10 text-white hover:bg-white/20'
-                }`}
+                className="px-6 py-2 rounded-full font-medium transition-all active:scale-95"
+                style={mode === 'video' ? {
+                  background: 'linear-gradient(135deg, #FF6B9D, #B794F6)',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                } : {
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  backdropFilter: 'blur(20px)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                }}
               >
-                Vidéo
+                <span className="text-white">Vidéo</span>
               </button>
             </div>
           )}

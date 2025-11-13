@@ -198,8 +198,8 @@ export default function StaticNavBar() {
 
   return (
     <>
-      {/* Navigation Bar - Style TikTok moderne */}
-      <div data-static-nav="true" className="fixed bottom-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-lg border-t border-white/5">
+      {/* Navigation Bar - Style TikTok moderne - Cachée en mode caméra */}
+      <div data-static-nav="true" className="fixed bottom-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-lg border-t border-white/5 transition-transform duration-300">
         <div className="flex items-center justify-around h-16 px-2">
           {navItems.map(item => {
             const Icon = item.icon
