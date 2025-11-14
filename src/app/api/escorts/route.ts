@@ -220,9 +220,10 @@ export async function GET(request: NextRequest) {
     }
 
     // Filtres de catégories - Normaliser vers les valeurs DB
+    console.log('[API ESCORTS] 🔍 categoriesCSV received:', categoriesCSV)
     if (categoriesCSV) {
       const categories = categoriesCSV.split(',').filter(Boolean)
-      console.log('[API ESCORTS] 🔍 Categories from filter:', categories)
+      console.log('[API ESCORTS] 🔍 Categories split:', categories)
 
       if (categories.length > 0) {
         // Mapping: filter value -> DB value
@@ -235,15 +236,19 @@ export async function GET(request: NextRequest) {
 
         // Convertir les catégories du filtre vers les valeurs DB
         const dbCategories = categories.map(cat => categoryMap[cat] || cat.toUpperCase())
-        console.log('[API ESCORTS] 🔍 Mapped to DB categories:', dbCategories)
+        console.log('[API ESCORTS] 🔍 Mapped to DB:', dbCategories)
 
         // Utiliser OR pour les catégories (au lieu de AND)
         if (dbCategories.length === 1) {
           where.category = { equals: dbCategories[0], mode: 'insensitive' as const }
+          console.log('[API ESCORTS] ✅ Single category:', where.category)
         } else {
           where.category = { in: dbCategories, mode: 'insensitive' as const }
+          console.log('[API ESCORTS] ✅ Multiple categories:', where.category)
         }
       }
+    } else {
+      console.log('[API ESCORTS] ⚠️ NO categories filter received')
     }
 
     // Recherche textuelle
@@ -340,7 +345,8 @@ export async function GET(request: NextRequest) {
         take: limit, // Retour à la limite normale
         skip: offset
       })
-      console.log('[API ESCORTS] Step 1 successful, found:', rows.length, 'profiles')
+      console.log('[API ESCORTS] ✅ Query successful! Found:', rows.length, 'profiles')
+      console.log('[API ESCORTS] 📋 Results:', rows.map(r => ({ id: r.id, name: r.stageName, category: r.category })))
 
     } catch (dbError) {
       console.error('[API ESCORTS] Database query failed:', dbError)
