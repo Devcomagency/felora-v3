@@ -377,16 +377,24 @@ export default function MapTest() {
       )
     }
 
-    // Filtre par catégories - Simple matching avec le champ category
+    // Filtre par catégories avec mapping DB → UI
     if (selectedCategories.length > 0) {
       result = result.filter((escort: EscortData) => {
-        // Pour les clubs
         if (escort.type === 'club') {
           return selectedCategories.includes('club')
         }
 
-        // Pour les escorts, vérifier si leur category est dans les catégories sélectionnées
-        return escort.category && selectedCategories.includes(escort.category)
+        if (!escort.category) return false
+
+        const categoryMap: Record<string, string> = {
+          'ESCORT': 'escort',
+          'MASSEUSE': 'masseuse_erotique',
+          'DOMINATRICE': 'dominatrice_bdsm',
+          'TRANSSEXUELLE': 'transsexuel'
+        }
+
+        const normalizedCategory = categoryMap[escort.category.toUpperCase()] || escort.category.toLowerCase()
+        return selectedCategories.includes(normalizedCategory)
       })
     }
 
@@ -1306,7 +1314,14 @@ export default function MapTest() {
                                      border: '1px solid rgba(255, 107, 157, 0.3)'
                                    }}
                                  >
-                                   {escort.services[0]}
+                                   {escort.type === 'club'
+                                    ? (escort.establishmentType || 'Club')
+                                    : escort.category === 'ESCORT' ? 'Escort'
+                                    : escort.category === 'MASSEUSE' ? 'Masseuse'
+                                    : escort.category === 'DOMINATRICE' ? 'Dominatrice'
+                                    : escort.category === 'TRANSSEXUELLE' ? 'Transsexuel'
+                                    : (escort.category || escort.services?.[0] || 'Escort')
+                                  }
                                  </div>
                                </div>
                              )}
