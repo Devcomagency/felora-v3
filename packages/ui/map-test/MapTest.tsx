@@ -1197,21 +1197,21 @@ export default function MapTest() {
           }}
         >
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-white/10">
+          <div className="flex items-center justify-between p-3 sm:p-4 border-b border-white/10">
                  <div>
-                   <h3 className="text-white font-semibold text-lg">Profils visibles</h3>
-                   <p className="text-white/60 text-sm">{visibleEscorts.length} profils dans la zone visible</p>
+                   <h3 className="text-white font-semibold text-base sm:text-lg">Profils visibles</h3>
+                   <p className="text-white/60 text-xs sm:text-sm">{visibleEscorts.length} profils dans la zone visible</p>
                  </div>
             <button
               onClick={() => setShowVisibleProfiles(false)}
-              className="text-white/60 hover:text-white transition-colors"
+              className="text-white/60 hover:text-white transition-colors text-xl sm:text-2xl p-1"
             >
               ✕
             </button>
           </div>
 
                {/* Liste des profils */}
-               <div className="overflow-y-auto p-4" style={{ maxHeight: 'calc(100vh - 120px)' }}>
+               <div className="overflow-y-auto p-3 sm:p-4 pb-20 sm:pb-8" style={{ height: 'calc(100vh - 70px)' }}>
                  {visibleEscorts.length === 0 ? (
                    <div className="text-center py-8 text-white/40">
                      Aucun profil visible dans cette zone
