@@ -1,0 +1,131 @@
+{
+  "common": {
+    "search": "Search",
+    "filters": "Filters",
+    "loading": "Loading...",
+    "error": "Error",
+    "retry": "Retry",
+    "close": "Close",
+    "save": "Save",
+    "cancel": "Cancel",
+    "yes": "Yes",
+    "no": "No",
+    "delete": "Delete",
+    "edit": "Edit",
+    "confirm": "Confirm",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "submit": "Submit",
+    "send": "Send"
+  },
+  "search": {
+    "title": "Search",
+    "placeholder": "Search by name, city...",
+    "profiles": "Profiles",
+    "establishments": "Establishments",
+    "noResults": "No results found",
+    "loadMore": "Load more",
+    "results": "{count} results",
+    "filterBy": "Filter by",
+    "sortBy": "Sort by"
+  },
+  "map": {
+    "title": "Interactive Map",
+    "loading": "Loading map...",
+    "visibleProfiles": "{count} visible profiles",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "myLocation": "My location"
+  },
+  "navigation": {
+    "home": "Home",
+    "search": "Search",
+    "map": "Map",
+    "messages": "Messages",
+    "profile": "Profile",
+    "settings": "Settings",
+    "logout": "Logout",
+    "login": "Login",
+    "register": "Register",
+    "dashboard": "Dashboard",
+    "favorites": "Favorites"
+  },
+  "auth": {
+    "login": "Login",
+    "register": "Register",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm password",
+    "forgotPassword": "Forgot password?",
+    "rememberMe": "Remember me",
+    "or": "or",
+    "continueWith": "Continue with {provider}",
+    "alreadyHaveAccount": "Already have an account?",
+    "dontHaveAccount": "Don't have an account?",
+    "resetPassword": "Reset password",
+    "sendResetLink": "Send reset link",
+    "backToLogin": "Back to login"
+  },
+  "profile": {
+    "edit": "Edit profile",
+    "save": "Save",
+    "cancel": "Cancel",
+    "photo": "Photo",
+    "name": "Name",
+    "bio": "Biography",
+    "location": "Location",
+    "language": "Language",
+    "verified": "Verified",
+    "myProfile": "My profile",
+    "viewProfile": "View profile",
+    "editProfile": "Edit profile"
+  },
+  "messages": {
+    "title": "Messages",
+    "newMessage": "New message",
+    "noMessages": "No messages",
+    "send": "Send",
+    "typing": "Typing...",
+    "online": "Online",
+    "offline": "Offline",
+    "writeMessage": "Write a message...",
+    "conversation": "Conversation"
+  },
+  "filters": {
+    "all": "All",
+    "category": "Category",
+    "city": "City",
+    "canton": "Canton",
+    "sortBy": "Sort by",
+    "recent": "Recent",
+    "relevance": "Relevance",
+    "distance": "Distance",
+    "price": "Price",
+    "clear": "Clear",
+    "apply": "Apply",
+    "showFilters": "Show filters",
+    "hideFilters": "Hide filters"
+  },
+  "categories": {
+    "escort": "Escort",
+    "masseuse": "Erotic Masseuse",
+    "dominatrice": "BDSM Dominatrix",
+    "transsexuel": "Transsexual"
+  },
+  "establishments": {
+    "club": "Club",
+    "salon": "Salon",
+    "studio": "Studio",
+    "private": "Private",
+    "type": "Establishment type"
+  },
+  "errors": {
+    "generic": "An error occurred",
+    "network": "Connection error",
+    "notFound": "Page not found",
+    "unauthorized": "Unauthorized",
+    "forbidden": "Access forbidden",
+    "tryAgain": "Please try again"
+  }
+}

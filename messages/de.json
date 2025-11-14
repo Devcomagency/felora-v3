@@ -1,0 +1,131 @@
+{
+  "common": {
+    "search": "Suchen",
+    "filters": "Filter",
+    "loading": "Laden...",
+    "error": "Fehler",
+    "retry": "Wiederholen",
+    "close": "Schließen",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "yes": "Ja",
+    "no": "Nein",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "confirm": "Bestätigen",
+    "back": "Zurück",
+    "next": "Weiter",
+    "previous": "Zurück",
+    "submit": "Absenden",
+    "send": "Senden"
+  },
+  "search": {
+    "title": "Suche",
+    "placeholder": "Nach Name, Stadt suchen...",
+    "profiles": "Profile",
+    "establishments": "Einrichtungen",
+    "noResults": "Keine Ergebnisse gefunden",
+    "loadMore": "Mehr laden",
+    "results": "{count} Ergebnisse",
+    "filterBy": "Filtern nach",
+    "sortBy": "Sortieren nach"
+  },
+  "map": {
+    "title": "Interaktive Karte",
+    "loading": "Karte wird geladen...",
+    "visibleProfiles": "{count} sichtbare Profile",
+    "zoomIn": "Vergrößern",
+    "zoomOut": "Verkleinern",
+    "myLocation": "Mein Standort"
+  },
+  "navigation": {
+    "home": "Startseite",
+    "search": "Suche",
+    "map": "Karte",
+    "messages": "Nachrichten",
+    "profile": "Profil",
+    "settings": "Einstellungen",
+    "logout": "Abmelden",
+    "login": "Anmelden",
+    "register": "Registrieren",
+    "dashboard": "Dashboard",
+    "favorites": "Favoriten"
+  },
+  "auth": {
+    "login": "Anmelden",
+    "register": "Registrieren",
+    "email": "E-Mail",
+    "password": "Passwort",
+    "confirmPassword": "Passwort bestätigen",
+    "forgotPassword": "Passwort vergessen?",
+    "rememberMe": "Angemeldet bleiben",
+    "or": "oder",
+    "continueWith": "Weiter mit {provider}",
+    "alreadyHaveAccount": "Haben Sie bereits ein Konto?",
+    "dontHaveAccount": "Noch kein Konto?",
+    "resetPassword": "Passwort zurücksetzen",
+    "sendResetLink": "Reset-Link senden",
+    "backToLogin": "Zurück zur Anmeldung"
+  },
+  "profile": {
+    "edit": "Profil bearbeiten",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "photo": "Foto",
+    "name": "Name",
+    "bio": "Biografie",
+    "location": "Standort",
+    "language": "Sprache",
+    "verified": "Verifiziert",
+    "myProfile": "Mein Profil",
+    "viewProfile": "Profil ansehen",
+    "editProfile": "Profil bearbeiten"
+  },
+  "messages": {
+    "title": "Nachrichten",
+    "newMessage": "Neue Nachricht",
+    "noMessages": "Keine Nachrichten",
+    "send": "Senden",
+    "typing": "Tippt...",
+    "online": "Online",
+    "offline": "Offline",
+    "writeMessage": "Schreiben Sie eine Nachricht...",
+    "conversation": "Unterhaltung"
+  },
+  "filters": {
+    "all": "Alle",
+    "category": "Kategorie",
+    "city": "Stadt",
+    "canton": "Kanton",
+    "sortBy": "Sortieren nach",
+    "recent": "Aktuell",
+    "relevance": "Relevanz",
+    "distance": "Entfernung",
+    "price": "Preis",
+    "clear": "Löschen",
+    "apply": "Anwenden",
+    "showFilters": "Filter anzeigen",
+    "hideFilters": "Filter ausblenden"
+  },
+  "categories": {
+    "escort": "Escort",
+    "masseuse": "Erotische Masseurin",
+    "dominatrice": "BDSM Domina",
+    "transsexuel": "Transsexuell"
+  },
+  "establishments": {
+    "club": "Club",
+    "salon": "Salon",
+    "studio": "Studio",
+    "private": "Privat",
+    "type": "Einrichtungstyp"
+  },
+  "errors": {
+    "generic": "Ein Fehler ist aufgetreten",
+    "network": "Verbindungsfehler",
+    "notFound": "Seite nicht gefunden",
+    "unauthorized": "Nicht autorisiert",
+    "forbidden": "Zugriff verboten",
+    "tryAgain": "Bitte versuchen Sie es erneut"
+  }
+}

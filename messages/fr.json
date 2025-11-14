@@ -1,0 +1,131 @@
+{
+  "common": {
+    "search": "Rechercher",
+    "filters": "Filtres",
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "retry": "Réessayer",
+    "close": "Fermer",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "yes": "Oui",
+    "no": "Non",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "confirm": "Confirmer",
+    "back": "Retour",
+    "next": "Suivant",
+    "previous": "Précédent",
+    "submit": "Soumettre",
+    "send": "Envoyer"
+  },
+  "search": {
+    "title": "Recherche",
+    "placeholder": "Rechercher par nom, ville...",
+    "profiles": "Profils",
+    "establishments": "Établissements",
+    "noResults": "Aucun résultat trouvé",
+    "loadMore": "Voir plus",
+    "results": "{count} résultats",
+    "filterBy": "Filtrer par",
+    "sortBy": "Trier par"
+  },
+  "map": {
+    "title": "Carte interactive",
+    "loading": "Chargement de la carte...",
+    "visibleProfiles": "{count} profils visibles",
+    "zoomIn": "Zoomer",
+    "zoomOut": "Dézoomer",
+    "myLocation": "Ma position"
+  },
+  "navigation": {
+    "home": "Accueil",
+    "search": "Recherche",
+    "map": "Carte",
+    "messages": "Messages",
+    "profile": "Profil",
+    "settings": "Paramètres",
+    "logout": "Déconnexion",
+    "login": "Connexion",
+    "register": "S'inscrire",
+    "dashboard": "Tableau de bord",
+    "favorites": "Favoris"
+  },
+  "auth": {
+    "login": "Connexion",
+    "register": "Inscription",
+    "email": "Email",
+    "password": "Mot de passe",
+    "confirmPassword": "Confirmer le mot de passe",
+    "forgotPassword": "Mot de passe oublié ?",
+    "rememberMe": "Se souvenir de moi",
+    "or": "ou",
+    "continueWith": "Continuer avec {provider}",
+    "alreadyHaveAccount": "Déjà un compte ?",
+    "dontHaveAccount": "Pas encore de compte ?",
+    "resetPassword": "Réinitialiser le mot de passe",
+    "sendResetLink": "Envoyer le lien de réinitialisation",
+    "backToLogin": "Retour à la connexion"
+  },
+  "profile": {
+    "edit": "Modifier le profil",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "photo": "Photo",
+    "name": "Nom",
+    "bio": "Biographie",
+    "location": "Localisation",
+    "language": "Langue",
+    "verified": "Vérifié",
+    "myProfile": "Mon profil",
+    "viewProfile": "Voir le profil",
+    "editProfile": "Modifier le profil"
+  },
+  "messages": {
+    "title": "Messages",
+    "newMessage": "Nouveau message",
+    "noMessages": "Aucun message",
+    "send": "Envoyer",
+    "typing": "En train d'écrire...",
+    "online": "En ligne",
+    "offline": "Hors ligne",
+    "writeMessage": "Écrivez un message...",
+    "conversation": "Conversation"
+  },
+  "filters": {
+    "all": "Tous",
+    "category": "Catégorie",
+    "city": "Ville",
+    "canton": "Canton",
+    "sortBy": "Trier par",
+    "recent": "Récents",
+    "relevance": "Pertinence",
+    "distance": "Distance",
+    "price": "Prix",
+    "clear": "Effacer",
+    "apply": "Appliquer",
+    "showFilters": "Afficher les filtres",
+    "hideFilters": "Masquer les filtres"
+  },
+  "categories": {
+    "escort": "Escorte",
+    "masseuse": "Masseuse Érotique",
+    "dominatrice": "Dominatrice BDSM",
+    "transsexuel": "Transsexuel"
+  },
+  "establishments": {
+    "club": "Club",
+    "salon": "Salon",
+    "studio": "Studio",
+    "private": "Privé",
+    "type": "Type d'établissement"
+  },
+  "errors": {
+    "generic": "Une erreur est survenue",
+    "network": "Erreur de connexion",
+    "notFound": "Page non trouvée",
+    "unauthorized": "Non autorisé",
+    "forbidden": "Accès interdit",
+    "tryAgain": "Veuillez réessayer"
+  }
+}
