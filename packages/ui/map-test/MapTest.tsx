@@ -19,6 +19,7 @@ type EscortData = {
   services?: string[]
   languages?: string[]
   category?: string
+  establishmentType?: string // Type d'établissement pour les clubs
   verified: boolean
   isActive: boolean
   type?: 'escort' | 'club' // Type pour différencier escorts et clubs
@@ -332,7 +333,8 @@ export default function MapTest() {
           city: club.city || 'Suisse',
           services: club.services?.services || [],
           languages: club.services?.languages || [],
-          category: 'club', // Marquer les clubs avec une catégorie spéciale
+          category: 'club',
+          establishmentType: club.establishmentType || 'Club',
           verified: club.verified || false,
           isActive: club.isActive || false,
           type: 'club' as const,
