@@ -237,12 +237,12 @@ export async function GET(request: NextRequest) {
         const dbCategories = categories.map(cat => categoryMap[cat] || cat.toUpperCase())
         console.log('[API ESCORTS] 🔍 Mapped to DB categories:', dbCategories)
 
-        where.AND = where.AND || []
-        where.AND.push({
-          OR: dbCategories.map(cat => ({
-            category: { equals: cat, mode: 'insensitive' as const }
-          }))
-        })
+        // Utiliser OR pour les catégories (au lieu de AND)
+        if (dbCategories.length === 1) {
+          where.category = { equals: dbCategories[0], mode: 'insensitive' as const }
+        } else {
+          where.category = { in: dbCategories, mode: 'insensitive' as const }
+        }
       }
     }
 
