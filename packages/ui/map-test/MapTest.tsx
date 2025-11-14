@@ -793,15 +793,8 @@ export default function MapTest() {
                       </div>
                     )}
                     {escort.verified && (
-                      <div 
-                        className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center"
-                        style={{
-                          background: 'linear-gradient(135deg, #4FD1C7 0%, #00D4AA 100%)',
-                          fontSize: '8px',
-                          color: 'white'
-                        }}
-                      >
-                        ✓
+                      <div className="absolute -top-1 -right-1">
+                        <Verified className="w-4 h-4" style={{ color: '#4FD1C7' }} fill="currentColor" />
                       </div>
                     )}
                   </div>
@@ -841,11 +834,8 @@ export default function MapTest() {
                     style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }}
                   />
                   {selectedEscort.verified && (
-                    <div
-                      className="absolute top-2 left-2 px-2 py-1 rounded-full text-xs font-medium"
-                      style={{ background: 'rgba(79, 209, 199, 0.85)', color: 'white' }}
-                    >
-                      Vérifié
+                    <div className="absolute top-2 left-2">
+                      <Verified className="w-6 h-6" style={{ color: '#4FD1C7' }} fill="currentColor" />
                     </div>
                   )}
                 </div>
@@ -855,14 +845,6 @@ export default function MapTest() {
                     <h3 className="text-white font-semibold text-base leading-tight truncate">{selectedEscort.name}</h3>
                     <p className="text-white/70 text-sm truncate">{selectedEscort.city}</p>
                   </div>
-                  {selectedEscort.verified && (
-                    <div 
-                      className="px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap"
-                      style={{ background: 'rgba(79, 209, 199, 0.2)', color: '#4FD1C7' }}
-                    >
-                      Vérifié
-                    </div>
-                  )}
                 </div>
 
                 {selectedEscort.services && selectedEscort.services.length > 0 && (
@@ -955,15 +937,7 @@ export default function MapTest() {
                         <p className="text-white/60 text-xs">{escort.city}</p>
                       </div>
                       {escort.verified && (
-                        <div 
-                          className="w-4 h-4 rounded-full flex items-center justify-center text-xs"
-                          style={{
-                            background: 'linear-gradient(135deg, #4FD1C7 0%, #00D4AA 100%)',
-                            color: 'white'
-                          }}
-                        >
-                          ✓
-                        </div>
+                        <Verified className="w-4 h-4" style={{ color: '#4FD1C7' }} fill="currentColor" />
                       )}
                     </div>
                   ))}
