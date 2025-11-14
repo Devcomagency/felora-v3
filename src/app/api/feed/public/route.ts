@@ -85,6 +85,7 @@ export async function GET(req: NextRequest) {
           id: true,
           stageName: true,
           profilePhoto: true,
+          isVerifiedBadge: true,
           user: {
             select: {
               name: true
@@ -223,7 +224,8 @@ export async function GET(req: NextRequest) {
           id: profile.id,
           handle: authorHandle,
           name: authorName,
-          avatar: authorAvatar
+          avatar: authorAvatar,
+          verified: profile.isVerifiedBadge || false
         },
         likeCount: media.likeCount,
         reactCount: media.reactCount,

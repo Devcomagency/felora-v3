@@ -130,6 +130,8 @@ function PlayPauseAnimation({
 }
 
 export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps) {
+  console.log('🎬 [VIDEO FEED CARD] Component rendering for media:', item.id)
+
   // Refs et états
   const videoRef = useRef<HTMLVideoElement>(null)
   const hlsRef = useRef<Hls | null>(null)
@@ -218,7 +220,7 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
   // Hooks
   const { handleIntersectingChange, togglePlayPause, currentVideo, isMute } = useVideoIntersection()
   const { toggleMute } = useFeedStore()
-  const { data: session } = useSession()
+  const { data: session, status: sessionStatus } = useSession()
 
   // Build a stable mediaId and a stable guest user id
   // IMPORTANT: On force rawId: null pour utiliser le hash basé sur profileId + url
@@ -231,8 +233,20 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
     ? `/profile-test/club/${item.clubHandle}`
     : `/profile/${item.author.id}`
 
-  // Vérifier si l'utilisateur est le propriétaire du média (uniquement si connecté)
-  const isOwner = !!(session?.user?.id && session.user.id === item.author.id)
+  // Vérifier si l'utilisateur est le propriétaire du média (uniquement si connecté ET authentifié)
+  const isOwner = sessionStatus === 'authenticated' &&
+                  session?.user?.id &&
+                  session.user.id === item.author.id
+
+  // Debug: afficher les informations de session
+  console.log('🔐 [AUTH CHECK]', {
+    sessionStatus,
+    sessionUserId: session?.user?.id,
+    authorId: item.author.id,
+    isOwner,
+    hasSession: !!session,
+    hasUser: !!session?.user
+  })
 
   const [userId, setUserId] = useState<string | null>(null)
   useEffect(() => {
@@ -661,15 +675,13 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
       {/* Content Overlay */}
       <div className="relative z-10 flex h-full pointer-events-none">
         {/* Profile Info - Left - Position absolue fixe */}
-        <div className="absolute bottom-20 left-4 pointer-events-auto">
+        <div className="absolute bottom-24 left-4 pointer-events-auto">
           <div className="space-y-2">
             {/* Author Info */}
             <div className="flex items-center gap-2">
               <h2 className="text-lg font-semibold text-white drop-shadow-lg">
                 {item.author.name}
               </h2>
-              <Crown className="w-4 h-4 text-[#FF6B9D] drop-shadow" />
-              <Diamond className="w-3.5 h-3.5 text-[#4FD1C7] drop-shadow" />
             </div>
 
             {/* Type de média */}
@@ -699,7 +711,7 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
               </div>
             </Link>
             {/* Badge vérifié */}
-            {(item.author.verified ?? true) && (
+            {item.author.verified && (
               <div
                 className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center bg-[#111827] border border-white/20 text-[#4FD1C7] shadow-lg"
                 title="Profil vérifié"
@@ -713,9 +725,9 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
           {item.type === 'VIDEO' && (
             <button
               onClick={toggleMute}
-              className="p-2 rounded-full bg-black/20 backdrop-blur-sm text-white hover:bg-black/30 transition-all duration-200 shadow-lg"
+              className="w-11 h-11 rounded-full bg-black/70 backdrop-blur-sm text-white hover:bg-black/90 transition-all duration-200 shadow-lg flex items-center justify-center"
             >
-              {isMute ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+              {isMute ? <VolumeX size={20} /> : <Volume2 size={20} />}
             </button>
           )}
 
@@ -730,7 +742,7 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
               }`}
               aria-label={userHasLiked ? 'Retirer le like' : 'Aimer'}
             >
-              <Heart size={16} className={userHasLiked ? 'fill-current' : ''} />
+              <Heart size={20} className={userHasLiked ? 'fill-current' : ''} />
             </button>
             <span className="text-xs text-white/90">{likeDisplay}</span>
           </div>
@@ -759,7 +771,7 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
               aria-haspopup="true"
               aria-expanded={radialOpen}
             >
-              <Flame size={16} className={userReactions.length > 0 ? 'text-violet-300' : showReactions ? 'text-violet-300' : ''} />
+              <Flame size={20} className={userReactions.length > 0 ? 'text-violet-300' : showReactions ? 'text-violet-300' : ''} />
             </button>
             <span className="text-xs text-white/90">
               {(stats?.reactions?.LOVE ?? 0) + (stats?.reactions?.FIRE ?? 0) + (stats?.reactions?.WOW ?? 0) + (stats?.reactions?.SMILE ?? 0)}
