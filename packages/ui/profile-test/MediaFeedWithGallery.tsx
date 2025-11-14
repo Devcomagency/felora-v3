@@ -882,8 +882,8 @@ export default function MediaFeedWithGallery({
                     >
                       {RADIAL_CHOICES.slice(0, reactionCount).map(({ emoji, type }, idx, arr) => {
                         const count = arr.length
-                        const start = 30
-                        const end = 150
+                        const start = 90  // Rotation +60°
+                        const end = 210   // Rotation +60°
                         // Pivot 1° vers la gauche (sens anti‑horaire)
                         const rotationDeg = 1
                         const t = count > 1 ? idx / (count - 1) : 0.5
