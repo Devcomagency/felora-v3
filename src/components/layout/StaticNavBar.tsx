@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useRef, useCallback } from 'react'
-import { useRouter, usePathname } from 'next/navigation'
+import { useRouter as useNextRouter, usePathname as useNextPathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useSession, signOut } from 'next-auth/react'
 import Image from 'next/image'
@@ -12,22 +12,33 @@ import {
 import NotificationBell from '@/components/notifications/NotificationBell'
 import dynamic from 'next/dynamic'
 import { toast } from 'sonner'
+import { useTranslations, useLocale } from 'next-intl'
+import { useRouter, usePathname } from '@/i18n/routing'
+import { languageMetadata } from '@/i18n/routing'
 
-const languages = [
-  { code: 'fr', label: 'Français', flag: '🇫🇷' },
-  { code: 'en', label: 'English', flag: '🇬🇧' },
-  { code: 'de', label: 'Deutsch', flag: '🇩🇪' },
-  { code: 'it', label: 'Italiano', flag: '🇮🇹' }
-]
+// Convertir languageMetadata en array pour le sélecteur
+const languages = Object.entries(languageMetadata).map(([code, meta]) => ({
+  code,
+  label: meta.label,
+  flag: meta.flag,
+  native: meta.native,
+  rtl: meta.rtl
+}))
 
 const CameraHTML5 = dynamic(() => import('../camera/CameraHTML5'), { ssr: false })
 
 export default function StaticNavBar() {
   const router = useRouter()
   const pathname = usePathname()
-  const isMessages = pathname?.startsWith('/messages')
-  const isAdmin = pathname?.startsWith('/admin')
-  const isMap = pathname?.startsWith('/map')
+  const nextRouter = useNextRouter()
+  const nextPathname = useNextPathname()
+  const locale = useLocale()
+  const t = useTranslations('navigation')
+  const tCommon = useTranslations('common')
+
+  const isMessages = nextPathname?.startsWith('/messages')
+  const isAdmin = nextPathname?.startsWith('/admin')
+  const isMap = nextPathname?.startsWith('/map')
   const { data: session, status } = useSession()
   const isAuthenticated = status === 'authenticated'
   const user = session?.user as any
@@ -35,7 +46,6 @@ export default function StaticNavBar() {
   // États pour le menu burger - AVANT le return conditionnel
   const [showMenu, setShowMenu] = useState(false)
   const [showLanguageSelector, setShowLanguageSelector] = useState(false)
-  const [currentLanguage, setCurrentLanguage] = useState('fr')
   const [hasNotifications, setHasNotifications] = useState(false)
   const [unreadConversations, setUnreadConversations] = useState(0)
   const [showCameraOverlay, setShowCameraOverlay] = useState(false)
@@ -51,29 +61,21 @@ export default function StaticNavBar() {
     sessionStorage.setItem('hasPendingFile', 'true')
 
     // Rediriger vers l'éditeur
-    router.push('/camera?fromUpload=true')
+    nextRouter.push('/camera?fromUpload=true')
   }
 
   const handleFavoritesClick = useCallback(() => {
     if (!isAuthenticated) {
       console.log('🔒 [FAVORITES] Utilisateur non connecté, affichage toast')
-      toast.info('Connectez-vous pour accéder à vos favoris', {
+      toast.info(tCommon('loginRequired') || 'Connectez-vous pour accéder à vos favoris', {
         duration: 4000,
       })
       setShowMenu(false)
       return
     }
-    router.push('/favorites')
+    nextRouter.push('/favorites')
     setShowMenu(false)
-  }, [isAuthenticated, router, setShowMenu])
-
-  // Charger la langue sauvegardée
-  useEffect(() => {
-    const savedLanguage = localStorage.getItem('felora-language')
-    if (savedLanguage) {
-      setCurrentLanguage(savedLanguage)
-    }
-  }, [])
+  }, [isAuthenticated, nextRouter, setShowMenu, tCommon])
 
   // Simuler des notifications pour les utilisateurs connectés
   useEffect(() => {
@@ -144,10 +146,9 @@ export default function StaticNavBar() {
   }
 
   const handleLanguageChange = (langCode: string) => {
-    setCurrentLanguage(langCode)
-    localStorage.setItem('felora-language', langCode)
     setShowLanguageSelector(false)
-    // Ici on pourrait ajouter la logique de traduction
+    // Utiliser le router i18n pour changer de langue
+    router.replace(pathname, { locale: langCode })
   }
 
   const navItems = (() => {
@@ -155,8 +156,8 @@ export default function StaticNavBar() {
     const isEscortOrClub = role === 'ESCORT' || role === 'CLUB'
 
     const items: any[] = [
-      { id: 'home', icon: Home, label: 'Accueil', href: '/', active: pathname === '/' },
-      { id: 'search', icon: Search, label: 'Recherche', href: '/search', active: pathname === '/search' },
+      { id: 'home', icon: Home, label: t('home'), href: '/', active: nextPathname === '/' },
+      { id: 'search', icon: Search, label: t('search'), href: '/search', active: nextPathname === '/search' },
     ]
 
     // Ajouter le bouton + au milieu pour escortes et clubs
@@ -164,20 +165,20 @@ export default function StaticNavBar() {
       items.push({
         id: 'create',
         icon: Plus,
-        label: 'Créer',
+        label: tCommon('create') || 'Créer',
         onClick: () => {
           // Ouvrir directement la caméra en mode photo
           setCameraMode('photo')
           setShowCameraOverlay(true)
         },
-        active: pathname === '/camera',
+        active: nextPathname === '/camera',
         special: true
       })
     }
 
     // Messages: visible pour tous sauf CLUB (les clubs n'ont pas accès à la messagerie)
     if (role !== 'CLUB') {
-      items.push({ id: 'messages', icon: MessageCircle, label: 'Messages', href: '/messages', active: pathname === '/messages' })
+      items.push({ id: 'messages', icon: MessageCircle, label: t('messages'), href: '/messages', active: nextPathname === '/messages' })
     }
 
     // Profil: visible uniquement pour ESCORT et CLUB
@@ -185,19 +186,19 @@ export default function StaticNavBar() {
       // Rediriger vers le profil PUBLIC de l'escort
       const escortProfileId = (user as any)?.escortProfileId || (user as any)?.escortProfile?.id
       const profileHref = escortProfileId ? `/profile/${escortProfileId}` : '/dashboard-escort/profil'
-      items.push({ id: 'profile', icon: User, label: 'Profil', href: profileHref, active: pathname?.startsWith('/profile') || pathname?.startsWith('/dashboard-escort') })
+      items.push({ id: 'profile', icon: User, label: t('profile'), href: profileHref, active: nextPathname?.startsWith('/profile') || nextPathname?.startsWith('/dashboard-escort') })
     } else if (role === 'CLUB') {
       // Rediriger vers le profil PUBLIC du club
       const clubHandle = (user as any)?.clubHandle || (user as any)?.clubProfile?.handle
       const profileHref = clubHandle ? `/profile-test/club/${clubHandle}` : '/club/profile'
-      items.push({ id: 'profile', icon: User, label: 'Profil', href: profileHref, active: pathname?.startsWith('/profile') || pathname?.startsWith('/club') })
+      items.push({ id: 'profile', icon: User, label: t('profile'), href: profileHref, active: nextPathname?.startsWith('/profile') || nextPathname?.startsWith('/club') })
     }
     // ✅ Pas d'onglet profil pour les clients/non-connectés
 
     return items
   })()
 
-  const currentLang = languages.find(lang => lang.code === currentLanguage)
+  const currentLang = languages.find(lang => lang.code === locale)
 
   return (
     <>
@@ -215,7 +216,7 @@ export default function StaticNavBar() {
                 key={item.id}
                 whileTap={{ scale: 0.9 }}
                 whileHover={item.special ? { scale: 1.05, boxShadow: '0 8px 16px rgba(255, 107, 157, 0.4)' } : {}}
-                onClick={() => item.onClick ? item.onClick() : router.push(item.href)}
+                onClick={() => item.onClick ? item.onClick() : nextRouter.push(item.href)}
                 className={`
                   relative flex flex-col items-center justify-center px-3 py-2 rounded-xl
                   transition-all duration-300 min-w-[60px]
@@ -342,30 +343,30 @@ export default function StaticNavBar() {
                   <motion.button
                     whileHover={{ backgroundColor: "rgba(255, 255, 255, 0.04)" }}
                     whileTap={{ scale: 0.98 }}
-                    onClick={() => { router.push('/'); setShowMenu(false) }}
+                    onClick={() => { nextRouter.push('/'); setShowMenu(false) }}
                     className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/90 hover:text-white transition-colors text-left"
                   >
                     <Home size={18} className="text-white/70" />
-                    <span className="text-sm font-medium">Accueil</span>
+                    <span className="text-sm font-medium">{t('home')}</span>
                   </motion.button>
                   <motion.button
                     whileHover={{ backgroundColor: "rgba(255, 255, 255, 0.04)" }}
                     whileTap={{ scale: 0.98 }}
-                    onClick={() => { router.push('/search'); setShowMenu(false) }}
+                    onClick={() => { nextRouter.push('/search'); setShowMenu(false) }}
                     className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/90 hover:text-white transition-colors text-left"
                   >
                     <Search size={18} className="text-white/70" />
-                    <span className="text-sm font-medium">Recherche</span>
+                    <span className="text-sm font-medium">{t('search')}</span>
                   </motion.button>
 
                   <motion.button
                     whileHover={{ backgroundColor: "rgba(255, 255, 255, 0.04)" }}
                     whileTap={{ scale: 0.98 }}
-                    onClick={() => { router.push('/map'); setShowMenu(false) }}
+                    onClick={() => { nextRouter.push('/map'); setShowMenu(false) }}
                     className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/90 hover:text-white transition-colors text-left"
                   >
                     <Map size={18} className="text-white/70" />
-                    <span className="text-sm font-medium">Carte</span>
+                    <span className="text-sm font-medium">{t('map')}</span>
                   </motion.button>
 
                   <motion.button
@@ -375,7 +376,7 @@ export default function StaticNavBar() {
                     className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/90 hover:text-white transition-colors text-left"
                   >
                     <Heart size={18} className="text-white/70" />
-                    <span className="text-sm font-medium">Mes favoris</span>
+                    <span className="text-sm font-medium">{t('favorites')}</span>
                   </motion.button>
 
                   <motion.button
@@ -386,20 +387,20 @@ export default function StaticNavBar() {
                   >
                     <Globe size={18} className="text-white/70" />
                     <div className="flex items-center gap-2 flex-1">
-                      <span className="text-sm font-medium">Langue</span>
+                      <span className="text-sm font-medium">{tCommon('language') || 'Langue'}</span>
                       <span className="text-xs">{currentLang?.flag}</span>
                     </div>
                   </motion.button>
 
                   {(() => {
-                    const isClubContext = (user?.role === 'CLUB') || pathname?.startsWith('/club')
+                    const isClubContext = (user?.role === 'CLUB') || nextPathname?.startsWith('/club')
                     const settingsHref = isClubContext ? '/club/settings' : (user?.role === 'ESCORT' ? '/escort/settings' : '/settings')
-                    const settingsLabel = isClubContext ? 'Paramètres (Club)' : 'Paramètres'
+                    const settingsLabel = isClubContext ? `${t('settings')} (Club)` : t('settings')
                     return (
                       <motion.button
                         whileHover={{ backgroundColor: "rgba(255, 255, 255, 0.04)" }}
                         whileTap={{ scale: 0.98 }}
-                        onClick={() => { router.push(settingsHref); setShowMenu(false) }}
+                        onClick={() => { nextRouter.push(settingsHref); setShowMenu(false) }}
                         className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/90 hover:text-white transition-colors text-left"
                       >
                         <Settings size={18} className="text-white/70" />
@@ -415,21 +416,21 @@ export default function StaticNavBar() {
                     <motion.button
                       whileHover={{ backgroundColor: "rgba(255, 107, 157, 0.15)" }}
                       whileTap={{ scale: 0.98 }}
-                      onClick={() => { router.push('/register'); setShowMenu(false) }}
+                      onClick={() => { nextRouter.push('/register'); setShowMenu(false) }}
                       className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left bg-gradient-to-r from-pink-500/10 to-purple-500/10 border border-pink-500/20"
                     >
                       <UserPlus size={18} className="text-pink-400" />
-                      <span className="text-sm font-medium text-pink-300">S'inscrire</span>
+                      <span className="text-sm font-medium text-pink-300">{t('register')}</span>
                     </motion.button>
 
                     <motion.button
                       whileHover={{ backgroundColor: "rgba(255, 255, 255, 0.04)" }}
                       whileTap={{ scale: 0.98 }}
-                      onClick={() => { router.push('/login'); setShowMenu(false) }}
+                      onClick={() => { nextRouter.push('/login'); setShowMenu(false) }}
                       className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/90 hover:text-white transition-colors text-left"
                     >
                       <LogIn size={18} className="text-white/70" />
-                      <span className="text-sm font-medium">Se connecter</span>
+                      <span className="text-sm font-medium">{t('login')}</span>
                     </motion.button>
                   </div>
                 ) : (
@@ -439,7 +440,7 @@ export default function StaticNavBar() {
                       <motion.button
                         whileHover={{ backgroundColor: "rgba(255, 255, 255, 0.04)" }}
                         whileTap={{ scale: 0.98 }}
-                      onClick={() => { router.push('/dashboard-escort/statistiques'); setShowMenu(false) }}
+                      onClick={() => { nextRouter.push('/dashboard-escort/statistiques'); setShowMenu(false) }}
                         className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/90 hover:text-white transition-colors text-left"
                       >
                         <BarChart3 size={18} className="text-white/70" />
@@ -452,21 +453,21 @@ export default function StaticNavBar() {
                         <motion.button
                           whileHover={{ backgroundColor: "rgba(255, 255, 255, 0.04)" }}
                           whileTap={{ scale: 0.98 }}
-                          onClick={() => { router.push('/dashboard-escort/profil'); setShowMenu(false) }}
+                          onClick={() => { nextRouter.push('/dashboard-escort/profil'); setShowMenu(false) }}
                           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/90 hover:text-white transition-colors text-left"
                         >
                           <BarChart3 size={18} className="text-white/70" />
-                          <span className="text-sm font-medium">Dashboard</span>
+                          <span className="text-sm font-medium">{t('dashboard')}</span>
                         </motion.button>
 
                         <motion.button
                           whileHover={{ backgroundColor: "rgba(255, 255, 255, 0.04)" }}
                           whileTap={{ scale: 0.98 }}
-                          onClick={() => { router.push('/dashboard-escort/activite'); setShowMenu(false) }}
+                          onClick={() => { nextRouter.push('/dashboard-escort/activite'); setShowMenu(false) }}
                           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/90 hover:text-white transition-colors text-left"
                         >
                           <Calendar size={18} className="text-white/70" />
-                          <span className="text-sm font-medium">Agenda</span>
+                          <span className="text-sm font-medium">{tCommon('schedule') || 'Agenda'}</span>
                         </motion.button>
                       </>
                     )}
@@ -475,11 +476,11 @@ export default function StaticNavBar() {
                       <motion.button
                         whileHover={{ backgroundColor: "rgba(255, 255, 255, 0.04)" }}
                         whileTap={{ scale: 0.98 }}
-                        onClick={() => { router.push('/club/profile'); setShowMenu(false) }}
+                        onClick={() => { nextRouter.push('/club/profile'); setShowMenu(false) }}
                         className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/90 hover:text-white transition-colors text-left"
                       >
                         <BarChart3 size={18} className="text-white/70" />
-                        <span className="text-sm font-medium">Dashboard</span>
+                        <span className="text-sm font-medium">{t('dashboard')}</span>
                       </motion.button>
                     )}
 
@@ -495,26 +496,26 @@ export default function StaticNavBar() {
                         <polyline points="16,17 21,12 16,7"/>
                         <line x1="21" y1="12" x2="9" y2="12"/>
                       </svg>
-                      <span className="text-sm font-medium">Déconnexion</span>
+                      <span className="text-sm font-medium">{t('logout')}</span>
                     </motion.button>
                   </div>
                 )}
 
                 {/* Légal */}
                 <div className="mt-3 pt-2 border-t border-white/[0.06]">
-                  <div className="px-3 py-1 text-xs text-white/50">Légal</div>
+                  <div className="px-3 py-1 text-xs text-white/50">{tCommon('legal') || 'Légal'}</div>
                   <div className="flex items-center gap-2 px-3 py-1">
-                    <button onClick={() => { router.push('/legal/privacy'); setShowMenu(false) }} className="text-xs text-white/70 hover:text-white underline">Confidentialité</button>
+                    <button onClick={() => { nextRouter.push('/legal/privacy'); setShowMenu(false) }} className="text-xs text-white/70 hover:text-white underline">{tCommon('privacy') || 'Confidentialité'}</button>
                     <span className="text-white/30">•</span>
-                    <button onClick={() => { router.push('/legal/terms'); setShowMenu(false) }} className="text-xs text-white/70 hover:text-white underline">Conditions</button>
+                    <button onClick={() => { nextRouter.push('/legal/terms'); setShowMenu(false) }} className="text-xs text-white/70 hover:text-white underline">{tCommon('terms') || 'Conditions'}</button>
                     <span className="text-white/30">•</span>
-                    <button onClick={() => { router.push('/legal/cookies'); setShowMenu(false) }} className="text-xs text-white/70 hover:text-white underline">Cookies</button>
+                    <button onClick={() => { nextRouter.push('/legal/cookies'); setShowMenu(false) }} className="text-xs text-white/70 hover:text-white underline">{tCommon('cookies') || 'Cookies'}</button>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Sous-menu langues */}
+            {/* Sous-menu langues - 9 langues disponibles */}
             <AnimatePresence>
               {showLanguageSelector && (
                 <motion.div
@@ -522,7 +523,7 @@ export default function StaticNavBar() {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -10, scale: 0.95 }}
                   transition={{ duration: 0.15 }}
-                  className="mt-2 bg-white/[0.02] backdrop-blur-2xl border border-white/[0.08] rounded-xl shadow-xl shadow-black/20 overflow-hidden"
+                  className="mt-2 bg-white/[0.02] backdrop-blur-2xl border border-white/[0.08] rounded-xl shadow-xl shadow-black/20 overflow-hidden max-h-[400px] overflow-y-auto"
                 >
                   {languages.map((lang) => (
                     <motion.button
@@ -531,14 +532,20 @@ export default function StaticNavBar() {
                       onClick={() => handleLanguageChange(lang.code)}
                       className={`
                         w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors
-                        ${currentLanguage === lang.code 
-                          ? 'text-pink-300 bg-pink-500/10' 
+                        ${locale === lang.code
+                          ? 'text-pink-300 bg-pink-500/10'
                           : 'text-white/80 hover:text-white'
                         }
                       `}
+                      dir={lang.rtl ? 'rtl' : 'ltr'}
                     >
                       <span className="text-lg">{lang.flag}</span>
-                      <span className="text-sm font-medium">{lang.label}</span>
+                      <div className="flex flex-col">
+                        <span className="text-sm font-medium">{lang.native}</span>
+                        {lang.native !== lang.label && (
+                          <span className="text-xs text-white/50">{lang.label}</span>
+                        )}
+                      </div>
                     </motion.button>
                   ))}
                 </motion.div>

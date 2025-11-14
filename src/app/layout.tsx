@@ -14,6 +14,8 @@ import SuspensionChecker from "@/components/auth/SuspensionChecker";
 import UploadMonitor from "@/components/upload/UploadMonitor";
 import GlobalUploadProgress from "@/components/upload/GlobalUploadProgress";
 import { Toaster } from 'sonner';
+import { NextIntlClientProvider } from 'next-intl';
+import { getMessages } from 'next-intl/server';
 
 export const metadata: Metadata = {
   title: {
@@ -47,7 +49,10 @@ export function generateViewport() {
   }
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // Load translations for next-intl
+  const messages = await getMessages();
+
   return (
     <html lang="fr" className="dark" suppressHydrationWarning>
       <body className="bg-black text-white">
@@ -76,44 +81,46 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </>
         )}
         <AnalyticsLoader websiteId={process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID} src={process.env.NEXT_PUBLIC_UMAMI_SRC} />
-        <Providers>
-          <SuspensionChecker />
-          <AgeGate />
-          <AppGateway>
-            <div data-app-shell style={{
-              minHeight: '100vh',
-              paddingTop: 0,
-              paddingBottom: 0,
-              position: 'relative',
-              width: '100%'
-            }}>
-              {children}
-            </div>
-            <ConditionalLayout>
-              <StaticNavBar />
-              <FooterLegal />
-            </ConditionalLayout>
-          </AppGateway>
-          <CookieConsent />
-          <ToastContainer />
-          <UploadMonitor />
-          <GlobalUploadProgress />
-          <Toaster
-            position="top-center"
-            richColors
-            closeButton
-            expand={true}
-            visibleToasts={5}
-            toastOptions={{
-              style: {
-                background: '#1A1A1A',
-                color: '#fff',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                zIndex: 99999,
-              },
-            }}
-          />
-        </Providers>
+        <NextIntlClientProvider messages={messages}>
+          <Providers>
+            <SuspensionChecker />
+            <AgeGate />
+            <AppGateway>
+              <div data-app-shell style={{
+                minHeight: '100vh',
+                paddingTop: 0,
+                paddingBottom: 0,
+                position: 'relative',
+                width: '100%'
+              }}>
+                {children}
+              </div>
+              <ConditionalLayout>
+                <StaticNavBar />
+                <FooterLegal />
+              </ConditionalLayout>
+            </AppGateway>
+            <CookieConsent />
+            <ToastContainer />
+            <UploadMonitor />
+            <GlobalUploadProgress />
+            <Toaster
+              position="top-center"
+              richColors
+              closeButton
+              expand={true}
+              visibleToasts={5}
+              toastOptions={{
+                style: {
+                  background: '#1A1A1A',
+                  color: '#fff',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  zIndex: 99999,
+                },
+              }}
+            />
+          </Providers>
+        </NextIntlClientProvider>
       </body>
     </html>
   );
