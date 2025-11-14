@@ -1293,7 +1293,7 @@ export default function MapTest() {
                              <h3 className="text-white font-bold text-xs mb-1 group-hover:text-white transition-colors truncate">
                                {escort.name}
                              </h3>
-                             {escort.services && escort.services.length > 0 && (
+                             {(escort.category || escort.establishmentType || (escort.services && escort.services.length > 0)) && (
                                <div className="flex items-center gap-1.5 flex-wrap">
                                  <div 
                                    className="w-1 h-1 rounded-full bg-gradient-to-r from-pink-500 to-purple-500"
