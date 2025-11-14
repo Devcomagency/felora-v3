@@ -85,6 +85,7 @@ export default function MediaManagementModal({
       setError(null)
       setSuccess(null)
       setShowDeleteConfirm(false)
+      setIsLoading(false) // Réinitialiser l'état de chargement
     }
   }, [isOpen, media])
 
