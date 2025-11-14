@@ -661,7 +661,7 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
       {/* Content Overlay */}
       <div className="relative z-10 flex h-full pointer-events-none">
         {/* Profile Info - Left - Position absolue fixe */}
-        <div className="absolute bottom-20 left-4 right-4 pointer-events-auto">
+        <div className="absolute bottom-20 left-4 pointer-events-auto">
           <div className="space-y-2">
             {/* Author Info */}
             <div className="flex items-center gap-2">
@@ -681,8 +681,8 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
           </div>
         </div>
 
-        {/* Actions - Right */}
-        <div className="flex flex-col items-center justify-center gap-4 p-4 pb-4 pointer-events-auto">
+        {/* Actions - Right - Position absolue fixe à droite */}
+        <div className="absolute right-4 top-0 bottom-0 flex flex-col items-center justify-center gap-4 pointer-events-auto">
           {/* Avatar */}
           <div className="relative">
             <Link
