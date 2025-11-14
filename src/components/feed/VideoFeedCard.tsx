@@ -723,14 +723,14 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
           <div className="relative flex flex-col items-center gap-1">
             <button
               onClick={onLike}
-              className={`w-10 h-10 backdrop-blur-sm rounded-full flex items-center justify-center transition-colors ${
-                userHasLiked 
-                  ? 'bg-rose-500/20 text-rose-300 hover:bg-rose-500/30' 
+              className={`w-9 h-9 backdrop-blur-sm rounded-full flex items-center justify-center transition-colors ${
+                userHasLiked
+                  ? 'bg-rose-500/20 text-rose-300 hover:bg-rose-500/30'
                   : 'bg-black/70 text-white hover:bg-black/90'
               }`}
               aria-label={userHasLiked ? 'Retirer le like' : 'Aimer'}
             >
-              <Heart size={18} className={userHasLiked ? 'fill-current' : ''} />
+              <Heart size={16} className={userHasLiked ? 'fill-current' : ''} />
             </button>
             <span className="text-xs text-white/90">{likeDisplay}</span>
           </div>
@@ -749,7 +749,7 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
                   return !v
                 })
               }}
-              className={`relative z-10 w-10 h-10 backdrop-blur-sm rounded-full flex items-center justify-center transition-colors ${
+              className={`relative z-10 w-9 h-9 backdrop-blur-sm rounded-full flex items-center justify-center transition-colors ${
                 userReactions.length > 0
                   ? 'bg-violet-500/20 text-violet-300 hover:bg-violet-500/30'
                   : showReactions
@@ -759,7 +759,7 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
               aria-haspopup="true"
               aria-expanded={radialOpen}
             >
-              <Flame size={18} className={userReactions.length > 0 ? 'text-violet-300' : showReactions ? 'text-violet-300' : ''} />
+              <Flame size={16} className={userReactions.length > 0 ? 'text-violet-300' : showReactions ? 'text-violet-300' : ''} />
             </button>
             <span className="text-xs text-white/90">
               {(stats?.reactions?.LOVE ?? 0) + (stats?.reactions?.FIRE ?? 0) + (stats?.reactions?.WOW ?? 0) + (stats?.reactions?.SMILE ?? 0)}
@@ -810,7 +810,7 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
                           onReact(emoji)
                           setRadialOpen(false)
                         }}
-                        className="w-9 h-9 rounded-full bg-black/70 border border-white/10 backdrop-blur-md flex items-center justify-center text-lg hover:bg-black/80"
+                        className="w-8 h-8 rounded-full bg-black/70 border border-white/10 backdrop-blur-md flex items-center justify-center text-base hover:bg-black/80"
                         aria-label={`Réagir ${emoji}`}
                         style={{ boxShadow: '0 4px 16px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06)' }}
                       >
