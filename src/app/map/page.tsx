@@ -64,7 +64,18 @@ function MapSkeleton() {
       {/* Loading Content */}
       <div className="relative z-10 h-full flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-white/10 border-t-pink-500 rounded-full animate-spin mx-auto mb-6" />
+          {/* Logo Felora animé */}
+          <div className="w-24 h-24 mx-auto mb-6 animate-spin">
+            <img
+              src="/logo-principal.png"
+              alt="Felora"
+              className="w-full h-full object-contain"
+              style={{
+                filter: 'drop-shadow(0 0 20px rgba(255, 107, 157, 0.5))',
+                animation: 'spin 2s linear infinite'
+              }}
+            />
+          </div>
           <h2 className="text-2xl md:text-3xl font-black tracking-tight mb-2 bg-gradient-to-r from-white via-white/90 to-white/80 bg-clip-text text-transparent">
             Chargement de la carte
           </h2>

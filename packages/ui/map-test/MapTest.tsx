@@ -21,6 +21,8 @@ type EscortData = {
   category?: string
   verified: boolean
   isActive: boolean
+  type?: 'escort' | 'club' // Type pour différencier escorts et clubs
+  isCurrentUser?: boolean
 }
 
 type ClusterFeature = {
@@ -238,7 +240,7 @@ export default function MapTest() {
     return '/api/escorts' // Use real escorts API instead of geo search
   }, [])
 
-  // Fetch data with SWR
+  // Fetch escorts data with SWR
   const { data, error, isLoading } = useSWR(
     swrKey,
     fetcher,
@@ -252,33 +254,47 @@ export default function MapTest() {
     }
   )
 
-  // Transform real API data to match expected format + include current user profile
+  // Fetch clubs data with SWR
+  const { data: clubsData, error: clubsError, isLoading: clubsLoading } = useSWR(
+    '/api/clubs',
+    fetcher,
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      shouldRetryOnError: true,
+      errorRetryCount: 2,
+      errorRetryInterval: 3000,
+      keepPreviousData: true
+    }
+  )
+
+  // Transform real API data to match expected format + include current user profile + clubs
   const allEscorts = useMemo(() => {
     const apiEscorts = (data?.items || []).map((escort: any) => {
       let avatar = escort.profilePhoto || escort.avatar || escort.photo || ''
-      
+
       // 🔧 CORRECTION: Fix les URLs qui commencent par "undefined/"
       if (avatar && avatar.includes('undefined/')) {
         avatar = avatar.replace(/^undefined\//, 'https://media.felora.ch/')
         console.log(`🔧 Avatar URL corrigée pour ${escort.id}:`, avatar)
       }
-      
+
       // Debug log pour voir les valeurs d'avatar
       if (!avatar || avatar === '') {
         console.log(`⚠️ Profil sans avatar:`, { id: escort.id, stageName: escort.stageName, profilePhoto: escort.profilePhoto })
       }
-      
+
       // Debug spécifique pour le profil problématique
       if (escort.id === 'cmg2ej3hs0003l804ns2h6d0o') {
-        console.log(`🐛 DEBUG PROFILE:`, { 
-          id: escort.id, 
+        console.log(`🐛 DEBUG PROFILE:`, {
+          id: escort.id,
           stageName: escort.stageName,
           profilePhoto: escort.profilePhoto,
           avatar,
           hasAvatar: !!avatar
         })
       }
-      
+
       return {
         id: escort.id,
         name: escort.stageName || 'Escort',
@@ -291,29 +307,59 @@ export default function MapTest() {
         category: escort.category || null,
         verified: escort.isVerifiedBadge || false,
         isActive: escort.isActive || true,
+        type: 'escort' as const,
         isCurrentUser: false // Marquer comme profil d'un autre utilisateur
       }
     })
 
+    // Add clubs data
+    const apiClubs = (clubsData?.items || []).map((club: any) => {
+      let avatar = club.logoUrl || club.coverPhotoUrl || club.avatar || ''
+
+      // Fix undefined/ URLs for clubs too
+      if (avatar && avatar.includes('undefined/')) {
+        avatar = avatar.replace(/^undefined\//, 'https://media.felora.ch/')
+      }
+
+      return {
+        id: club.id,
+        name: club.name || 'Club',
+        lat: club.latitude || 46.8182,
+        lng: club.longitude || 8.2275,
+        avatar,
+        city: club.city || 'Suisse',
+        services: club.services || [],
+        languages: club.languages || [],
+        category: 'club', // Marquer les clubs avec une catégorie spéciale
+        verified: club.isVerifiedBadge || false,
+        isActive: true,
+        type: 'club' as const,
+        isCurrentUser: false
+      }
+    })
+
+    // Combiner escorts et clubs
+    const combined = [...apiEscorts, ...apiClubs]
+
     // 🎯 GÉRER LE PROFIL ESCORT CONNECTÉ
     if (currentUserProfile) {
-      const existingIndex = apiEscorts.findIndex((escort: any) => escort.id === currentUserProfile.id)
+      const existingIndex = combined.findIndex((escort: any) => escort.id === currentUserProfile.id)
 
       if (existingIndex >= 0) {
-        apiEscorts[existingIndex] = {
+        combined[existingIndex] = {
           ...currentUserProfile,
           isCurrentUser: true
         }
       } else {
-        apiEscorts.unshift({
+        combined.unshift({
           ...currentUserProfile,
           isCurrentUser: true
         })
       }
     }
 
-    return apiEscorts
-  }, [data, currentUserProfile])
+    return combined
+  }, [data, clubsData, currentUserProfile])
 
   // Filter escorts
   const filteredEscorts = useMemo(() => {
@@ -728,14 +774,18 @@ export default function MapTest() {
                     setSelectedEscort(escort)
                   }}
                 >
-                  <div 
+                  <div
                     className="w-10 h-10 rounded-full cursor-pointer transform hover:scale-110 transition-transform relative"
                     style={{
-                      background: escort.isActive 
-                        ? 'linear-gradient(135deg, #4FD1C7 0%, #00D4AA 100%)'
-                        : 'rgba(255, 255, 255, 0.3)',
+                      background: escort.type === 'club'
+                        ? 'linear-gradient(135deg, #FFA500 0%, #FFD700 100%)' // Orange-doré pour les clubs
+                        : escort.isActive
+                          ? 'linear-gradient(135deg, #4FD1C7 0%, #00D4AA 100%)' // Turquoise pour les escorts
+                          : 'rgba(255, 255, 255, 0.3)',
                       border: '2px solid rgba(255, 255, 255, 0.4)',
-                      boxShadow: '0 4px 20px rgba(79, 209, 199, 0.4)'
+                      boxShadow: escort.type === 'club'
+                        ? '0 4px 20px rgba(255, 165, 0, 0.4)'
+                        : '0 4px 20px rgba(79, 209, 199, 0.4)'
                     }}
                   >
                     {escort.avatar ? (
@@ -984,10 +1034,19 @@ export default function MapTest() {
         {error && ' • Erreur'}
       </div>
 
+      {/* Backdrop pour fermer le modal */}
+      {showFilters && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40"
+          onClick={() => setShowFilters(false)}
+        />
+      )}
+
       {/* Filters Panel - Juste au-dessus du bouton filtre */}
       {showFilters && (
         <div
           className="fixed right-4 p-4 rounded-xl w-[90vw] max-w-[400px] animate-in slide-in-from-bottom duration-300 z-50"
+          onClick={(e) => e.stopPropagation()}
           style={{
             bottom: 'calc(8rem + 68px)', // 8rem = bottom-32 + 68px de marge pour plus d'espace
             background: 'rgba(13, 13, 13, 0.95)',
@@ -1017,7 +1076,8 @@ export default function MapTest() {
                 { value: 'escort', label: 'Escorte' },
                 { value: 'masseuse_erotique', label: 'Masseuse Érotique' },
                 { value: 'dominatrice_bdsm', label: 'Dominatrice BDSM' },
-                { value: 'transsexuel', label: 'Transsexuel' }
+                { value: 'transsexuel', label: 'Transsexuel' },
+                { value: 'club', label: '🏢 Établissement' }
               ].map(category => (
                 <button
                   key={category.value}
