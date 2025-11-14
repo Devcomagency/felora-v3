@@ -763,7 +763,7 @@ export default function MapTest() {
                   }}
                 >
                   <div
-                    className="w-10 h-10 rounded-full cursor-pointer transform hover:scale-110 transition-transform relative"
+                    className="w-10 h-10 cursor-pointer transform hover:scale-110 transition-transform relative"
                     style={{
                       background: escort.type === 'club'
                         ? 'linear-gradient(135deg, #FFA500 0%, #FFD700 100%)' // Orange-doré pour les clubs
@@ -773,20 +773,37 @@ export default function MapTest() {
                       border: '2px solid rgba(255, 255, 255, 0.4)',
                       boxShadow: escort.type === 'club'
                         ? '0 4px 20px rgba(255, 165, 0, 0.4)'
-                        : '0 4px 20px rgba(79, 209, 199, 0.4)'
+                        : '0 4px 20px rgba(79, 209, 199, 0.4)',
+                      borderRadius: escort.type === 'club' ? '0' : '50%',
+                      clipPath: escort.type === 'club'
+                        ? 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)'
+                        : 'none'
                     }}
                   >
                     {escort.avatar ? (
-                      <img 
-                        src={escort.avatar} 
+                      <img
+                        src={escort.avatar}
                         alt={escort.name}
-                        className="w-full h-full rounded-full object-cover"
+                        className="w-full h-full object-cover"
+                        style={{
+                          borderRadius: escort.type === 'club' ? '0' : '50%',
+                          clipPath: escort.type === 'club'
+                            ? 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)'
+                            : 'none'
+                        }}
                         onError={(e) => {
                           e.currentTarget.src = '/logo-principal.png'
                         }}
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-pink-500/20 to-purple-500/20">
+                      <div
+                        className="w-full h-full flex items-center justify-center bg-gradient-to-br from-pink-500/20 to-purple-500/20"
+                        style={{
+                          clipPath: escort.type === 'club'
+                            ? 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)'
+                            : 'none'
+                        }}
+                      >
                         <span className="text-white font-bold text-lg">
                           {escort.name.charAt(0)}
                         </span>
