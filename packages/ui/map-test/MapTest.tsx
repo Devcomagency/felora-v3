@@ -1282,7 +1282,7 @@ export default function MapTest() {
                                )}
                                {escort.verified && (
                                  <div className="absolute -top-1 -right-1">
-                                   <Verified className="w-5 h-5 text-[#4FD1C7]" fill="currentColor" />
+                                   <Verified className="w-5 h-5" style={{ color: '#4FD1C7' }} fill="currentColor" />
                                  </div>
                                )}
                              </div>
