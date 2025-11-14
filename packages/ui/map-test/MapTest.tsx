@@ -312,31 +312,33 @@ export default function MapTest() {
       }
     })
 
-    // Add clubs data
-    const apiClubs = (clubsData?.items || []).map((club: any) => {
-      let avatar = club.logoUrl || club.coverPhotoUrl || club.avatar || ''
+    // Add clubs data - L'API clubs retourne 'data' au lieu de 'items'
+    const apiClubs = (clubsData?.data || [])
+      .filter((club: any) => club.latitude && club.longitude) // Ne garder que les clubs avec coordonnées
+      .map((club: any) => {
+        let avatar = club.avatar || club.cover || ''
 
-      // Fix undefined/ URLs for clubs too
-      if (avatar && avatar.includes('undefined/')) {
-        avatar = avatar.replace(/^undefined\//, 'https://media.felora.ch/')
-      }
+        // Fix undefined/ URLs for clubs too
+        if (avatar && avatar.includes('undefined/')) {
+          avatar = avatar.replace(/^undefined\//, 'https://media.felora.ch/')
+        }
 
-      return {
-        id: club.id,
-        name: club.name || 'Club',
-        lat: club.latitude || 46.8182,
-        lng: club.longitude || 8.2275,
-        avatar,
-        city: club.city || 'Suisse',
-        services: club.services || [],
-        languages: club.languages || [],
-        category: 'club', // Marquer les clubs avec une catégorie spéciale
-        verified: club.isVerifiedBadge || false,
-        isActive: true,
-        type: 'club' as const,
-        isCurrentUser: false
-      }
-    })
+        return {
+          id: club.id,
+          name: club.name || 'Club',
+          lat: club.latitude,
+          lng: club.longitude,
+          avatar,
+          city: club.city || 'Suisse',
+          services: club.services?.services || [],
+          languages: club.services?.languages || [],
+          category: 'club', // Marquer les clubs avec une catégorie spéciale
+          verified: club.verified || false,
+          isActive: club.isActive || false,
+          type: 'club' as const,
+          isCurrentUser: false
+        }
+      })
 
     // Combiner escorts et clubs
     const combined = [...apiEscorts, ...apiClubs]
@@ -375,40 +377,16 @@ export default function MapTest() {
       )
     }
 
-    // Filtre par catégories - Utiliser le champ category de l'API
+    // Filtre par catégories - Simple matching avec le champ category
     if (selectedCategories.length > 0) {
       result = result.filter((escort: EscortData) => {
-        // Si le profil a un champ category défini, l'utiliser directement
-        if (escort.category) {
-          return selectedCategories.includes(escort.category)
+        // Pour les clubs
+        if (escort.type === 'club') {
+          return selectedCategories.includes('club')
         }
 
-        // Sinon, fallback sur l'analyse des services (pour compatibilité)
-        const escortServices = (escort.services || []).map((s: string) => s.toLowerCase())
-
-        return selectedCategories.some((category: string) => {
-          // Mapping des catégories vers les services de l'API
-          switch(category) {
-            case 'escort':
-              return escortServices.some((s: string) =>
-                s.includes('escort') || s.includes('gfe') || s.includes('accompagnement')
-              )
-            case 'masseuse_erotique':
-              return escortServices.some((s: string) =>
-                s.includes('massage') || s.includes('body to body') || s.includes('relaxation')
-              )
-            case 'dominatrice_bdsm':
-              return escortServices.some((s: string) =>
-                s.includes('bdsm') || s.includes('domination') || s.includes('fétichisme') || s.includes('soumission')
-              )
-            case 'transsexuel':
-              return escortServices.some((s: string) =>
-                s.includes('trans') || s.includes('shemale') || s.includes('transsexuel')
-              )
-            default:
-              return false
-          }
-        })
+        // Pour les escorts, vérifier si leur category est dans les catégories sélectionnées
+        return escort.category && selectedCategories.includes(escort.category)
       })
     }
 
