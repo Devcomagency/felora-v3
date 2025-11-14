@@ -407,10 +407,10 @@ export default function MediaFeedWithGallery({
   const { userHasLiked: fsUserHasLiked, userReactions: fsUserReactions, toggleReaction: fsToggle } = useReactions(fullscreenMediaId, fullUserId)
   
   const RADIAL_CHOICES: { emoji: string; type: ReactionType }[] = [
-    { emoji: '❤️', type: 'LOVE' },
+    { emoji: '💋', type: 'SMILE' },
+    { emoji: '🤤', type: 'WOW' },
     { emoji: '🔥', type: 'FIRE' },
-    { emoji: '😮', type: 'WOW' },
-    { emoji: '🙂', type: 'SMILE' },
+    { emoji: '💖', type: 'LOVE' },
   ]
 
   const handleEmojiReaction = useCallback((emoji: string) => {
