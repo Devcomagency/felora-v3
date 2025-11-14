@@ -1,5 +1,6 @@
 import { create, StateCreator } from 'zustand'
 import { RefObject } from 'react'
+import { addFavoriteId, removeFavoriteId, readFavoriteIds } from '@/lib/favorites'
 
 // Types pour le profil FELORA
 export interface EscortProfile {
@@ -121,7 +122,7 @@ interface InteractionSlice {
 const createProfileSlice: StateCreator<ProfileSlice> = (set, get) => ({
   currentProfile: null,
   profiles: [],
-  favorites: typeof window !== 'undefined' ? JSON.parse(localStorage?.getItem('felora-favorites') || '[]') : [],
+  favorites: typeof window !== 'undefined' ? readFavoriteIds() : [],
   following: typeof window !== 'undefined' ? JSON.parse(localStorage?.getItem('felora-following') || '[]') : [],
   isProfileLoading: false,
   
@@ -129,19 +130,15 @@ const createProfileSlice: StateCreator<ProfileSlice> = (set, get) => ({
   setProfiles: (profiles) => set({ profiles }),
   
   addFavorite: (profileId) => set((state) => {
-    const newFavorites = [...state.favorites, profileId]
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('felora-favorites', JSON.stringify(newFavorites))
-    }
-    return { favorites: newFavorites }
+    if (state.favorites.includes(profileId)) return state
+    const updated = addFavoriteId(profileId)
+    return { favorites: updated }
   }),
   
   removeFavorite: (profileId) => set((state) => {
-    const newFavorites = state.favorites.filter(id => id !== profileId)
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('felora-favorites', JSON.stringify(newFavorites))
-    }
-    return { favorites: newFavorites }
+    if (!state.favorites.includes(profileId)) return state
+    const updated = removeFavoriteId(profileId)
+    return { favorites: updated }
   }),
   
   toggleFollow: (profileId) => set((state) => {

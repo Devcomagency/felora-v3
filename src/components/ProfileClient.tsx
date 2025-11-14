@@ -13,6 +13,8 @@ import {
 import { useReactionsStore } from '../stores/reactionsStore'
 import { GiftPicker } from '@/components/gifts/GiftPicker'
 import { GiftToast } from '@/components/gifts/GiftToast'
+import { addFavoriteId, removeFavoriteId, readFavoriteIds } from '@/lib/favorites'
+import { toast } from 'sonner'
 
 interface EscortProfile {
   id: string
@@ -194,7 +196,7 @@ interface ProfileClientProps {
 
 export default function ProfileClient({ profile: initialProfile }: ProfileClientProps) {
   const router = useRouter()
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
   const [profile, setProfile] = useState<EscortProfile>(initialProfile)
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0)
   const [isLiked, setIsLiked] = useState(false)
@@ -209,22 +211,26 @@ export default function ProfileClient({ profile: initialProfile }: ProfileClient
 
   // Charger l'état des favoris au démarrage
   useEffect(() => {
-    const favorites = JSON.parse(localStorage.getItem('felora-favorites') || '[]')
-    setIsFavorite(favorites.includes(profile.id))
+    setIsFavorite(readFavoriteIds().includes(profile.id))
   }, [profile.id])
 
   const handleFavoriteToggle = () => {
-    const favorites = JSON.parse(localStorage.getItem('felora-favorites') || '[]')
+    if (status === 'unauthenticated' || !session?.user?.id) {
+      console.log('🔒 [FAVORITES] Utilisateur non connecté, affichage toast', { status, hasSession: !!session })
+      toast.info('Connectez-vous pour ajouter des favoris', {
+        duration: 4000,
+      })
+      return
+    }
+
     if (isFavorite) {
-      // Retirer des favoris
-      const newFavorites = favorites.filter((id: string) => id !== profile.id)
-      localStorage.setItem('felora-favorites', JSON.stringify(newFavorites))
+      removeFavoriteId(profile.id)
       setIsFavorite(false)
+      toast.success('Retiré des favoris')
     } else {
-      // Ajouter aux favoris
-      const newFavorites = [...favorites, profile.id]
-      localStorage.setItem('felora-favorites', JSON.stringify(newFavorites))
+      addFavoriteId(profile.id)
       setIsFavorite(true)
+      toast.success('⭐ Ajouté aux favoris')
     }
   }
   const [activeReaction, setActiveReaction] = useState<string | null>(null)

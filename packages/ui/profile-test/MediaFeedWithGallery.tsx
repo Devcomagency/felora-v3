@@ -61,9 +61,10 @@ interface MediaPlayerProps extends MediaItem {
   onDeleteMedia?: (mediaUrl: string, index: number) => void
   onEditMedia?: (mediaUrl: string, index: number) => void
   onUpdateMedia?: (mediaUrl: string, updates: Partial<MediaItem>) => Promise<void>
+  isFullscreen?: boolean
 }
 
-function MediaPlayer({ id, type, url, thumb, poster, index, isActive, profileId, userId, onLike, onSave, onFullscreen, isPrivate, onReactionChange, refreshTrigger, optimisticDelta = 0, viewerIsOwner = false, onDeleteMedia, onEditMedia, onUpdateMedia, visibility, price }: MediaPlayerProps) {
+function MediaPlayer({ id, type, url, thumb, poster, index, isActive, profileId, userId, onLike, onSave, onFullscreen, isPrivate, onReactionChange, refreshTrigger, optimisticDelta = 0, viewerIsOwner = false, onDeleteMedia, onEditMedia, onUpdateMedia, visibility, price, isFullscreen = false }: MediaPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const [isPlaying, setIsPlaying] = useState(false)
   const [error, setError] = useState(false)
@@ -111,29 +112,50 @@ function MediaPlayer({ id, type, url, thumb, poster, index, isActive, profileId,
     console.log('🎮 Video play control:', {
       isActive,
       isPrivate,
+      isFullscreen,
       hasVideo: !!video,
       videoSrc: video.src?.substring(0, 60),
       readyState: video.readyState,
       networkState: video.networkState
     })
 
-    if (isActive && !isPrivate) {
+    if ((isActive && !isPrivate) || isFullscreen) {
       console.log('▶️ Attempting to play video...')
-      video.play()
-        .then(() => {
-          console.log('✅ Video playing successfully')
-          setIsPlaying(true)
-        })
-        .catch((err) => {
-          console.error('❌ Video play failed:', err)
-          setError(true)
-        })
+
+      // Attendre que la vidéo soit prête avant de jouer
+      const attemptPlay = () => {
+        video.play()
+          .then(() => {
+            console.log('✅ Video playing successfully')
+            setIsPlaying(true)
+          })
+          .catch((err) => {
+            // Ignorer l'erreur AbortError qui se produit lors du chargement HLS
+            if (err.name !== 'AbortError') {
+              console.error('❌ Video play failed:', err)
+              setError(true)
+            } else {
+              console.log('⏳ Play interrupted by load, will retry...')
+            }
+          })
+      }
+
+      // Si la vidéo n'est pas encore prête, attendre l'événement loadeddata
+      if (video.readyState < 3) {
+        video.addEventListener('loadeddata', attemptPlay, { once: true })
+      } else {
+        attemptPlay()
+      }
+
+      return () => {
+        video.removeEventListener('loadeddata', attemptPlay)
+      }
     } else {
       console.log('⏸️ Pausing video')
       video.pause()
       setIsPlaying(false)
     }
-  }, [isActive, type, isPrivate])
+  }, [isActive, type, isPrivate, isFullscreen])
 
   const togglePlayPause = useCallback(() => {
     const video = videoRef.current
@@ -232,11 +254,13 @@ function MediaPlayer({ id, type, url, thumb, poster, index, isActive, profileId,
       <div className="relative w-full h-full bg-black rounded-none overflow-hidden group">
         <video
           ref={videoRef}
-          className={`w-full h-full object-cover ${isPrivate && !isActive ? 'blur-xl brightness-30' : ''}`}
-          controls
+          className={`w-full h-full ${isPrivate && !isActive ? 'blur-xl brightness-30' : ''}`}
+          style={{ objectFit: 'contain', objectPosition: 'center' }}
+          controls={!isFullscreen}
           muted
           loop
           playsInline
+          autoPlay={isFullscreen}
           preload="metadata"
           disablePictureInPicture
           webkit-playsinline="true"
@@ -248,27 +272,31 @@ function MediaPlayer({ id, type, url, thumb, poster, index, isActive, profileId,
           {/* HLS.js injectera automatiquement la source */}
         </video>
 
-        <button
-          onClick={() => {
-            onFullscreen && onFullscreen()
-            trackMediaView(url, index)
-          }}
-          className="absolute inset-0 bg-transparent group-hover:bg-black/20 transition-colors duration-200 flex items-center justify-center"
-          aria-label={isPlaying ? 'Mettre en pause la vidéo' : 'Lire la vidéo'}
-        >
-          {(!error) && (
-            <div className="w-16 h-16 bg-black/70 backdrop-blur-sm rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
-              {isPrivate ? <Crown size={24} className="text-white" /> : <Play size={24} className="text-white ml-1" />}
-            </div>
-          )}
-        </button>
+        {!isFullscreen && (
+          <button
+            onClick={() => {
+              onFullscreen && onFullscreen()
+              trackMediaView(url, index)
+            }}
+            className="absolute inset-0 bg-transparent group-hover:bg-black/20 transition-colors duration-200 flex items-center justify-center"
+            aria-label={isPlaying ? 'Mettre en pause la vidéo' : 'Lire la vidéo'}
+          >
+            {(!error) && (
+              <div className="w-16 h-16 bg-black/70 backdrop-blur-sm rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
+                {isPrivate ? <Crown size={24} className="text-white" /> : <Play size={24} className="text-white ml-1" />}
+              </div>
+            )}
+          </button>
+        )}
 
-        <div className="absolute bottom-2 right-2">
-          <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-black/70 backdrop-blur-sm text-white text-xs">
-            <Flame className="w-4 h-4 text-violet-300" />
-            <span>{(stats?.total ?? 0) + (optimisticDelta || 0)}</span>
+        {!isFullscreen && (
+          <div className="absolute bottom-2 right-2">
+            <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-black/70 backdrop-blur-sm text-white text-xs">
+              <Flame className="w-4 h-4 text-violet-300" />
+              <span>{(stats?.total ?? 0) + (optimisticDelta || 0)}</span>
+            </div>
           </div>
-        </div>
+        )}
 
 
 
@@ -294,7 +322,8 @@ function MediaPlayer({ id, type, url, thumb, poster, index, isActive, profileId,
         alt={`Media ${index + 1}`}
         fill
         loading="lazy"
-        className={`object-cover ${isPrivate ? 'blur-xl brightness-30' : ''}`}
+        className={isPrivate ? 'blur-xl brightness-30' : ''}
+        style={{ objectFit: 'contain', objectPosition: 'center' }}
         onError={(e) => {
           console.error('❌ Fallback Image failed:', { displaySrc, error: e })
           setError(true)
@@ -720,22 +749,7 @@ export default function MediaFeedWithGallery({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[9999] bg-black flex items-center justify-center"
-            drag="x"
-            dragConstraints={{ left: 0, right: 0 }}
-            dragElastic={0.2}
-            onDragEnd={(e, { offset, velocity }) => {
-              const swipeThreshold = 50
-              const swipeVelocity = 500
-
-              if (offset.x > swipeThreshold || velocity.x > swipeVelocity) {
-                // Swipe vers la droite → média précédent
-                prevMedia()
-              } else if (offset.x < -swipeThreshold || velocity.x < -swipeVelocity) {
-                // Swipe vers la gauche → média suivant
-                nextMedia()
-              }
-            }}
+            className="fixed inset-0 z-[9999] bg-black flex items-center justify-center overflow-hidden"
           >
             <div className="absolute top-0 left-0 right-0 p-6 bg-gradient-to-b from-black/80 to-transparent safe-area-inset-top z-[10000]">
               <div className="flex items-center justify-between">
@@ -776,16 +790,18 @@ export default function MediaFeedWithGallery({
                           className="absolute right-0 mt-2 min-w-[180px] bg-black/90 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden z-[10003]"
                         >
                         <div className="py-2 text-sm text-white/90">
-                          {/* Temporairement forcé pour tester */}
-                          <button
-                            onClick={() => {
-                              setShowFullscreenManagementModal(true)
-                              setShowMenu(false)
-                            }}
-                            className="w-full flex items-center gap-2 px-3 py-2 hover:bg-white/10 text-left"
-                          >
-                            <Edit size={16} /> Gérer le média
-                          </button>
+                          {/* Gérer le média - uniquement pour le propriétaire */}
+                          {viewerIsOwner && (
+                            <button
+                              onClick={() => {
+                                setShowFullscreenManagementModal(true)
+                                setShowMenu(false)
+                              }}
+                              className="w-full flex items-center gap-2 px-3 py-2 hover:bg-white/10 text-left"
+                            >
+                              <Edit size={16} /> Gérer le média
+                            </button>
+                          )}
                           <button
                             onClick={() => {
                               if (navigator.share) {
@@ -820,16 +836,10 @@ export default function MediaFeedWithGallery({
               </div>
             </div>
 
-            <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/80 to-transparent safe-area-inset-bottom z-[10000]">
-              <div className="flex items-center justify-between">
-                <div className="text-white/80 text-sm">
-                  {fullscreenIndex + 1} / {mixedContent.length}
-                </div>
-              </div>
-            </div>
+            {/* Compteur masqué */}
 
             {/* Colonne d'actions à droite (même placement que l'accueil) */}
-            <div className="absolute right-6 bottom-32 flex flex-col gap-4 z-[10000] safe-area-inset-bottom">
+            <div className="absolute right-6 bottom-32 flex flex-col gap-3 z-[10000] safe-area-inset-bottom">
               <motion.button
                 whileTap={{ scale: 0.8 }}
                 onClick={async () => {
@@ -838,14 +848,14 @@ export default function MediaFeedWithGallery({
                     try { onReactionChange && await onReactionChange() } catch {}
                   }
                 }}
-                className={`w-14 h-14 backdrop-blur-sm rounded-full flex items-center justify-center transition-colors ${
+                className={`w-11 h-11 backdrop-blur-sm rounded-full flex items-center justify-center transition-colors ${
                   fsUserHasLiked
                     ? 'bg-rose-500/20 text-rose-300 hover:bg-rose-500/30'
                     : 'bg-black/70 text-white hover:bg-black/90'
                 }`}
                 aria-label="J'aime"
               >
-                <Heart size={24} className={fsUserHasLiked ? 'fill-current' : ''} />
+                <Heart size={20} className={fsUserHasLiked ? 'fill-current' : ''} />
               </motion.button>
 
               <div className="relative flex items-center justify-center">
@@ -859,13 +869,13 @@ export default function MediaFeedWithGallery({
                 <motion.button
                   whileTap={{ scale: 0.8 }}
                   onClick={() => setShowReactions(!showReactions)}
-                  className={`relative z-10 w-14 h-14 backdrop-blur-sm rounded-full flex items-center justify-center transition-colors ${
+                  className={`relative z-10 w-11 h-11 backdrop-blur-sm rounded-full flex items-center justify-center transition-colors ${
                     (fsUserReactions?.length ?? 0) > 0
                       ? 'bg-orange-500/20 text-orange-300 hover:bg-orange-500/30'
                       : 'bg-black/70 text-white hover:bg-black/90'
                   }`}
                 >
-                  <Flame size={24} className={(fsUserReactions?.length ?? 0) > 0 ? 'text-orange-300' : 'text-violet-300'} />
+                  <Flame size={20} className={(fsUserReactions?.length ?? 0) > 0 ? 'text-orange-300' : 'text-violet-300'} />
                 </motion.button>
 
                 <AnimatePresence>
@@ -928,6 +938,28 @@ export default function MediaFeedWithGallery({
               </div>
             </div>
 
+            {/* Boutons de navigation en bas */}
+            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3 z-[9998] safe-area-inset-bottom">
+              <button
+                onClick={prevMedia}
+                className="w-10 h-10 bg-black/70 backdrop-blur-sm rounded-full flex items-center justify-center text-white/80 hover:text-white hover:bg-black/90 transition-colors"
+                aria-label="Média précédent"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+              </button>
+              <button
+                onClick={nextMedia}
+                className="w-10 h-10 bg-black/70 backdrop-blur-sm rounded-full flex items-center justify-center text-white/80 hover:text-white hover:bg-black/90 transition-colors"
+                aria-label="Média suivant"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+              </button>
+            </div>
+
             <div className="w-full h-full max-w-md max-h-screen bg-black relative border-radius-20">
               {fullscreenMedia && mixedContent[fullscreenIndex] && (
                 <MediaPlayer
@@ -945,6 +977,7 @@ export default function MediaFeedWithGallery({
                   onDeleteMedia={onDeleteMedia}
                   onEditMedia={onEditMedia}
                   onUpdateMedia={onUpdateMedia}
+                  isFullscreen={true}
                 />
               )}
             </div>

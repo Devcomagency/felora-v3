@@ -3,6 +3,7 @@
 import dynamic from 'next/dynamic'
 import { Suspense } from 'react'
 import { useFeatureFlag } from '@/hooks/useFeatureFlag'
+import { MapErrorBoundary } from '@/components/error/MapErrorBoundary'
 
 // Import dynamique pour éviter les erreurs SSR avec MapLibre
 const MapTest = dynamic(() => import('@packages/ui/map-test/MapTest'), {
@@ -46,9 +47,11 @@ function OldMapPage() {
 // New map page (V2 design)
 function NewMapPage() {
   return (
-    <Suspense fallback={<MapSkeleton />}>
-      <MapTest />
-    </Suspense>
+    <MapErrorBoundary>
+      <Suspense fallback={<MapSkeleton />}>
+        <MapTest />
+      </Suspense>
+    </MapErrorBoundary>
   )
 }
 

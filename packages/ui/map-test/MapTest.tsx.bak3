@@ -7,6 +7,7 @@ import { MapPin, SlidersHorizontal, Verified } from 'lucide-react'
 import useSWR from 'swr'
 import Supercluster from 'supercluster'
 import 'maplibre-gl/dist/maplibre-gl.css'
+import { useDebounce } from '@/hooks/useDebounce'
 
 // Types
 type EscortData = {
@@ -226,6 +227,7 @@ export default function MapTest() {
     }
   }, [router, currentUserProfile])
   const [search, setSearch] = useState('')
+  const debouncedSearch = useDebounce(search, 300)
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [userLocation, setUserLocation] = useState<{latitude: number, longitude: number} | null>(null)
   const [geoError, setGeoError] = useState<string | null>(null)
@@ -312,33 +314,31 @@ export default function MapTest() {
       }
     })
 
-    // Add clubs data - L'API clubs retourne 'data' au lieu de 'items'
-    const apiClubs = (clubsData?.data || [])
-      .filter((club: any) => club.latitude && club.longitude) // Ne garder que les clubs avec coordonnées
-      .map((club: any) => {
-        let avatar = club.avatar || club.cover || ''
+    // Add clubs data
+    const apiClubs = (clubsData?.items || []).map((club: any) => {
+      let avatar = club.logoUrl || club.coverPhotoUrl || club.avatar || ''
 
-        // Fix undefined/ URLs for clubs too
-        if (avatar && avatar.includes('undefined/')) {
-          avatar = avatar.replace(/^undefined\//, 'https://media.felora.ch/')
-        }
+      // Fix undefined/ URLs for clubs too
+      if (avatar && avatar.includes('undefined/')) {
+        avatar = avatar.replace(/^undefined\//, 'https://media.felora.ch/')
+      }
 
-        return {
-          id: club.id,
-          name: club.name || 'Club',
-          lat: club.latitude,
-          lng: club.longitude,
-          avatar,
-          city: club.city || 'Suisse',
-          services: club.services?.services || [],
-          languages: club.services?.languages || [],
-          category: 'club', // Marquer les clubs avec une catégorie spéciale
-          verified: club.verified || false,
-          isActive: club.isActive || false,
-          type: 'club' as const,
-          isCurrentUser: false
-        }
-      })
+      return {
+        id: club.id,
+        name: club.name || 'Club',
+        lat: club.latitude || 46.8182,
+        lng: club.longitude || 8.2275,
+        avatar,
+        city: club.city || 'Suisse',
+        services: club.services || [],
+        languages: club.languages || [],
+        category: 'club', // Marquer les clubs avec une catégorie spéciale
+        verified: club.isVerifiedBadge || false,
+        isActive: true,
+        type: 'club' as const,
+        isCurrentUser: false
+      }
+    })
 
     // Combiner escorts et clubs
     const combined = [...apiEscorts, ...apiClubs]
@@ -367,9 +367,9 @@ export default function MapTest() {
   const filteredEscorts = useMemo(() => {
     let result = allEscorts
 
-    // Filtre par recherche textuelle
-    if (search.trim()) {
-      const query = search.toLowerCase()
+    // Filtre par recherche textuelle (debounced)
+    if (debouncedSearch.trim()) {
+      const query = debouncedSearch.toLowerCase()
       result = result.filter((escort: EscortData) =>
         escort.name.toLowerCase().includes(query) ||
         escort.city.toLowerCase().includes(query) ||
@@ -377,29 +377,45 @@ export default function MapTest() {
       )
     }
 
-    // Filtre par catégories avec mapping DB → UI
+    // Filtre par catégories - Utiliser le champ category de l'API
     if (selectedCategories.length > 0) {
       result = result.filter((escort: EscortData) => {
-        if (escort.type === 'club') {
-          return selectedCategories.includes('club')
+        // Si le profil a un champ category défini, l'utiliser directement
+        if (escort.category) {
+          return selectedCategories.includes(escort.category)
         }
 
-        if (!escort.category) return false
+        // Sinon, fallback sur l'analyse des services (pour compatibilité)
+        const escortServices = (escort.services || []).map((s: string) => s.toLowerCase())
 
-        const categoryMap: Record<string, string> = {
-          'ESCORT': 'escort',
-          'MASSEUSE': 'masseuse_erotique',
-          'DOMINATRICE': 'dominatrice_bdsm',
-          'TRANSSEXUELLE': 'transsexuel'
-        }
-
-        const normalizedCategory = categoryMap[escort.category.toUpperCase()] || escort.category.toLowerCase()
-        return selectedCategories.includes(normalizedCategory)
+        return selectedCategories.some((category: string) => {
+          // Mapping des catégories vers les services de l'API
+          switch(category) {
+            case 'escort':
+              return escortServices.some((s: string) =>
+                s.includes('escort') || s.includes('gfe') || s.includes('accompagnement')
+              )
+            case 'masseuse_erotique':
+              return escortServices.some((s: string) =>
+                s.includes('massage') || s.includes('body to body') || s.includes('relaxation')
+              )
+            case 'dominatrice_bdsm':
+              return escortServices.some((s: string) =>
+                s.includes('bdsm') || s.includes('domination') || s.includes('fétichisme') || s.includes('soumission')
+              )
+            case 'transsexuel':
+              return escortServices.some((s: string) =>
+                s.includes('trans') || s.includes('shemale') || s.includes('transsexuel')
+              )
+            default:
+              return false
+          }
+        })
       })
     }
 
     return result
-  }, [allEscorts, search, selectedCategories])
+  }, [allEscorts, debouncedSearch, selectedCategories])
 
   // Create supercluster
   const supercluster = useMemo(() => {
@@ -791,15 +807,10 @@ export default function MapTest() {
                       </div>
                     )}
                     {escort.verified && (
-                      <div 
-                        className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center"
-                        style={{
-                          background: 'linear-gradient(135deg, #4FD1C7 0%, #00D4AA 100%)',
-                          fontSize: '8px',
-                          color: 'white'
-                        }}
+                      <div
+                        className="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center bg-blue-500 border-2 border-white"
                       >
-                        ✓
+                        <Verified className="w-3 h-3 text-white" fill="currentColor" />
                       </div>
                     )}
                   </div>
@@ -953,14 +964,8 @@ export default function MapTest() {
                         <p className="text-white/60 text-xs">{escort.city}</p>
                       </div>
                       {escort.verified && (
-                        <div 
-                          className="w-4 h-4 rounded-full flex items-center justify-center text-xs"
-                          style={{
-                            background: 'linear-gradient(135deg, #4FD1C7 0%, #00D4AA 100%)',
-                            color: 'white'
-                          }}
-                        >
-                          ✓
+                        <div className="w-5 h-5 rounded-full flex items-center justify-center bg-blue-500">
+                          <Verified className="w-3 h-3 text-white" fill="currentColor" />
                         </div>
                       )}
                     </div>
@@ -1280,7 +1285,17 @@ export default function MapTest() {
                                )}
                                {escort.verified && (
                                  <div className="absolute -top-1 -right-1">
-                                   <Verified className="w-5 h-5 text-[#4FD1C7]" fill="currentColor" />
+                                   <div 
+                                     className="w-6 h-6 rounded-full flex items-center justify-center"
+                                     style={{
+                                       background: 'linear-gradient(135deg, #4FD1C7 0%, #00D4AA 100%)',
+                                       boxShadow: '0 2px 8px rgba(79, 209, 199, 0.4)'
+                                     }}
+                                   >
+                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                                       <polyline points="20 6 9 17 4 12"></polyline>
+                                     </svg>
+                                   </div>
                                  </div>
                                )}
                              </div>
@@ -1304,14 +1319,7 @@ export default function MapTest() {
                                      border: '1px solid rgba(255, 107, 157, 0.3)'
                                    }}
                                  >
-                                   {escort.type === 'club'
-                                    ? (escort.establishmentType || 'Club')
-                                    : escort.category === 'ESCORT' ? 'Escort'
-                                    : escort.category === 'MASSEUSE' ? 'Masseuse'
-                                    : escort.category === 'DOMINATRICE' ? 'Dominatrice'
-                                    : escort.category === 'TRANSSEXUELLE' ? 'Transsexuel'
-                                    : (escort.category || escort.services?.[0] || 'Escort')
-                                  }
+                                   {escort.services[0]}
                                  </div>
                                </div>
                              )}

@@ -11,6 +11,8 @@ import ClubEscortsSection from '../../../../../packages/ui/profile-test/ClubEsco
 import { ClubProfileModal } from '@/components/ClubProfileModal'
 import { useViewTracker } from '@/hooks/useViewTracker'
 import ReportModal from '@/components/ReportModal'
+import { addFavoriteId, removeFavoriteId, readFavoriteIds } from '@/lib/favorites'
+import { toast } from 'sonner'
 
 interface ClubProfile {
   id: string
@@ -101,7 +103,7 @@ function ProfileSkeleton() {
 }
 
 export default function ClubProfileTestPage() {
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
   const [profile, setProfile] = useState<ClubProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
@@ -261,18 +263,21 @@ export default function ClubProfileTestPage() {
 
   const handleFavoriteToggle = useCallback(() => {
     if (!profile) return
-
-    const favorites = JSON.parse(localStorage.getItem('felora-favorites') || '[]')
-    if (isFavorite) {
-      const newFavorites = favorites.filter((id: string) => id !== profile.id)
-      localStorage.setItem('felora-favorites', JSON.stringify(newFavorites))
-      setIsFavorite(false)
-    } else {
-      const newFavorites = [...favorites, profile.id]
-      localStorage.setItem('felora-favorites', JSON.stringify(newFavorites))
-      setIsFavorite(true)
+    if (status === 'unauthenticated' || !session?.user?.id) {
+      toast.info('Connectez-vous pour ajouter des favoris')
+      return
     }
-  }, [isFavorite, profile])
+
+    if (isFavorite) {
+      removeFavoriteId(profile.id)
+      setIsFavorite(false)
+      toast.success('Retiré des favoris')
+    } else {
+      addFavoriteId(profile.id)
+      setIsFavorite(true)
+      toast.success('⭐ Ajouté aux favoris')
+    }
+  }, [isFavorite, profile, session, status])
 
   // Load localStorage states
   useEffect(() => {
@@ -286,9 +291,8 @@ export default function ClubProfileTestPage() {
   // Load favorites state
   useEffect(() => {
     if (!profile) return
-    const favorites = JSON.parse(localStorage.getItem('felora-favorites') || '[]')
-    setIsFavorite(favorites.includes(profile.id))
-  }, [profile?.id])
+    setIsFavorite(readFavoriteIds().includes(profile.id))
+  }, [profile?.id, profile])
 
   // Calculer le total des réactions au chargement du profil
   useEffect(() => {

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useSession, signOut } from 'next-auth/react'
@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import NotificationBell from '@/components/notifications/NotificationBell'
 import dynamic from 'next/dynamic'
+import { toast } from 'sonner'
 
 const languages = [
   { code: 'fr', label: 'Français', flag: '🇫🇷' },
@@ -26,6 +27,7 @@ export default function StaticNavBar() {
   const pathname = usePathname()
   const isMessages = pathname?.startsWith('/messages')
   const isAdmin = pathname?.startsWith('/admin')
+  const isMap = pathname?.startsWith('/map')
   const { data: session, status } = useSession()
   const isAuthenticated = status === 'authenticated'
   const user = session?.user as any
@@ -51,6 +53,19 @@ export default function StaticNavBar() {
     // Rediriger vers l'éditeur
     router.push('/camera?fromUpload=true')
   }
+
+  const handleFavoritesClick = useCallback(() => {
+    if (!isAuthenticated) {
+      console.log('🔒 [FAVORITES] Utilisateur non connecté, affichage toast')
+      toast.info('Connectez-vous pour accéder à vos favoris', {
+        duration: 4000,
+      })
+      setShowMenu(false)
+      return
+    }
+    router.push('/favorites')
+    setShowMenu(false)
+  }, [isAuthenticated, router, setShowMenu])
 
   // Charger la langue sauvegardée
   useEffect(() => {
@@ -230,15 +245,15 @@ export default function StaticNavBar() {
       </div>
 
 
-      {/* Notification Bell - Uniquement pour les utilisateurs connectés (pas admin, pas /messages) */}
-      {!isMessages && isAuthenticated && !pathname?.startsWith('/admin') && (
+      {/* Notification Bell - Uniquement pour les utilisateurs connectés (pas admin, pas /messages, pas /map) */}
+      {!isMessages && !isMap && isAuthenticated && !pathname?.startsWith('/admin') && (
         <div className="fixed top-4 right-16 z-[1002]">
           <NotificationBell />
         </div>
       )}
 
-      {/* Bouton menu burger - caché sur /messages */}
-      {!isMessages && (
+      {/* Bouton menu burger - caché sur /messages et /map */}
+      {!isMessages && !isMap && (
       <motion.button
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
@@ -351,6 +366,16 @@ export default function StaticNavBar() {
                   >
                     <Map size={18} className="text-white/70" />
                     <span className="text-sm font-medium">Carte</span>
+                  </motion.button>
+
+                  <motion.button
+                    whileHover={{ backgroundColor: "rgba(255, 255, 255, 0.04)" }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={handleFavoritesClick}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/90 hover:text-white transition-colors text-left"
+                  >
+                    <Heart size={18} className="text-white/70" />
+                    <span className="text-sm font-medium">Mes favoris</span>
                   </motion.button>
 
                   <motion.button

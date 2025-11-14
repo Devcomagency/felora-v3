@@ -18,6 +18,7 @@ import { CommentsSection } from '../../../components/comments/CommentsSection'
 import { AvailabilityStatus as AvailabilityStatusType, ScheduleData } from '@/lib/availability-calculator'
 import { updateMediaWithErrorHandling, deleteMediaWithErrorHandling } from '@/lib/mediaManagement'
 import { validateMediaUrl } from '@/lib/media/enhanced-cdn'
+import { addFavoriteId, removeFavoriteId, readFavoriteIds } from '@/lib/favorites'
 
 interface EscortProfile {
   id: string
@@ -180,7 +181,7 @@ const ErrorFallback = React.memo(function ErrorFallback({ onRetry }: { onRetry?:
 })
 
 export default function EscortProfilePage() {
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
   const [profile, setProfile] = useState<EscortProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
@@ -505,9 +506,8 @@ export default function EscortProfilePage() {
   // Charger l'état des favoris au démarrage
   useEffect(() => {
     if (!profile) return
-    const favorites = JSON.parse(localStorage.getItem('felora-favorites') || '[]')
-    setIsFavorite(favorites.includes(profile.id))
-  }, [profile?.id])
+    setIsFavorite(readFavoriteIds().includes(profile.id))
+  }, [profile?.id, profile])
 
   // Calculer le total des réactions des médias du feed uniquement (pas la photo de profil)
   const calculateTotalReactions = useCallback(async () => {
@@ -559,20 +559,24 @@ export default function EscortProfilePage() {
 
   const handleFavoriteToggle = useCallback(() => {
     if (!profile) return
+    if (status === 'unauthenticated' || !session?.user?.id) {
+      console.log('🔒 [FAVORITES] Utilisateur non connecté, affichage toast', { status, hasSession: !!session })
+      toast.info('Connectez-vous pour ajouter des favoris', {
+        duration: 4000,
+      })
+      return
+    }
 
-    const favorites = JSON.parse(localStorage.getItem('felora-favorites') || '[]')
     if (isFavorite) {
-      const newFavorites = favorites.filter((id: string) => id !== profile.id)
-      localStorage.setItem('felora-favorites', JSON.stringify(newFavorites))
+      removeFavoriteId(profile.id)
       setIsFavorite(false)
       toast.success('Retiré des favoris')
     } else {
-      const newFavorites = [...favorites, profile.id]
-      localStorage.setItem('felora-favorites', JSON.stringify(newFavorites))
+      addFavoriteId(profile.id)
       setIsFavorite(true)
       toast.success('⭐ Ajouté aux favoris')
     }
-  }, [isFavorite, profile])
+  }, [isFavorite, profile, session, status])
 
   // Generate extended profile data from the real data
   const extendedProfileData = useMemo(() => {

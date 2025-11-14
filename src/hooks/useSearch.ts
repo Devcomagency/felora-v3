@@ -154,7 +154,7 @@ export function useSearch(): UseSearchReturn {
   // Build API query string
   const buildQueryString = useCallback((filters: SearchFilters, cursor?: string) => {
     const params = new URLSearchParams()
-    
+
     // Filtres de base
     if (filters.q) params.set('q', filters.q)
     if (filters.city) params.set('city', filters.city)
@@ -163,9 +163,12 @@ export function useSearch(): UseSearchReturn {
     if (filters.languages && filters.languages.length > 0) params.set('languages', filters.languages.join(','))
     if (filters.status) params.set('status', filters.status)
     if (filters.sort !== 'recent') params.set('sort', filters.sort)
-    
+
     // Nouveaux filtres V2
-    if (filters.categories && filters.categories.length > 0) params.set('categories', filters.categories.join(','))
+    if (filters.categories && filters.categories.length > 0) {
+      console.log('[useSearch] 🔍 Adding categories to query:', filters.categories)
+      params.set('categories', filters.categories.join(','))
+    }
     if (filters.ageRange) {
       params.set('ageMin', filters.ageRange[0].toString())
       params.set('ageMax', filters.ageRange[1].toString())
@@ -278,12 +281,17 @@ export function useSearch(): UseSearchReturn {
   }, [filters, fetchEscorts])
 
   // Fetch when filters change
-  const categoriesKey = filters.categories?.join(',') || ''
   useEffect(() => {
     console.log('[useSearch] Filters changed, fetching escorts:', filters)
     fetchEscorts(filters, undefined, false)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters.q, filters.city, filters.canton, filters.sort, categoriesKey])
+  }, [
+    filters.q,
+    filters.city,
+    filters.canton,
+    filters.sort,
+    filters.categories?.join(',') || ''
+  ])
 
   // Cleanup
   useEffect(() => {

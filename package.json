@@ -5,6 +5,7 @@
   "description": "FELORA V3 - Version propre et optimisée de la plateforme premium suisse",
   "scripts": {
     "dev": "next dev",
+    "dev:https": "node server.mjs",
     "dev:turbo": "next dev --turbopack",
     "build": "prisma generate && next build",
     "build:mobile": "NEXT_CONFIG_FILE=next.config.capacitor.js next build && npx cap sync",

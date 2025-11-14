@@ -219,13 +219,27 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Filtres de catégories
+    // Filtres de catégories - Normaliser vers les valeurs DB
     if (categoriesCSV) {
       const categories = categoriesCSV.split(',').filter(Boolean)
+      console.log('[API ESCORTS] 🔍 Categories from filter:', categories)
+
       if (categories.length > 0) {
+        // Mapping: filter value -> DB value
+        const categoryMap: Record<string, string> = {
+          'escort': 'ESCORT',
+          'masseuse_erotique': 'MASSEUSE',
+          'dominatrice_bdsm': 'DOMINATRICE',
+          'transsexuel': 'TRANSSEXUELLE'
+        }
+
+        // Convertir les catégories du filtre vers les valeurs DB
+        const dbCategories = categories.map(cat => categoryMap[cat] || cat.toUpperCase())
+        console.log('[API ESCORTS] 🔍 Mapped to DB categories:', dbCategories)
+
         where.AND = where.AND || []
         where.AND.push({
-          OR: categories.map(cat => ({
+          OR: dbCategories.map(cat => ({
             category: { equals: cat, mode: 'insensitive' as const }
           }))
         })
@@ -380,6 +394,7 @@ export async function GET(request: NextRequest) {
     }
 
     console.log('[API ESCORTS] Database query completed, rows found:', rows.length)
+    console.log('[API ESCORTS] 🔍 Categories of returned profiles:', rows.map(r => ({ id: r.id, name: r.stageName, category: r.category })))
 
     const items = rows.map((e, index) => {
       try {

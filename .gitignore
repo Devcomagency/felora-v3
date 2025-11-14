@@ -81,3 +81,6 @@ public/uploads/
 =======
 ../../../*
 >>>>>>> 178d6043a (Add comprehensive .gitignore):Desktop/projets/felora-v3/.gitignore
+
+# SSL Certificates for local HTTPS
+.cert/

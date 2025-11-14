@@ -19,6 +19,7 @@ type EscortData = {
   services?: string[]
   languages?: string[]
   category?: string
+  establishmentType?: string // Type d'établissement pour les clubs
   verified: boolean
   isActive: boolean
   type?: 'escort' | 'club' // Type pour différencier escorts et clubs
@@ -284,13 +285,17 @@ export default function MapTest() {
         console.log(`⚠️ Profil sans avatar:`, { id: escort.id, stageName: escort.stageName, profilePhoto: escort.profilePhoto })
       }
 
-      // Debug spécifique pour le profil problématique
-      if (escort.id === 'cmg2ej3hs0003l804ns2h6d0o') {
-        console.log(`🐛 DEBUG PROFILE:`, {
+      // Debug spécifique pour les profils problématiques
+      if (escort.id === 'cmg2ej3hs0003l804ns2h6d0o' || escort.stageName === 'Saliiii') {
+        console.log(`🐛 DEBUG PROFILE (${escort.stageName}):`, {
           id: escort.id,
           stageName: escort.stageName,
           profilePhoto: escort.profilePhoto,
           avatar,
+          category: escort.category,
+          city: escort.city,
+          latitude: escort.latitude,
+          longitude: escort.longitude,
           hasAvatar: !!avatar
         })
       }
@@ -332,7 +337,7 @@ export default function MapTest() {
           city: club.city || 'Suisse',
           services: club.services?.services || [],
           languages: club.services?.languages || [],
-          category: 'club', // Marquer les clubs avec une catégorie spéciale
+          establishmentType: club.establishmentType || 'club', // Type d'établissement
           verified: club.verified || false,
           isActive: club.isActive || false,
           type: 'club' as const,
@@ -342,6 +347,10 @@ export default function MapTest() {
 
     // Combiner escorts et clubs
     const combined = [...apiEscorts, ...apiClubs]
+
+    // 🐛 DEBUG: Log category values
+    console.log('🔍 ALL ESCORTS CATEGORIES:', apiEscorts.map(e => ({ id: e.id, name: e.name, category: e.category })))
+    console.log('🔍 ALL CLUBS:', apiClubs.map(c => ({ id: c.id, name: c.name, type: c.type })))
 
     // 🎯 GÉRER LE PROFIL ESCORT CONNECTÉ
     if (currentUserProfile) {
@@ -377,15 +386,26 @@ export default function MapTest() {
       )
     }
 
-    // Filtre par catégories avec mapping DB → UI
+    // Filtre par catégories - Normaliser les valeurs DB vers les valeurs de filtre
     if (selectedCategories.length > 0) {
+      console.log('🔍 FILTERING BY CATEGORIES:', selectedCategories)
+      console.log('🔍 BEFORE FILTER - Total profiles:', result.length)
+
       result = result.filter((escort: EscortData) => {
+        // Pour les clubs
         if (escort.type === 'club') {
-          return selectedCategories.includes('club')
+          const match = selectedCategories.includes('club')
+          console.log(`  🏢 CLUB ${escort.name}: ${match ? '✅ MATCH' : '❌ NO MATCH'}`)
+          return match
         }
 
-        if (!escort.category) return false
+        // Pour les escorts, normaliser la catégorie DB vers le format du filtre
+        if (!escort.category) {
+          console.log(`  👤 ESCORT ${escort.name} (category: undefined): ❌ NO MATCH`)
+          return false
+        }
 
+        // Mapping: DB category -> filter value
         const categoryMap: Record<string, string> = {
           'ESCORT': 'escort',
           'MASSEUSE': 'masseuse_erotique',
@@ -394,8 +414,13 @@ export default function MapTest() {
         }
 
         const normalizedCategory = categoryMap[escort.category.toUpperCase()] || escort.category.toLowerCase()
-        return selectedCategories.includes(normalizedCategory)
+        const match = selectedCategories.includes(normalizedCategory)
+
+        console.log(`  👤 ESCORT ${escort.name} (DB: ${escort.category} → filter: ${normalizedCategory}): ${match ? '✅ MATCH' : '❌ NO MATCH'}`)
+        return match
       })
+
+      console.log('🔍 AFTER FILTER - Remaining profiles:', result.length)
     }
 
     return result
@@ -514,30 +539,23 @@ export default function MapTest() {
   }, [supercluster, viewState.zoom])
 
   // Geolocation function
-  const locateUser = useCallback(async () => {
+  const locateUser = useCallback(() => {
+    console.log('🌍 [GEOLOCATION] Bouton cliqué')
+
     if (!navigator.geolocation) {
+      console.error('🌍 [GEOLOCATION] Non supporté')
       setGeoError("La géolocalisation n'est pas supportée par ce navigateur")
       return
     }
 
-    // 🔒 Vérifier les permissions avant de demander la géolocalisation
-    if (typeof navigator.permissions !== 'undefined') {
-      try {
-        const result = await navigator.permissions.query({ name: 'geolocation' })
-        if (result.state === 'denied') {
-          setGeoError('Permission refusée. Activez-la dans les paramètres de votre navigateur.')
-          return
-        }
-      } catch (err) {
-        // Silent fail - navigateur ne supporte pas permissions API
-      }
-    }
-
+    console.log('🌍 [GEOLOCATION] Demande de position...')
     setIsLocating(true)
     setGeoError(null)
 
+    // Demander directement la géolocalisation - cela déclenchera la popup du navigateur
     navigator.geolocation.getCurrentPosition(
       (position) => {
+        console.log('🌍 [GEOLOCATION] Position reçue:', position.coords)
         const { latitude, longitude } = position.coords
         setUserLocation({ latitude, longitude })
         setViewState({
@@ -548,16 +566,17 @@ export default function MapTest() {
         setIsLocating(false)
       },
       (error) => {
+        console.error('🌍 [GEOLOCATION] Erreur:', error.code, error.message)
         let errorMessage = 'Impossible de récupérer votre position'
         switch (error.code) {
           case error.PERMISSION_DENIED:
-            errorMessage = 'Accès à la géolocalisation refusé'
+            errorMessage = 'Veuillez autoriser la géolocalisation dans les paramètres de votre navigateur pour utiliser cette fonctionnalité.'
             break
           case error.POSITION_UNAVAILABLE:
-            errorMessage = 'Position non disponible'
+            errorMessage = 'Position non disponible. Vérifiez que votre GPS est activé.'
             break
           case error.TIMEOUT:
-            errorMessage = 'Délai de géolocalisation dépassé'
+            errorMessage = 'Délai de géolocalisation dépassé. Réessayez.'
             break
         }
         setGeoError(errorMessage)
@@ -565,8 +584,8 @@ export default function MapTest() {
       },
       {
         enableHighAccuracy: true,
-        timeout: 30000,
-        maximumAge: 60000
+        timeout: 10000,
+        maximumAge: 0
       }
     )
   }, [viewState.zoom])
@@ -761,7 +780,7 @@ export default function MapTest() {
                   }}
                 >
                   <div
-                    className="w-10 h-10 rounded-full cursor-pointer transform hover:scale-110 transition-transform relative"
+                    className="w-10 h-10 cursor-pointer transform hover:scale-110 transition-transform relative"
                     style={{
                       background: escort.type === 'club'
                         ? 'linear-gradient(135deg, #FFA500 0%, #FFD700 100%)' // Orange-doré pour les clubs
@@ -771,35 +790,52 @@ export default function MapTest() {
                       border: '2px solid rgba(255, 255, 255, 0.4)',
                       boxShadow: escort.type === 'club'
                         ? '0 4px 20px rgba(255, 165, 0, 0.4)'
-                        : '0 4px 20px rgba(79, 209, 199, 0.4)'
+                        : '0 4px 20px rgba(79, 209, 199, 0.4)',
+                      // Hexagone pour les clubs, cercle pour les escorts
+                      clipPath: escort.type === 'club'
+                        ? 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)'
+                        : 'none',
+                      borderRadius: escort.type === 'club' ? '0' : '50%'
                     }}
                   >
                     {escort.avatar ? (
-                      <img 
-                        src={escort.avatar} 
-                        alt={escort.name}
-                        className="w-full h-full rounded-full object-cover"
+                      <>
+                        {escort.stageName === 'Saliiii' && console.log('🖼️ Rendering Saliiii avatar:', escort.avatar)}
+                        <img
+                          src={escort.avatar}
+                          alt={escort.name}
+                          className="w-full h-full object-cover"
+                        style={{
+                          clipPath: escort.type === 'club'
+                            ? 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)'
+                            : 'none',
+                          borderRadius: escort.type === 'club' ? '0' : '50%'
+                        }}
                         onError={(e) => {
                           e.currentTarget.src = '/logo-principal.png'
                         }}
-                      />
+                        />
+                      </>
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-pink-500/20 to-purple-500/20">
+                      <div
+                        className="w-full h-full flex items-center justify-center bg-gradient-to-br from-pink-500/20 to-purple-500/20"
+                        style={{
+                          clipPath: escort.type === 'club'
+                            ? 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)'
+                            : 'none',
+                          borderRadius: escort.type === 'club' ? '0' : '50%'
+                        }}
+                      >
                         <span className="text-white font-bold text-lg">
-                          {escort.name.charAt(0)}
+                          {escort.type === 'club' ? '🏢' : escort.name.charAt(0)}
                         </span>
                       </div>
                     )}
                     {escort.verified && (
-                      <div 
-                        className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center"
-                        style={{
-                          background: 'linear-gradient(135deg, #4FD1C7 0%, #00D4AA 100%)',
-                          fontSize: '8px',
-                          color: 'white'
-                        }}
+                      <div
+                        className="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center bg-felora-aurora/90 border border-felora-aurora"
                       >
-                        ✓
+                        <Verified size={12} className="text-white" />
                       </div>
                     )}
                   </div>
@@ -839,11 +875,9 @@ export default function MapTest() {
                     style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }}
                   />
                   {selectedEscort.verified && (
-                    <div
-                      className="absolute top-2 left-2 px-2 py-1 rounded-full text-xs font-medium"
-                      style={{ background: 'rgba(79, 209, 199, 0.85)', color: 'white' }}
-                    >
-                      Vérifié
+                    <div className="absolute top-2 left-2 flex items-center gap-1 px-3 py-1 rounded-full bg-felora-aurora/20 border border-felora-aurora/30 backdrop-blur-sm">
+                      <Verified size={14} className="text-felora-aurora" />
+                      <span className="text-xs font-medium text-felora-aurora">Vérifié</span>
                     </div>
                   )}
                 </div>
@@ -854,11 +888,9 @@ export default function MapTest() {
                     <p className="text-white/70 text-sm truncate">{selectedEscort.city}</p>
                   </div>
                   {selectedEscort.verified && (
-                    <div 
-                      className="px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap"
-                      style={{ background: 'rgba(79, 209, 199, 0.2)', color: '#4FD1C7' }}
-                    >
-                      Vérifié
+                    <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-felora-aurora/20 border border-felora-aurora/30">
+                      <Verified size={14} className="text-felora-aurora" />
+                      <span className="text-xs font-medium text-felora-aurora whitespace-nowrap">Vérifié</span>
                     </div>
                   )}
                 </div>
@@ -953,14 +985,8 @@ export default function MapTest() {
                         <p className="text-white/60 text-xs">{escort.city}</p>
                       </div>
                       {escort.verified && (
-                        <div 
-                          className="w-4 h-4 rounded-full flex items-center justify-center text-xs"
-                          style={{
-                            background: 'linear-gradient(135deg, #4FD1C7 0%, #00D4AA 100%)',
-                            color: 'white'
-                          }}
-                        >
-                          ✓
+                        <div className="w-5 h-5 rounded-full flex items-center justify-center bg-felora-aurora/90 border border-felora-aurora">
+                          <Verified size={12} className="text-white" />
                         </div>
                       )}
                     </div>
@@ -1063,7 +1089,7 @@ export default function MapTest() {
                 { value: 'masseuse_erotique', label: 'Masseuse Érotique' },
                 { value: 'dominatrice_bdsm', label: 'Dominatrice BDSM' },
                 { value: 'transsexuel', label: 'Transsexuel' },
-                { value: 'club', label: '🏢 Établissement' }
+                { value: 'club', label: 'Établissement' }
               ].map(category => (
                 <button
                   key={category.value}
@@ -1280,7 +1306,7 @@ export default function MapTest() {
                                )}
                                {escort.verified && (
                                  <div className="absolute -top-1 -right-1">
-                                   <Verified className="w-5 h-5 text-[#4FD1C7]" fill="currentColor" />
+                                   <Verified size={18} style={{ color: '#4FD1C7', filter: 'drop-shadow(0 0 4px rgba(79, 209, 199, 0.6))' }} />
                                  </div>
                                )}
                              </div>
@@ -1291,27 +1317,21 @@ export default function MapTest() {
                              <h3 className="text-white font-bold text-xs mb-1 group-hover:text-white transition-colors truncate">
                                {escort.name}
                              </h3>
-                             {escort.services && escort.services.length > 0 && (
+                             {/* Afficher la catégorie pour escorts ou le type d'établissement pour clubs */}
+                             {(escort.type === 'club' ? escort.establishmentType : escort.category) && (
                                <div className="flex items-center gap-1.5 flex-wrap">
-                                 <div 
+                                 <div
                                    className="w-1 h-1 rounded-full bg-gradient-to-r from-pink-500 to-purple-500"
                                  />
-                                 <div 
-                                   className="text-[9px] px-1.5 py-0.5 rounded font-medium truncate max-w-[100px]"
+                                 <div
+                                   className="text-[9px] px-1.5 py-0.5 rounded font-medium truncate max-w-[100px] capitalize"
                                    style={{
                                      background: 'rgba(255, 107, 157, 0.2)',
                                      color: '#FF6B9D',
                                      border: '1px solid rgba(255, 107, 157, 0.3)'
                                    }}
                                  >
-                                   {escort.type === 'club'
-                                    ? (escort.establishmentType || 'Club')
-                                    : escort.category === 'ESCORT' ? 'Escort'
-                                    : escort.category === 'MASSEUSE' ? 'Masseuse'
-                                    : escort.category === 'DOMINATRICE' ? 'Dominatrice'
-                                    : escort.category === 'TRANSSEXUELLE' ? 'Transsexuel'
-                                    : (escort.category || escort.services?.[0] || 'Escort')
-                                  }
+                                   {escort.type === 'club' ? escort.establishmentType : escort.category}
                                  </div>
                                </div>
                              )}
@@ -1366,7 +1386,7 @@ export default function MapTest() {
 
       {/* Loading Overlay */}
       {isLoading && !data && (
-        <div 
+        <div
           className="fixed inset-0 flex items-center justify-center"
           style={{
             background: 'rgba(13, 13, 13, 0.8)',
@@ -1375,13 +1395,17 @@ export default function MapTest() {
           }}
         >
           <div className="text-center">
-            <div 
-              className="w-12 h-12 rounded-full mx-auto mb-4 animate-spin"
-              style={{
-                background: 'linear-gradient(135deg, #FF6B9D 0%, #B794F6 50%, #4FD1C7 100%)',
-                mask: 'radial-gradient(circle at center, transparent 4px, black 6px)'
-              }}
-            />
+            <div className="w-24 h-24 mx-auto mb-6 animate-spin">
+              <img
+                src="/logo-principal.png"
+                alt="Felora"
+                className="w-full h-full object-contain"
+                style={{
+                  filter: 'drop-shadow(0 0 20px rgba(255, 107, 157, 0.5))',
+                  animation: 'spin 2s linear infinite'
+                }}
+              />
+            </div>
             <p className="text-white">Chargement de la carte...</p>
           </div>
         </div>
