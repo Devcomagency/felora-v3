@@ -240,10 +240,10 @@ export async function GET(request: NextRequest) {
 
         // Utiliser OR pour les catégories (au lieu de AND)
         if (dbCategories.length === 1) {
-          where.category = { equals: dbCategories[0], mode: 'insensitive' as const }
+          where.category = dbCategories[0] as any
           console.log('[API ESCORTS] ✅ Single category:', where.category)
         } else {
-          where.category = { in: dbCategories, mode: 'insensitive' as const }
+          where.category = { in: dbCategories as any }
           console.log('[API ESCORTS] ✅ Multiple categories:', where.category)
         }
       }
