@@ -50,13 +50,13 @@ export async function DELETE(request: NextRequest) {
     // Supprimer de la table media si le média existe
     // Chercher avec l'URL originale ET l'URL nettoyée
     const media = await prisma.media.findFirst({
-      where: { 
+      where: {
         OR: [
           { url: mediaUrl },
           { url: cleanMediaUrl }
         ],
         ownerType: 'ESCORT',
-        ownerId: session.user.id
+        ownerId: escortProfile.id // Utiliser l'ID du profil escort, pas userId
       }
     })
 
@@ -64,6 +64,9 @@ export async function DELETE(request: NextRequest) {
       await prisma.media.delete({
         where: { id: media.id }
       })
+      console.log('✅ Média supprimé de la table Media:', media.id)
+    } else {
+      console.log('⚠️ Média non trouvé dans la table Media')
     }
 
     // Supprimer de galleryPhotos
