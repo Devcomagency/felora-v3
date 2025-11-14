@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useMemo, useState } from 'react'
-import { Star, MapPin } from 'lucide-react'
+import { Star, MapPin, BadgeCheck, Crown } from 'lucide-react'
 import { normalizeScheduleData } from '@/lib/availability-calculator'
 import { validateMediaUrl } from '@/lib/media/enhanced-cdn'
 
@@ -124,28 +124,31 @@ export default function ProfileHeader({
                 }}
               >
                 <span className="leading-tight">{name}</span>
-                {verified && (
-                  <div className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 bg-blue-500 rounded-full flex items-center justify-center shadow-2xl border-2 border-white/30 flex-shrink-0">
-                    <span className="text-white text-sm sm:text-base">✓</span>
-                  </div>
-                )}
                 {premium && (
                   <div className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center shadow-2xl border-2 border-white/30 flex-shrink-0">
                     <Crown className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 text-white" />
                   </div>
                 )}
               </h1>
-              {city && (
-                <div
-                  className="flex items-center gap-2 text-white/95"
-                  style={{
-                    textShadow: '0 2px 8px rgba(0,0,0,0.8), 0 4px 16px rgba(0,0,0,0.6)'
-                  }}
-                >
-                  <MapPin className="w-4 h-4 sm:w-4.5 sm:h-4.5 flex-shrink-0" />
-                  <span className="text-sm sm:text-base font-medium">{city}</span>
-                </div>
-              )}
+              <div className="flex items-center gap-3">
+                {city && (
+                  <div
+                    className="flex items-center gap-2 text-white/95"
+                    style={{
+                      textShadow: '0 2px 8px rgba(0,0,0,0.8), 0 4px 16px rgba(0,0,0,0.6)'
+                    }}
+                  >
+                    <MapPin className="w-4 h-4 sm:w-4.5 sm:h-4.5 flex-shrink-0" />
+                    <span className="text-sm sm:text-base font-medium">{city}</span>
+                  </div>
+                )}
+                {verified && (
+                  <div className="flex items-center gap-1 px-2.5 py-1 bg-[#4FD1C7]/20 border border-[#4FD1C7]/40 rounded-full backdrop-blur-sm">
+                    <BadgeCheck className="w-3.5 h-3.5 text-[#4FD1C7]" />
+                    <span className="text-[10px] font-medium text-[#4FD1C7] uppercase tracking-wide">Vérifié</span>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Stats sans cadre - Version ultra discrète */}
@@ -206,14 +209,9 @@ export default function ProfileHeader({
                   </div>
                 )}
 
-                {/* Badges premium flottants - En haut */}
-                {verified && (
-                  <div className="absolute top-20 left-4 w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center shadow-2xl border-4 border-black">
-                    <span className="text-white text-base font-bold">✓</span>
-                  </div>
-                )}
+                {/* Badge premium flottant - En haut */}
                 {premium && (
-                  <div className="absolute top-20 left-16 w-10 h-10 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center shadow-2xl border-4 border-black">
+                  <div className="absolute top-20 left-4 w-10 h-10 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center shadow-2xl border-4 border-black">
                     <Crown size={20} className="text-white" />
                   </div>
                 )}
@@ -241,18 +239,24 @@ export default function ProfileHeader({
             )}
           </div>
 
-          {/* Catégorie (Transsexuel, Escort, etc.) - Badge compact - en dessous de la photo */}
+          {/* Catégorie (Transsexuel, Escort, etc.) - Badge compact avec badge vérifié - en dessous de la photo */}
           <div className="px-4 pt-4 pb-2">
-            {category && (
-              <div className="flex justify-center mb-1">
+            <div className="flex justify-center items-center gap-2 mb-1">
+              {category && (
                 <span className="inline-flex items-center px-4 py-1.5 bg-gradient-to-r from-pink-500/20 to-purple-500/20 text-pink-300 rounded-full text-xs font-medium border border-pink-500/30 uppercase tracking-wide">
                   {category === 'transsexuel' ? 'Transsexuel' :
                    category === 'masseuse_erotique' ? 'Masseuse Érotique' :
                    category === 'dominatrice_bdsm' ? 'Dominatrice BDSM' :
                    category === 'escort' ? 'Escort' : category}
                 </span>
-              </div>
-            )}
+              )}
+              {verified && (
+                <div className="flex items-center gap-1 px-2.5 py-1 bg-[#4FD1C7]/10 border border-[#4FD1C7]/30 rounded-full">
+                  <BadgeCheck className="w-3.5 h-3.5 text-[#4FD1C7]" />
+                  <span className="text-[10px] font-medium text-[#4FD1C7] uppercase tracking-wide">Vérifié</span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
