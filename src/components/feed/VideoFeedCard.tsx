@@ -231,8 +231,8 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
     ? `/profile-test/club/${item.clubHandle}`
     : `/profile/${item.author.id}`
 
-  // Vérifier si l'utilisateur est le propriétaire du média
-  const isOwner = session?.user?.id === item.author.id
+  // Vérifier si l'utilisateur est le propriétaire du média (uniquement si connecté)
+  const isOwner = !!(session?.user?.id && session.user.id === item.author.id)
 
   const [userId, setUserId] = useState<string | null>(null)
   useEffect(() => {
