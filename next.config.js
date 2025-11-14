@@ -3,6 +3,10 @@ if (process.env.NODE_ENV !== 'production') {
   process.env.NEXT_DISABLE_DEVTOOLS = '1'
 }
 
+const withNextIntl = require('next-intl/plugin')(
+  './i18n/request.ts'
+)
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Ne pas échouer le build sur les erreurs ESLint/TS (stabilité déploiement)
@@ -178,4 +182,4 @@ const nextConfig = {
   },
 }
 
-module.exports = nextConfig
+module.exports = withNextIntl(nextConfig)
