@@ -229,10 +229,10 @@ function SearchContent() {
                     ? 'text-white'
                     : 'text-white/60 hover:text-white/80'
                 }`}
-                aria-label="Afficher les clubs et salons"
+                aria-label="Afficher les établissements"
                 aria-current={activeSection === 'clubs' ? 'page' : undefined}
               >
-                Clubs & Salons
+                Établissements
                 {activeSection === 'clubs' && (
                   <span className="absolute -bottom-2 left-0 w-full h-0.5 bg-gradient-to-r from-[#FF6B9D] to-[#B794F6] rounded-full" />
                 )}
@@ -331,13 +331,13 @@ function SearchContent() {
             </>
           )}
 
-          {/* Section Clubs & Salons - Affichée si activeSection === 'clubs' */}
+          {/* Section Établissements - Affichée si activeSection === 'clubs' */}
           {activeSection === 'clubs' && (
             <section ref={clubsSectionRef} className="py-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-black tracking-tight bg-gradient-to-r from-white via-white/90 to-white/80 bg-clip-text text-transparent">Clubs & Salons</h2>
+              <h2 className="text-xl font-black tracking-tight bg-gradient-to-r from-white via-white/90 to-white/80 bg-clip-text text-transparent">Établissements</h2>
               {clubsTotal > 0 && (
-                <span className="text-sm text-white/60 font-medium">{clubsTotal} clubs & salons</span>
+                <span className="text-sm text-white/60 font-medium">{clubsTotal} établissements</span>
               )}
             </div>
 
