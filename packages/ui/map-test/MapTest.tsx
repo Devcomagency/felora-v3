@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Map, { Marker, Popup, ViewStateChangeEvent } from 'react-map-gl/maplibre'
-import { MapPin, SlidersHorizontal, Check } from 'lucide-react'
+import { MapPin, SlidersHorizontal, BadgeCheck } from 'lucide-react'
 import useSWR from 'swr'
 import Supercluster from 'supercluster'
 import 'maplibre-gl/dist/maplibre-gl.css'
@@ -793,8 +793,8 @@ export default function MapTest() {
                       </div>
                     )}
                     {escort.verified && (
-                      <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center" style={{ backgroundColor: '#4FD1C7' }}>
-                        <Check className="w-3 h-3 text-white" strokeWidth={3} />
+                      <div className="absolute -top-1 -right-1">
+                        <BadgeCheck className="w-5 h-5" style={{ color: '#4FD1C7' }} />
                       </div>
                     )}
                   </div>
@@ -834,8 +834,8 @@ export default function MapTest() {
                     style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }}
                   />
                   {selectedEscort.verified && (
-                    <div className="absolute top-2 left-2 w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: '#4FD1C7' }}>
-                      <Check className="w-5 h-5 text-white" strokeWidth={3} />
+                    <div className="absolute top-2 left-2">
+                      <BadgeCheck className="w-7 h-7" style={{ color: '#4FD1C7' }} />
                     </div>
                   )}
                 </div>
@@ -937,9 +937,7 @@ export default function MapTest() {
                         <p className="text-white/60 text-xs">{escort.city}</p>
                       </div>
                       {escort.verified && (
-                        <div className="w-5 h-5 rounded-full flex items-center justify-center" style={{ backgroundColor: '#4FD1C7' }}>
-                          <Check className="w-3 h-3 text-white" strokeWidth={3} />
-                        </div>
+                        <BadgeCheck className="w-5 h-5" style={{ color: '#4FD1C7' }} />
                       )}
                     </div>
                   ))}
@@ -1257,8 +1255,8 @@ export default function MapTest() {
                                  </div>
                                )}
                                {escort.verified && (
-                                 <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center" style={{ backgroundColor: '#4FD1C7' }}>
-                                   <Check className="w-3 h-3 text-white" strokeWidth={3} />
+                                 <div className="absolute -top-1 -right-1">
+                                   <BadgeCheck className="w-5 h-5" style={{ color: '#4FD1C7' }} />
                                  </div>
                                )}
                              </div>
