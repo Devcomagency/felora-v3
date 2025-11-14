@@ -871,7 +871,7 @@ export default function MapTest() {
 
                 <button
                   onClick={() => {
-                    window.location.href = `/profile/${selectedEscort.id}`
+                    router.push(`/profile/${selectedEscort.id}`)
                   }}
                   className="w-full py-2 rounded-lg font-medium"
                   style={{
