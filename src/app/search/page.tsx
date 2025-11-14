@@ -337,7 +337,7 @@ function SearchContent() {
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-black tracking-tight bg-gradient-to-r from-white via-white/90 to-white/80 bg-clip-text text-transparent">Clubs & Salons</h2>
               {clubsTotal > 0 && (
-                <span className="text-sm text-white/60 font-medium">{clubsTotal} établissements</span>
+                <span className="text-sm text-white/60 font-medium">{clubsTotal} clubs & salons</span>
               )}
             </div>
 
