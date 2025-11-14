@@ -14,6 +14,8 @@ import MediaFeedWithGallery from '../../../../../packages/ui/profile-test/MediaF
 import { AboutSection, RatesSection, AvailabilitySection, PhysicalDetailsSection } from '../../../../../packages/ui/profile-test/Sections'
 import { CommentsSection } from '../../../../components/comments/CommentsSection'
 import ReportModal from '@/components/ReportModal'
+import { addFavoriteId, removeFavoriteId, readFavoriteIds } from '@/lib/favorites'
+import { toast } from 'sonner'
 
 interface EscortProfile {
   id: string
@@ -184,7 +186,7 @@ function ErrorFallback() {
 
 export default function EscortProfileTestPage() {
   console.log('🔍 [PAGE] EscortProfileTestPage component rendered')
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
   const [profile, setProfile] = useState<EscortProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
@@ -488,9 +490,8 @@ export default function EscortProfileTestPage() {
   // Charger l'état des favoris au démarrage
   useEffect(() => {
     if (!profile) return
-    const favorites = JSON.parse(localStorage.getItem('felora-favorites') || '[]')
-    setIsFavorite(favorites.includes(profile.id))
-  }, [profile?.id])
+    setIsFavorite(readFavoriteIds().includes(profile.id))
+  }, [profile?.id, profile])
 
   // Calculer le total des réactions de tous les médias (sans auto-refresh pour éviter les doublons)
   const calculateTotalReactions = useCallback(async () => {
@@ -534,44 +535,56 @@ export default function EscortProfileTestPage() {
 
   const handleFavoriteToggle = useCallback(() => {
     if (!profile) return
-    
-    const favorites = JSON.parse(localStorage.getItem('felora-favorites') || '[]')
-    if (isFavorite) {
-      const newFavorites = favorites.filter((id: string) => id !== profile.id)
-      localStorage.setItem('felora-favorites', JSON.stringify(newFavorites))
-      setIsFavorite(false)
-    } else {
-      const newFavorites = [...favorites, profile.id]
-      localStorage.setItem('felora-favorites', JSON.stringify(newFavorites))
-      setIsFavorite(true)
+    if (status === 'unauthenticated' || !session?.user?.id) {
+      toast.info('Connectez-vous pour ajouter des favoris')
+      return
     }
-  }, [isFavorite, profile])
+    
+    if (isFavorite) {
+      removeFavoriteId(profile.id)
+      setIsFavorite(false)
+      toast.success('Retiré des favoris')
+    } else {
+      addFavoriteId(profile.id)
+      setIsFavorite(true)
+      toast.success('⭐ Ajouté aux favoris')
+    }
+  }, [isFavorite, profile, session, status])
 
   // Gestion des médias
   const handleDeleteMedia = useCallback(async (mediaUrl: string, index: number) => {
     try {
       console.log('🗑️ [DELETE MEDIA] Suppression du média:', mediaUrl, 'Index:', index)
-      
-      // TODO: Appeler l'API pour supprimer le média
-      // const response = await fetch(`/api/media/${mediaId}/delete`, {
-      //   method: 'DELETE',
-      //   headers: { 'Content-Type': 'application/json' }
-      // })
-      
-      // if (response.ok) {
-      //   // Rafraîchir la liste des médias
-      //   setProfile(prev => ({
-      //     ...prev,
-      //     media: prev.media.filter((_, i) => i !== index)
-      //   }))
-      // }
-      
-      alert('Fonction de suppression à implémenter')
+
+      // Appeler l'API pour supprimer le média
+      const response = await fetch('/api/media/delete', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mediaUrl })
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Erreur lors de la suppression')
+      }
+
+      console.log('✅ [DELETE MEDIA] Média supprimé avec succès')
+
+      // Rafraîchir les données du profil depuis l'API
+      if (profile?.id) {
+        const refreshResponse = await fetch(`/api/profiles/escort/${profile.id}`)
+        if (refreshResponse.ok) {
+          const updatedProfile = await refreshResponse.json()
+          setProfile(updatedProfile)
+          console.log('🔄 [DELETE MEDIA] Profil rafraîchi')
+        }
+      }
     } catch (error) {
       console.error('❌ [DELETE MEDIA] Erreur:', error)
-      alert('Erreur lors de la suppression du média')
+      throw error // Re-throw pour que le modal affiche l'erreur
     }
-  }, [])
+  }, [profile?.id])
 
   const handleEditMedia = useCallback(async (mediaUrl: string, index: number) => {
     try {
