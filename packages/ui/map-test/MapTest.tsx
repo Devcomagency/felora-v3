@@ -229,7 +229,6 @@ export default function MapTest() {
       window.removeEventListener('storage', handleStorageChange)
     }
   }, [router, currentUserProfile])
-  const [search, setSearch] = useState('')
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [userLocation, setUserLocation] = useState<{latitude: number, longitude: number} | null>(null)
   const [geoError, setGeoError] = useState<string | null>(null)
@@ -355,16 +354,6 @@ export default function MapTest() {
   const filteredEscorts = useMemo(() => {
     let result = allEscorts
 
-    // Filtre par recherche textuelle
-    if (search.trim()) {
-      const query = search.toLowerCase()
-      result = result.filter((escort: EscortData) =>
-        escort.name.toLowerCase().includes(query) ||
-        escort.city.toLowerCase().includes(query) ||
-        (escort.services || []).some((service: string) => service.toLowerCase().includes(query))
-      )
-    }
-
     // Filtre par catégories avec mapping DB → UI
     if (selectedCategories.length > 0) {
       result = result.filter((escort: EscortData) => {
@@ -387,7 +376,7 @@ export default function MapTest() {
     }
 
     return result
-  }, [allEscorts, search, selectedCategories])
+  }, [allEscorts, selectedCategories])
 
   // Create supercluster
   const supercluster = useMemo(() => {
@@ -1020,20 +1009,6 @@ export default function MapTest() {
           }}
         >
           <div className="flex flex-col gap-3">
-            {/* Search */}
-            <input
-              type="text"
-              placeholder="Rechercher..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg"
-              style={{
-                background: 'rgba(255, 255, 255, 0.05)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                color: 'white'
-              }}
-            />
-
             {/* Category filters */}
             <div className="flex flex-col gap-2">
               {[
@@ -1069,10 +1044,9 @@ export default function MapTest() {
             </div>
 
             {/* Clear button */}
-            {(search || selectedCategories.length > 0) && (
+            {selectedCategories.length > 0 && (
               <button
                 onClick={() => {
-                  setSearch('')
                   setSelectedCategories([])
                 }}
                 className="w-full py-2 rounded-lg text-sm"
