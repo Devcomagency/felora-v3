@@ -4,7 +4,7 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 const withNextIntl = require('next-intl/plugin')(
-  './i18n/request.ts'
+  './src/i18n/request.ts'
 )
 
 /** @type {import('next').NextConfig} */
