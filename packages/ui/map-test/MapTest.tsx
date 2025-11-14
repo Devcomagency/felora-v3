@@ -770,6 +770,7 @@ export default function MapTest() {
                       <img
                         src={escort.avatar}
                         alt={escort.name}
+                        loading="eager"
                         className="w-full h-full object-cover"
                         style={{
                           borderRadius: escort.type === 'club' ? '0' : '50%',
@@ -797,7 +798,7 @@ export default function MapTest() {
                     )}
                     {escort.verified && (
                       <div className="absolute -top-1 -right-1">
-                        <BadgeCheck className="w-5 h-5" style={{ color: '#4FD1C7' }} />
+                        <BadgeCheck className="w-5 h-5" style={{ color: '#FFFFFF' }} />
                       </div>
                     )}
                   </div>
@@ -829,8 +830,7 @@ export default function MapTest() {
                   <img
                     src={selectedEscort.avatar || '/default-avatar.png'}
                     alt={selectedEscort.name}
-                    loading="lazy"
-                    decoding="async"
+                    loading="eager"
                     onError={(e) => {
                       e.currentTarget.src = '/default-avatar.png'
                     }}
@@ -838,7 +838,7 @@ export default function MapTest() {
                   />
                   {selectedEscort.verified && (
                     <div className="absolute top-2 left-2">
-                      <BadgeCheck className="w-7 h-7" style={{ color: '#4FD1C7' }} />
+                      <BadgeCheck className="w-7 h-7" style={{ color: '#FFFFFF' }} />
                     </div>
                   )}
                 </div>
@@ -921,8 +921,7 @@ export default function MapTest() {
                         <img
                           src={escort.avatar}
                           alt={escort.name}
-                          loading="lazy"
-                          decoding="async"
+                          loading="eager"
                           onError={(e) => {
                             e.currentTarget.src = '/logo-principal.png'
                           }}
@@ -940,7 +939,7 @@ export default function MapTest() {
                         <p className="text-white/60 text-xs">{escort.city}</p>
                       </div>
                       {escort.verified && (
-                        <BadgeCheck className="w-5 h-5" style={{ color: '#4FD1C7' }} />
+                        <BadgeCheck className="w-5 h-5" style={{ color: '#FFFFFF' }} />
                       )}
                     </div>
                   ))}
@@ -1241,7 +1240,7 @@ export default function MapTest() {
                                <img
                                  src={escort.avatar}
                                  alt={escort.name}
-                                 loading="lazy"
+                                 loading="eager"
                                  onError={(e) => {
                                    e.currentTarget.src = '/logo-principal.png'
                                  }}
@@ -1259,7 +1258,7 @@ export default function MapTest() {
                                )}
                                {escort.verified && (
                                  <div className="absolute -top-1 -right-1">
-                                   <BadgeCheck className="w-5 h-5" style={{ color: '#4FD1C7' }} />
+                                   <BadgeCheck className="w-5 h-5" style={{ color: '#FFFFFF' }} />
                                  </div>
                                )}
                              </div>
