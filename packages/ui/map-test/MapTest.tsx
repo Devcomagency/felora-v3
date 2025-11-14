@@ -166,7 +166,10 @@ export default function MapTest() {
           }
         }
       } catch (error) {
-        // Silent fail - l'utilisateur n'est peut-être pas escort
+        // L'utilisateur n'est pas un escort - comportement normal
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Erreur lors du chargement du profil escort:', error)
+        }
       }
     }
 
@@ -277,23 +280,6 @@ export default function MapTest() {
       // 🔧 CORRECTION: Fix les URLs qui commencent par "undefined/"
       if (avatar && avatar.includes('undefined/')) {
         avatar = avatar.replace(/^undefined\//, 'https://media.felora.ch/')
-        console.log(`🔧 Avatar URL corrigée pour ${escort.id}:`, avatar)
-      }
-
-      // Debug log pour voir les valeurs d'avatar
-      if (!avatar || avatar === '') {
-        console.log(`⚠️ Profil sans avatar:`, { id: escort.id, stageName: escort.stageName, profilePhoto: escort.profilePhoto })
-      }
-
-      // Debug spécifique pour le profil problématique
-      if (escort.id === 'cmg2ej3hs0003l804ns2h6d0o') {
-        console.log(`🐛 DEBUG PROFILE:`, {
-          id: escort.id,
-          stageName: escort.stageName,
-          profilePhoto: escort.profilePhoto,
-          avatar,
-          hasAvatar: !!avatar
-        })
       }
 
       return {
