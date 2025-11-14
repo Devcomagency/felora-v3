@@ -284,13 +284,14 @@ export function useSearch(): UseSearchReturn {
   useEffect(() => {
     console.log('[useSearch] Filters changed, fetching escorts:', filters)
     fetchEscorts(filters, undefined, false)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     filters.q,
     filters.city,
     filters.canton,
     filters.sort,
-    filters.categories?.join(',') || ''
+    filters.categories?.join(',') || '',
+    fetchEscorts,
+    filters
   ])
 
   // Cleanup

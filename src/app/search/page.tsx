@@ -98,10 +98,10 @@ function SearchContent() {
   // Appliquer la recherche debouncée aux filtres
   useEffect(() => {
     if (debouncedSearchQuery !== escortsFilters.q) {
-      setEscortsFilters({ ...escortsFilters, q: debouncedSearchQuery })
-      setClubsFilters({ ...clubsFilters, q: debouncedSearchQuery })
+      setEscortsFilters((prev) => ({ ...prev, q: debouncedSearchQuery }))
+      setClubsFilters((prev) => ({ ...prev, q: debouncedSearchQuery }))
     }
-  }, [debouncedSearchQuery])
+  }, [debouncedSearchQuery, escortsFilters.q, setEscortsFilters, setClubsFilters])
 
   // Gestion des filtres pour les escortes (memoized)
   const handleEscortsFiltersChange = useCallback((newFilters: any) => {
