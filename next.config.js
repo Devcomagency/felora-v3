@@ -16,8 +16,27 @@ const nextConfig = {
   // Fix pour le warning des lockfiles multiples
   outputFileTracingRoot: __dirname,
 
-  // Next.js 15+: paquets externes côté serveur
-  serverExternalPackages: ['@prisma/client'],
+  // Next.js 15+: paquets externes côté serveur (optimisation bundle size)
+  serverExternalPackages: [
+    '@prisma/client',
+    '@sentry/node',
+    '@aws-sdk/client-s3',
+    '@aws-sdk/s3-request-presigner',
+    'sharp',
+    'canvas',
+  ],
+
+  // Optimisation: exclure les fichiers inutiles du bundle
+  experimental: {
+    outputFileTracingExcludes: {
+      '*': [
+        'node_modules/@swc/core-linux-x64-gnu',
+        'node_modules/@swc/core-linux-x64-musl',
+        'node_modules/@esbuild/linux-x64',
+        'node_modules/next/dist/compiled/@edge-runtime/primitives/**/*',
+      ],
+    },
+  },
 
   // Optimisations et sécurité de base
   poweredByHeader: false,
