@@ -847,6 +847,54 @@
     "send": "Отправить"
   },
   "signup": {
+    "plans": {
+      "loading": "Загрузка предложений…",
+      "week": {
+        "label": "7 дней",
+        "description": "Идеально для начала и тестирования платформы в течение 7 дней."
+      },
+      "month": {
+        "label": "30 дней",
+        "description": "Лучший баланс видимости и цены для быстрого прогресса."
+      },
+      "quarter": {
+        "label": "90 дней",
+        "description": "Идеально для постоянного присутствия и долгосрочных результатов."
+      },
+      "features": {
+        "unlimitedPhotos": "Неограниченные фото",
+        "unlimitedPlayback": "Неограниченное воспроизведение / Play-Pause",
+        "e2eeMessaging": "Сквозное шифрование сообщений (E2EE)",
+        "giftSystem": "Встроенная система подарков",
+        "basicPromotion": "Базовое продвижение",
+        "enhancedPromotion": "Расширенное продвижение",
+        "premiumPromotion": "Премиум продвижение",
+        "advancedStats": "Расширенная статистика",
+        "standardSupport": "Стандартная поддержка",
+        "prioritySupport": "Приоритетная поддержка"
+      },
+      "badges": {
+        "bestseller": "Бестселлер",
+        "premium": "Премиум"
+      },
+      "cta": {
+        "choosePlan": "Я выбираю этот план",
+        "description": "Я выбираю свой план и активирую профиль для подтверждения."
+      },
+      "promo": {
+        "placeholder": "Промокод (напр.: WELCOME10, PROMO50)",
+        "apply": "Применить",
+        "errors": {
+          "enterCode": "Введите код",
+          "invalidCode": "Неверный код",
+          "validationFailed": "Не удалось проверить код"
+        },
+        "success": {
+          "applied": "Код применен",
+          "codeApplied": "Код {code} применен"
+        }
+      }
+    },
     "escort": {
       "page": {
         "loadingAccount": "Создание вашего аккаунта...",

@@ -847,6 +847,54 @@
     "send": "Invia"
   },
   "signup": {
+    "plans": {
+      "loading": "Caricamento offerte…",
+      "week": {
+        "label": "7 giorni",
+        "description": "Ideale per iniziare e testare la piattaforma per 7 giorni."
+      },
+      "month": {
+        "label": "30 giorni",
+        "description": "Il miglior equilibrio visibilità/prezzo per progredire rapidamente."
+      },
+      "quarter": {
+        "label": "90 giorni",
+        "description": "Perfetto per presenza continua e risultati duraturi."
+      },
+      "features": {
+        "unlimitedPhotos": "Foto illimitate",
+        "unlimitedPlayback": "Riproduzione illimitata / Play-Pausa",
+        "e2eeMessaging": "Messaggistica crittografata end-to-end (E2EE)",
+        "giftSystem": "Sistema di regali integrato",
+        "basicPromotion": "Promozione base",
+        "enhancedPromotion": "Promozione avanzata",
+        "premiumPromotion": "Promozione premium",
+        "advancedStats": "Statistiche avanzate",
+        "standardSupport": "Supporto standard",
+        "prioritySupport": "Supporto prioritario"
+      },
+      "badges": {
+        "bestseller": "Più venduto",
+        "premium": "Premium"
+      },
+      "cta": {
+        "choosePlan": "Scelgo questo piano",
+        "description": "Scelgo il mio piano e attivo il mio profilo per convalidare."
+      },
+      "promo": {
+        "placeholder": "Codice promozionale (es: WELCOME10, PROMO50)",
+        "apply": "Applica",
+        "errors": {
+          "enterCode": "Inserisci un codice",
+          "invalidCode": "Codice non valido",
+          "validationFailed": "Impossibile convalidare il codice"
+        },
+        "success": {
+          "applied": "Codice applicato",
+          "codeApplied": "Codice {code} applicato"
+        }
+      }
+    },
     "escort": {
       "page": {
         "loadingAccount": "Creazione del tuo account...",

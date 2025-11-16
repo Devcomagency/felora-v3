@@ -847,6 +847,54 @@
     "send": "Enviar"
   },
   "signup": {
+    "plans": {
+      "loading": "Cargando ofertas…",
+      "week": {
+        "label": "7 días",
+        "description": "Ideal para empezar y probar la plataforma durante 7 días."
+      },
+      "month": {
+        "label": "30 días",
+        "description": "El mejor equilibrio visibilidad/precio para progresar rápidamente."
+      },
+      "quarter": {
+        "label": "90 días",
+        "description": "Perfecto para presencia continua y resultados duraderos."
+      },
+      "features": {
+        "unlimitedPhotos": "Fotos ilimitadas",
+        "unlimitedPlayback": "Reproducción ilimitada / Play-Pausa",
+        "e2eeMessaging": "Mensajería cifrada de extremo a extremo (E2EE)",
+        "giftSystem": "Sistema de regalos integrado",
+        "basicPromotion": "Promoción básica",
+        "enhancedPromotion": "Promoción mejorada",
+        "premiumPromotion": "Promoción premium",
+        "advancedStats": "Estadísticas avanzadas",
+        "standardSupport": "Soporte estándar",
+        "prioritySupport": "Soporte prioritario"
+      },
+      "badges": {
+        "bestseller": "Más vendido",
+        "premium": "Premium"
+      },
+      "cta": {
+        "choosePlan": "Elijo este plan",
+        "description": "Elijo mi plan y activo mi perfil para validar."
+      },
+      "promo": {
+        "placeholder": "Código promocional (ej: WELCOME10, PROMO50)",
+        "apply": "Aplicar",
+        "errors": {
+          "enterCode": "Introduce un código",
+          "invalidCode": "Código inválido",
+          "validationFailed": "No se pudo validar el código"
+        },
+        "success": {
+          "applied": "Código aplicado",
+          "codeApplied": "Código {code} aplicado"
+        }
+      }
+    },
     "escort": {
       "page": {
         "loadingAccount": "Creando tu cuenta...",

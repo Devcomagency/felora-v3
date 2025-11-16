@@ -847,6 +847,54 @@
     "send": "Senden"
   },
   "signup": {
+    "plans": {
+      "loading": "Angebote werden geladen…",
+      "week": {
+        "label": "7 Tage",
+        "description": "Ideal zum Starten und Testen der Plattform für 7 Tage."
+      },
+      "month": {
+        "label": "30 Tage",
+        "description": "Das beste Sichtbarkeits-/Preisverhältnis für schnellen Fortschritt."
+      },
+      "quarter": {
+        "label": "90 Tage",
+        "description": "Perfekt für kontinuierliche Präsenz und dauerhafte Ergebnisse."
+      },
+      "features": {
+        "unlimitedPhotos": "Unbegrenzte Fotos",
+        "unlimitedPlayback": "Unbegrenzte Wiedergabe / Play-Pause",
+        "e2eeMessaging": "Ende-zu-Ende-verschlüsselte Nachrichten (E2EE)",
+        "giftSystem": "Integriertes Geschenksystem",
+        "basicPromotion": "Basis-Promotion",
+        "enhancedPromotion": "Erweiterte Promotion",
+        "premiumPromotion": "Premium-Promotion",
+        "advancedStats": "Erweiterte Statistiken",
+        "standardSupport": "Standard-Support",
+        "prioritySupport": "Prioritäts-Support"
+      },
+      "badges": {
+        "bestseller": "Bestseller",
+        "premium": "Premium"
+      },
+      "cta": {
+        "choosePlan": "Ich wähle diesen Plan",
+        "description": "Ich wähle meinen Plan und aktiviere mein Profil zur Bestätigung."
+      },
+      "promo": {
+        "placeholder": "Promo-Code (z.B.: WELCOME10, PROMO50)",
+        "apply": "Anwenden",
+        "errors": {
+          "enterCode": "Code eingeben",
+          "invalidCode": "Ungültiger Code",
+          "validationFailed": "Code konnte nicht validiert werden"
+        },
+        "success": {
+          "applied": "Code angewendet",
+          "codeApplied": "Code {code} angewendet"
+        }
+      }
+    },
     "escort": {
       "page": {
         "loadingAccount": "Ihr Konto wird erstellt...",
