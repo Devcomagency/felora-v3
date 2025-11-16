@@ -81,7 +81,41 @@
   "navigation": {"home": "Ballina", "search": "Kërkim", "map": "Harta", "messages": "Mesazhet", "profile": "Profili", "settings": "Cilësimet", "logout": "Dil", "login": "Hyr", "register": "Regjistrohu", "dashboard": "Paneli", "favorites": "Të preferuarat"},
   "auth": {
     "login": "Hyr",
-    "register": "Regjistrohu",
+    "register": {
+      "title": "Krijo një llogari",
+      "subtitle": "Zgjidhni llojin e llogarisë që ju përshtatet",
+      "continue": "Vazhdo",
+      "types": {
+        "client": {
+          "title": "Klient",
+          "subtitle": "Zbulo dhe Takohuni",
+          "description": "Qasje në profile premium dhe veçori ekskluzive",
+          "benefit1": "Shfletim i pakufizuar",
+          "benefit2": "Mesazhe private",
+          "benefit3": "Të preferuara dhe njoftime"
+        },
+        "escort": {
+          "title": "Shoqëruese e Pavarur",
+          "subtitle": "Zhvilloni biznesin tuaj",
+          "description": "Krijoni profilin tuaj profesional dhe menaxhoni takimet tuaja",
+          "benefit1": "Profil i personalizuar",
+          "benefit2": "Menaxhim rezervimesh",
+          "benefit3": "Pagesa të sigurta"
+        },
+        "salon": {
+          "title": "Vendbanim",
+          "subtitle": "Menaxhoni ekipin tuaj",
+          "description": "Krijoni hapësirën tuaj profesionale me shumë profile",
+          "benefit1": "Menaxhimi i ekipit",
+          "benefit2": "Planifikim i centralizuar",
+          "benefit3": "Analitikë të avancuara"
+        }
+      },
+      "footer": {
+        "hasAccount": "Keni tashmë një llogari?",
+        "login": "Hyr"
+      }
+    },
     "email": "Email",
     "password": "Fjalëkalimi",
     "confirmPassword": "Konfirmo fjalëkalimin",

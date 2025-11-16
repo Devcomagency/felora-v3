@@ -159,7 +159,41 @@
   },
   "auth": {
     "login": "Accedi",
-    "register": "Registrati",
+    "register": {
+      "title": "Crea un account",
+      "subtitle": "Scegli il tipo di account che fa per te",
+      "continue": "Continua",
+      "types": {
+        "client": {
+          "title": "Cliente",
+          "subtitle": "Scopri e Incontra",
+          "description": "Accesso ai profili premium e funzionalità esclusive",
+          "benefit1": "Navigazione illimitata",
+          "benefit2": "Messaggistica privata",
+          "benefit3": "Preferiti e avvisi"
+        },
+        "escort": {
+          "title": "Escort Indipendente",
+          "subtitle": "Sviluppa la tua attività",
+          "description": "Crea il tuo profilo professionale e gestisci i tuoi appuntamenti",
+          "benefit1": "Profilo personalizzato",
+          "benefit2": "Gestione prenotazioni",
+          "benefit3": "Pagamenti sicuri"
+        },
+        "salon": {
+          "title": "Stabilimento",
+          "subtitle": "Gestisci il tuo team",
+          "description": "Crea il tuo spazio professionale multi-profilo",
+          "benefit1": "Gestione del team",
+          "benefit2": "Pianificazione centralizzata",
+          "benefit3": "Analytics avanzate"
+        }
+      },
+      "footer": {
+        "hasAccount": "Hai già un account?",
+        "login": "Accedi"
+      }
+    },
     "email": "Email",
     "password": "Password",
     "confirmPassword": "Conferma password",

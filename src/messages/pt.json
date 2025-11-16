@@ -81,7 +81,41 @@
   "navigation": {"home": "Início", "search": "Pesquisa", "map": "Mapa", "messages": "Mensagens", "profile": "Perfil", "settings": "Configurações", "logout": "Sair", "login": "Entrar", "register": "Registrar", "dashboard": "Painel", "favorites": "Favoritos"},
   "auth": {
     "login": "Entrar",
-    "register": "Registrar",
+    "register": {
+      "title": "Criar uma conta",
+      "subtitle": "Escolha o tipo de conta que lhe convém",
+      "continue": "Continuar",
+      "types": {
+        "client": {
+          "title": "Cliente",
+          "subtitle": "Descobrir e Conhecer",
+          "description": "Acesso a perfis premium e funcionalidades exclusivas",
+          "benefit1": "Navegação ilimitada",
+          "benefit2": "Mensagens privadas",
+          "benefit3": "Favoritos e alertas"
+        },
+        "escort": {
+          "title": "Escort Independente",
+          "subtitle": "Desenvolva o seu negócio",
+          "description": "Crie o seu perfil profissional e gerencie os seus compromissos",
+          "benefit1": "Perfil personalizado",
+          "benefit2": "Gestão de reservas",
+          "benefit3": "Pagamentos seguros"
+        },
+        "salon": {
+          "title": "Estabelecimento",
+          "subtitle": "Gerencie a sua equipe",
+          "description": "Crie o seu espaço profissional multi-perfil",
+          "benefit1": "Gestão de equipe",
+          "benefit2": "Planejamento centralizado",
+          "benefit3": "Análises avançadas"
+        }
+      },
+      "footer": {
+        "hasAccount": "Já tem uma conta?",
+        "login": "Entrar"
+      }
+    },
     "email": "E-mail",
     "password": "Senha",
     "confirmPassword": "Confirmar senha",

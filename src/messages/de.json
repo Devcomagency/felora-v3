@@ -159,7 +159,41 @@
   },
   "auth": {
     "login": "Anmelden",
-    "register": "Registrieren",
+    "register": {
+      "title": "Konto erstellen",
+      "subtitle": "Wählen Sie den Kontotyp, der zu Ihnen passt",
+      "continue": "Weiter",
+      "types": {
+        "client": {
+          "title": "Kunde",
+          "subtitle": "Entdecken & Treffen",
+          "description": "Zugang zu Premium-Profilen und exklusiven Funktionen",
+          "benefit1": "Unbegrenztes Stöbern",
+          "benefit2": "Private Nachrichten",
+          "benefit3": "Favoriten & Benachrichtigungen"
+        },
+        "escort": {
+          "title": "Unabhängige Escort",
+          "subtitle": "Entwickeln Sie Ihr Geschäft",
+          "description": "Erstellen Sie Ihr professionelles Profil und verwalten Sie Ihre Termine",
+          "benefit1": "Personalisiertes Profil",
+          "benefit2": "Buchungsverwaltung",
+          "benefit3": "Sichere Zahlungen"
+        },
+        "salon": {
+          "title": "Einrichtung",
+          "subtitle": "Verwalten Sie Ihr Team",
+          "description": "Erstellen Sie Ihren professionellen Mehrprofilbereich",
+          "benefit1": "Teamverwaltung",
+          "benefit2": "Zentralisierte Planung",
+          "benefit3": "Erweiterte Analysen"
+        }
+      },
+      "footer": {
+        "hasAccount": "Haben Sie bereits ein Konto?",
+        "login": "Anmelden"
+      }
+    },
     "email": "E-Mail",
     "password": "Passwort",
     "confirmPassword": "Passwort bestätigen",
