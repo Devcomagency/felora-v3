@@ -527,9 +527,15 @@
   },
   "categories": {
     "escort": "Escort",
+    "ESCORT": "Escort",
     "masseuse": "Erotische Masseurin",
+    "MASSEUSE": "Erotische Masseurin",
     "dominatrice": "BDSM Domina",
-    "transsexuel": "Transsexuell"
+    "DOMINATRICE": "BDSM Domina",
+    "transsexuel": "Transsexuell",
+    "TRANSSEXUELLE": "Transsexuell",
+    "autre": "Andere",
+    "AUTRE": "Andere"
   },
   "establishments": {
     "club": "Club",

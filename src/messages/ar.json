@@ -447,7 +447,18 @@
     "reset": "إعادة تعيين",
     "search": "بحث"
   },
-  "categories": {"escort": "مرافقة", "masseuse": "مدلكة مثيرة", "dominatrice": "دومينا BDSM", "transsexuel": "متحول جنسياً"},
+  "categories": {
+    "escort": "مرافقة",
+    "ESCORT": "مرافقة",
+    "masseuse": "مدلكة مثيرة",
+    "MASSEUSE": "مدلكة مثيرة",
+    "dominatrice": "دومينا BDSM",
+    "DOMINATRICE": "دومينا BDSM",
+    "transsexuel": "متحول جنسياً",
+    "TRANSSEXUELLE": "متحول جنسياً",
+    "autre": "أخرى",
+    "AUTRE": "أخرى"
+  },
   "establishments": {"club": "نادي", "salon": "صالون", "studio": "استوديو", "private": "خاص", "type": "نوع المؤسسة"},
   "errors": {"generic": "حدث خطأ", "network": "خطأ في الاتصال", "notFound": "الصفحة غير موجودة", "unauthorized": "غير مصرح", "forbidden": "الوصول محظور", "tryAgain": "يرجى المحاولة مرة أخرى"},
   "home": {"welcome": "مرحباً بك في فيلورا", "discover": "اكتشف", "loadMore": "تحميل المزيد", "noContent": "لا يوجد محتوى متاح"},

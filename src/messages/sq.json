@@ -447,7 +447,18 @@
     "reset": "Rivendos",
     "search": "Kërko"
   },
-  "categories": {"escort": "Shoqëruese", "masseuse": "Masazh erotik", "dominatrice": "Dominatrix BDSM", "transsexuel": "Transeksual"},
+  "categories": {
+    "escort": "Shoqëruese",
+    "ESCORT": "Shoqëruese",
+    "masseuse": "Masazh erotik",
+    "MASSEUSE": "Masazh erotik",
+    "dominatrice": "Dominatrix BDSM",
+    "DOMINATRICE": "Dominatrix BDSM",
+    "transsexuel": "Transeksual",
+    "TRANSSEXUELLE": "Transeksual",
+    "autre": "Tjetër",
+    "AUTRE": "Tjetër"
+  },
   "establishments": {"club": "Klub", "salon": "Salon", "studio": "Studio", "private": "Privat", "type": "Lloji i vendndodhjes"},
   "errors": {"generic": "Ndodhi një gabim", "network": "Gabim në lidhje", "notFound": "Faqja nuk u gjet", "unauthorized": "I paautorizuar", "forbidden": "Qasja e ndaluar", "tryAgain": "Ju lutemi provoni përsëri"},
   "home": {"welcome": "Mirë se vini në Felora", "discover": "Zbulo", "loadMore": "Ngarko më shumë", "noContent": "Nuk ka përmbajtje të disponueshme"},

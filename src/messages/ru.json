@@ -527,9 +527,15 @@
   },
   "categories": {
     "escort": "Эскорт",
+    "ESCORT": "Эскорт",
     "masseuse": "Эротический массаж",
+    "MASSEUSE": "Эротический массаж",
     "dominatrice": "БДСМ Доминатрикс",
-    "transsexuel": "Транссексуал"
+    "DOMINATRICE": "БДСМ Доминатрикс",
+    "transsexuel": "Транссексуал",
+    "TRANSSEXUELLE": "Транссексуал",
+    "autre": "Другое",
+    "AUTRE": "Другое"
   },
   "establishments": {
     "club": "Клуб",

@@ -447,7 +447,18 @@
     "reset": "Redefinir",
     "search": "Pesquisar"
   },
-  "categories": {"escort": "Acompanhante", "masseuse": "Massagista erótica", "dominatrice": "Dominatrix BDSM", "transsexuel": "Transexual"},
+  "categories": {
+    "escort": "Acompanhante",
+    "ESCORT": "Acompanhante",
+    "masseuse": "Massagista erótica",
+    "MASSEUSE": "Massagista erótica",
+    "dominatrice": "Dominatrix BDSM",
+    "DOMINATRICE": "Dominatrix BDSM",
+    "transsexuel": "Transexual",
+    "TRANSSEXUELLE": "Transexual",
+    "autre": "Outro",
+    "AUTRE": "Outro"
+  },
   "establishments": {"club": "Clube", "salon": "Salão", "studio": "Estúdio", "private": "Privado", "type": "Tipo de estabelecimento"},
   "errors": {"generic": "Ocorreu um erro", "network": "Erro de conexão", "notFound": "Página não encontrada", "unauthorized": "Não autorizado", "forbidden": "Acesso proibido", "tryAgain": "Por favor, tente novamente"},
   "home": {"welcome": "Bem-vindo ao Felora", "discover": "Descobrir", "loadMore": "Carregar mais", "noContent": "Nenhum conteúdo disponível"},
