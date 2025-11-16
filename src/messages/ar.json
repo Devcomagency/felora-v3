@@ -1419,5 +1419,37 @@
         "saving": "جاري الحفظ…"
       }
     }
+  },
+  "upload": {
+    "required": "مطلوب",
+    "viewExample": "عرض المثال",
+    "example": "مثال",
+    "errors": {
+      "unsupportedType": "نوع ملف غير مدعوم",
+      "fileTooLarge": "الملف كبير جداً. الحد الأقصى {maxMb} ميجابايت{autoCompress}",
+      "willBeCompressed": " (سيتم الضغط تلقائياً)",
+      "stillTooLarge": "الملف لا يزال كبيراً بعد الضغط. الحد الأقصى {maxMb} ميجابايت لـ {type}",
+      "uploadFailed": "فشل التحميل"
+    },
+    "types": {
+      "videos": "مقاطع الفيديو",
+      "images": "الصور"
+    },
+    "status": {
+      "compressing": "جاري ضغط الفيديو...",
+      "compressingVideo": "جاري ضغط الفيديو...",
+      "uploaded": "تم الرفع",
+      "uploading": "جاري الرفع...",
+      "uploadingInProgress": "جاري الرفع..."
+    },
+    "dropzone": {
+      "dragDrop": "اسحب وأفلت أو انقر للتحديد",
+      "videoDescription": "فيديو (ضغط تلقائي إذا >4 ميجابايت)",
+      "imageDescription": "صورة (الحد الأقصى {maxMb} ميجابايت)"
+    },
+    "help": {
+      "requirements": "المتطلبات",
+      "tips": "نصائح"
+    }
   }
 }

@@ -1419,5 +1419,37 @@
         "saving": "Сохранение…"
       }
     }
+  },
+  "upload": {
+    "required": "Обязательно",
+    "viewExample": "Посмотреть пример",
+    "example": "Пример",
+    "errors": {
+      "unsupportedType": "Неподдерживаемый тип файла",
+      "fileTooLarge": "Файл слишком большой. Макс {maxMb}МБ{autoCompress}",
+      "willBeCompressed": " (будет автоматически сжат)",
+      "stillTooLarge": "Файл все еще слишком большой после сжатия. Макс {maxMb}МБ для {type}",
+      "uploadFailed": "Ошибка загрузки"
+    },
+    "types": {
+      "videos": "видео",
+      "images": "изображения"
+    },
+    "status": {
+      "compressing": "Сжатие видео...",
+      "compressingVideo": "Сжатие видео...",
+      "uploaded": "Загружено",
+      "uploading": "Загрузка...",
+      "uploadingInProgress": "Загрузка в процессе..."
+    },
+    "dropzone": {
+      "dragDrop": "Перетащите или нажмите для выбора",
+      "videoDescription": "Видео (автоматическое сжатие если >4МБ)",
+      "imageDescription": "Изображение (макс {maxMb}МБ)"
+    },
+    "help": {
+      "requirements": "Требования",
+      "tips": "Советы"
+    }
   }
 }

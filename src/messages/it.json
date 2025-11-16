@@ -1419,5 +1419,37 @@
         "saving": "Salvataggio…"
       }
     }
+  },
+  "upload": {
+    "required": "Richiesto",
+    "viewExample": "Vedi esempio",
+    "example": "Esempio",
+    "errors": {
+      "unsupportedType": "Tipo di file non supportato",
+      "fileTooLarge": "File troppo grande. Max {maxMb}MB{autoCompress}",
+      "willBeCompressed": " (sarà compresso automaticamente)",
+      "stillTooLarge": "File ancora troppo grande dopo la compressione. Max {maxMb}MB per {type}",
+      "uploadFailed": "Caricamento fallito"
+    },
+    "types": {
+      "videos": "video",
+      "images": "immagini"
+    },
+    "status": {
+      "compressing": "Compressione video in corso...",
+      "compressingVideo": "Compressione video...",
+      "uploaded": "Caricato",
+      "uploading": "Caricamento...",
+      "uploadingInProgress": "Caricamento in corso..."
+    },
+    "dropzone": {
+      "dragDrop": "Trascina e rilascia o fai clic per selezionare",
+      "videoDescription": "Video (compressione automatica se >4MB)",
+      "imageDescription": "Immagine (max {maxMb}MB)"
+    },
+    "help": {
+      "requirements": "Requisiti",
+      "tips": "Suggerimenti"
+    }
   }
 }

@@ -1419,5 +1419,37 @@
         "saving": "Duke ruajtur…"
       }
     }
+  },
+  "upload": {
+    "required": "E detyrueshme",
+    "viewExample": "Shiko shembullin",
+    "example": "Shembull",
+    "errors": {
+      "unsupportedType": "Lloj skedari i pambështetur",
+      "fileTooLarge": "Skedari shumë i madh. Maks {maxMb}MB{autoCompress}",
+      "willBeCompressed": " (do të ngjishet automatikisht)",
+      "stillTooLarge": "Skedari ende shumë i madh pas ngjeshjes. Maks {maxMb}MB për {type}",
+      "uploadFailed": "Ngarkimi dështoi"
+    },
+    "types": {
+      "videos": "video",
+      "images": "imazhe"
+    },
+    "status": {
+      "compressing": "Po ngjesh videon...",
+      "compressingVideo": "Po ngjesh videon...",
+      "uploaded": "U ngarkua",
+      "uploading": "Po ngarkon...",
+      "uploadingInProgress": "Ngarkimi në progres..."
+    },
+    "dropzone": {
+      "dragDrop": "Zvarrit dhe lësho ose kliko për të zgjedhur",
+      "videoDescription": "Video (ngjeshje automatike nëse >4MB)",
+      "imageDescription": "Imazh (maks {maxMb}MB)"
+    },
+    "help": {
+      "requirements": "Kërkesat",
+      "tips": "Këshilla"
+    }
   }
 }

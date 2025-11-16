@@ -1,6 +1,7 @@
 "use client"
 import { useCallback, useId, useState } from 'react'
 import { CheckCircle, AlertCircle, Image, Video, FileText, HelpCircle, X, Check, BadgeCheck } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 interface UploadDropProps {
   label: string
@@ -14,21 +15,18 @@ interface UploadDropProps {
   isRequired?: boolean
 }
 
-export default function UploadDrop({ 
-  label, 
-  accept, 
-  maxMb = 3, // Compatible Vercel (3MB max) 
-  onUploaded, 
+export default function UploadDrop({
+  label,
+  accept,
+  maxMb = 3, // Compatible Vercel (3MB max)
+  onUploaded,
   onUploadedMeta,
   exampleImage,
   requirements = [],
-  tips = [
-    'Compressez vos fichiers avant upload (max 3MB)',
-    'Utilisez des outils comme TinyPNG ou HandBrake',
-    'Pour les vidéos: réduisez la résolution à 720p max'
-  ],
+  tips = [],
   isRequired = false
 }: UploadDropProps){
+  const t = useTranslations('upload')
   const [error, setError] = useState<string|null>(null)
   const [busy, setBusy] = useState(false)
   const [uploadedUrl, setUploadedUrl] = useState<string|null>(null)
@@ -157,7 +155,7 @@ export default function UploadDrop({
     setError(null)
     if (!file) return
     if (accept && !matchesAccept(file, accept)) {
-      setError('Type de fichier non supporté'); return
+      setError(t('errors.unsupportedType')); return
     }
     
     const isVideo = file.type.startsWith('video/')
@@ -165,9 +163,9 @@ export default function UploadDrop({
     // Pour les vidéos, on permet jusqu'à 200MB avant compression
     // Pour les images, on garde la limite stricte
     const initialMaxMb = isVideo ? 200 : maxMb
-    if (file.size > initialMaxMb * 1024 * 1024) { 
-      setError(`Fichier trop volumineux. Max ${initialMaxMb}MB${isVideo ? ' (sera comprimé automatiquement)' : ''}`); 
-      return 
+    if (file.size > initialMaxMb * 1024 * 1024) {
+      setError(t('errors.fileTooLarge', { maxMb: initialMaxMb, autoCompress: isVideo ? t('errors.willBeCompressed') : '' }));
+      return
     }
     
     // Create immediate preview from file
@@ -179,7 +177,7 @@ export default function UploadDrop({
     // Compresser la vidéo si elle est trop grosse (limite Vercel: 4MB)
     if (isVideo && file.size > 4 * 1024 * 1024) {
       setCompressing(true)
-      setError('Compression de la vidéo en cours...')
+      setError(t('status.compressing'))
       try {
         finalFile = await compressVideo(file)
         setError(null)
@@ -194,7 +192,7 @@ export default function UploadDrop({
     // Vérification finale de taille
     const videoMaxMb = isVideo ? 25 : maxMb
     if (finalFile.size > videoMaxMb * 1024 * 1024) {
-      setError(`Fichier encore trop volumineux après compression. Max ${videoMaxMb}MB pour ${isVideo ? 'vidéos' : 'images'}`)
+      setError(t('errors.stillTooLarge', { maxMb: videoMaxMb, type: isVideo ? t('types.videos') : t('types.images') }))
       if (fileUrl) URL.revokeObjectURL(fileUrl)
       setPreviewUrl(null)
       return
@@ -221,14 +219,14 @@ export default function UploadDrop({
       setUploadedUrl(d.url)
       onUploaded(d.url)
       try { onUploadedMeta?.({ url: d.url, key: d.key }) } catch {}
-    } catch (e:any) { 
-      setError(e?.message || 'Erreur upload')
+    } catch (e:any) {
+      setError(e?.message || t('errors.uploadFailed'))
       console.error('Upload error:', e)
       // Clean up preview on error
       if (fileUrl) URL.revokeObjectURL(fileUrl)
       setPreviewUrl(null)
     } finally { setBusy(false) }
-  }, [accept, maxMb, onUploaded])
+  }, [accept, maxMb, onUploaded, t])
 
   const onDrop = useCallback((e: React.DragEvent<HTMLLabelElement>) => {
     e.preventDefault()
@@ -246,7 +244,7 @@ export default function UploadDrop({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <label className="text-sm text-white/90 font-medium">{label}</label>
-          {isRequired && <span className="text-xs bg-red-500/20 text-red-400 px-2 py-1 rounded">Requis</span>}
+          {isRequired && <span className="text-xs bg-red-500/20 text-red-400 px-2 py-1 rounded">{t('required')}</span>}
           {exampleImage && (
             <button
               onClick={(e) => {
@@ -254,7 +252,7 @@ export default function UploadDrop({
                 setShowExample(!showExample)
               }}
               className="text-white/60 hover:text-white/80 transition-colors"
-              title="Voir l'exemple"
+              title={t('viewExample')}
             >
               <HelpCircle size={14} />
             </button>
@@ -292,7 +290,7 @@ export default function UploadDrop({
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
               <div className="absolute bottom-2 left-2 text-white text-xs font-medium">
-                Exemple
+                {t('example')}
               </div>
               <button
                 onClick={(e) => {
@@ -319,12 +317,12 @@ export default function UploadDrop({
               {uploadedUrl ? (
                 <>
                   <Check size={12} className="text-green-400" />
-                  Uploadé
+                  {t('status.uploaded')}
                 </>
               ) : (
                 <>
                   <div className="w-3 h-3 border border-white/30 border-t-white rounded-full animate-spin" />
-                  Upload...
+                  {t('status.uploading')}
                 </>
               )}
             </div>
@@ -342,12 +340,12 @@ export default function UploadDrop({
             
             <div className="space-y-1">
               <p className="text-white/90 font-medium text-sm">
-                {compressing ? 'Compression vidéo...' : 
-                 busy ? 'Upload en cours...' : 
-                 'Glissez-déposez ou cliquez pour sélectionner'}
+                {compressing ? t('status.compressingVideo') :
+                 busy ? t('status.uploadingInProgress') :
+                 t('dropzone.dragDrop')}
               </p>
         <p className="text-white/60 text-xs">
-          {isVideo ? `Vidéo (compression automatique si >4MB)` : `Image (max ${maxMb}MB)`}
+          {isVideo ? t('dropzone.videoDescription') : t('dropzone.imageDescription', { maxMb })}
         </p>
             </div>
           </div>
@@ -359,7 +357,7 @@ export default function UploadDrop({
         <div className="p-3 bg-black/20 rounded-lg border border-white/5 text-xs space-y-2">
           {requirements.length > 0 && (
             <div>
-              <h5 className="text-white/80 font-medium mb-1">Exigences :</h5>
+              <h5 className="text-white/80 font-medium mb-1">{t('help.requirements')}:</h5>
               <ul className="space-y-1">
                 {requirements.map((req, index) => (
                   <li key={index} className="flex items-start gap-2 text-white/60">
@@ -370,10 +368,10 @@ export default function UploadDrop({
               </ul>
             </div>
           )}
-          
+
           {tips.length > 0 && (
             <div>
-              <h5 className="text-white/80 font-medium mb-1">💡 Conseils :</h5>
+              <h5 className="text-white/80 font-medium mb-1">💡 {t('help.tips')}:</h5>
               <ul className="space-y-1">
                 {tips.map((tip, index) => (
                   <li key={index} className="flex items-start gap-2 text-white/60">
