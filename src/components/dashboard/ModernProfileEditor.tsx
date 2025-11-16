@@ -221,7 +221,7 @@ function MyClubsTab() {
   }
 
   const handleRemoveClub = async (linkId: string, clubName: string) => {
-    if (!confirm(`Voulez-vous vraiment quitter ${clubName} ?`)) return
+    if (!confirm(t('clubs.myClubs.leaveConfirm', { clubName }))) return
 
     try {
       const res = await fetch(`/api/club-escort-links/${linkId}`, {
@@ -252,7 +252,7 @@ function MyClubsTab() {
               : 'bg-gray-700/50 text-gray-400 hover:text-white'
           }`}
         >
-          Invitations ({pendingInvitations.length})
+          {t('clubs.tabs.invitations')} ({pendingInvitations.length})
         </button>
         <button
           onClick={() => setSubTab('clubs')}
@@ -262,7 +262,7 @@ function MyClubsTab() {
               : 'bg-gray-700/50 text-gray-400 hover:text-white'
           }`}
         >
-          Mes clubs ({clubs.length})
+          {t('clubs.tabs.myClubs')} ({clubs.length})
         </button>
       </div>
 
@@ -302,7 +302,7 @@ function MyClubsTab() {
                         {inv.club?.name || 'Club'}
                       </div>
                       <div className="text-sm text-gray-400">
-                        Invitation reçue le {new Date(inv.sentAt).toLocaleDateString('fr-FR')}
+                        {t('clubs.invitations.received')} {new Date(inv.sentAt).toLocaleDateString('fr-FR')}
                       </div>
                       {inv.message && (
                         <div className="text-sm text-gray-300 mt-1 italic line-clamp-2">
@@ -310,7 +310,7 @@ function MyClubsTab() {
                         </div>
                       )}
                       <div className="text-xs text-gray-500 mt-1">
-                        Expire le {new Date(inv.expiresAt).toLocaleDateString('fr-FR')}
+                        {t('clubs.invitations.expires')} {new Date(inv.expiresAt).toLocaleDateString('fr-FR')}
                       </div>
                     </div>
 
@@ -321,14 +321,14 @@ function MyClubsTab() {
                         className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors text-sm font-medium"
                       >
                         <CheckCircle2 size={18} />
-                        Accepter
+                        {t('clubs.invitations.accept')}
                       </button>
                       <button
                         onClick={() => handleInvitation(inv.id, 'decline')}
                         className="flex items-center gap-2 px-4 py-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors text-sm font-medium"
                       >
                         <X size={18} />
-                        Refuser
+                        {t('clubs.invitations.decline')}
                       </button>
                     </div>
                   </div>
@@ -336,9 +336,9 @@ function MyClubsTab() {
               ) : (
                 <div className="text-center text-gray-400 py-12">
                   <Clock size={48} className="mx-auto mb-4 opacity-50" />
-                  <p className="text-lg">Aucune invitation en attente</p>
+                  <p className="text-lg">{t('clubs.invitations.noInvitations')}</p>
                   <p className="text-sm mt-2">
-                    Les clubs peuvent vous inviter à apparaître sur leur profil
+                    {t('clubs.invitations.noInvitationsDescription')}
                   </p>
                 </div>
               )}
@@ -346,7 +346,7 @@ function MyClubsTab() {
               {/* Historique des invitations traitées */}
               {processedInvitations.length > 0 && (
                 <div className="mt-8">
-                  <h3 className="text-white font-semibold mb-3">Historique</h3>
+                  <h3 className="text-white font-semibold mb-3">{t('clubs.invitations.history')}</h3>
                   <div className="space-y-2">
                     {processedInvitations.map((inv) => (
                       <div
@@ -378,13 +378,13 @@ function MyClubsTab() {
 
                         <div>
                           {inv.status === 'ACCEPTED' && (
-                            <span className="text-green-400 text-sm">✓ Acceptée</span>
+                            <span className="text-green-400 text-sm">{t('clubs.invitations.accepted')}</span>
                           )}
                           {inv.status === 'DECLINED' && (
-                            <span className="text-red-400 text-sm">✗ Refusée</span>
+                            <span className="text-red-400 text-sm">{t('clubs.invitations.declined')}</span>
                           )}
                           {inv.status === 'EXPIRED' && (
-                            <span className="text-gray-400 text-sm">⏱ Expirée</span>
+                            <span className="text-gray-400 text-sm">{t('clubs.invitations.expired')}</span>
                           )}
                         </div>
                       </div>
@@ -432,12 +432,12 @@ function MyClubsTab() {
                           className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-purple-500/20 text-purple-300 rounded-lg hover:bg-purple-500/30 transition-colors text-sm font-medium"
                         >
                           <ExternalLink size={14} />
-                          Voir profil
+                          {t('clubs.myClubs.viewProfile')}
                         </a>
                         <button
                           onClick={() => handleRemoveClub(club.linkId, club.name)}
                           className="px-3 py-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors"
-                          title="Quitter le club"
+                          title={t('clubs.myClubs.leaveClub')}
                         >
                           <X size={16} />
                         </button>
@@ -448,9 +448,9 @@ function MyClubsTab() {
               ) : (
                 <div className="col-span-full text-center text-gray-400 py-12">
                   <BadgeCheck size={48} className="mx-auto mb-4 opacity-50" />
-                  <p className="text-lg">Vous n'êtes affiliée à aucun club</p>
+                  <p className="text-lg">{t('clubs.myClubs.noClubs')}</p>
                   <p className="text-sm mt-2">
-                    Acceptez une invitation pour apparaître sur le profil d'un club
+                    {t('clubs.myClubs.noClubsDescription')}
                   </p>
                 </div>
               )}
@@ -984,24 +984,24 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
             </div>
             <div className="space-y-2">
               <label className="inline-flex items-center gap-2 text-sm text-white/90">
-                <input type="checkbox" checked={pauseEnabled} onChange={(e)=> setPauseEnabled(e.target.checked)} /> Mettre mon compte en pause
+                <input type="checkbox" checked={pauseEnabled} onChange={(e)=> setPauseEnabled(e.target.checked)} /> {t('agenda.pause')}
               </label>
               {pauseEnabled && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs text-white/70 mb-1">Début de pause</label>
+                    <label className="block text-xs text-white/70 mb-1">{t('agenda.pauseStart')}</label>
                     <input type="datetime-local" value={pauseStart} onChange={(e)=> setPauseStart(e.target.value)} className="w-full px-2 py-2 rounded bg-white/5 border border-white/10 text-white text-sm"/>
                   </div>
                   <div>
-                    <label className="block text-xs text-white/70 mb-1">Retour</label>
+                    <label className="block text-xs text-white/70 mb-1">{t('agenda.pauseReturn')}</label>
                     <input type="datetime-local" value={pauseEnd} onChange={(e)=> setPauseEnd(e.target.value)} className="w-full px-2 py-2 rounded bg-white/5 border border-white/10 text-white text-sm"/>
                   </div>
                 </div>
               )}
             </div>
             <div className="space-y-2">
-              <div className="text-sm text-white/90 font-medium">Jours d'absence exceptionnels</div>
-              <button onClick={()=> setAbsences(prev => [...prev, { id: Math.random().toString(36).slice(2), start: new Date().toISOString().slice(0,10), end: new Date().toISOString().slice(0,10) }])} className="px-3 py-2 rounded-lg border w-fit bg-white/5 hover:bg-white/10 text-white border-white/10">Ajouter une absence</button>
+              <div className="text-sm text-white/90 font-medium">{t('agenda.absences')}</div>
+              <button onClick={()=> setAbsences(prev => [...prev, { id: Math.random().toString(36).slice(2), start: new Date().toISOString().slice(0,10), end: new Date().toISOString().slice(0,10) }])} className="px-3 py-2 rounded-lg border w-fit bg-white/5 hover:bg-white/10 text-white border-white/10">{t('agenda.addAbsence')}</button>
               <div className="space-y-2">
                 {absences.map((a) => (
                   <div key={a.id} className="flex items-center gap-2">
@@ -1583,7 +1583,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
         <div className="flex items-center justify-between gap-4 mb-6">
           <div className="flex-1">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-semibold text-white/90">Complétude du profil</h3>
+              <h3 className="text-sm font-semibold text-white/90">{t('completion.title')}</h3>
               <span className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">{completionPct}%</span>
             </div>
             <div className="h-3 bg-black/30 rounded-full overflow-hidden border border-white/5">
@@ -1599,17 +1599,17 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
             {kycStatus === 'APPROVED' ? (
               <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500/20 border border-emerald-500/30">
                 <BadgeCheck className="text-emerald-400" size={20} />
-                <span className="text-sm font-medium text-emerald-300">Vérifié</span>
+                <span className="text-sm font-medium text-emerald-300">{t('completion.verified')}</span>
               </div>
             ) : kycStatus === 'PENDING' ? (
               <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-yellow-500/20 border border-yellow-500/30">
                 <Loader2 className="text-yellow-400 animate-spin" size={20} />
-                <span className="text-sm font-medium text-yellow-300">En vérification</span>
+                <span className="text-sm font-medium text-yellow-300">{t('completion.verifying')}</span>
               </div>
             ) : (
               <a href="/profile-test-signup/escort?step=3" className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all">
                 <ShieldCheck className="text-white/60" size={20} />
-                <span className="text-sm font-medium text-white/80">Certifier</span>
+                <span className="text-sm font-medium text-white/80">{t('completion.certify')}</span>
               </a>
             )}
           </div>
@@ -1620,7 +1620,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
           <div className="pt-4 border-t border-white/5">
             <div className="flex items-center gap-2 mb-3">
               <AlertTriangle size={16} className="text-orange-400" />
-              <h4 className="text-sm font-semibold text-white/90">Actions requises ({requiredChecks.filter(c => !c.ok).length})</h4>
+              <h4 className="text-sm font-semibold text-white/90">{t('completion.requiredActions')} ({requiredChecks.filter(c => !c.ok).length})</h4>
             </div>
             <div className="flex flex-wrap gap-2">
               {requiredChecks.map(c => (
@@ -1689,13 +1689,13 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
         {activeTab === 'basic' && (
           <div>
             <div className="mb-4">
-              <h3 className="text-xl font-bold text-white">Photo de profil</h3>
-              <div className="text-xs text-orange-300 mt-1">⚠️ 1 photo de profil obligatoire</div>
+              <h3 className="text-xl font-bold text-white">{t('basic.profilePhoto')}</h3>
+              <div className="text-xs text-orange-300 mt-1">{t('basic.profilePhotoRequired')}</div>
             </div>
             <div className="max-w-md mx-auto">
               {/* 1 photo de profil obligatoire */}
               {[
-                { n: 1, label: 'Photo de profil', accept: 'image/*', note: 'Obligatoire - Photo uniquement' }
+                { n: 1, label: t('basic.profilePhoto'), accept: 'image/*', note: t('basic.notePhotoOnly') }
               ].map((slot, idx) => {
                 const media = mandatoryMedia[idx]
                 // Détection vidéo : vérifier le type du fichier, pas le slot.accept
@@ -1705,7 +1705,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
 
                 const onFilePicked = async (file: File) => {
                   if (!file) return
-                  if (hasEscortProfile === false) { setSaveMsg({ type:'error', text:'Créez d\'abord votre profil (enregistrez vos infos), puis réessayez.' }); setTimeout(()=> setSaveMsg(null), 3000); return }
+                  if (hasEscortProfile === false) { setSaveMsg({ type:'error', text: t('basic.profileRequired') }); setTimeout(()=> setSaveMsg(null), 3000); return }
                   // Validation : slot 0 = image only, slots 1-3 = image ou video
                   const isValid = slot.accept.includes('image/*,video/*')
                     ? (file.type.startsWith('image/') || file.type.startsWith('video/'))
@@ -1718,12 +1718,12 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                       const result = await videoCompressor.compressVideo(file, { maxSizeMB: 3.5, quality: 0.8 })
                       fileToUpload = result.file
                     } catch (e:any) {
-                      setSaveMsg({ type:'error', text: `Compression vidéo échouée: ${e?.message||'inconnue'}` })
+                      setSaveMsg({ type:'error', text: t('basic.compressionFailed', { error: e?.message || 'inconnue' }) })
                       setTimeout(()=> setSaveMsg(null), 4000)
                       return
                     }
                     if (fileToUpload.size > 500 * 1024 * 1024) {
-                      setSaveMsg({ type:'error', text: 'Fichier trop volumineux (limite 500MB).' })
+                      setSaveMsg({ type:'error', text: t('basic.fileTooLarge') })
                       setTimeout(()=> setSaveMsg(null), 4000)
                       return
                     }
@@ -1749,7 +1749,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
 
                     if (!presignedRes.ok) {
                       const error = await presignedRes.json()
-                      throw new Error(error.error || 'Erreur génération URL')
+                      throw new Error(error.error || t('basic.uploadFailed'))
                     }
 
                     const { presignedUrl, publicUrl } = await presignedRes.json()
@@ -1788,7 +1788,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
 
                     if (!confirmRes.ok) {
                       const error = await confirmRes.json()
-                      throw new Error(error.error || 'Erreur confirmation')
+                      throw new Error(error.error || t('basic.uploadFailed'))
                     }
 
                     const data = await confirmRes.json()
@@ -1805,10 +1805,10 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                       next[idx] = { file, preview: serverUrl, id, uploading: false }
                       return next
                     })
-                    setSaveMsg({ type: 'success', text: 'Média uploadé ✅' })
+                    setSaveMsg({ type: 'success', text: t('basic.mediaUploaded') })
                     setTimeout(() => setSaveMsg(null), 2500)
                   } catch (e: any) {
-                    setSaveMsg({ type: 'error', text: e?.message || 'Échec de l\'upload' })
+                    setSaveMsg({ type: 'error', text: e?.message || t('basic.uploadFailed') })
                     setTimeout(() => setSaveMsg(null), 4000)
                     setMandatoryMedia(prev => { const next=[...prev]; next[idx] = { ...(next[idx]||{}), uploading: false }; return next })
                   }
@@ -1861,36 +1861,36 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                     <div className="flex items-center justify-between mb-1">
                       <div className="flex items-center gap-2">
                         <span className="w-6 h-6 bg-purple-500 text-white rounded-full flex items-center justify-center text-xs">{slot.n}</span>
-                        <span className="text-[11px] text-purple-300">OBLIGATOIRE</span>
+                        <span className="text-[11px] text-purple-300">{t('basic.mandatory')}</span>
                       </div>
                       {media?.id && (
                         <button
                           type="button"
-                          onClick={async (e) => { 
-                            e.stopPropagation(); 
+                          onClick={async (e) => {
+                            e.stopPropagation();
                             const id = mandatoryMedia[idx]?.id
                             try {
                               if (id) {
                                 const isProfile = idx === 0
                                 const resp = await fetch(`/api/escort/media/delete`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ mediaId: id, type: isProfile ? 'profile' : 'gallery' }) })
                                 const d = await resp.json().catch(()=> ({}))
-                                if (!resp.ok || !d?.success) throw new Error(d?.error || 'Suppression échouée')
+                                if (!resp.ok || !d?.success) throw new Error(d?.error || t('basic.uploadFailed'))
                               }
                             } catch (err:any) {
-                              setSaveMsg({ type:'error', text: err?.message || 'Impossible de supprimer' })
+                              setSaveMsg({ type:'error', text: err?.message || t('basic.uploadFailed') })
                               setTimeout(() => setSaveMsg(null), 3000)
                             } finally {
-                              setMandatoryMedia(prev => { 
-                                const next=[...prev]; 
-                                if (next[idx]?.preview) { try{ URL.revokeObjectURL(next[idx]!.preview as string) } catch {} } 
-                                next[idx] = { file: undefined, preview: undefined, id: undefined, uploading: false }; 
-                                return next 
-                              }) 
+                              setMandatoryMedia(prev => {
+                                const next=[...prev];
+                                if (next[idx]?.preview) { try{ URL.revokeObjectURL(next[idx]!.preview as string) } catch {} }
+                                next[idx] = { file: undefined, preview: undefined, id: undefined, uploading: false };
+                                return next
+                              })
                             }
                           }}
                           className="text-xs text-gray-300 hover:text-white"
                         >
-                          Retirer
+                          {t('basic.remove')}
                         </button>
                       )}
                     </div>
@@ -1898,7 +1898,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                     {/* Label + note */}
                     <div className="text-sm text-white font-medium flex items-center gap-2">
                       {slot.label}
-                      {media?.preview && <span title="OK" className="inline-flex items-center text-emerald-300 text-[11px]"><CheckCircle2 size={14} className="mr-1"/>OK</span>}
+                      {media?.preview && <span title={t('basic.ok')} className="inline-flex items-center text-emerald-300 text-[11px]"><CheckCircle2 size={14} className="mr-1"/>{t('basic.ok')}</span>}
                     </div>
                     {slot.note && (
                       <div className="text-[11px] text-purple-300/80 bg-purple-500/10 border border-purple-500/20 rounded px-2 py-0.5 mt-1 inline-block">
@@ -1917,13 +1917,13 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                       ) : (
                         <div className="flex flex-col items-center text-gray-400">
                           <Image className="text-gray-500 mb-1" size={24} />
-                          <span className="text-xs">Déposez ou cliquez pour ajouter</span>
+                          <span className="text-xs">{t('basic.dropOrClick')}</span>
                           <span className="text-[10px] text-gray-500 mt-1">
                             {slot.accept.includes('image/*,video/*')
-                              ? 'Photo ou vidéo (max 500MB)'
+                              ? t('basic.photoOrVideo')
                               : slot.accept.startsWith('image')
-                                ? 'Photo uniquement (max 500MB)'
-                                : 'Vidéo uniquement (max 500MB)'}
+                                ? t('basic.photoOnly')
+                                : t('basic.photoOnly')}
                           </span>
                         </div>
                       )}
@@ -1938,12 +1938,12 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                                 />
                               </div>
                               <span className="text-white text-sm font-semibold">{uploadProgress[idx]}%</span>
-                              <span className="text-gray-300 text-xs mt-1">Upload en cours...</span>
+                              <span className="text-gray-300 text-xs mt-1">{t('basic.uploadProgress')}</span>
                             </>
                           ) : (
                             <div className="flex items-center gap-2 text-white/80 text-xs">
                               <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                              <span>Préparation…</span>
+                              <span>{t('basic.preparing')}</span>
                             </div>
                           )}
                         </div>
@@ -1967,11 +1967,11 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
             {/* Séparateur */}
             <div className="my-8 border-t border-gray-700"></div>
 
-            <h3 className="text-xl font-bold text-white mb-6">Informations de base</h3>
+            <h3 className="text-xl font-bold text-white mb-6">{t('basic.title')}</h3>
             <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Pseudo *</label>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">{t('basic.stageName')} *</label>
                   <input
                     type="text"
                     value={profileData.stageName || ''}
@@ -1980,18 +1980,18 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Catégorie *</label>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">{t('basic.category')} *</label>
                   <select
                     value={(profileData.serviceType||[])[0] || ''}
                     onChange={(e) => updateProfileData('serviceType', e.target.value ? [e.target.value] : [])}
                     className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600/50 rounded-xl text-white focus:border-purple-500 focus:outline-none"
                   >
-                    <option value="">Sélectionner</option>
-                    <option value="ESCORT">👠 Escort</option>
-                    <option value="MASSEUSE">💆 Masseuse érotique</option>
-                    <option value="DOMINATRICE">🔗 Dominatrice BDSM</option>
-                    <option value="TRANSSEXUELLE">🌸 Transsexuelle</option>
-                    <option value="AUTRE">💼 Autre</option>
+                    <option value="">{t('basic.selectCategory')}</option>
+                    <option value="ESCORT">{t('basic.categories.escort')}</option>
+                    <option value="MASSEUSE">{t('basic.categories.masseuse')}</option>
+                    <option value="DOMINATRICE">{t('basic.categories.dominatrice')}</option>
+                    <option value="TRANSSEXUELLE">{t('basic.categories.transsexuelle')}</option>
+                    <option value="AUTRE">{t('basic.categories.other')}</option>
                   </select>
                 </div>
                 <div>
@@ -2355,11 +2355,11 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                     onChange={(e) => updateProfileData('bodyType', e.target.value)}
                     className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600/50 rounded-xl text-white focus:border-purple-500 focus:outline-none"
                   >
-                    <option value="">Sélectionner</option>
-                    <option value="mince">Mince</option>
-                    <option value="sportive">Sportive</option>
-                    <option value="pulpeuse">Pulpeuse</option>
-                    <option value="ronde">Ronde</option>
+                    <option value="">{t('appearance.bodyTypes.select')}</option>
+                    <option value="mince">{t('appearance.bodyTypes.mince')}</option>
+                    <option value="sportive">{t('appearance.bodyTypes.sportive')}</option>
+                    <option value="pulpeuse">{t('appearance.bodyTypes.pulpeuse')}</option>
+                    <option value="ronde">{t('appearance.bodyTypes.ronde')}</option>
                   </select>
                 </div>
               </div>
@@ -2388,22 +2388,22 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                     onChange={(e) => updateProfileData('hairColor', e.target.value)}
                     className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600/50 rounded-xl text-white focus:border-purple-500 focus:outline-none"
                   >
-                    <option value="">Sélectionner</option>
-                    <option value="brun">Brun</option>
-                    <option value="blond">Blond</option>
-                    <option value="chatain">Châtain</option>
-                    <option value="gris">Gris</option>
-                    <option value="roux">Roux</option>
-                    <option value="autre">Autre</option>
+                    <option value="">{t('appearance.hairColors.select')}</option>
+                    <option value="brun">{t('appearance.hairColors.brun')}</option>
+                    <option value="blond">{t('appearance.hairColors.blond')}</option>
+                    <option value="chatain">{t('appearance.hairColors.chatain')}</option>
+                    <option value="gris">{t('appearance.hairColors.gris')}</option>
+                    <option value="roux">{t('appearance.hairColors.roux')}</option>
+                    <option value="autre">{t('appearance.hairColors.autre')}</option>
                   </select>
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Poitrine</label>
+                <label className="block text-sm font-medium text-gray-300 mb-2">{t('appearance.breastType')}</label>
                 <div className="flex items-center gap-4">
-                  <label className="flex items-center gap-2 text-sm text-gray-300"><input type="radio" name="breastType" checked={profileData.breastType==='naturelle'} onChange={()=> updateProfileData('breastType','naturelle')} /> Naturelle</label>
-                  <label className="flex items-center gap-2 text-sm text-gray-300"><input type="radio" name="breastType" checked={profileData.breastType==='siliconee'} onChange={()=> updateProfileData('breastType','siliconee')} /> Siliconée</label>
+                  <label className="flex items-center gap-2 text-sm text-gray-300"><input type="radio" name="breastType" checked={profileData.breastType==='naturelle'} onChange={()=> updateProfileData('breastType','naturelle')} /> {t('appearance.breastTypes.naturelle')}</label>
+                  <label className="flex items-center gap-2 text-sm text-gray-300"><input type="radio" name="breastType" checked={profileData.breastType==='siliconee'} onChange={()=> updateProfileData('breastType','siliconee')} /> {t('appearance.breastTypes.siliconee')}</label>
                 </div>
               </div>
 
@@ -2415,12 +2415,12 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                     onChange={(e) => updateProfileData('eyeColor', e.target.value)}
                     className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600/50 rounded-xl text-white focus:border-purple-500 focus:outline-none"
                   >
-                    <option value="">Sélectionner</option>
+                    <option value="">{t('appearance.eyeColors.select')}</option>
                     <option value="noir">Noir</option>
-                    <option value="marron">Marron</option>
-                    <option value="vert">Vert</option>
-                    <option value="bleu">Bleu</option>
-                    <option value="gris">Gris</option>
+                    <option value="marron">{t('appearance.eyeColors.marron')}</option>
+                    <option value="vert">{t('appearance.eyeColors.vert')}</option>
+                    <option value="bleu">{t('appearance.eyeColors.bleu')}</option>
+                    <option value="gris">{t('appearance.eyeColors.gris')}</option>
                   </select>
                 </div>
               </div>
@@ -2433,23 +2433,23 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                     onChange={(e) => updateProfileData('ethnicity', e.target.value)}
                     className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600/50 rounded-xl text-white focus:border-purple-500 focus:outline-none"
                   >
-                    <option value="">Sélectionner</option>
+                    <option value="">{t('appearance.ethnicities.select')}</option>
                     <option value="suissesse">Suissesse</option>
                     <option value="francaise">Française</option>
                     <option value="espagnole">Espagnole</option>
                     <option value="italienne">Italienne</option>
                     <option value="allemand">Allemand</option>
-                    <option value="europeenne">Européenne (autres)</option>
-                    <option value="latine">Latine</option>
-                    <option value="asiatique">Asiatique</option>
-                    <option value="africaine">Africaine</option>
+                    <option value="europeenne">{t('appearance.ethnicities.europeenne')}</option>
+                    <option value="latine">{t('appearance.ethnicities.latine')}</option>
+                    <option value="asiatique">{t('appearance.ethnicities.asiatique')}</option>
+                    <option value="africaine">{t('appearance.ethnicities.africaine')}</option>
                     <option value="russe">Russe</option>
                     <option value="orientale">Orientale</option>
                     <option value="bresilienne">Brésilienne</option>
                     <option value="moyen-orient">Moyen-Orient</option>
                     <option value="balkanique">Balkanique</option>
                     <option value="nordique">Nordique</option>
-                    <option value="metissee">Métissée</option>
+                    <option value="metissee">{t('appearance.ethnicities.metisse')}</option>
                   </select>
                 </div>
                 <div>
@@ -2479,12 +2479,12 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                     </label>
                     <div className="h-6 w-px bg-white/10" />
                     <label className="flex items-center gap-2 text-sm text-gray-300">
-                      Poils pubis:
+                      {t('appearance.pubicHair')}:
                       <select value={profileData.pubicHair||''} onChange={(e)=> updateProfileData('pubicHair', e.target.value as any)} className="px-2 py-1 bg-white/5 border border-white/10 rounded">
-                        <option value="">Sélectionner</option>
-                        <option value="naturel">Naturel</option>
-                        <option value="rase">Rasé</option>
-                        <option value="partiel">Partiellement rasé</option>
+                        <option value="">{t('appearance.eyeColors.select')}</option>
+                        <option value="naturel">{t('appearance.pubicHairTypes.naturel')}</option>
+                        <option value="rase">{t('appearance.pubicHairTypes.rase')}</option>
+                        <option value="partiel">{t('appearance.pubicHairTypes.partiel')}</option>
                       </select>
                     </label>
                   </div>
@@ -2503,10 +2503,10 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                 <label className="block text-sm font-medium text-gray-300 mb-2">Clientèle acceptée</label>
                 <div className="grid grid-cols-1 gap-3">
                   {[
-                    { key:'acceptsCouples', label:'Couples' },
-                    { key:'acceptsWomen', label:'Femmes' },
-                    { key:'acceptsHandicapped', label:'Personnes handicapées' },
-                    { key:'acceptsSeniors', label:'Personnes âgées' },
+                    { key:'acceptsCouples', label: t('services.clienteleTypes.couples') },
+                    { key:'acceptsWomen', label: t('services.clienteleTypes.women') },
+                    { key:'acceptsHandicapped', label: t('services.clienteleTypes.handicapped') },
+                    { key:'acceptsSeniors', label: t('services.clienteleTypes.seniors') },
                   ].map(it => (
                     <label key={it.key} className="flex items-center gap-2">
                       <input type="checkbox" className="w-4 h-4" checked={(profileData as any)[it.key]||false} onChange={(e)=> updateProfileData(it.key, e.target.checked)} />
@@ -2525,7 +2525,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                       checked={profileData.incall || false}
                       onChange={(e) => updateProfileData('incall', e.target.checked)}
                     />
-                    <span className="text-sm text-gray-300">Je reçois</span>
+                    <span className="text-sm text-gray-300">{t('services.incall')}</span>
                   </label>
                   <label className="flex items-center gap-2">
                     <input
@@ -2534,7 +2534,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                       checked={profileData.outcall || false}
                       onChange={(e) => updateProfileData('outcall', e.target.checked)}
                     />
-                    <span className="text-sm text-gray-300">Je me déplace</span>
+                    <span className="text-sm text-gray-300">{t('services.outcall')}</span>
                   </label>
                 </div>
               </div>
@@ -2611,7 +2611,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                         }}
                         className="w-4 h-4 text-purple-500 bg-gray-700 border-gray-600 rounded focus:ring-purple-500"
                       />
-                      <label htmlFor="rate-15min" className="text-sm text-gray-300 cursor-pointer">15 minutes</label>
+                      <label htmlFor="rate-15min" className="text-sm text-gray-300 cursor-pointer">{t('pricing.durations.15min')}</label>
                     </div>
                     {profileData.prices?.fifteenMin && profileData.prices.fifteenMin !== null && (
                       <div className="flex-1">
@@ -2644,7 +2644,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                         }}
                         className="w-4 h-4 text-purple-500 bg-gray-700 border-gray-600 rounded focus:ring-purple-500"
                       />
-                      <label htmlFor="rate-30min" className="text-sm text-gray-300 cursor-pointer">30 minutes</label>
+                      <label htmlFor="rate-30min" className="text-sm text-gray-300 cursor-pointer">{t('pricing.durations.30min')}</label>
                     </div>
                     {profileData.prices?.thirtyMin && profileData.prices.thirtyMin !== null && (
                       <div className="flex-1">
@@ -2677,7 +2677,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                         }}
                         className="w-4 h-4 text-purple-500 bg-gray-700 border-gray-600 rounded focus:ring-purple-500"
                       />
-                      <label htmlFor="rate-2hours" className="text-sm text-gray-300 cursor-pointer">2 heures</label>
+                      <label htmlFor="rate-2hours" className="text-sm text-gray-300 cursor-pointer">{t('pricing.durations.2hours')}</label>
                     </div>
                     {profileData.prices?.twoHours && profileData.prices.twoHours !== null && (
                       <div className="flex-1">
@@ -2710,7 +2710,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                         }}
                         className="w-4 h-4 text-purple-500 bg-gray-700 border-gray-600 rounded focus:ring-purple-500"
                       />
-                      <label htmlFor="rate-halfday" className="text-sm text-gray-300 cursor-pointer">Demi-journée</label>
+                      <label htmlFor="rate-halfday" className="text-sm text-gray-300 cursor-pointer">{t('pricing.durations.halfDay')}</label>
                     </div>
                     {profileData.prices?.halfDay && profileData.prices.halfDay !== null && (
                       <div className="flex-1">
@@ -2743,7 +2743,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                         }}
                         className="w-4 h-4 text-purple-500 bg-gray-700 border-gray-600 rounded focus:ring-purple-500"
                       />
-                      <label htmlFor="rate-fullday" className="text-sm text-gray-300 cursor-pointer">Journée complète</label>
+                      <label htmlFor="rate-fullday" className="text-sm text-gray-300 cursor-pointer">{t('pricing.durations.fullDay')}</label>
                     </div>
                     {profileData.prices?.fullDay && profileData.prices.fullDay !== null && (
                       <div className="flex-1">
@@ -2776,7 +2776,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                         }}
                         className="w-4 h-4 text-purple-500 bg-gray-700 border-gray-600 rounded focus:ring-purple-500"
                       />
-                      <label htmlFor="rate-overnight" className="text-sm text-gray-300 cursor-pointer">Nuit complète</label>
+                      <label htmlFor="rate-overnight" className="text-sm text-gray-300 cursor-pointer">{t('pricing.durations.overnight')}</label>
                     </div>
                     {profileData.prices?.overnight && profileData.prices.overnight !== null && (
                       <div className="flex-1">
@@ -2916,13 +2916,13 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                         Samedi: { enabled: false, start: '10:00', end: '02:00' },
                         Dimanche: { enabled: false, start: '14:00', end: '02:00' },
                       })
-                      setSaveMsg({ type: 'success', text: 'Template "Semaine" appliqué' })
+                      setSaveMsg({ type: 'success', text: t('agenda.templates.applied', { template: t('agenda.templates.weekdays') }) })
                       setTimeout(() => setSaveMsg(null), 2000)
                     }}
                     className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all bg-purple-500/20 hover:bg-purple-500/30 text-purple-200 border border-purple-500/30"
                   >
                     <Zap className="w-3 h-3" />
-                    Lun-Ven 10h-22h
+                    {t('agenda.templates.weekdays')}
                   </button>
                   <button
                     type="button"
@@ -2937,13 +2937,13 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                         Samedi: { enabled: true, start: '14:00', end: '02:00' },
                         Dimanche: { enabled: true, start: '14:00', end: '23:00' },
                       })
-                      setSaveMsg({ type: 'success', text: 'Template "Week-end" appliqué' })
+                      setSaveMsg({ type: 'success', text: t('agenda.templates.applied', { template: t('agenda.templates.weekend') }) })
                       setTimeout(() => setSaveMsg(null), 2000)
                     }}
                     className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all bg-blue-500/20 hover:bg-blue-500/30 text-blue-200 border border-blue-500/30"
                   >
                     <Zap className="w-3 h-3" />
-                    Week-end only
+                    {t('agenda.templates.weekend')}
                   </button>
                   <button
                     type="button"
@@ -2958,13 +2958,13 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                         Samedi: { enabled: true, start: '00:00', end: '23:59' },
                         Dimanche: { enabled: true, start: '00:00', end: '23:59' },
                       })
-                      setSaveMsg({ type: 'success', text: 'Template "24/7" appliqué' })
+                      setSaveMsg({ type: 'success', text: t('agenda.templates.applied', { template: t('agenda.templates.allDay') }) })
                       setTimeout(() => setSaveMsg(null), 2000)
                     }}
                     className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-200 border border-emerald-500/30"
                   >
                     <Zap className="w-3 h-3" />
-                    24/7
+                    {t('agenda.templates.allDay')}
                   </button>
                 </div>
 
@@ -2975,7 +2975,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                       {/* Mobile Layout */}
                       <div className="block sm:hidden space-y-3">
                         <div className="flex items-center justify-between">
-                          <span className="text-sm font-medium text-white/90 capitalize">{day}</span>
+                          <span className="text-sm font-medium text-white/90 capitalize">{t(`agenda.days.${day}`)}</span>
                           <label className="inline-flex items-center gap-2 cursor-pointer">
                             <input 
                               type="checkbox" 
@@ -2983,13 +2983,13 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                               onChange={(e)=> setWeekly(prev => ({ ...prev, [day]: { ...slot, enabled: e.target.checked } }))} 
                               className="w-4 h-4 text-purple-500 bg-gray-700 border-gray-600 rounded focus:ring-purple-500"
                             /> 
-                            <span className="text-sm">{slot.enabled ? '✅ Ouvert' : '❌ Fermé'}</span>
+                            <span className="text-sm">{slot.enabled ? `✅ ${t('agenda.open')}` : `❌ ${t('agenda.closed')}`}</span>
                           </label>
                         </div>
                         {slot.enabled && (
                           <div className="grid grid-cols-2 gap-2">
                             <div>
-                              <label className="block text-xs text-white/70 mb-1">Ouverture</label>
+                              <label className="block text-xs text-white/70 mb-1">{t('agenda.opening')}</label>
                               <input 
                                 type="time" 
                                 value={slot.start} 
@@ -2998,7 +2998,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                               />
                             </div>
                             <div>
-                              <label className="block text-xs text-white/70 mb-1">Fermeture</label>
+                              <label className="block text-xs text-white/70 mb-1">{t('agenda.closing')}</label>
                               <input 
                                 type="time" 
                                 value={slot.end} 
@@ -3012,7 +3012,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
 
                       {/* Desktop Layout */}
                       <div className="hidden sm:flex sm:items-center sm:gap-3">
-                        <div className="w-20 text-white/90 font-medium capitalize">{day}</div>
+                        <div className="w-20 text-white/90 font-medium capitalize">{t(`agenda.days.${day}`)}</div>
                         <label className="inline-flex items-center gap-2 cursor-pointer">
                           <input 
                             type="checkbox" 
@@ -3052,13 +3052,13 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                     onChange={(e)=> setPauseEnabled(e.target.checked)} 
                     className="w-4 h-4 text-purple-500 bg-gray-700 border-gray-600 rounded focus:ring-purple-500"
                   /> 
-                  <span className="font-medium">Mettre mon compte en pause</span>
+                  <span className="font-medium">{t('agenda.pause')}</span>
               </label>
                 
               {pauseEnabled && (
                   <div className="space-y-3 sm:space-y-0 sm:grid sm:grid-cols-2 sm:gap-4">
                   <div>
-                      <label className="block text-xs text-white/70 mb-2 font-medium">Début de pause</label>
+                      <label className="block text-xs text-white/70 mb-2 font-medium">{t('agenda.pauseStart')}</label>
                       <input 
                         type="datetime-local" 
                         value={pauseStart} 
@@ -3067,7 +3067,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                       />
                   </div>
                   <div>
-                      <label className="block text-xs text-white/70 mb-2 font-medium">Retour</label>
+                      <label className="block text-xs text-white/70 mb-2 font-medium">{t('agenda.pauseReturn')}</label>
                       <input 
                         type="datetime-local" 
                         value={pauseEnd} 

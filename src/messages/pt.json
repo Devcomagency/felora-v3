@@ -669,6 +669,11 @@
           "label": "Meus Clubes",
           "description": "Clubes parceiros e convites"
         }
+      },
+      "agenda": {
+        "templates": {
+          "allDay": "24/7"
+        }
       }
     }
   },

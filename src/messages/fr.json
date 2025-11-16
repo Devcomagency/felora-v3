@@ -912,7 +912,8 @@
         "templates": {
           "weekdays": "Semaine",
           "weekend": "Week-end only",
-          "applied": "Template \"{template}\" appliqué"
+          "applied": "Template \"{template}\" appliqué",
+          "allDay": "24/7"
         }
       },
       "save": {

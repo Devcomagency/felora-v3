@@ -669,6 +669,11 @@
           "label": "Klubet e mia",
           "description": "Klubet partnere dhe ftesa"
         }
+      },
+      "agenda": {
+        "templates": {
+          "allDay": "24/7"
+        }
       }
     }
   },

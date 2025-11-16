@@ -669,6 +669,11 @@
           "label": "Mis Clubs",
           "description": "Clubs asociados e invitaciones"
         }
+      },
+      "agenda": {
+        "templates": {
+          "allDay": "24/7"
+        }
       }
     }
   },
