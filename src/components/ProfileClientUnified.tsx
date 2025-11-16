@@ -39,6 +39,7 @@ interface ProfileClientUnifiedProps {
 
 export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifiedProps) {
   const t = useTranslations('profileModal')
+  const tCategories = useTranslations('categories')
   const { profile, loading, error } = usePublicProfile(profileId)
   const router = useRouter()
 
@@ -177,7 +178,7 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
                   {safeProfile.category && (
                     <div className="inline-flex items-center gap-2">
                       <span className="px-3 py-1.5 bg-gradient-to-r from-pink-500/20 to-purple-500/20 text-pink-300 rounded-full text-xs font-medium border border-pink-500/30">
-                        {safeProfile.category}
+                        {tCategories(safeProfile.category) || safeProfile.category}
                       </span>
                     </div>
                   )}
