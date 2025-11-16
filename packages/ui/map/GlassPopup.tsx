@@ -31,6 +31,7 @@ interface GlassPopupProps {
 
 export default function GlassPopup({ escort, onClose, onViewProfile }: GlassPopupProps) {
   const t = useTranslations('map')
+  const tAmenities = useTranslations('amenities')
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
 
   // Auto-rotation du carousel (optionnel, comme dans l'ancienne version)
@@ -310,7 +311,7 @@ export default function GlassPopup({ escort, onClose, onViewProfile }: GlassPopu
                 fontWeight: '500',
               }}
             >
-              {practice}
+              {tAmenities(practice) || practice}
             </span>
           ))}
         </div>

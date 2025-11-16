@@ -460,6 +460,26 @@
     "AUTRE": "أخرى"
   },
   "establishments": {"club": "نادي", "salon": "صالون", "studio": "استوديو", "private": "خاص", "type": "نوع المؤسسة"},
+  "amenities": {
+    "champagne": "شامبانيا",
+    "Champagne": "شامبانيا",
+    "privé": "خاص",
+    "Privé": "خاص",
+    "sécurité": "أمن",
+    "Sécurité": "أمن",
+    "parking": "موقف سيارات",
+    "Parking": "موقف سيارات",
+    "jacuzzi": "جاكوزي",
+    "Jacuzzi": "جاكوزي",
+    "sauna": "ساونا",
+    "Sauna": "ساونا",
+    "bar": "بار",
+    "Bar": "بار",
+    "vip": "VIP",
+    "VIP": "VIP",
+    "wifi": "واي فاي",
+    "WiFi": "واي فاي"
+  },
   "errors": {"generic": "حدث خطأ", "network": "خطأ في الاتصال", "notFound": "الصفحة غير موجودة", "unauthorized": "غير مصرح", "forbidden": "الوصول محظور", "tryAgain": "يرجى المحاولة مرة أخرى"},
   "home": {"welcome": "مرحباً بك في فيلورا", "discover": "اكتشف", "loadMore": "تحميل المزيد", "noContent": "لا يوجد محتوى متاح"},
   "favorites": {

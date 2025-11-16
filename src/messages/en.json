@@ -528,9 +528,20 @@
   },
   "categories": {
     "escort": "Escort",
+    "ESCORT": "Escort",
     "masseuse": "Erotic Masseuse",
+    "MASSEUSE": "Erotic Masseuse",
     "dominatrice": "BDSM Dominatrix",
-    "transsexuel": "Transsexual"
+    "DOMINATRICE": "BDSM Dominatrix",
+    "transsexuel": "Transsexual",
+    "TRANSSEXUELLE": "Transsexual",
+    "autre": "Other",
+    "AUTRE": "Other",
+    "salon": "Salon",
+    "massage": "Massage",
+    "vip": "VIP",
+    "bdsm": "BDSM",
+    "privateMedia": "Private Media"
   },
   "establishments": {
     "club": "Club",
@@ -538,6 +549,26 @@
     "studio": "Studio",
     "private": "Private",
     "type": "Establishment type"
+  },
+  "amenities": {
+    "champagne": "Champagne",
+    "Champagne": "Champagne",
+    "privé": "Private",
+    "Privé": "Private",
+    "sécurité": "Security",
+    "Sécurité": "Security",
+    "parking": "Parking",
+    "Parking": "Parking",
+    "jacuzzi": "Jacuzzi",
+    "Jacuzzi": "Jacuzzi",
+    "sauna": "Sauna",
+    "Sauna": "Sauna",
+    "bar": "Bar",
+    "Bar": "Bar",
+    "vip": "VIP",
+    "VIP": "VIP",
+    "wifi": "WiFi",
+    "WiFi": "WiFi"
   },
   "errors": {
     "generic": "An error occurred",

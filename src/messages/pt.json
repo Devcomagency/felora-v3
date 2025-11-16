@@ -460,6 +460,26 @@
     "AUTRE": "Outro"
   },
   "establishments": {"club": "Clube", "salon": "Salão", "studio": "Estúdio", "private": "Privado", "type": "Tipo de estabelecimento"},
+  "amenities": {
+    "champagne": "Champanhe",
+    "Champagne": "Champanhe",
+    "privé": "Privado",
+    "Privé": "Privado",
+    "sécurité": "Segurança",
+    "Sécurité": "Segurança",
+    "parking": "Estacionamento",
+    "Parking": "Estacionamento",
+    "jacuzzi": "Jacuzzi",
+    "Jacuzzi": "Jacuzzi",
+    "sauna": "Sauna",
+    "Sauna": "Sauna",
+    "bar": "Bar",
+    "Bar": "Bar",
+    "vip": "VIP",
+    "VIP": "VIP",
+    "wifi": "WiFi",
+    "WiFi": "WiFi"
+  },
   "errors": {"generic": "Ocorreu um erro", "network": "Erro de conexão", "notFound": "Página não encontrada", "unauthorized": "Não autorizado", "forbidden": "Acesso proibido", "tryAgain": "Por favor, tente novamente"},
   "home": {"welcome": "Bem-vindo ao Felora", "discover": "Descobrir", "loadMore": "Carregar mais", "noContent": "Nenhum conteúdo disponível"},
   "favorites": {

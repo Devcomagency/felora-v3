@@ -544,6 +544,26 @@
     "private": "Privat",
     "type": "Einrichtungstyp"
   },
+  "amenities": {
+    "champagne": "Champagner",
+    "Champagne": "Champagner",
+    "privé": "Privat",
+    "Privé": "Privat",
+    "sécurité": "Sicherheit",
+    "Sécurité": "Sicherheit",
+    "parking": "Parkplatz",
+    "Parking": "Parkplatz",
+    "jacuzzi": "Jacuzzi",
+    "Jacuzzi": "Jacuzzi",
+    "sauna": "Sauna",
+    "Sauna": "Sauna",
+    "bar": "Bar",
+    "Bar": "Bar",
+    "vip": "VIP",
+    "VIP": "VIP",
+    "wifi": "WLAN",
+    "WiFi": "WLAN"
+  },
   "errors": {
     "generic": "Ein Fehler ist aufgetreten",
     "network": "Verbindungsfehler",

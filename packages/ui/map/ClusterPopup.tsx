@@ -13,6 +13,7 @@ interface ClusterPopupProps {
 
 export default function ClusterPopup({ escorts, onClose }: ClusterPopupProps) {
   const t = useTranslations('map')
+  const tAmenities = useTranslations('amenities')
   const [escortsDetails, setEscortsDetails] = useState<Record<string, any>>({})
   const [loadingDetails, setLoadingDetails] = useState<Record<string, boolean>>({})
 
@@ -345,7 +346,7 @@ export default function ClusterPopup({ escorts, onClose }: ClusterPopupProps) {
                                 fontWeight: '500'
                               }}
                             >
-                              {practice}
+                              {tAmenities(practice) || practice}
                             </span>
                           ))}
                           {details.practices.length > 2 && (

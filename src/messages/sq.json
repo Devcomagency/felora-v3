@@ -460,6 +460,26 @@
     "AUTRE": "Tjetër"
   },
   "establishments": {"club": "Klub", "salon": "Salon", "studio": "Studio", "private": "Privat", "type": "Lloji i vendndodhjes"},
+  "amenities": {
+    "champagne": "Shampanjë",
+    "Champagne": "Shampanjë",
+    "privé": "Privat",
+    "Privé": "Privat",
+    "sécurité": "Siguri",
+    "Sécurité": "Siguri",
+    "parking": "Parking",
+    "Parking": "Parking",
+    "jacuzzi": "Xhakuzi",
+    "Jacuzzi": "Xhakuzi",
+    "sauna": "Sauna",
+    "Sauna": "Sauna",
+    "bar": "Bar",
+    "Bar": "Bar",
+    "vip": "VIP",
+    "VIP": "VIP",
+    "wifi": "WiFi",
+    "WiFi": "WiFi"
+  },
   "errors": {"generic": "Ndodhi një gabim", "network": "Gabim në lidhje", "notFound": "Faqja nuk u gjet", "unauthorized": "I paautorizuar", "forbidden": "Qasja e ndaluar", "tryAgain": "Ju lutemi provoni përsëri"},
   "home": {"welcome": "Mirë se vini në Felora", "discover": "Zbulo", "loadMore": "Ngarko më shumë", "noContent": "Nuk ka përmbajtje të disponueshme"},
   "favorites": {

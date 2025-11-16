@@ -544,6 +544,26 @@
     "private": "Частный",
     "type": "Тип заведения"
   },
+  "amenities": {
+    "champagne": "Шампанское",
+    "Champagne": "Шампанское",
+    "privé": "Частный",
+    "Privé": "Частный",
+    "sécurité": "Безопасность",
+    "Sécurité": "Безопасность",
+    "parking": "Парковка",
+    "Parking": "Парковка",
+    "jacuzzi": "Джакузи",
+    "Jacuzzi": "Джакузи",
+    "sauna": "Сауна",
+    "Sauna": "Сауна",
+    "bar": "Бар",
+    "Bar": "Бар",
+    "vip": "VIP",
+    "VIP": "VIP",
+    "wifi": "WiFi",
+    "WiFi": "WiFi"
+  },
   "errors": {
     "generic": "Произошла ошибка",
     "network": "Ошибка подключения",
