@@ -1,6 +1,72 @@
 {
-  "common": {"search": "Kërko", "filters": "Filtrat", "loading": "Duke u ngarkuar...", "error": "Gabim", "retry": "Provo përsëri", "close": "Mbyll", "save": "Ruaj", "cancel": "Anulo", "yes": "Po", "no": "Jo", "delete": "Fshi", "edit": "Ndrysho", "confirm": "Konfirmo", "back": "Mbrapa", "next": "Përpara", "previous": "I mëparshmi", "submit": "Dërgo", "send": "Dërgo", "create": "Krijo", "language": "Gjuha", "schedule": "Orari", "legal": "Ligjore", "privacy": "Privatësia", "terms": "Kushtet", "cookies": "Cookies"},
-  "search": {"title": "Kërkim", "subtitle": "Zbuloni profile të jashtëzakonshme në Zvicër", "placeholder": "Kërko sipas emrit, qytetit...", "searchAriaLabel": "Kërkoni escort ose klube sipas emrit ose qytetit", "openFilters": "Hap filtrat e kërkimit", "profiles": "Profile", "establishments": "Vendndodhje", "all": "Të gjitha", "clubs": "Klube", "salons": "Sallone", "institutes": "Institute", "agencies": "Agjenci", "independentProfiles": "Profile të Pavarura", "profilesCount": "profile", "noProfilesFound": "Nuk u gjetën profile", "loading": "Duke u ngarkuar...", "loadMore": "Ngarko më shumë", "establishmentsCount": "vendndodhje", "noClubsFound": "Nuk u gjetën klube", "openMap": "Hap hartën interaktive", "loadingSearch": "Duke u ngarkuar kërkimi...", "noResults": "Nuk u gjetën rezultate", "results": "{count} rezultate", "filterBy": "Filtro sipas", "sortBy": "Rendit sipas", "verified": "I verifikuar", "availableNow": "Disponueshme tani", "available": "Disponueshme", "live": "Live", "favorite": "I preferuar", "privateMedia": "Media private", "escort": "Shoqëruese", "salon": "Salon", "institute": "Institut", "agency": "Agjenci", "club": "Klub", "open": "Hapur", "closed": "Mbyllur", "hours": "Orari"},
+  "common": {
+    "search": "Kërko",
+    "filters": "Filtrat",
+    "loading": "Duke u ngarkuar...",
+    "error": "Gabim",
+    "retry": "Provo përsëri",
+    "close": "Mbyll",
+    "save": "Ruaj",
+    "cancel": "Anulo",
+    "yes": "Po",
+    "no": "Jo",
+    "delete": "Fshi",
+    "edit": "Ndrysho",
+    "confirm": "Konfirmo",
+    "back": "Mbrapa",
+    "next": "Përpara",
+    "previous": "I mëparshmi",
+    "submit": "Dërgo",
+    "send": "Dërgo",
+    "create": "Krijo",
+    "language": "Gjuha",
+    "schedule": "Orari",
+    "legal": "Ligjore",
+    "privacy": "Privatësia",
+    "terms": "Kushtet",
+    "cookies": "Cookies"
+  },
+  "search": {
+    "title": "Kërkim",
+    "subtitle": "Zbuloni profile të jashtëzakonshme në Zvicër",
+    "placeholder": "Kërko sipas emrit, qytetit...",
+    "searchAriaLabel": "Kërkoni escort ose klube sipas emrit ose qytetit",
+    "openFilters": "Hap filtrat e kërkimit",
+    "profiles": "Profile",
+    "establishments": "Vendndodhje",
+    "all": "Të gjitha",
+    "clubs": "Klube",
+    "salons": "Sallone",
+    "institutes": "Institute",
+    "agencies": "Agjenci",
+    "independentProfiles": "Profile të Pavarura",
+    "profilesCount": "profile",
+    "noProfilesFound": "Nuk u gjetën profile",
+    "loading": "Duke u ngarkuar...",
+    "loadMore": "Ngarko më shumë",
+    "establishmentsCount": "vendndodhje",
+    "noClubsFound": "Nuk u gjetën klube",
+    "openMap": "Hap hartën interaktive",
+    "loadingSearch": "Duke u ngarkuar kërkimi...",
+    "noResults": "Nuk u gjetën rezultate",
+    "results": "{count} rezultate",
+    "filterBy": "Filtro sipas",
+    "sortBy": "Rendit sipas",
+    "verified": "I verifikuar",
+    "availableNow": "Disponueshme tani",
+    "available": "Disponueshme",
+    "live": "Live",
+    "favorite": "I preferuar",
+    "privateMedia": "Media private",
+    "escort": "Shoqëruese",
+    "salon": "Salon",
+    "institute": "Institut",
+    "agency": "Agjenci",
+    "club": "Klub",
+    "open": "Hapur",
+    "closed": "Mbyllur",
+    "hours": "Orari"
+  },
   "map": {
     "title": "Harta interaktive",
     "loading": "Duke u ngarkuar harta...",
@@ -78,7 +144,19 @@
       }
     }
   },
-  "navigation": {"home": "Ballina", "search": "Kërkim", "map": "Harta", "messages": "Mesazhet", "profile": "Profili", "settings": "Cilësimet", "logout": "Dil", "login": "Hyr", "register": "Regjistrohu", "dashboard": "Paneli", "favorites": "Të preferuarat"},
+  "navigation": {
+    "home": "Ballina",
+    "search": "Kërkim",
+    "map": "Harta",
+    "messages": "Mesazhet",
+    "profile": "Profili",
+    "settings": "Cilësimet",
+    "logout": "Dil",
+    "login": "Hyr",
+    "register": "Regjistrohu",
+    "dashboard": "Paneli",
+    "favorites": "Të preferuarat"
+  },
   "auth": {
     "login": {
       "title": "Hyni",
@@ -489,7 +567,13 @@
     "autre": "Tjetër",
     "AUTRE": "Tjetër"
   },
-  "establishments": {"club": "Klub", "salon": "Salon", "studio": "Studio", "private": "Privat", "type": "Lloji i vendndodhjes"},
+  "establishments": {
+    "club": "Klub",
+    "salon": "Salon",
+    "studio": "Studio",
+    "private": "Privat",
+    "type": "Lloji i vendndodhjes"
+  },
   "amenities": {
     "champagne": "Shampanjë",
     "Champagne": "Shampanjë",
@@ -510,8 +594,20 @@
     "wifi": "WiFi",
     "WiFi": "WiFi"
   },
-  "errors": {"generic": "Ndodhi një gabim", "network": "Gabim në lidhje", "notFound": "Faqja nuk u gjet", "unauthorized": "I paautorizuar", "forbidden": "Qasja e ndaluar", "tryAgain": "Ju lutemi provoni përsëri"},
-  "home": {"welcome": "Mirë se vini në Felora", "discover": "Zbulo", "loadMore": "Ngarko më shumë", "noContent": "Nuk ka përmbajtje të disponueshme"},
+  "errors": {
+    "generic": "Ndodhi një gabim",
+    "network": "Gabim në lidhje",
+    "notFound": "Faqja nuk u gjet",
+    "unauthorized": "I paautorizuar",
+    "forbidden": "Qasja e ndaluar",
+    "tryAgain": "Ju lutemi provoni përsëri"
+  },
+  "home": {
+    "welcome": "Mirë se vini në Felora",
+    "discover": "Zbulo",
+    "loadMore": "Ngarko më shumë",
+    "noContent": "Nuk ka përmbajtje të disponueshme"
+  },
   "favorites": {
     "title": "Të preferuarat",
     "myFavorites": "Të preferuarat e mia",
@@ -528,7 +624,14 @@
     "emptyDescription": "Shtoni escort ose klube te të preferuarat tuaja nga profili i tyre për t'i gjetur shpejt këtu.",
     "discoverProfiles": "Zbulo profile"
   },
-  "dashboard": {"title": "Paneli", "statistics": "Statistikat", "views": "Shikimet", "likes": "Pëlqime", "messages": "Mesazhet", "revenue": "Të ardhurat"},
+  "dashboard": {
+    "title": "Paneli",
+    "statistics": "Statistikat",
+    "views": "Shikimet",
+    "likes": "Pëlqime",
+    "messages": "Mesazhet",
+    "revenue": "Të ardhurat"
+  },
   "dashboardEscort": {
     "profil": {
       "pageTitle": "Profili Im",
@@ -1030,121 +1133,121 @@
           "filesLarge": "Skedarët shumë të mëdhenj. Ju lutemi kompresoni imazhet/videot tuaja (max 3MB secili).",
           "submission": "Gabim në dërgim"
         }
+      }
+    },
+    "kyc": {
+      "errors": {
+        "missingDocs": "Dokumente që mungojnë: {missing}",
+        "missingUserId": "ID e përdoruesit mungon - ju lutemi ringarkoni faqen",
+        "filesTooLarge": "Skedarët shumë të mëdhenj (max 25MB për video, 10MB për imazhe)",
+        "serverError": "Gabim i serverit {status}",
+        "submitFailed": "Dërgimi dështoi - ju lutemi provoni përsëri"
       },
-      "kyc": {
-        "errors": {
-          "missingDocs": "Dokumente që mungojnë: {missing}",
-          "missingUserId": "ID e përdoruesit mungon - ju lutemi ringarkoni faqen",
-          "filesTooLarge": "Skedarët shumë të mëdhenj (max 25MB për video, 10MB për imazhe)",
-          "serverError": "Gabim i serverit {status}",
-          "submitFailed": "Dërgimi dështoi - ju lutemi provoni përsëri"
+      "header": {
+        "title": "Verifikimi i identitetit",
+        "subtitle": "Hapi i fundit për të aktivizuar llogarinë tuaj"
+      },
+      "required": {
+        "title": "Dokumentet e kërkuara:",
+        "idFront": "Fotoja e pjesës së përparme të letërnjoftimit",
+        "idBack": "Fotoja e pjesës së pasme të letërnjoftimit",
+        "selfie": "Selfie me letrën \"FELORA\"",
+        "video": "Video e shkurtër prezantuese"
+      },
+      "tips": {
+        "title": "💡 Këshilla të përgjithshme:",
+        "naturalLight": "Përdorni dritë natyrale (shmangni kundërdritën)",
+        "avoidReflections": "Shmangni pasqyrimet në dokumente",
+        "readable": "Të gjitha informacionet duhet të jenë të lexueshme",
+        "formats": "Formate të pranuara: JPG, PNG, PDF, MP4, MOV"
+      },
+      "upload": {
+        "idFront": {
+          "label": "Letërnjoftim — përpara",
+          "req1": "Foto e qartë dhe e lexueshme",
+          "req2": "Të gjitha informacionet e dukshme",
+          "req3": "Dokument i vlefshëm (jo i skaduar)",
+          "tip1": "Vendosni dokumentin në sipërfaqe të sheshtë",
+          "tip2": "Kornizoni të gjitha anët siç duhet"
         },
-        "header": {
-          "title": "Verifikimi i identitetit",
-          "subtitle": "Hapi i fundit për të aktivizuar llogarinë tuaj"
+        "idBack": {
+          "label": "Letërnjoftim — prapa",
+          "req1": "Foto e qartë dhe e lexueshme",
+          "req2": "Pjesa e pasme plotësisht e dukshme",
+          "req3": "Pa pasqyrime",
+          "tip1": "Kontrolloni qartësinë para se të dërgoni",
+          "tip2": "Mbani një sfond neutral"
         },
-        "required": {
-          "title": "Dokumentet e kërkuara:",
-          "idFront": "Fotoja e pjesës së përparme të letërnjoftimit",
-          "idBack": "Fotoja e pjesës së pasme të letërnjoftimit",
+        "selfie": {
+          "label": "Selfie me letrën \"FELORA\"",
+          "req1": "Fytyra juaj qartësisht e dukshme",
+          "req2": "Letër me \"FELORA\" + data e sotme e shkruar me dorë",
+          "req3": "Foto me ngjyra, e paedituar",
+          "tip1": "Mbajeni letrën pranë fytyrës suaj",
+          "tip2": "Sigurohuni që gjithçka është e lexueshme"
+        },
+        "video": {
+          "label": "Video e shkurtër e fytyrës",
+          "header": "Video prezantuese (max 30s, max 25MB)",
+          "description": "Prezantohuni duke thënë emrin tuaj të plotë. Filmoni në modalitetin portret me ndriçim të mirë. Mbajeni videon të shkurtër për të qëndruar nën 25MB.",
+          "selectLabel": "Zgjidhni videon tuaj",
+          "required": "E detyrueshme",
+          "req1": "Kohëzgjatja maksimale 30 sekonda",
+          "req2": "Fytyra juaj qartësisht e dukshme",
+          "req3": "Thuani emrin tuaj të plotë",
+          "tip1": "Filmoni në modalitetin portret (vertikal)",
+          "tip2": "Sigurohuni që të keni ndriçim të mirë",
+          "tip3": "Flisni qartë dhe shikoni kamerën"
+        }
+      },
+      "status": {
+        "missingDocs": "{count} dokument(e) që mungon(jnë)",
+        "allReady": "Të gjitha dokumentet janë gati",
+        "allProvided": "Të gjitha dokumentet e dhëna"
+      },
+      "actions": {
+        "completeLater": "Plotëso më vonë",
+        "validateVerification": "Valido verifikimin",
+        "submitting": "Duke dërguar..."
+      },
+      "checklist": {
+        "title": "Lista e kontrollit të dokumenteve",
+        "items": {
+          "idFront": "Letërnjoftim — përpara",
+          "idBack": "Letërnjoftim — prapa",
           "selfie": "Selfie me letrën \"FELORA\"",
-          "video": "Video e shkurtër prezantuese"
-        },
-        "tips": {
-          "title": "💡 Këshilla të përgjithshme:",
-          "naturalLight": "Përdorni dritë natyrale (shmangni kundërdritën)",
-          "avoidReflections": "Shmangni pasqyrimet në dokumente",
-          "readable": "Të gjitha informacionet duhet të jenë të lexueshme",
-          "formats": "Formate të pranuara: JPG, PNG, PDF, MP4, MOV"
-        },
-        "upload": {
-          "idFront": {
-            "label": "Letërnjoftim — përpara",
-            "req1": "Foto e qartë dhe e lexueshme",
-            "req2": "Të gjitha informacionet e dukshme",
-            "req3": "Dokument i vlefshëm (jo i skaduar)",
-            "tip1": "Vendosni dokumentin në sipërfaqe të sheshtë",
-            "tip2": "Kornizoni të gjitha anët siç duhet"
-          },
-          "idBack": {
-            "label": "Letërnjoftim — prapa",
-            "req1": "Foto e qartë dhe e lexueshme",
-            "req2": "Pjesa e pasme plotësisht e dukshme",
-            "req3": "Pa pasqyrime",
-            "tip1": "Kontrolloni qartësinë para se të dërgoni",
-            "tip2": "Mbani një sfond neutral"
-          },
-          "selfie": {
-            "label": "Selfie me letrën \"FELORA\"",
-            "req1": "Fytyra juaj qartësisht e dukshme",
-            "req2": "Letër me \"FELORA\" + data e sotme e shkruar me dorë",
-            "req3": "Foto me ngjyra, e paedituar",
-            "tip1": "Mbajeni letrën pranë fytyrës suaj",
-            "tip2": "Sigurohuni që gjithçka është e lexueshme"
-          },
-          "video": {
-            "label": "Video e shkurtër e fytyrës",
-            "header": "Video prezantuese (max 30s, max 25MB)",
-            "description": "Prezantohuni duke thënë emrin tuaj të plotë. Filmoni në modalitetin portret me ndriçim të mirë. Mbajeni videon të shkurtër për të qëndruar nën 25MB.",
-            "selectLabel": "Zgjidhni videon tuaj",
-            "required": "E detyrueshme",
-            "req1": "Kohëzgjatja maksimale 30 sekonda",
-            "req2": "Fytyra juaj qartësisht e dukshme",
-            "req3": "Thuani emrin tuaj të plotë",
-            "tip1": "Filmoni në modalitetin portret (vertikal)",
-            "tip2": "Sigurohuni që të keni ndriçim të mirë",
-            "tip3": "Flisni qartë dhe shikoni kamerën"
-          }
+          "video": "Video prezantuese"
         },
         "status": {
-          "missingDocs": "{count} dokument(e) që mungon(jnë)",
-          "allReady": "Të gjitha dokumentet janë gati",
-          "allProvided": "Të gjitha dokumentet e dhëna"
+          "provided": "Dokumenti i dhënë",
+          "pending": "Në pritje",
+          "missingCount": "{count} dokument(e) që mungon(jnë)"
         },
-        "actions": {
-          "completeLater": "Plotëso më vonë",
-          "validateVerification": "Valido verifikimin",
-          "submitting": "Duke dërguar..."
+        "badge": {
+          "readyForValidation": "Gati për validim",
+          "incomplete": "Dokumente të pakompletuara"
+        }
+      },
+      "modal": {
+        "later": {
+          "title": "Kompletoni më vonë",
+          "description": "Mund ta kompletoni verifikimin e identitetit tuaj nga paneli juaj.",
+          "cancelBtn": "Anulo",
+          "continueBtn": "Vazhdo"
         },
-        "checklist": {
-          "title": "Lista e kontrollit të dokumenteve",
-          "items": {
-            "idFront": "Letërnjoftim — përpara",
-            "idBack": "Letërnjoftim — prapa",
-            "selfie": "Selfie me letrën \"FELORA\"",
-            "video": "Video prezantuese"
+        "success": {
+          "title": "Verifikimi u dërgua me sukses!",
+          "congratulations": "Urime!",
+          "docsSubmitted": "Dokumentet tuaja u dërguan tek ekipi ynë.",
+          "canComplete": "Tani mund të kompletoni të gjitha informacionet në hapësirën tuaj personale.",
+          "nextSteps": {
+            "title": "📋 Hapat e ardhshëm:",
+            "completeProfile": "Kompletoni profilin tuaj në panel",
+            "addPhotos": "Shtoni fotot dhe informacionet tuaja",
+            "verificationTime": "Verifikimi bëhet brenda 48 orëve pune",
+            "badgeAuto": "Insigna juaj do të shfaqet automatikisht pasi të validohet"
           },
-          "status": {
-            "provided": "Dokumenti i dhënë",
-            "pending": "Në pritje",
-            "missingCount": "{count} dokument(e) që mungon(jnë)"
-          },
-          "badge": {
-            "readyForValidation": "Gati për validim",
-            "incomplete": "Dokumente të pakompletuara"
-          }
-        },
-        "modal": {
-          "later": {
-            "title": "Kompletoni më vonë",
-            "description": "Mund ta kompletoni verifikimin e identitetit tuaj nga paneli juaj.",
-            "cancelBtn": "Anulo",
-            "continueBtn": "Vazhdo"
-          },
-          "success": {
-            "title": "Verifikimi u dërgua me sukses!",
-            "congratulations": "Urime!",
-            "docsSubmitted": "Dokumentet tuaja u dërguan tek ekipi ynë.",
-            "canComplete": "Tani mund të kompletoni të gjitha informacionet në hapësirën tuaj personale.",
-            "nextSteps": {
-              "title": "📋 Hapat e ardhshëm:",
-              "completeProfile": "Kompletoni profilin tuaj në panel",
-              "addPhotos": "Shtoni fotot dhe informacionet tuaja",
-              "verificationTime": "Verifikimi bëhet brenda 48 orëve pune",
-              "badgeAuto": "Insigna juaj do të shfaqet automatikisht pasi të validohet"
-            },
-            "goToDashboard": "Shko te Paneli"
-          }
+          "goToDashboard": "Shko te Paneli"
         }
       }
     }

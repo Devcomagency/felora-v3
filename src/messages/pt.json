@@ -1,6 +1,72 @@
 {
-  "common": {"search": "Pesquisar", "filters": "Filtros", "loading": "Carregando...", "error": "Erro", "retry": "Tentar novamente", "close": "Fechar", "save": "Salvar", "cancel": "Cancelar", "yes": "Sim", "no": "Não", "delete": "Excluir", "edit": "Editar", "confirm": "Confirmar", "back": "Voltar", "next": "Próximo", "previous": "Anterior", "submit": "Enviar", "send": "Enviar", "create": "Criar", "language": "Idioma", "schedule": "Agenda", "legal": "Legal", "privacy": "Privacidade", "terms": "Termos", "cookies": "Cookies"},
-  "search": {"title": "Pesquisa", "subtitle": "Descubra perfis excepcionais na Suíça", "placeholder": "Pesquisar por nome, cidade...", "searchAriaLabel": "Pesquisar escorts ou clubes por nome ou cidade", "openFilters": "Abrir filtros de pesquisa", "profiles": "Perfis", "establishments": "Estabelecimentos", "all": "Todos", "clubs": "Clubes", "salons": "Salões", "institutes": "Institutos", "agencies": "Agências", "independentProfiles": "Perfis Independentes", "profilesCount": "perfis", "noProfilesFound": "Nenhum perfil encontrado", "loading": "Carregando...", "loadMore": "Carregar mais", "establishmentsCount": "estabelecimentos", "noClubsFound": "Nenhum clube encontrado", "openMap": "Abrir mapa interativo", "loadingSearch": "Carregando pesquisa...", "noResults": "Nenhum resultado encontrado", "results": "{count} resultados", "filterBy": "Filtrar por", "sortBy": "Ordenar por", "verified": "Verificado", "availableNow": "Disponível agora", "available": "Disponível", "live": "Ao vivo", "favorite": "Favorito", "privateMedia": "Mídia privada", "escort": "Acompanhante", "salon": "Salão", "institute": "Instituto", "agency": "Agência", "club": "Clube", "open": "Aberto", "closed": "Fechado", "hours": "Horários"},
+  "common": {
+    "search": "Pesquisar",
+    "filters": "Filtros",
+    "loading": "Carregando...",
+    "error": "Erro",
+    "retry": "Tentar novamente",
+    "close": "Fechar",
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "yes": "Sim",
+    "no": "Não",
+    "delete": "Excluir",
+    "edit": "Editar",
+    "confirm": "Confirmar",
+    "back": "Voltar",
+    "next": "Próximo",
+    "previous": "Anterior",
+    "submit": "Enviar",
+    "send": "Enviar",
+    "create": "Criar",
+    "language": "Idioma",
+    "schedule": "Agenda",
+    "legal": "Legal",
+    "privacy": "Privacidade",
+    "terms": "Termos",
+    "cookies": "Cookies"
+  },
+  "search": {
+    "title": "Pesquisa",
+    "subtitle": "Descubra perfis excepcionais na Suíça",
+    "placeholder": "Pesquisar por nome, cidade...",
+    "searchAriaLabel": "Pesquisar escorts ou clubes por nome ou cidade",
+    "openFilters": "Abrir filtros de pesquisa",
+    "profiles": "Perfis",
+    "establishments": "Estabelecimentos",
+    "all": "Todos",
+    "clubs": "Clubes",
+    "salons": "Salões",
+    "institutes": "Institutos",
+    "agencies": "Agências",
+    "independentProfiles": "Perfis Independentes",
+    "profilesCount": "perfis",
+    "noProfilesFound": "Nenhum perfil encontrado",
+    "loading": "Carregando...",
+    "loadMore": "Carregar mais",
+    "establishmentsCount": "estabelecimentos",
+    "noClubsFound": "Nenhum clube encontrado",
+    "openMap": "Abrir mapa interativo",
+    "loadingSearch": "Carregando pesquisa...",
+    "noResults": "Nenhum resultado encontrado",
+    "results": "{count} resultados",
+    "filterBy": "Filtrar por",
+    "sortBy": "Ordenar por",
+    "verified": "Verificado",
+    "availableNow": "Disponível agora",
+    "available": "Disponível",
+    "live": "Ao vivo",
+    "favorite": "Favorito",
+    "privateMedia": "Mídia privada",
+    "escort": "Acompanhante",
+    "salon": "Salão",
+    "institute": "Instituto",
+    "agency": "Agência",
+    "club": "Clube",
+    "open": "Aberto",
+    "closed": "Fechado",
+    "hours": "Horários"
+  },
   "map": {
     "title": "Mapa interativo",
     "loading": "Carregando mapa...",
@@ -78,7 +144,19 @@
       }
     }
   },
-  "navigation": {"home": "Início", "search": "Pesquisa", "map": "Mapa", "messages": "Mensagens", "profile": "Perfil", "settings": "Configurações", "logout": "Sair", "login": "Entrar", "register": "Registrar", "dashboard": "Painel", "favorites": "Favoritos"},
+  "navigation": {
+    "home": "Início",
+    "search": "Pesquisa",
+    "map": "Mapa",
+    "messages": "Mensagens",
+    "profile": "Perfil",
+    "settings": "Configurações",
+    "logout": "Sair",
+    "login": "Entrar",
+    "register": "Registrar",
+    "dashboard": "Painel",
+    "favorites": "Favoritos"
+  },
   "auth": {
     "login": {
       "title": "Entrar",
@@ -489,7 +567,13 @@
     "autre": "Outro",
     "AUTRE": "Outro"
   },
-  "establishments": {"club": "Clube", "salon": "Salão", "studio": "Estúdio", "private": "Privado", "type": "Tipo de estabelecimento"},
+  "establishments": {
+    "club": "Clube",
+    "salon": "Salão",
+    "studio": "Estúdio",
+    "private": "Privado",
+    "type": "Tipo de estabelecimento"
+  },
   "amenities": {
     "champagne": "Champanhe",
     "Champagne": "Champanhe",
@@ -510,8 +594,20 @@
     "wifi": "WiFi",
     "WiFi": "WiFi"
   },
-  "errors": {"generic": "Ocorreu um erro", "network": "Erro de conexão", "notFound": "Página não encontrada", "unauthorized": "Não autorizado", "forbidden": "Acesso proibido", "tryAgain": "Por favor, tente novamente"},
-  "home": {"welcome": "Bem-vindo ao Felora", "discover": "Descobrir", "loadMore": "Carregar mais", "noContent": "Nenhum conteúdo disponível"},
+  "errors": {
+    "generic": "Ocorreu um erro",
+    "network": "Erro de conexão",
+    "notFound": "Página não encontrada",
+    "unauthorized": "Não autorizado",
+    "forbidden": "Acesso proibido",
+    "tryAgain": "Por favor, tente novamente"
+  },
+  "home": {
+    "welcome": "Bem-vindo ao Felora",
+    "discover": "Descobrir",
+    "loadMore": "Carregar mais",
+    "noContent": "Nenhum conteúdo disponível"
+  },
   "favorites": {
     "title": "Favoritos",
     "myFavorites": "Meus favoritos",
@@ -528,7 +624,14 @@
     "emptyDescription": "Adicione escorts ou clubes aos seus favoritos a partir de seus perfis para encontrá-los rapidamente aqui.",
     "discoverProfiles": "Descobrir perfis"
   },
-  "dashboard": {"title": "Painel", "statistics": "Estatísticas", "views": "Visualizações", "likes": "Curtidas", "messages": "Mensagens", "revenue": "Receita"},
+  "dashboard": {
+    "title": "Painel",
+    "statistics": "Estatísticas",
+    "views": "Visualizações",
+    "likes": "Curtidas",
+    "messages": "Mensagens",
+    "revenue": "Receita"
+  },
   "dashboardEscort": {
     "profil": {
       "pageTitle": "Meu Perfil",
@@ -1030,121 +1133,121 @@
           "filesLarge": "Arquivos muito grandes. Por favor comprima suas imagens/vídeos (máx. 3MB cada).",
           "submission": "Erro de envio"
         }
+      }
+    },
+    "kyc": {
+      "errors": {
+        "missingDocs": "Documentos faltando: {missing}",
+        "missingUserId": "ID de usuário ausente - por favor recarregue a página",
+        "filesTooLarge": "Arquivos muito grandes (máx. 25MB para vídeo, 10MB para imagens)",
+        "serverError": "Erro do servidor {status}",
+        "submitFailed": "Envio falhado - por favor tente novamente"
       },
-      "kyc": {
-        "errors": {
-          "missingDocs": "Documentos faltando: {missing}",
-          "missingUserId": "ID de usuário ausente - por favor recarregue a página",
-          "filesTooLarge": "Arquivos muito grandes (máx. 25MB para vídeo, 10MB para imagens)",
-          "serverError": "Erro do servidor {status}",
-          "submitFailed": "Envio falhado - por favor tente novamente"
+      "header": {
+        "title": "Verificação de identidade",
+        "subtitle": "Última etapa para ativar sua conta"
+      },
+      "required": {
+        "title": "Documentos obrigatórios:",
+        "idFront": "Foto da frente do documento de identidade",
+        "idBack": "Foto do verso do documento de identidade",
+        "selfie": "Selfie com papel \"FELORA\"",
+        "video": "Vídeo curto de apresentação"
+      },
+      "tips": {
+        "title": "💡 Dicas gerais:",
+        "naturalLight": "Use luz natural (evite contraluz)",
+        "avoidReflections": "Evite reflexos nos documentos",
+        "readable": "Todas as informações devem ser legíveis",
+        "formats": "Formatos aceitos: JPG, PNG, PDF, MP4, MOV"
+      },
+      "upload": {
+        "idFront": {
+          "label": "Documento de identidade — frente",
+          "req1": "Foto clara e legível",
+          "req2": "Todas as informações visíveis",
+          "req3": "Documento válido (não expirado)",
+          "tip1": "Coloque o documento plano",
+          "tip2": "Enquadre bem todas as bordas"
         },
-        "header": {
-          "title": "Verificação de identidade",
-          "subtitle": "Última etapa para ativar sua conta"
+        "idBack": {
+          "label": "Documento de identidade — verso",
+          "req1": "Foto clara e legível",
+          "req2": "Verso completo visível",
+          "req3": "Sem reflexos",
+          "tip1": "Verifique a nitidez antes de enviar",
+          "tip2": "Mantenha um fundo neutro"
         },
-        "required": {
-          "title": "Documentos obrigatórios:",
-          "idFront": "Foto da frente do documento de identidade",
-          "idBack": "Foto do verso do documento de identidade",
+        "selfie": {
+          "label": "Selfie com papel \"FELORA\"",
+          "req1": "Seu rosto claramente visível",
+          "req2": "Papel com \"FELORA\" + data de hoje escrito à mão",
+          "req3": "Foto colorida, não editada",
+          "tip1": "Segure o papel ao lado do seu rosto",
+          "tip2": "Certifique-se de que tudo seja legível"
+        },
+        "video": {
+          "label": "Vídeo curto de rosto",
+          "header": "Vídeo de apresentação (máx. 30s, máx. 25MB)",
+          "description": "Apresente-se dizendo seu nome completo. Filme em modo retrato com boa iluminação. Mantenha o vídeo curto para ficar abaixo de 25MB.",
+          "selectLabel": "Selecione seu vídeo",
+          "required": "Obrigatório",
+          "req1": "Duração máxima 30 segundos",
+          "req2": "Seu rosto claramente visível",
+          "req3": "Diga seu nome completo",
+          "tip1": "Filme em modo retrato (vertical)",
+          "tip2": "Certifique-se de ter boa iluminação",
+          "tip3": "Fale claramente e olhe para a câmera"
+        }
+      },
+      "status": {
+        "missingDocs": "{count} documento(s) faltando",
+        "allReady": "Todos os documentos estão prontos",
+        "allProvided": "Todos os documentos fornecidos"
+      },
+      "actions": {
+        "completeLater": "Completar mais tarde",
+        "validateVerification": "Validar verificação",
+        "submitting": "Enviando..."
+      },
+      "checklist": {
+        "title": "Lista de verificação de documentos",
+        "items": {
+          "idFront": "Documento de identidade — frente",
+          "idBack": "Documento de identidade — verso",
           "selfie": "Selfie com papel \"FELORA\"",
-          "video": "Vídeo curto de apresentação"
-        },
-        "tips": {
-          "title": "💡 Dicas gerais:",
-          "naturalLight": "Use luz natural (evite contraluz)",
-          "avoidReflections": "Evite reflexos nos documentos",
-          "readable": "Todas as informações devem ser legíveis",
-          "formats": "Formatos aceitos: JPG, PNG, PDF, MP4, MOV"
-        },
-        "upload": {
-          "idFront": {
-            "label": "Documento de identidade — frente",
-            "req1": "Foto clara e legível",
-            "req2": "Todas as informações visíveis",
-            "req3": "Documento válido (não expirado)",
-            "tip1": "Coloque o documento plano",
-            "tip2": "Enquadre bem todas as bordas"
-          },
-          "idBack": {
-            "label": "Documento de identidade — verso",
-            "req1": "Foto clara e legível",
-            "req2": "Verso completo visível",
-            "req3": "Sem reflexos",
-            "tip1": "Verifique a nitidez antes de enviar",
-            "tip2": "Mantenha um fundo neutro"
-          },
-          "selfie": {
-            "label": "Selfie com papel \"FELORA\"",
-            "req1": "Seu rosto claramente visível",
-            "req2": "Papel com \"FELORA\" + data de hoje escrito à mão",
-            "req3": "Foto colorida, não editada",
-            "tip1": "Segure o papel ao lado do seu rosto",
-            "tip2": "Certifique-se de que tudo seja legível"
-          },
-          "video": {
-            "label": "Vídeo curto de rosto",
-            "header": "Vídeo de apresentação (máx. 30s, máx. 25MB)",
-            "description": "Apresente-se dizendo seu nome completo. Filme em modo retrato com boa iluminação. Mantenha o vídeo curto para ficar abaixo de 25MB.",
-            "selectLabel": "Selecione seu vídeo",
-            "required": "Obrigatório",
-            "req1": "Duração máxima 30 segundos",
-            "req2": "Seu rosto claramente visível",
-            "req3": "Diga seu nome completo",
-            "tip1": "Filme em modo retrato (vertical)",
-            "tip2": "Certifique-se de ter boa iluminação",
-            "tip3": "Fale claramente e olhe para a câmera"
-          }
+          "video": "Vídeo de apresentação"
         },
         "status": {
-          "missingDocs": "{count} documento(s) faltando",
-          "allReady": "Todos os documentos estão prontos",
-          "allProvided": "Todos os documentos fornecidos"
+          "provided": "Documento fornecido",
+          "pending": "Pendente",
+          "missingCount": "{count} documento(s) faltando"
         },
-        "actions": {
-          "completeLater": "Completar mais tarde",
-          "validateVerification": "Validar verificação",
-          "submitting": "Enviando..."
+        "badge": {
+          "readyForValidation": "Pronto para validação",
+          "incomplete": "Documentos incompletos"
+        }
+      },
+      "modal": {
+        "later": {
+          "title": "Completar mais tarde",
+          "description": "Você poderá completar sua verificação de identidade no seu painel.",
+          "cancelBtn": "Cancelar",
+          "continueBtn": "Continuar"
         },
-        "checklist": {
-          "title": "Lista de verificação de documentos",
-          "items": {
-            "idFront": "Documento de identidade — frente",
-            "idBack": "Documento de identidade — verso",
-            "selfie": "Selfie com papel \"FELORA\"",
-            "video": "Vídeo de apresentação"
+        "success": {
+          "title": "Verificação enviada com sucesso!",
+          "congratulations": "Parabéns!",
+          "docsSubmitted": "Seus documentos foram enviados para nossa equipe.",
+          "canComplete": "Agora você pode completar todas as informações no seu espaço pessoal.",
+          "nextSteps": {
+            "title": "📋 Próximas etapas:",
+            "completeProfile": "Complete seu perfil no painel",
+            "addPhotos": "Adicione suas fotos e informações",
+            "verificationTime": "A verificação é feita em até 48 horas úteis",
+            "badgeAuto": "Seu badge aparecerá automaticamente após validação"
           },
-          "status": {
-            "provided": "Documento fornecido",
-            "pending": "Pendente",
-            "missingCount": "{count} documento(s) faltando"
-          },
-          "badge": {
-            "readyForValidation": "Pronto para validação",
-            "incomplete": "Documentos incompletos"
-          }
-        },
-        "modal": {
-          "later": {
-            "title": "Completar mais tarde",
-            "description": "Você poderá completar sua verificação de identidade no seu painel.",
-            "cancelBtn": "Cancelar",
-            "continueBtn": "Continuar"
-          },
-          "success": {
-            "title": "Verificação enviada com sucesso!",
-            "congratulations": "Parabéns!",
-            "docsSubmitted": "Seus documentos foram enviados para nossa equipe.",
-            "canComplete": "Agora você pode completar todas as informações no seu espaço pessoal.",
-            "nextSteps": {
-              "title": "📋 Próximas etapas:",
-              "completeProfile": "Complete seu perfil no painel",
-              "addPhotos": "Adicione suas fotos e informações",
-              "verificationTime": "A verificação é feita em até 48 horas úteis",
-              "badgeAuto": "Seu badge aparecerá automaticamente após validação"
-            },
-            "goToDashboard": "Ir para o Painel"
-          }
+          "goToDashboard": "Ir para o Painel"
         }
       }
     }

@@ -189,19 +189,6 @@
         "premium": "Premium service"
       }
     },
-    "register": "Register",
-    "email": "Email",
-    "password": "Password",
-    "confirmPassword": "Confirm password",
-    "forgotPassword": "Forgot password?",
-    "rememberMe": "Remember me",
-    "or": "or",
-    "continueWith": "Continue with {provider}",
-    "alreadyHaveAccount": "Already have an account?",
-    "dontHaveAccount": "Don't have an account?",
-    "resetPassword": "Reset password",
-    "sendResetLink": "Send reset link",
-    "backToLogin": "Back to login",
     "register": {
       "title": "Create an account",
       "subtitle": "Choose the account type that suits you",
@@ -237,6 +224,18 @@
         "login": "Log in"
       }
     },
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm password",
+    "forgotPassword": "Forgot password?",
+    "rememberMe": "Remember me",
+    "or": "or",
+    "continueWith": "Continue with {provider}",
+    "alreadyHaveAccount": "Already have an account?",
+    "dontHaveAccount": "Don't have an account?",
+    "resetPassword": "Reset password",
+    "sendResetLink": "Send reset link",
+    "backToLogin": "Back to login",
     "registerClient": {
       "title": "Client Registration",
       "subtitle": "Create your account in seconds",
@@ -1181,122 +1180,6 @@
           "applied": "Code applied",
           "codeApplied": "Code {code} applied"
         }
-      },
-      "kyc": {
-        "errors": {
-          "missingDocs": "Missing documents: {missing}",
-          "missingUserId": "Missing user ID - please reload the page",
-          "filesTooLarge": "Files too large (max 25MB for video, 10MB for images)",
-          "serverError": "Server error {status}",
-          "submitFailed": "Submission failed - please try again"
-        },
-        "header": {
-          "title": "Identity Verification",
-          "subtitle": "Final step to activate your account"
-        },
-        "required": {
-          "title": "Required documents:",
-          "idFront": "Photo of your ID card front",
-          "idBack": "Photo of your ID card back",
-          "selfie": "Selfie with \"FELORA\" paper",
-          "video": "Short presentation video"
-        },
-        "tips": {
-          "title": "💡 General tips:",
-          "naturalLight": "Use natural light (avoid backlighting)",
-          "avoidReflections": "Avoid reflections on documents",
-          "readable": "All information must be readable",
-          "formats": "Accepted formats: JPG, PNG, PDF, MP4, MOV"
-        },
-        "upload": {
-          "idFront": {
-            "label": "ID Card — front",
-            "req1": "Clear and readable photo",
-            "req2": "All information visible",
-            "req3": "Valid document (not expired)",
-            "tip1": "Place document flat",
-            "tip2": "Frame all edges properly"
-          },
-          "idBack": {
-            "label": "ID Card — back",
-            "req1": "Clear and readable photo",
-            "req2": "Complete back visible",
-            "req3": "No reflections",
-            "tip1": "Check sharpness before sending",
-            "tip2": "Keep a neutral background"
-          },
-          "selfie": {
-            "label": "Selfie with \"FELORA\" paper",
-            "req1": "Your face clearly visible",
-            "req2": "Paper with \"FELORA\" + today's date handwritten",
-            "req3": "Color photo, unedited",
-            "tip1": "Hold the paper next to your face",
-            "tip2": "Make sure everything is readable"
-          },
-          "video": {
-            "label": "Short face video",
-            "header": "Presentation video (max 30s, max 25MB)",
-            "description": "Introduce yourself saying your full name. Film in portrait mode with good lighting. Keep the video short to stay under 25MB.",
-            "selectLabel": "Select your video",
-            "required": "Required",
-            "req1": "Maximum duration 30 seconds",
-            "req2": "Your face clearly visible",
-            "req3": "Say your full name",
-            "tip1": "Film in portrait mode (vertical)",
-            "tip2": "Ensure good lighting",
-            "tip3": "Speak clearly and look at the camera"
-          }
-        },
-        "status": {
-          "missingDocs": "{count} missing document(s)",
-          "allReady": "All documents are ready",
-          "allProvided": "All documents provided"
-        },
-        "actions": {
-          "completeLater": "Complete later",
-          "validateVerification": "Validate verification",
-          "submitting": "Submitting..."
-        },
-        "checklist": {
-          "title": "Document checklist",
-          "items": {
-            "idFront": "ID Card — front",
-            "idBack": "ID Card — back",
-            "selfie": "Selfie with \"FELORA\" paper",
-            "video": "Presentation video"
-          },
-          "status": {
-            "provided": "Document provided",
-            "pending": "Pending",
-            "missingCount": "{count} missing document(s)"
-          },
-          "badge": {
-            "readyForValidation": "Ready for validation",
-            "incomplete": "Incomplete documents"
-          }
-        },
-        "modal": {
-          "later": {
-            "title": "Complete later",
-            "description": "You can complete your identity verification from your dashboard.",
-            "cancelBtn": "Cancel",
-            "continueBtn": "Continue"
-          },
-          "success": {
-            "title": "Verification submitted successfully!",
-            "congratulations": "Congratulations!",
-            "docsSubmitted": "Your documents have been sent to our team.",
-            "canComplete": "You can now complete all information in your personal space.",
-            "nextSteps": {
-              "title": "📋 Next steps:",
-              "completeProfile": "Complete your profile in the dashboard",
-              "addPhotos": "Add your photos and information",
-              "verificationTime": "Verification is done within 48 business hours",
-              "badgeAuto": "Your badge will appear automatically once validated"
-            },
-            "goToDashboard": "Go to Dashboard"
-          }
-        }
       }
     },
     "escort": {
@@ -1500,6 +1383,122 @@
           "noUserId": "User ID missing - please reload the page",
           "filesLarge": "Files too large. Please compress your images/videos (max 3MB each).",
           "submission": "Submission error"
+        }
+      }
+    },
+    "kyc": {
+      "errors": {
+        "missingDocs": "Missing documents: {missing}",
+        "missingUserId": "Missing user ID - please reload the page",
+        "filesTooLarge": "Files too large (max 25MB for video, 10MB for images)",
+        "serverError": "Server error {status}",
+        "submitFailed": "Submission failed - please try again"
+      },
+      "header": {
+        "title": "Identity Verification",
+        "subtitle": "Final step to activate your account"
+      },
+      "required": {
+        "title": "Required documents:",
+        "idFront": "Photo of your ID card front",
+        "idBack": "Photo of your ID card back",
+        "selfie": "Selfie with \"FELORA\" paper",
+        "video": "Short presentation video"
+      },
+      "tips": {
+        "title": "💡 General tips:",
+        "naturalLight": "Use natural light (avoid backlighting)",
+        "avoidReflections": "Avoid reflections on documents",
+        "readable": "All information must be readable",
+        "formats": "Accepted formats: JPG, PNG, PDF, MP4, MOV"
+      },
+      "upload": {
+        "idFront": {
+          "label": "ID Card — front",
+          "req1": "Clear and readable photo",
+          "req2": "All information visible",
+          "req3": "Valid document (not expired)",
+          "tip1": "Place document flat",
+          "tip2": "Frame all edges properly"
+        },
+        "idBack": {
+          "label": "ID Card — back",
+          "req1": "Clear and readable photo",
+          "req2": "Complete back visible",
+          "req3": "No reflections",
+          "tip1": "Check sharpness before sending",
+          "tip2": "Keep a neutral background"
+        },
+        "selfie": {
+          "label": "Selfie with \"FELORA\" paper",
+          "req1": "Your face clearly visible",
+          "req2": "Paper with \"FELORA\" + today's date handwritten",
+          "req3": "Color photo, unedited",
+          "tip1": "Hold the paper next to your face",
+          "tip2": "Make sure everything is readable"
+        },
+        "video": {
+          "label": "Short face video",
+          "header": "Presentation video (max 30s, max 25MB)",
+          "description": "Introduce yourself saying your full name. Film in portrait mode with good lighting. Keep the video short to stay under 25MB.",
+          "selectLabel": "Select your video",
+          "required": "Required",
+          "req1": "Maximum duration 30 seconds",
+          "req2": "Your face clearly visible",
+          "req3": "Say your full name",
+          "tip1": "Film in portrait mode (vertical)",
+          "tip2": "Ensure good lighting",
+          "tip3": "Speak clearly and look at the camera"
+        }
+      },
+      "status": {
+        "missingDocs": "{count} missing document(s)",
+        "allReady": "All documents are ready",
+        "allProvided": "All documents provided"
+      },
+      "actions": {
+        "completeLater": "Complete later",
+        "validateVerification": "Validate verification",
+        "submitting": "Submitting..."
+      },
+      "checklist": {
+        "title": "Document checklist",
+        "items": {
+          "idFront": "ID Card — front",
+          "idBack": "ID Card — back",
+          "selfie": "Selfie with \"FELORA\" paper",
+          "video": "Presentation video"
+        },
+        "status": {
+          "provided": "Document provided",
+          "pending": "Pending",
+          "missingCount": "{count} missing document(s)"
+        },
+        "badge": {
+          "readyForValidation": "Ready for validation",
+          "incomplete": "Incomplete documents"
+        }
+      },
+      "modal": {
+        "later": {
+          "title": "Complete later",
+          "description": "You can complete your identity verification from your dashboard.",
+          "cancelBtn": "Cancel",
+          "continueBtn": "Continue"
+        },
+        "success": {
+          "title": "Verification submitted successfully!",
+          "congratulations": "Congratulations!",
+          "docsSubmitted": "Your documents have been sent to our team.",
+          "canComplete": "You can now complete all information in your personal space.",
+          "nextSteps": {
+            "title": "📋 Next steps:",
+            "completeProfile": "Complete your profile in the dashboard",
+            "addPhotos": "Add your photos and information",
+            "verificationTime": "Verification is done within 48 business hours",
+            "badgeAuto": "Your badge will appear automatically once validated"
+          },
+          "goToDashboard": "Go to Dashboard"
         }
       }
     }

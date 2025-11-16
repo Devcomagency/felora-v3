@@ -1133,121 +1133,121 @@
           "filesLarge": "Archivos demasiado grandes. Por favor comprime tus imágenes/videos (máx. 3MB cada uno).",
           "submission": "Error de envío"
         }
+      }
+    },
+    "kyc": {
+      "errors": {
+        "missingDocs": "Documentos faltantes: {missing}",
+        "missingUserId": "ID de usuario faltante - por favor recarga la página",
+        "filesTooLarge": "Archivos demasiado grandes (máx. 25MB para video, 10MB para imágenes)",
+        "serverError": "Error del servidor {status}",
+        "submitFailed": "Envío fallido - por favor intenta de nuevo"
       },
-      "kyc": {
-        "errors": {
-          "missingDocs": "Documentos faltantes: {missing}",
-          "missingUserId": "ID de usuario faltante - por favor recarga la página",
-          "filesTooLarge": "Archivos demasiado grandes (máx. 25MB para video, 10MB para imágenes)",
-          "serverError": "Error del servidor {status}",
-          "submitFailed": "Envío fallido - por favor intenta de nuevo"
+      "header": {
+        "title": "Verificación de identidad",
+        "subtitle": "Último paso para activar tu cuenta"
+      },
+      "required": {
+        "title": "Documentos requeridos:",
+        "idFront": "Foto del anverso de tu documento de identidad",
+        "idBack": "Foto del reverso de tu documento de identidad",
+        "selfie": "Selfie con papel \"FELORA\"",
+        "video": "Video corto de presentación"
+      },
+      "tips": {
+        "title": "💡 Consejos generales:",
+        "naturalLight": "Usa luz natural (evita contraluz)",
+        "avoidReflections": "Evita reflejos en los documentos",
+        "readable": "Toda la información debe ser legible",
+        "formats": "Formatos aceptados: JPG, PNG, PDF, MP4, MOV"
+      },
+      "upload": {
+        "idFront": {
+          "label": "Documento de identidad — anverso",
+          "req1": "Foto clara y legible",
+          "req2": "Toda la información visible",
+          "req3": "Documento válido (no caducado)",
+          "tip1": "Coloca el documento plano",
+          "tip2": "Encuadra bien todos los bordes"
         },
-        "header": {
-          "title": "Verificación de identidad",
-          "subtitle": "Último paso para activar tu cuenta"
+        "idBack": {
+          "label": "Documento de identidad — reverso",
+          "req1": "Foto clara y legible",
+          "req2": "Reverso completo visible",
+          "req3": "Sin reflejos",
+          "tip1": "Verifica la nitidez antes de enviar",
+          "tip2": "Mantén un fondo neutro"
         },
-        "required": {
-          "title": "Documentos requeridos:",
-          "idFront": "Foto del anverso de tu documento de identidad",
-          "idBack": "Foto del reverso de tu documento de identidad",
+        "selfie": {
+          "label": "Selfie con papel \"FELORA\"",
+          "req1": "Tu rostro claramente visible",
+          "req2": "Papel con \"FELORA\" + fecha de hoy escrita a mano",
+          "req3": "Foto a color, sin editar",
+          "tip1": "Sostén el papel junto a tu rostro",
+          "tip2": "Asegúrate de que todo sea legible"
+        },
+        "video": {
+          "label": "Video corto de rostro",
+          "header": "Video de presentación (máx. 30s, máx. 25MB)",
+          "description": "Preséntate diciendo tu nombre completo. Graba en modo retrato con buena iluminación. Mantén el video corto para estar bajo 25MB.",
+          "selectLabel": "Selecciona tu video",
+          "required": "Requerido",
+          "req1": "Duración máxima 30 segundos",
+          "req2": "Tu rostro claramente visible",
+          "req3": "Di tu nombre completo",
+          "tip1": "Graba en modo retrato (vertical)",
+          "tip2": "Asegúrate de tener buena iluminación",
+          "tip3": "Habla claramente y mira a la cámara"
+        }
+      },
+      "status": {
+        "missingDocs": "{count} documento(s) faltante(s)",
+        "allReady": "Todos los documentos están listos",
+        "allProvided": "Todos los documentos proporcionados"
+      },
+      "actions": {
+        "completeLater": "Completar más tarde",
+        "validateVerification": "Validar verificación",
+        "submitting": "Enviando..."
+      },
+      "checklist": {
+        "title": "Lista de verificación de documentos",
+        "items": {
+          "idFront": "Documento de identidad — anverso",
+          "idBack": "Documento de identidad — reverso",
           "selfie": "Selfie con papel \"FELORA\"",
-          "video": "Video corto de presentación"
-        },
-        "tips": {
-          "title": "💡 Consejos generales:",
-          "naturalLight": "Usa luz natural (evita contraluz)",
-          "avoidReflections": "Evita reflejos en los documentos",
-          "readable": "Toda la información debe ser legible",
-          "formats": "Formatos aceptados: JPG, PNG, PDF, MP4, MOV"
-        },
-        "upload": {
-          "idFront": {
-            "label": "Documento de identidad — anverso",
-            "req1": "Foto clara y legible",
-            "req2": "Toda la información visible",
-            "req3": "Documento válido (no caducado)",
-            "tip1": "Coloca el documento plano",
-            "tip2": "Encuadra bien todos los bordes"
-          },
-          "idBack": {
-            "label": "Documento de identidad — reverso",
-            "req1": "Foto clara y legible",
-            "req2": "Reverso completo visible",
-            "req3": "Sin reflejos",
-            "tip1": "Verifica la nitidez antes de enviar",
-            "tip2": "Mantén un fondo neutro"
-          },
-          "selfie": {
-            "label": "Selfie con papel \"FELORA\"",
-            "req1": "Tu rostro claramente visible",
-            "req2": "Papel con \"FELORA\" + fecha de hoy escrita a mano",
-            "req3": "Foto a color, sin editar",
-            "tip1": "Sostén el papel junto a tu rostro",
-            "tip2": "Asegúrate de que todo sea legible"
-          },
-          "video": {
-            "label": "Video corto de rostro",
-            "header": "Video de presentación (máx. 30s, máx. 25MB)",
-            "description": "Preséntate diciendo tu nombre completo. Graba en modo retrato con buena iluminación. Mantén el video corto para estar bajo 25MB.",
-            "selectLabel": "Selecciona tu video",
-            "required": "Requerido",
-            "req1": "Duración máxima 30 segundos",
-            "req2": "Tu rostro claramente visible",
-            "req3": "Di tu nombre completo",
-            "tip1": "Graba en modo retrato (vertical)",
-            "tip2": "Asegúrate de tener buena iluminación",
-            "tip3": "Habla claramente y mira a la cámara"
-          }
+          "video": "Video de presentación"
         },
         "status": {
-          "missingDocs": "{count} documento(s) faltante(s)",
-          "allReady": "Todos los documentos están listos",
-          "allProvided": "Todos los documentos proporcionados"
+          "provided": "Documento proporcionado",
+          "pending": "Pendiente",
+          "missingCount": "{count} documento(s) faltante(s)"
         },
-        "actions": {
-          "completeLater": "Completar más tarde",
-          "validateVerification": "Validar verificación",
-          "submitting": "Enviando..."
+        "badge": {
+          "readyForValidation": "Listo para validación",
+          "incomplete": "Documentos incompletos"
+        }
+      },
+      "modal": {
+        "later": {
+          "title": "Completar más tarde",
+          "description": "Podrás completar tu verificación de identidad desde tu panel de control.",
+          "cancelBtn": "Cancelar",
+          "continueBtn": "Continuar"
         },
-        "checklist": {
-          "title": "Lista de verificación de documentos",
-          "items": {
-            "idFront": "Documento de identidad — anverso",
-            "idBack": "Documento de identidad — reverso",
-            "selfie": "Selfie con papel \"FELORA\"",
-            "video": "Video de presentación"
+        "success": {
+          "title": "¡Verificación enviada con éxito!",
+          "congratulations": "¡Felicitaciones!",
+          "docsSubmitted": "Tus documentos han sido enviados a nuestro equipo.",
+          "canComplete": "Ahora puedes completar toda la información en tu espacio personal.",
+          "nextSteps": {
+            "title": "📋 Próximos pasos:",
+            "completeProfile": "Completa tu perfil en el panel",
+            "addPhotos": "Agrega tus fotos e información",
+            "verificationTime": "La verificación se realiza en 48 horas hábiles",
+            "badgeAuto": "Tu insignia aparecerá automáticamente una vez validada"
           },
-          "status": {
-            "provided": "Documento proporcionado",
-            "pending": "Pendiente",
-            "missingCount": "{count} documento(s) faltante(s)"
-          },
-          "badge": {
-            "readyForValidation": "Listo para validación",
-            "incomplete": "Documentos incompletos"
-          }
-        },
-        "modal": {
-          "later": {
-            "title": "Completar más tarde",
-            "description": "Podrás completar tu verificación de identidad desde tu panel de control.",
-            "cancelBtn": "Cancelar",
-            "continueBtn": "Continuar"
-          },
-          "success": {
-            "title": "¡Verificación enviada con éxito!",
-            "congratulations": "¡Felicitaciones!",
-            "docsSubmitted": "Tus documentos han sido enviados a nuestro equipo.",
-            "canComplete": "Ahora puedes completar toda la información en tu espacio personal.",
-            "nextSteps": {
-              "title": "📋 Próximos pasos:",
-              "completeProfile": "Completa tu perfil en el panel",
-              "addPhotos": "Agrega tus fotos e información",
-              "verificationTime": "La verificación se realiza en 48 horas hábiles",
-              "badgeAuto": "Tu insignia aparecerá automáticamente una vez validada"
-            },
-            "goToDashboard": "Ir al Panel"
-          }
+          "goToDashboard": "Ir al Panel"
         }
       }
     }
