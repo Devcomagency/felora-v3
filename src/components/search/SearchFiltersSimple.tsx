@@ -32,13 +32,8 @@ const swissLocations = {
   "TI": ["Lugano", "Bellinzona", "Locarno"]
 }
 
-// Catégories d'escortes
-const escortCategories = [
-  { value: 'escort', label: 'Escorte' },
-  { value: 'masseuse_erotique', label: 'Masseuse Érotique' },
-  { value: 'dominatrice_bdsm', label: 'Dominatrice BDSM' },
-  { value: 'transsexuel', label: 'Transsexuel' }
-]
+// Catégories d'escortes - values match translation keys
+const escortCategoryValues = ['ESCORT', 'MASSEUSE', 'DOMINATRICE', 'TRANSSEXUELLE']
 
 export default function SearchFiltersSimple({
   filters,
@@ -47,6 +42,7 @@ export default function SearchFiltersSimple({
   isOpen
 }: SearchFiltersSimpleProps) {
   const tFilters = useTranslations('filters')
+  const tCategories = useTranslations('categories')
 
   const [localFilters, setLocalFilters] = useState({
     ...filters,
@@ -139,22 +135,22 @@ export default function SearchFiltersSimple({
                   {tFilters('category')}
                 </label>
                 <div className="grid grid-cols-2 gap-2">
-                  {escortCategories.map(category => (
+                  {escortCategoryValues.map(categoryValue => (
                     <button
-                      key={category.value}
-                      onClick={() => handleCategoryToggle(category.value)}
+                      key={categoryValue}
+                      onClick={() => handleCategoryToggle(categoryValue)}
                       className={`px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                        (localFilters.categories || []).includes(category.value)
+                        (localFilters.categories || []).includes(categoryValue)
                           ? 'bg-pink-500/20 text-pink-400 border border-pink-500/50'
                           : 'text-white/80 border hover:bg-white/5'
                       }`}
-                      style={!(localFilters.categories || []).includes(category.value) ? {
+                      style={!(localFilters.categories || []).includes(categoryValue) ? {
                         background: 'linear-gradient(to bottom right, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02))',
                         backdropFilter: 'blur(20px)',
                         borderColor: 'rgba(255, 255, 255, 0.1)'
                       } : {}}
                     >
-                      {category.label}
+                      {tCategories(categoryValue)}
                     </button>
                   ))}
                 </div>
