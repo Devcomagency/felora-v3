@@ -643,6 +643,32 @@
         "step1": "Fügen Sie Ihre Fotos und Beschreibungen hinzu",
         "step2": "Konfigurieren Sie Ihre Tarife und Dienstleistungen",
         "step3": "Ihre Verifizierung wird innerhalb von 48 Stunden bearbeitet"
+      },
+      "tabs": {
+        "basic": {
+          "label": "Grundinformationen",
+          "description": "Allgemeines Profil (erforderlich)"
+        },
+        "appearance": {
+          "label": "Körperliches Erscheinungsbild",
+          "description": "Physische Merkmale"
+        },
+        "services": {
+          "label": "Kundschaft & Dienstleistungen",
+          "description": "Gruppen + Tags"
+        },
+        "pricing": {
+          "label": "Preise & Zahlungen",
+          "description": "Preise und Öffnungszeiten"
+        },
+        "agenda": {
+          "label": "Agenda",
+          "description": "Verfügbarkeit & Abwesenheiten"
+        },
+        "clubs": {
+          "label": "Meine Clubs",
+          "description": "Partnerclubs & Einladungen"
+        }
       }
     }
   },

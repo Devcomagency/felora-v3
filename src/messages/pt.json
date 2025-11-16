@@ -540,6 +540,32 @@
         "step1": "Adicione suas fotos e descrições",
         "step2": "Configure suas tarifas e serviços",
         "step3": "Sua verificação será processada em até 48 horas"
+      },
+      "tabs": {
+        "basic": {
+          "label": "Informações básicas",
+          "description": "Perfil geral (obrigatório)"
+        },
+        "appearance": {
+          "label": "Aparência física",
+          "description": "Características físicas"
+        },
+        "services": {
+          "label": "Clientela e Serviços",
+          "description": "Grupos + tags"
+        },
+        "pricing": {
+          "label": "Tarifas e Pagamentos",
+          "description": "Preços e horários"
+        },
+        "agenda": {
+          "label": "Agenda",
+          "description": "Disponibilidade e ausências"
+        },
+        "clubs": {
+          "label": "Meus Clubes",
+          "description": "Clubes parceiros e convites"
+        }
       }
     }
   },

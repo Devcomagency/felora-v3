@@ -540,6 +540,32 @@
         "step1": "Shtoni fotot dhe përshkrimet tuaja",
         "step2": "Konfiguroni tarifat dhe shërbimet tuaja",
         "step3": "Verifikimi juaj do të përpunohet brenda 48 orëve"
+      },
+      "tabs": {
+        "basic": {
+          "label": "Informacion bazë",
+          "description": "Profil i përgjithshëm (i detyrueshëm)"
+        },
+        "appearance": {
+          "label": "Pamja fizike",
+          "description": "Karakteristikat fizike"
+        },
+        "services": {
+          "label": "Klientela dhe Shërbime",
+          "description": "Grupe + etiketa"
+        },
+        "pricing": {
+          "label": "Tarifat dhe Pagesat",
+          "description": "Çmimet dhe oraret"
+        },
+        "agenda": {
+          "label": "Agjenda",
+          "description": "Disponueshmëria dhe mungesat"
+        },
+        "clubs": {
+          "label": "Klubet e mia",
+          "description": "Klubet partnere dhe ftesa"
+        }
       }
     }
   },

@@ -643,6 +643,32 @@
         "step1": "Aggiungi le tue foto e descrizioni",
         "step2": "Configura le tue tariffe e servizi",
         "step3": "La tua verifica sarà elaborata entro 48 ore"
+      },
+      "tabs": {
+        "basic": {
+          "label": "Informazioni di base",
+          "description": "Profilo generale (obbligatorio)"
+        },
+        "appearance": {
+          "label": "Aspetto fisico",
+          "description": "Caratteristiche fisiche"
+        },
+        "services": {
+          "label": "Clientela e Servizi",
+          "description": "Gruppi + tag"
+        },
+        "pricing": {
+          "label": "Tariffe e Pagamenti",
+          "description": "Prezzi e orari"
+        },
+        "agenda": {
+          "label": "Agenda",
+          "description": "Disponibilità e assenze"
+        },
+        "clubs": {
+          "label": "I miei Club",
+          "description": "Club partner e inviti"
+        }
       }
     }
   },
