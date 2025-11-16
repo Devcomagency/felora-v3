@@ -172,6 +172,41 @@
     "resetPassword": "Réinitialiser le mot de passe",
     "sendResetLink": "Envoyer le lien de réinitialisation",
     "backToLogin": "Retour à la connexion",
+    "register": {
+      "title": "Créer un compte",
+      "subtitle": "Choisissez le type de compte qui vous correspond",
+      "continue": "Continuer",
+      "types": {
+        "client": {
+          "title": "Client",
+          "subtitle": "Découvrir & Rencontrer",
+          "description": "Accédez aux profils premium et aux fonctionnalités exclusives",
+          "benefit1": "Navigation illimitée",
+          "benefit2": "Messagerie privée",
+          "benefit3": "Favoris & alertes"
+        },
+        "escort": {
+          "title": "Escorte Indépendante",
+          "subtitle": "Développer votre activité",
+          "description": "Créez votre profil professionnel et gérez vos rendez-vous",
+          "benefit1": "Profil personnalisé",
+          "benefit2": "Gestion des réservations",
+          "benefit3": "Paiements sécurisés"
+        },
+        "salon": {
+          "title": "Établissement",
+          "subtitle": "Gérer votre équipe",
+          "description": "Créez votre espace professionnel multi-profils",
+          "benefit1": "Gestion d'équipe",
+          "benefit2": "Planning centralisé",
+          "benefit3": "Analytics avancées"
+        }
+      },
+      "footer": {
+        "hasAccount": "Vous avez déjà un compte ?",
+        "login": "Se connecter"
+      }
+    },
     "registerClient": {
       "title": "Inscription Client",
       "subtitle": "Créez votre compte en quelques secondes",

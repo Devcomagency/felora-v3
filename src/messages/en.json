@@ -172,6 +172,41 @@
     "resetPassword": "Reset password",
     "sendResetLink": "Send reset link",
     "backToLogin": "Back to login",
+    "register": {
+      "title": "Create an account",
+      "subtitle": "Choose the account type that suits you",
+      "continue": "Continue",
+      "types": {
+        "client": {
+          "title": "Client",
+          "subtitle": "Discover & Meet",
+          "description": "Access premium profiles and exclusive features",
+          "benefit1": "Unlimited browsing",
+          "benefit2": "Private messaging",
+          "benefit3": "Favorites & alerts"
+        },
+        "escort": {
+          "title": "Independent Escort",
+          "subtitle": "Grow your business",
+          "description": "Create your professional profile and manage your appointments",
+          "benefit1": "Custom profile",
+          "benefit2": "Booking management",
+          "benefit3": "Secure payments"
+        },
+        "salon": {
+          "title": "Establishment",
+          "subtitle": "Manage your team",
+          "description": "Create your multi-profile professional space",
+          "benefit1": "Team management",
+          "benefit2": "Centralized schedule",
+          "benefit3": "Advanced analytics"
+        }
+      },
+      "footer": {
+        "hasAccount": "Already have an account?",
+        "login": "Log in"
+      }
+    },
     "registerClient": {
       "title": "Client Registration",
       "subtitle": "Create your account in seconds",
