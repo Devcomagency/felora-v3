@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Map, { Marker, Popup, ViewStateChangeEvent } from 'react-map-gl/maplibre'
 import { MapPin, SlidersHorizontal, BadgeCheck } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import useSWR from 'swr'
 import Supercluster from 'supercluster'
 import 'maplibre-gl/dist/maplibre-gl.css'
@@ -62,6 +63,7 @@ const fetcher = async (url: string) => {
 }
 
 export default function MapTest() {
+  const t = useTranslations('map')
   const router = useRouter()
   const searchParams = useSearchParams()
   
@@ -493,7 +495,7 @@ export default function MapTest() {
   // Geolocation function
   const locateUser = useCallback(async () => {
     if (!navigator.geolocation) {
-      setGeoError("La géolocalisation n'est pas supportée par ce navigateur")
+      setGeoError(t('geolocation.notSupported'))
       return
     }
 
@@ -502,7 +504,7 @@ export default function MapTest() {
       try {
         const result = await navigator.permissions.query({ name: 'geolocation' })
         if (result.state === 'denied') {
-          setGeoError('Permission refusée. Activez-la dans les paramètres de votre navigateur.')
+          setGeoError(t('geolocation.permissionDenied'))
           return
         }
       } catch (err) {
@@ -525,16 +527,16 @@ export default function MapTest() {
         setIsLocating(false)
       },
       (error) => {
-        let errorMessage = 'Impossible de récupérer votre position'
+        let errorMessage = t('geolocation.errorDefault')
         switch (error.code) {
           case error.PERMISSION_DENIED:
-            errorMessage = 'Accès à la géolocalisation refusé'
+            errorMessage = t('geolocation.permissionDenied')
             break
           case error.POSITION_UNAVAILABLE:
-            errorMessage = 'Position non disponible'
+            errorMessage = t('geolocation.unavailable')
             break
           case error.TIMEOUT:
-            errorMessage = 'Délai de géolocalisation dépassé'
+            errorMessage = t('geolocation.timeout')
             break
         }
         setGeoError(errorMessage)
@@ -546,7 +548,7 @@ export default function MapTest() {
         maximumAge: 60000
       }
     )
-  }, [viewState.zoom])
+  }, [viewState.zoom, t])
 
   // Initialize bounds on mount
   useEffect(() => {
@@ -633,7 +635,7 @@ export default function MapTest() {
           color: 'white',
           boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)'
         }}
-        aria-label="Retour"
+        aria-label={t('backButton.ariaLabel')}
       >
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="m15 18-6-6 6-6"/>
@@ -677,8 +679,8 @@ export default function MapTest() {
           {userLocation && (
             <Marker latitude={userLocation.latitude} longitude={userLocation.longitude}>
               <div
-                aria-label="Votre position"
-                title="Votre position"
+                aria-label={t('userLocation.ariaLabel')}
+                title={t('userLocation.title')}
                 style={{
                   width: 14,
                   height: 14,
@@ -718,7 +720,7 @@ export default function MapTest() {
                       color: 'white'
                     }}
                     role="button"
-                    aria-label={`${point_count} profils dans cette zone`}
+                    aria-label={t('cluster.ariaLabel', { count: point_count })}
                   >
                     {point_count}
                   </div>
@@ -868,7 +870,7 @@ export default function MapTest() {
                     color: 'white'
                   }}
                 >
-                  Voir le profil
+                  {t('popup.viewProfile')}
                 </button>
               </div>
             </Popup>
@@ -893,7 +895,7 @@ export default function MapTest() {
                 }}
               >
                 <h3 className="text-white font-semibold mb-3">
-                  {clusterPopup.escorts.length} profils dans cette zone
+                  {t('clusterPopup.title', { count: clusterPopup.escorts.length })}
                 </h3>
                 
                 <div className="max-h-[300px] overflow-y-auto space-y-2">
@@ -951,7 +953,7 @@ export default function MapTest() {
                     color: '#FF6B9D'
                   }}
                 >
-                  Zoomer sur cette zone
+                  {t('clusterPopup.zoomIn')}
                 </button>
               </div>
             </Popup>
@@ -980,11 +982,11 @@ export default function MapTest() {
           boxShadow: '0 10px 26px rgba(0,0,0,0.30), 0 0 0 1px rgba(255,255,255,0.05)'
         }}
         role="button"
-        aria-label="Voir la liste des profils visibles"
+        aria-label={t('statusBar.ariaLabel')}
       >
-        {visibleCount} profil{visibleCount !== 1 ? 's' : ''} visible{visibleCount !== 1 ? 's' : ''}
-        {isLoading && ' • Chargement...'}
-        {error && ' • Erreur'}
+        {t('statusBar.profilesVisible', { count: visibleCount })}
+        {isLoading && ' • ' + t('statusBar.loading')}
+        {error && ' • ' + t('statusBar.error')}
       </div>
 
       {/* Backdrop pour fermer le modal */}
@@ -1012,11 +1014,11 @@ export default function MapTest() {
             {/* Category filters */}
             <div className="flex flex-col gap-2">
               {[
-                { value: 'escort', label: 'Escorte' },
-                { value: 'masseuse_erotique', label: 'Masseuse Érotique' },
-                { value: 'dominatrice_bdsm', label: 'Dominatrice BDSM' },
-                { value: 'transsexuel', label: 'Transsexuel' },
-                { value: 'club', label: '🏢 Établissement' }
+                { value: 'escort', label: t('filters.categories.escort') },
+                { value: 'masseuse_erotique', label: t('filters.categories.masseuse') },
+                { value: 'dominatrice_bdsm', label: t('filters.categories.dominatrice') },
+                { value: 'transsexuel', label: t('filters.categories.trans') },
+                { value: 'club', label: t('filters.categories.club') }
               ].map(category => (
                 <button
                   key={category.value}
@@ -1056,7 +1058,7 @@ export default function MapTest() {
                   color: 'rgba(255, 255, 255, 0.8)'
                 }}
               >
-                Effacer les filtres
+                {t('filters.clearFilters')}
               </button>
             )}
           </div>
@@ -1066,7 +1068,7 @@ export default function MapTest() {
       {/* Bouton Filtres - Au-dessus du bouton localisation */}
       <button
         onClick={() => setShowFilters(!showFilters)}
-        aria-label="Ouvrir les filtres"
+        aria-label={t('filters.ariaLabel')}
         aria-expanded={showFilters}
         aria-pressed={showFilters}
         className="fixed right-4 w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 z-50"
@@ -1101,7 +1103,7 @@ export default function MapTest() {
       <button
         onClick={locateUser}
         disabled={isLocating}
-        aria-label="Se localiser sur la carte"
+        aria-label={t('geolocation.ariaLabel')}
         aria-pressed={userLocation !== null}
         aria-busy={isLocating}
         className="fixed bottom-20 right-4 w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 z-50"
@@ -1114,7 +1116,7 @@ export default function MapTest() {
           width: 52,
           height: 52
         }}
-        title="Voir autour de moi"
+        title={t('geolocation.title')}
       >
         {isLocating ? (
           <div
@@ -1158,8 +1160,8 @@ export default function MapTest() {
           {/* Header */}
           <div className="flex items-center justify-between p-3 sm:p-4 border-b border-white/10">
                  <div>
-                   <h3 className="text-white font-semibold text-base sm:text-lg">Profils visibles</h3>
-                   <p className="text-white/60 text-xs sm:text-sm">{visibleEscorts.length} profils dans la zone visible</p>
+                   <h3 className="text-white font-semibold text-base sm:text-lg">{t('sidebar.title')}</h3>
+                   <p className="text-white/60 text-xs sm:text-sm">{t('sidebar.subtitle', { count: visibleEscorts.length })}</p>
                  </div>
             <button
               onClick={() => setShowVisibleProfiles(false)}
@@ -1173,7 +1175,7 @@ export default function MapTest() {
                <div className="overflow-y-auto p-3 sm:p-4 pb-20 sm:pb-8" style={{ height: 'calc(100vh - 70px)' }}>
                  {visibleEscorts.length === 0 ? (
                    <div className="text-center py-8 text-white/40">
-                     Aucun profil visible dans cette zone
+                     {t('sidebar.noProfiles')}
                    </div>
                  ) : (
                    <div className="space-y-3">
@@ -1257,12 +1259,12 @@ export default function MapTest() {
                                    }}
                                  >
                                    {escort.type === 'club'
-                                    ? (escort.establishmentType || 'Club')
-                                    : escort.category === 'ESCORT' ? 'Escort'
-                                    : escort.category === 'MASSEUSE' ? 'Masseuse'
-                                    : escort.category === 'DOMINATRICE' ? 'Dominatrice'
-                                    : escort.category === 'TRANSSEXUELLE' ? 'Transsexuel'
-                                    : (escort.category || escort.services?.[0] || 'Escort')
+                                    ? (escort.establishmentType || t('sidebar.category.club'))
+                                    : escort.category === 'ESCORT' ? t('sidebar.category.escort')
+                                    : escort.category === 'MASSEUSE' ? t('sidebar.category.masseuse')
+                                    : escort.category === 'DOMINATRICE' ? t('sidebar.category.dominatrice')
+                                    : escort.category === 'TRANSSEXUELLE' ? t('sidebar.category.trans')
+                                    : (escort.category || escort.services?.[0] || t('sidebar.category.escort'))
                                   }
                                  </div>
                                </div>
@@ -1289,7 +1291,7 @@ export default function MapTest() {
 
           {visibleEscorts.length >= 30 && filteredEscorts.length > visibleEscorts.length && (
             <div className="p-3 border-t border-white/10 text-center text-xs text-white/40">
-              +{filteredEscorts.length - visibleEscorts.length} autres profils dans la zone
+              {t('sidebar.moreProfiles', { count: filteredEscorts.length - visibleEscorts.length })}
             </div>
           )}
         </div>
@@ -1327,14 +1329,14 @@ export default function MapTest() {
           }}
         >
           <div className="text-center">
-            <div 
+            <div
               className="w-12 h-12 rounded-full mx-auto mb-4 animate-spin"
               style={{
                 background: 'linear-gradient(135deg, #FF6B9D 0%, #B794F6 50%, #4FD1C7 100%)',
                 mask: 'radial-gradient(circle at center, transparent 4px, black 6px)'
               }}
             />
-            <p className="text-white">Chargement de la carte...</p>
+            <p className="text-white">{t('loading')}</p>
           </div>
         </div>
       )}

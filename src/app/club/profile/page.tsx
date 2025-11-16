@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState, useTransition, useRef, useCallback } from
 import { Building, MapPin, Clock, Globe, Save, Eye, Upload, X, Plus, UserPlus, UserMinus, Search, Check, XCircle } from 'lucide-react'
 import AddressAutocomplete from '@/components/ui/AddressAutocomplete'
 import HorairesPanel from '@/components/dashboard/HorairesPanel'
+import { useTranslations } from 'next-intl'
 
 type Club = {
   id: string
@@ -21,6 +22,7 @@ type Club = {
 }
 
 export default function ClubProfilePage() {
+  const t = useTranslations('club.profile')
   const [club, setClub] = useState<Club | null>(null)
   const [form, setForm] = useState<Partial<Club> & {
     websiteUrl?: string;
@@ -62,14 +64,12 @@ export default function ClubProfilePage() {
               isActive: !!data.club.isActive,
               websiteUrl: (data.club as any).websiteUrl || '',
               establishmentType: data.club.establishmentType || 'club',
-              // Pré-remplir avec les données sauvegardées en priorité
               email: data.club.email || data.club.user?.email || '',
               phone: data.club.phone || data.club.user?.phoneE164 || '',
               handle: data.club.handle || '',
               companyName: data.club.companyName || '',
               managerName: data.club.managerName || ''
             })
-            // Charger les coordonnées si elles existent
             if (data.club.latitude && data.club.longitude) {
               setCoordinates({
                 lat: data.club.latitude,
@@ -79,16 +79,15 @@ export default function ClubProfilePage() {
           }
         }
       } catch (e) {
-        if (!cancelled) setError('Erreur de chargement du profil')
+        if (!cancelled) setError(t('info.errors.loadingError'))
       } finally {
         if (!cancelled) setLoading(false)
       }
     }
     load()
     return () => { cancelled = true }
-  }, [])
+  }, [t])
 
-  // Charger un résumé médias (1 photo de profil obligatoire uniquement)
   useEffect(() => {
     let cancelled = false
     ;(async () => {
@@ -98,7 +97,7 @@ export default function ClubProfilePage() {
         const items: Array<{ pos?: number|null; type:'IMAGE'|'VIDEO' }> = Array.isArray(j?.items) ? j.items : []
         const byPos = new Map<number, { type:'IMAGE'|'VIDEO' }>()
         for (const m of items) if (typeof m.pos === 'number') byPos.set(m.pos!, { type: (m as any).type })
-        const okProfile = byPos.get(0)?.type === 'IMAGE'  // Photo de profil (IMAGE requis) - pos 0
+        const okProfile = byPos.get(0)?.type === 'IMAGE'
         const count = okProfile ? 1 : 0
         if (!cancelled) setMediaCount({ count, ok: count === 1 })
       } catch {}
@@ -124,8 +123,6 @@ export default function ClubProfilePage() {
         openingHours: updatedForm.openingHours,
         avatarUrl: updatedForm.avatarUrl,
         coverUrl: updatedForm.coverUrl,
-        // Ne pas envoyer isActive dans l'auto-save pour éviter de le réinitialiser
-        // isActive est géré uniquement par le bouton toggle
         city: updatedForm.address ? updatedForm.address.split(',')[0] || '' : '',
         websiteUrl: updatedForm.websiteUrl,
         email: updatedForm.email,
@@ -136,7 +133,7 @@ export default function ClubProfilePage() {
       }
 
       console.log('📤 Sauvegarde club profile:', { websiteUrl: payload.websiteUrl, payload })
-      
+
       const res = await fetch('/api/clubs/profile/update', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -158,17 +155,15 @@ export default function ClubProfilePage() {
     const updatedForm = { ...form, [key]: value }
     setForm(updatedForm)
 
-    // Debounce l'auto-save
     if (autoSaveTimeoutRef.current) {
       clearTimeout(autoSaveTimeoutRef.current)
     }
 
     autoSaveTimeoutRef.current = setTimeout(() => {
       autoSave(updatedForm)
-    }, 1500) // 1.5 secondes de debounce
+    }, 1500)
   }
 
-  // Auto-save pour les coordonnées
   useEffect(() => {
     if (coordinates && form.name) {
       if (autoSaveTimeoutRef.current) {
@@ -181,7 +176,6 @@ export default function ClubProfilePage() {
     }
   }, [coordinates, autoSave])
 
-  // Cleanup timeout on unmount
   useEffect(() => {
     return () => {
       if (autoSaveTimeoutRef.current) {
@@ -193,11 +187,10 @@ export default function ClubProfilePage() {
   const onSave = () => {
     setMessage(null)
     setError(null)
-    // Validation côté client: champs requis
     const errs: Record<string, string> = {}
-    if (!String(form.name||'').trim()) errs.name = 'Nom requis'
-    if (!String(form.description||'').trim()) errs.description = 'Description requise'
-    if (!String(form.address||'').trim()) errs.address = 'Adresse requise'
+    if (!String(form.name||'').trim()) errs.name = t('info.errors.nameRequired')
+    if (!String(form.description||'').trim()) errs.description = t('info.errors.descriptionRequired')
+    if (!String(form.address||'').trim()) errs.address = t('info.errors.addressRequired')
     setFieldErrors(errs)
     if (Object.keys(errs).length) return
     startSaving(async () => {
@@ -226,9 +219,9 @@ export default function ClubProfilePage() {
         })
         const j = await res.json()
         if (!res.ok || !j?.ok) throw new Error(j?.error || 'save_failed')
-        setMessage('Profil mis à jour')
+        setMessage(t('info.messages.profileUpdated'))
       } catch (e) {
-        setError('Échec de la sauvegarde')
+        setError(t('info.errors.savingError'))
       }
     })
   }
@@ -248,11 +241,10 @@ export default function ClubProfilePage() {
         const result = await res.json()
         if (!res.ok || !result?.ok) throw new Error(result?.error || 'toggle_failed')
 
-        // Mettre à jour l'état local
         setForm(prev => ({ ...prev, isActive: newStatus }))
-        setMessage(`Profil ${newStatus ? 'activé' : 'désactivé'} avec succès`)
+        setMessage(newStatus ? t('status.profileActivated') : t('status.profileDeactivated'))
       } catch (e) {
-        setError(`Erreur: ${e instanceof Error ? e.message : 'Unknown error'}`)
+        setError(t('status.toggleError', { error: e instanceof Error ? e.message : 'Unknown error' }))
       }
     })
   }
@@ -273,10 +265,10 @@ export default function ClubProfilePage() {
                 </div>
                 <div className="flex flex-col min-w-0">
                   <span className="text-white font-semibold text-sm sm:text-base truncate">
-                    {form.isActive ? 'Profil actif' : 'Profil inactif'}
+                    {form.isActive ? t('status.active') : t('status.inactive')}
                   </span>
                   <span className="text-xs text-gray-400 truncate">
-                    {form.isActive ? 'Visible par les utilisateurs' : 'Masqué aux utilisateurs'}
+                    {form.isActive ? t('status.visibleToUsers') : t('status.hiddenFromUsers')}
                   </span>
                 </div>
               </div>
@@ -289,7 +281,7 @@ export default function ClubProfilePage() {
                     : 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/20 disabled:opacity-50'
                 }`}
               >
-                {toggling ? 'Chargement...' : (form.isActive ? 'Désactiver' : 'Activer')}
+                {toggling ? t('status.activating') : (form.isActive ? t('status.deactivate') : t('status.activate'))}
               </button>
             </div>
 
@@ -301,20 +293,20 @@ export default function ClubProfilePage() {
               <div className="flex items-center gap-2">
                 <div className="flex items-center gap-1.5">
                   <div className={`w-2 h-2 rounded-full flex-shrink-0 ${infoRequiredCount === 4 ? 'bg-emerald-500' : 'bg-yellow-500'}`}></div>
-                  <span className="text-xs sm:text-sm text-gray-300 whitespace-nowrap">Informations</span>
+                  <span className="text-xs sm:text-sm text-gray-300 whitespace-nowrap">{t('progress.information')}</span>
                 </div>
                 <span className={`text-xs px-2 py-0.5 sm:py-1 rounded-full whitespace-nowrap ${infoRequiredCount===4 ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30'}`}>
-                  {infoRequiredCount}/4
+                  {t('progress.informationCount', { count: infoRequiredCount })}
                 </span>
               </div>
               <div className="w-px h-5 bg-white/10 hidden sm:block"></div>
               <div className="flex items-center gap-2">
                 <div className="flex items-center gap-1.5">
                   <div className={`w-2 h-2 rounded-full flex-shrink-0 ${mediaCount.ok ? 'bg-emerald-500' : 'bg-yellow-500'}`}></div>
-                  <span className="text-xs sm:text-sm text-gray-300 whitespace-nowrap">Photo</span>
+                  <span className="text-xs sm:text-sm text-gray-300 whitespace-nowrap">{t('progress.photo')}</span>
                 </div>
                 <span className={`text-xs px-2 py-0.5 sm:py-1 rounded-full whitespace-nowrap ${mediaCount.ok ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30'}`}>
-                  {mediaCount.count}/1
+                  {t('progress.photoCount', { count: mediaCount.count })}
                 </span>
               </div>
             </div>
@@ -332,9 +324,9 @@ export default function ClubProfilePage() {
                   : 'text-gray-400 hover:text-gray-300'
               }`}
             >
-              <span className="whitespace-nowrap">Informations</span>
+              <span className="whitespace-nowrap">{t('tabs.information')}</span>
               <span className={`text-xs px-1.5 sm:px-2 py-0.5 rounded-full ${infoRequiredCount===4 ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-white/10 text-gray-300 border border-white/10'}`}>
-                {infoRequiredCount}/4
+                {t('progress.informationCount', { count: infoRequiredCount })}
               </span>
               {activeTab === 'info' && (
                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#FF6B9D] via-[#B794F6] to-[#FF6B9D]"></div>
@@ -348,8 +340,8 @@ export default function ClubProfilePage() {
                   : 'text-gray-400 hover:text-gray-300'
               }`}
             >
-              <span className="whitespace-nowrap">Services</span>
-              <span className="hidden lg:inline bg-white/10 text-xs px-1.5 sm:px-2 py-0.5 rounded-full text-gray-300 border border-white/10">Opt.</span>
+              <span className="whitespace-nowrap">{t('tabs.services')}</span>
+              <span className="hidden lg:inline bg-white/10 text-xs px-1.5 sm:px-2 py-0.5 rounded-full text-gray-300 border border-white/10">{t('tabs.optional')}</span>
               {activeTab === 'services' && (
                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#FF6B9D] via-[#B794F6] to-[#FF6B9D]"></div>
               )}
@@ -362,7 +354,7 @@ export default function ClubProfilePage() {
                   : 'text-gray-400 hover:text-gray-300'
               }`}
             >
-              <span className="whitespace-nowrap">Horaires</span>
+              <span className="whitespace-nowrap">{t('tabs.schedule')}</span>
               {activeTab === 'horaires' && (
                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#FF6B9D] via-[#B794F6] to-[#FF6B9D]"></div>
               )}
@@ -375,7 +367,7 @@ export default function ClubProfilePage() {
                   : 'text-gray-400 hover:text-gray-300'
               }`}
             >
-              <span className="whitespace-nowrap">Mon Équipe</span>
+              <span className="whitespace-nowrap">{t('tabs.myTeam')}</span>
               {activeTab === 'escorts' && (
                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#FF6B9D] via-[#B794F6] to-[#FF6B9D]"></div>
               )}
@@ -389,7 +381,7 @@ export default function ClubProfilePage() {
           {activeTab === 'info' && (
           <>
           <div className="p-4 sm:p-6 rounded-xl sm:rounded-2xl bg-gray-900/60 border border-gray-800">
-            <h2 className="text-base sm:text-lg font-semibold text-white mb-4">Informations principales</h2>
+            <h2 className="text-base sm:text-lg font-semibold text-white mb-4">{t('info.title')}</h2>
 
             {loading ? (
               <div className="space-y-3">
@@ -405,45 +397,44 @@ export default function ClubProfilePage() {
               <div className="space-y-4">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <label className="block text-sm text-gray-300">Nom du club</label>
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-red-500/20 text-red-300 border border-red-500/30">Requis</span>
+                    <label className="block text-sm text-gray-300">{t('info.clubName')}</label>
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-red-500/20 text-red-300 border border-red-500/30">{t('info.required')}</span>
                   </div>
                   <input
                     value={form.name || ''}
                     onChange={e => updateField('name', e.target.value)}
                     className={`w-full px-3 py-2.5 text-[15px] bg-gray-800/60 border ${fieldErrors.name? 'border-red-500/60':'border-gray-700'} rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500`}
-                    placeholder="Ex. Club Luxe Geneva"
+                    placeholder={t('info.clubNamePlaceholder')}
                   />
                   {fieldErrors.name && <p className="text-xs text-red-400 mt-1">{fieldErrors.name}</p>}
                 </div>
 
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <label className="block text-sm text-gray-300">Type d'établissement</label>
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-red-500/20 text-red-300 border border-red-500/30">Requis</span>
+                    <label className="block text-sm text-gray-300">{t('info.establishmentType')}</label>
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-red-500/20 text-red-300 border border-red-500/30">{t('info.required')}</span>
                   </div>
                   <select
                     value={form.establishmentType || 'club'}
                     onChange={e => updateField('establishmentType', e.target.value as any)}
                     className="w-full px-3 py-2.5 text-[15px] bg-gray-800/60 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
                   >
-                    <option value="institut_massage">Institut de massage</option>
-                    <option value="agence_escorte">Agence d'escorte</option>
-                    <option value="salon_erotique">Salon érotique</option>
-                    <option value="club">Club</option>
+                    <option value="institut_massage">{t('info.establishmentTypes.institut_massage')}</option>
+                    <option value="agence_escorte">{t('info.establishmentTypes.agence_escorte')}</option>
+                    <option value="salon_erotique">{t('info.establishmentTypes.salon_erotique')}</option>
+                    <option value="club">{t('info.establishmentTypes.club')}</option>
                   </select>
                 </div>
 
                 {/* Données d'inscription modifiables */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm text-gray-300 mb-1">Email</label>
+                    <label className="block text-sm text-gray-300 mb-1">{t('info.email')}</label>
                     <input
                       value={form.email || ''}
                       onChange={e => {
                         const updatedForm = { ...form, email: e.target.value }
                         setForm(updatedForm)
-                        // Auto-save pour email
                         if (autoSaveTimeoutRef.current) {
                           clearTimeout(autoSaveTimeoutRef.current)
                         }
@@ -452,18 +443,17 @@ export default function ClubProfilePage() {
                         }, 1500)
                       }}
                       className="w-full px-3 py-2.5 text-[15px] bg-gray-800/60 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500"
-                      placeholder="contact@votre-club.ch"
+                      placeholder={t('info.emailPlaceholder')}
                       type="email"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm text-gray-300 mb-1">Téléphone</label>
+                    <label className="block text-sm text-gray-300 mb-1">{t('info.phone')}</label>
                     <input
                       value={form.phone || ''}
                       onChange={e => {
                         const updatedForm = { ...form, phone: e.target.value }
                         setForm(updatedForm)
-                        // Auto-save pour phone
                         if (autoSaveTimeoutRef.current) {
                           clearTimeout(autoSaveTimeoutRef.current)
                         }
@@ -472,7 +462,7 @@ export default function ClubProfilePage() {
                         }, 1500)
                       }}
                       className="w-full px-3 py-2.5 text-[15px] bg-gray-800/60 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500"
-                      placeholder="+41 XX XXX XX XX"
+                      placeholder={t('info.phonePlaceholder')}
                       type="tel"
                     />
                   </div>
@@ -480,22 +470,22 @@ export default function ClubProfilePage() {
 
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <label className="block text-sm text-gray-300">Description</label>
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-red-500/20 text-red-300 border border-red-500/30">Requis</span>
+                    <label className="block text-sm text-gray-300">{t('info.description')}</label>
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-red-500/20 text-red-300 border border-red-500/30">{t('info.required')}</span>
                   </div>
                   <textarea
                     value={form.description || ''}
                     onChange={e => updateField('description', e.target.value)}
                     className={`w-full px-3 py-2.5 text-[15px] bg-gray-800/60 border ${fieldErrors.description? 'border-red-500/60':'border-gray-700'} rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 min-h-[110px]`}
-                    placeholder="Décrivez votre établissement, ambiance, services, etc."
+                    placeholder={t('info.descriptionPlaceholder')}
                   />
                   {fieldErrors.description && <p className="text-xs text-red-400 mt-1">{fieldErrors.description}</p>}
                 </div>
 
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <label className="block text-sm text-gray-300">Adresse</label>
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-red-500/20 text-red-300 border border-red-500/30">Requis</span>
+                    <label className="block text-sm text-gray-300">{t('info.address')}</label>
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-red-500/20 text-red-300 border border-red-500/30">{t('info.required')}</span>
                   </div>
                   <AddressAutocomplete
                     value={form.address || ''}
@@ -504,24 +494,23 @@ export default function ClubProfilePage() {
                     }}
                     onCoordinatesChange={setCoordinates}
                     className={`w-full px-3 py-2.5 text-[15px] bg-gray-800/60 border ${fieldErrors.address? 'border-red-500/60':'border-gray-700'} rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500`}
-                    placeholder="Commencez à taper votre adresse..."
+                    placeholder={t('info.addressPlaceholder')}
                   />
                   {coordinates && (
                     <p className="text-xs text-green-400 mt-1">
-                      📍 Position: {coordinates.lat.toFixed(4)}, {coordinates.lng.toFixed(4)}
+                      {t('info.positionFound', { lat: coordinates.lat.toFixed(4), lng: coordinates.lng.toFixed(4) })}
                     </p>
                   )}
                   {fieldErrors.address && <p className="text-xs text-red-400 mt-1">{fieldErrors.address}</p>}
                 </div>
 
                 <div>
-                  <label className="block text-sm text-gray-300 mb-1">Site web (facultatif)</label>
+                  <label className="block text-sm text-gray-300 mb-1">{t('info.website')}</label>
                   <input
                     value={form.websiteUrl || ''}
                     onChange={e => {
                       const updatedForm = { ...form, websiteUrl: e.target.value }
                       setForm(updatedForm)
-                      // Auto-save pour websiteUrl
                       if (autoSaveTimeoutRef.current) {
                         clearTimeout(autoSaveTimeoutRef.current)
                       }
@@ -530,7 +519,7 @@ export default function ClubProfilePage() {
                       }, 1500)
                     }}
                     className="w-full px-3 py-2.5 text-[15px] bg-gray-800/60 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500"
-                    placeholder="https://votre-site.ch"
+                    placeholder={t('info.websitePlaceholder')}
                   />
                 </div>
 
@@ -576,9 +565,9 @@ export default function ClubProfilePage() {
                   rel="noopener noreferrer"
                   className={`flex-1 sm:flex-none px-3 py-2 text-sm rounded-lg border border-white/10 text-white/80 hover:bg-white/10 text-center ${!form.handle ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
-                  Voir profil
+                  {t('actions.viewProfile')}
                 </a>
-                <button onClick={onSave} disabled={saving} className="flex-1 sm:flex-none px-4 py-2 text-sm rounded-lg bg-[#FF6B9D] hover:bg-[#FF6B9D]/90 text-white disabled:opacity-60 transition-all whitespace-nowrap">{saving ? 'Sauvegarde…' : 'Enregistrer'}</button>
+                <button onClick={onSave} disabled={saving} className="flex-1 sm:flex-none px-4 py-2 text-sm rounded-lg bg-[#FF6B9D] hover:bg-[#FF6B9D]/90 text-white disabled:opacity-60 transition-all whitespace-nowrap">{saving ? t('actions.saving') : t('actions.save')}</button>
               </div>
             </div>
           </div>
@@ -591,6 +580,7 @@ export default function ClubProfilePage() {
 
 // Simple panel component for Services inside profile page
 function ServicesPanel(){
+  const t = useTranslations('club.profile.services')
   const [languages, setLanguages] = useState<string[]>([])
   const [paymentMethods, setPaymentMethods] = useState<string[]>([])
   const [services, setServices] = useState<string[]>([])
@@ -600,12 +590,42 @@ function ServicesPanel(){
   const [error, setError] = useState<string | null>(null)
   const autoSaveServicesTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-  const DEFAULT_LANGS = ['Français','Anglais','Allemand','Italien','Espagnol','Russe','Arabe','Chinois']
-  const DEFAULT_PAYMENTS = ['Cash','Carte','TWINT','Virement']
-  const DEFAULT_SERVICES = ['Bar','Privé','Sécurité','Parking','Salle VIP']
-  const DEFAULT_EQUIPMENTS = ['Douche','Jacuzzi','Sauna','Climatisation','Fumoir','Parking','Accès handicapé','Ambiance musicale','Bar','Pole dance']
+  const DEFAULT_LANGS = [
+    t('languages.french'),
+    t('languages.english'),
+    t('languages.german'),
+    t('languages.italian'),
+    t('languages.spanish'),
+    t('languages.russian'),
+    t('languages.arabic'),
+    t('languages.chinese')
+  ]
+  const DEFAULT_PAYMENTS = [
+    t('paymentMethods.cash'),
+    t('paymentMethods.card'),
+    t('paymentMethods.twint'),
+    t('paymentMethods.transfer')
+  ]
+  const DEFAULT_SERVICES = [
+    t('servicesList.bar'),
+    t('servicesList.private'),
+    t('servicesList.security'),
+    t('servicesList.parking'),
+    t('servicesList.vipRoom')
+  ]
+  const DEFAULT_EQUIPMENTS = [
+    t('equipmentsList.shower'),
+    t('equipmentsList.jacuzzi'),
+    t('equipmentsList.sauna'),
+    t('equipmentsList.airConditioning'),
+    t('equipmentsList.smokingArea'),
+    t('equipmentsList.parking'),
+    t('equipmentsList.handicapAccess'),
+    t('equipmentsList.musicAmbiance'),
+    t('equipmentsList.bar'),
+    t('equipmentsList.poleDance')
+  ]
 
-  // Auto-save pour les services
   const autoSaveServices = useCallback(async () => {
     try {
       const body = { languages, paymentMethods, services, equipments }
@@ -625,30 +645,24 @@ function ServicesPanel(){
     }
   }, [languages, paymentMethods, services, equipments])
 
-  // Fonction toggle avec auto-save
   const toggle = (setter: React.Dispatch<React.SetStateAction<string[]>>, _list: string[], value: string) => {
     setter(prev => {
       const s = new Set(prev)
       if (s.has(value)) s.delete(value); else s.add(value)
       const newArray = Array.from(s)
 
-      // Déclencher l'auto-save après un délai
       if (autoSaveServicesTimeoutRef.current) {
         clearTimeout(autoSaveServicesTimeoutRef.current)
       }
 
       autoSaveServicesTimeoutRef.current = setTimeout(() => {
-        // On ne peut pas utiliser directement autoSaveServices ici car les states ne sont pas encore mis à jour
-        // On va déclencher l'auto-save avec un useEffect
       }, 1000)
 
       return newArray
     })
   }
 
-  // Auto-save quand les états changent
   useEffect(() => {
-    // Ne pas auto-save au premier chargement
     if (languages.length === 0 && paymentMethods.length === 0 && services.length === 0 && equipments.length === 0) {
       return
     }
@@ -661,7 +675,6 @@ function ServicesPanel(){
       autoSaveServices()
     }, 1500)
 
-    // Cleanup timeout
     return () => {
       if (autoSaveServicesTimeoutRef.current) {
         clearTimeout(autoSaveServicesTimeoutRef.current)
@@ -669,7 +682,6 @@ function ServicesPanel(){
     }
   }, [languages, paymentMethods, services, equipments, autoSaveServices])
 
-  // Cleanup timeout on unmount
   useEffect(() => {
     return () => {
       if (autoSaveServicesTimeoutRef.current) {
@@ -678,7 +690,6 @@ function ServicesPanel(){
     }
   }, [])
 
-  // Charger depuis l'API
   useEffect(() => {
     let cancelled = false
     ;(async () => {
@@ -693,11 +704,11 @@ function ServicesPanel(){
           setEquipments(Array.isArray(s.equipments)? s.equipments: [])
         }
       } catch (e) {
-        if (!cancelled) setError('Impossible de charger les services')
+        if (!cancelled) setError(t('loadingError'))
       }
     })()
     return () => { cancelled = true }
-  }, [])
+  }, [t])
 
   const onSave = () => {
     setMessage(null)
@@ -708,9 +719,9 @@ function ServicesPanel(){
         const r = await fetch('/api/clubs/services/update', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(body) })
         const d = await r.json()
         if (!r.ok || !d?.ok) throw new Error(d?.error || 'save_failed')
-        setMessage('Paramètres enregistrés')
+        setMessage(t('settingsSaved'))
       } catch (e) {
-        setError('Échec de la sauvegarde')
+        setError(t('savingError'))
       }
     })
   }
@@ -718,13 +729,13 @@ function ServicesPanel(){
   return (
     <>
       <div className="p-4 sm:p-6 rounded-xl sm:rounded-2xl bg-gray-900/60 border border-gray-800">
-        <h2 className="text-base sm:text-lg text-white font-semibold mb-3 sm:mb-4">Langues parlées</h2>
+        <h2 className="text-base sm:text-lg text-white font-semibold mb-3 sm:mb-4">{t('languagesTitle')}</h2>
         <div className="flex flex-wrap gap-1.5 sm:gap-2">
           {DEFAULT_LANGS.map(l => (
             <button key={l} onClick={() => toggle(setLanguages, languages, l)} className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm border transition-all ${languages.includes(l) ? 'bg-purple-500/20 border-purple-500/40 text-purple-200' : 'bg-white/5 border-white/10 text-white'}`}>{l}</button>
           ))}
         </div>
-        <h2 className="text-base sm:text-lg text-white font-semibold mt-5 sm:mt-6 mb-3 sm:mb-4">Moyens de paiement</h2>
+        <h2 className="text-base sm:text-lg text-white font-semibold mt-5 sm:mt-6 mb-3 sm:mb-4">{t('paymentMethodsTitle')}</h2>
         <div className="flex flex-wrap gap-1.5 sm:gap-2">
           {DEFAULT_PAYMENTS.map(p => (
             <button key={p} onClick={() => toggle(setPaymentMethods, paymentMethods, p)} className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm border transition-all ${paymentMethods.includes(p) ? 'bg-purple-500/20 border-purple-500/40 text-purple-200' : 'bg-white/5 border-white/10 text-white'}`}>{p}</button>
@@ -732,17 +743,16 @@ function ServicesPanel(){
         </div>
       </div>
       <div className="p-4 sm:p-6 rounded-xl sm:rounded-2xl bg-gray-900/60 border border-gray-800">
-        <h2 className="text-base sm:text-lg text-white font-semibold mb-3 sm:mb-4">Services & Équipements</h2>
+        <h2 className="text-base sm:text-lg text-white font-semibold mb-3 sm:mb-4">{t('servicesEquipmentsTitle')}</h2>
 
         <div className="flex flex-wrap gap-1.5 sm:gap-2">
-          {/* Services et Équipements unifiés */}
           {[...DEFAULT_SERVICES, ...DEFAULT_EQUIPMENTS].map(item => {
             const isService = DEFAULT_SERVICES.includes(item)
             const isSelected = isService ? services.includes(item) : equipments.includes(item)
-            const toggleFunction = isService ? 
-              () => toggle(setServices, services, item) : 
+            const toggleFunction = isService ?
+              () => toggle(setServices, services, item) :
               () => toggle(setEquipments, equipments, item)
-            
+
             return (
               <button
                 key={item}
@@ -761,7 +771,7 @@ function ServicesPanel(){
 
         <div className="mt-5 sm:mt-6 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
           <button onClick={onSave} disabled={saving} className="w-full sm:w-auto px-4 py-2 rounded-lg bg-[#FF6B9D] hover:bg-[#FF6B9D]/90 text-white text-sm disabled:opacity-60 transition-all">
-            {saving ? 'Sauvegarde…' : 'Enregistrer'}
+            {saving ? t('saving') : t('save')}
           </button>
           {message && <div className="text-xs sm:text-sm text-green-400">{message}</div>}
           {error && <div className="text-xs sm:text-sm text-red-400">{error}</div>}
@@ -773,16 +783,16 @@ function ServicesPanel(){
 
 // Composant pour la gestion des médias du club
 function ClubMediaGrid() {
+  const t = useTranslations('club.profile.media')
   const [media, setMedia] = useState<Array<{ pos: number; type: 'IMAGE' | 'VIDEO'; url?: string }>>([])
   const [uploading, setUploading] = useState<number | null>(null)
   const [message, setMessage] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   const mediaSlots = [
-    { pos: 0, label: 'Photo de couverture', type: 'IMAGE' as const, required: true, inPublications: false },
+    { pos: 0, label: t('coverPhoto'), type: 'IMAGE' as const, required: true, inPublications: false },
   ]
 
-  // Charger les médias existants
   useEffect(() => {
     let cancelled = false
     ;(async () => {
@@ -793,11 +803,11 @@ function ClubMediaGrid() {
         const validMedia = items.filter(item => typeof item.pos === 'number' && item.pos === 0)
         if (!cancelled) setMedia(validMedia as Array<{ pos: number; type: 'IMAGE' | 'VIDEO'; url?: string }>)
       } catch (e) {
-        if (!cancelled) setError('Erreur de chargement des médias')
+        if (!cancelled) setError(t('loadingError'))
       }
     })()
     return () => { cancelled = true }
-  }, [])
+  }, [t])
 
   const getMediaForSlot = (pos: number) => {
     return media.find(m => m.pos === pos)
@@ -833,15 +843,14 @@ function ClubMediaGrid() {
           throw new Error(result.error || 'Upload failed')
         }
 
-        // Mettre à jour la liste des médias
         setMedia(prev => {
           const filtered = prev.filter(m => m.pos !== pos)
           return [...filtered, { pos, type, url: result.url || 'uploaded' }]
         })
 
-        setMessage(`${type === 'IMAGE' ? 'Photo' : 'Vidéo'} uploadée avec succès`)
+        setMessage(t('uploadSuccess', { type: type === 'IMAGE' ? 'Photo' : 'Vidéo' }))
       } catch (e) {
-        setError(`Erreur d'upload: ${e instanceof Error ? e.message : 'Unknown error'}`)
+        setError(t('uploadError', { error: e instanceof Error ? e.message : 'Unknown error' }))
       } finally {
         setUploading(null)
       }
@@ -865,21 +874,20 @@ function ClubMediaGrid() {
         throw new Error(result.error || 'Suppression échouée')
       }
 
-      // Mettre à jour l'état local après succès de l'API
       setMedia(prev => prev.filter(m => m.pos !== pos))
-      setMessage('Média supprimé avec succès')
+      setMessage(t('deleteSuccess'))
     } catch (e) {
-      setError(`Erreur de suppression: ${e instanceof Error ? e.message : 'Unknown error'}`)
+      setError(t('deleteError', { error: e instanceof Error ? e.message : 'Unknown error' }))
     }
   }
 
   return (
     <div className="p-4 sm:p-6 rounded-xl sm:rounded-2xl bg-gray-900/60 border border-gray-800">
       <div className="flex items-center gap-2 mb-3 sm:mb-4">
-        <h2 className="text-base sm:text-lg font-semibold text-white">Photo de profil</h2>
-        <span className="text-xs px-2 py-0.5 sm:py-1 rounded-full bg-red-500/20 text-red-300 border border-red-500/30">Requis</span>
+        <h2 className="text-base sm:text-lg font-semibold text-white">{t('title')}</h2>
+        <span className="text-xs px-2 py-0.5 sm:py-1 rounded-full bg-red-500/20 text-red-300 border border-red-500/30">{t('info.required', { ns: 'club.profile' })}</span>
       </div>
-      <p className="text-sm sm:text-base text-white/70 mb-4 sm:mb-6">1 photo de couverture obligatoire : Cette photo s'affichera en grand sur votre profil public</p>
+      <p className="text-sm sm:text-base text-white/70 mb-4 sm:mb-6">{t('subtitle')}</p>
 
       <div className="grid grid-cols-1 gap-4 sm:gap-6">
         {mediaSlots.map((slot) => {
@@ -919,13 +927,12 @@ function ClubMediaGrid() {
                         }}
                       />
                     )}
-                    {/* Fallback pour les erreurs de chargement */}
                     <div
                       className="w-full h-full bg-gray-700 flex items-center justify-center"
                       style={{ display: 'none' }}
                     >
                       <span className="text-gray-400">
-                        {existingMedia.type === 'IMAGE' ? '📷 Image indisponible' : '🎥 Vidéo indisponible'}
+                        {existingMedia.type === 'IMAGE' ? t('imageUnavailable') : t('videoUnavailable')}
                       </span>
                     </div>
                     <button
@@ -940,13 +947,13 @@ function ClubMediaGrid() {
                     {isUploading ? (
                       <div className="space-y-2 text-center">
                         <div className="w-8 h-8 border-2 border-purple-500/30 border-t-purple-500 rounded-full animate-spin mx-auto"></div>
-                        <p className="text-sm text-gray-400">Upload en cours...</p>
+                        <p className="text-sm text-gray-400">{t('uploadInProgress')}</p>
                       </div>
                     ) : (
                       <div className="space-y-2 text-center">
                         <Upload className="w-6 sm:w-8 h-6 sm:h-8 text-gray-400 mx-auto" />
                         <p className="text-xs sm:text-sm text-gray-400 px-2">
-                          {slot.type === 'IMAGE' ? 'Cliquez pour ajouter une photo' : 'Cliquez pour ajouter une vidéo'}
+                          {slot.type === 'IMAGE' ? t('clickToAddPhoto') : t('clickToAddVideo')}
                         </p>
                       </div>
                     )}
@@ -959,7 +966,7 @@ function ClubMediaGrid() {
                   onClick={() => handleFileUpload(slot.pos, slot.type)}
                   className="w-full mt-2 sm:mt-3 px-3 sm:px-4 py-2 text-xs sm:text-sm bg-purple-500/20 border border-purple-500/40 text-purple-200 rounded-lg hover:bg-purple-500/30 transition-colors"
                 >
-                  Ajouter {slot.type === 'IMAGE' ? 'une photo' : 'une vidéo'}
+                  {slot.type === 'IMAGE' ? t('addPhoto') : t('addVideo')}
                 </button>
               )}
             </div>
@@ -975,6 +982,7 @@ function ClubMediaGrid() {
 
 // Composant pour la gestion des escorts du club
 function EscortsPanel() {
+  const t = useTranslations('club.profile.team')
   const [linkedEscorts, setLinkedEscorts] = useState<Array<{
     id: string
     linkId?: string
@@ -1088,18 +1096,18 @@ function EscortsPanel() {
         setSearchTerm('')
         setSearchResults([])
         setSubTab('invitations')
-        alert('Invitation envoyée avec succès !')
+        alert(t('inviteModal.invitationSent'))
       } else {
-        alert(data.error || 'Erreur lors de l\'envoi de l\'invitation')
+        alert(data.error || t('inviteModal.invitationError'))
       }
     } catch (error) {
       console.error('Error sending invitation:', error)
-      alert('Erreur lors de l\'envoi de l\'invitation')
+      alert(t('inviteModal.invitationError'))
     }
   }
 
   const cancelInvitation = async (invitationId: string) => {
-    if (!confirm('Voulez-vous vraiment annuler cette invitation ?')) return
+    if (!confirm(t('cancelInvitation'))) return
 
     try {
       const res = await fetch(`/api/club-escort-invitations/${invitationId}`, {
@@ -1113,16 +1121,16 @@ function EscortsPanel() {
       if (data.success) {
         await loadData()
       } else {
-        alert(data.error || 'Erreur lors de l\'annulation')
+        alert(data.error || t('inviteModal.cancelError'))
       }
     } catch (error) {
       console.error('Error canceling invitation:', error)
-      alert('Erreur lors de l\'annulation')
+      alert(t('inviteModal.cancelError'))
     }
   }
 
   const removeEscort = async (linkId: string, escortName: string) => {
-    if (!confirm(`Voulez-vous vraiment retirer ${escortName} du club ?`)) return
+    if (!confirm(t('removeConfirm', { name: escortName }))) return
 
     try {
       const res = await fetch(`/api/club-escort-links/${linkId}`, {
@@ -1134,11 +1142,11 @@ function EscortsPanel() {
       if (data.success) {
         await loadData()
       } else {
-        alert(data.error || 'Erreur lors du retrait')
+        alert(data.error || t('inviteModal.removeError'))
       }
     } catch (error) {
       console.error('Error removing escort:', error)
-      alert('Erreur lors du retrait')
+      alert(t('inviteModal.removeError'))
     }
   }
 
@@ -1157,7 +1165,7 @@ function EscortsPanel() {
                 : 'bg-gray-800 text-gray-400 hover:text-white'
             }`}
           >
-            Équipe active ({linkedEscorts.length})
+            {t('activeTeam', { count: linkedEscorts.length })}
           </button>
           <button
             onClick={() => setSubTab('invitations')}
@@ -1167,7 +1175,7 @@ function EscortsPanel() {
                 : 'bg-gray-800 text-gray-400 hover:text-white'
             }`}
           >
-            Invitations ({pendingInvitations.length})
+            {t('invitations', { count: pendingInvitations.length })}
           </button>
         </div>
 
@@ -1176,12 +1184,12 @@ function EscortsPanel() {
           className="w-full sm:w-auto flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-[#FF6B9D] hover:bg-[#FF6B9D]/90 text-white text-xs sm:text-sm rounded-lg transition-all"
         >
           <UserPlus size={16} />
-          Inviter une fille
+          {t('inviteGirl')}
         </button>
       </div>
 
       {loading ? (
-        <div className="text-gray-400 text-sm text-center py-8">Chargement…</div>
+        <div className="text-gray-400 text-sm text-center py-8">{t('loading')}</div>
       ) : (
         <>
           {/* Sous-onglet: Escorts liées */}
@@ -1207,11 +1215,11 @@ function EscortsPanel() {
                       if (escort.linkId) {
                         removeEscort(escort.linkId, escort.name)
                       } else {
-                        alert('Impossible de retirer cette escort')
+                        alert(t('inviteModal.cannotRemove'))
                       }
                     }}
                     className="absolute top-1.5 sm:top-2 right-1.5 sm:right-2 p-1.5 sm:p-2 bg-red-500/80 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                    title="Retirer du club"
+                    title={t('removeFromClub')}
                   >
                     <UserMinus size={14} className="text-white" />
                   </button>
@@ -1220,7 +1228,7 @@ function EscortsPanel() {
 
               {linkedEscorts.length === 0 && (
                 <div className="col-span-full text-center text-gray-400 text-sm py-8">
-                  Aucune fille dans l'équipe pour le moment
+                  {t('noTeamMembers')}
                 </div>
               )}
             </div>
@@ -1251,7 +1259,7 @@ function EscortsPanel() {
                   <div className="flex-1 min-w-0">
                     <div className="text-white font-medium text-sm sm:text-base truncate">{invitation.escort?.name || 'Escort'}</div>
                     <div className="text-xs text-gray-400 truncate">
-                      Envoyée le {new Date(invitation.sentAt).toLocaleDateString('fr-FR')}
+                      {t('sentOn', { date: new Date(invitation.sentAt).toLocaleDateString('fr-FR') })}
                     </div>
                   </div>
 
@@ -1259,31 +1267,31 @@ function EscortsPanel() {
                     {invitation.status === 'PENDING' && (
                       <span className="flex items-center gap-1 text-yellow-400 text-xs sm:text-sm whitespace-nowrap">
                         <Clock size={12} className="sm:w-3.5 sm:h-3.5" />
-                        <span className="hidden sm:inline">En attente</span>
+                        <span className="hidden sm:inline">{t('invitationStatus.pending')}</span>
                       </span>
                     )}
                     {invitation.status === 'ACCEPTED' && (
                       <span className="flex items-center gap-1 text-green-400 text-xs sm:text-sm whitespace-nowrap">
                         <Check size={12} className="sm:w-3.5 sm:h-3.5" />
-                        <span className="hidden sm:inline">Acceptée</span>
+                        <span className="hidden sm:inline">{t('invitationStatus.accepted')}</span>
                       </span>
                     )}
                     {invitation.status === 'DECLINED' && (
                       <span className="flex items-center gap-1 text-red-400 text-xs sm:text-sm whitespace-nowrap">
                         <XCircle size={12} className="sm:w-3.5 sm:h-3.5" />
-                        <span className="hidden sm:inline">Refusée</span>
+                        <span className="hidden sm:inline">{t('invitationStatus.declined')}</span>
                       </span>
                     )}
                     {invitation.status === 'CANCELLED' && (
                       <span className="flex items-center gap-1 text-gray-400 text-xs sm:text-sm whitespace-nowrap">
                         <X size={12} className="sm:w-3.5 sm:h-3.5" />
-                        <span className="hidden sm:inline">Annulée</span>
+                        <span className="hidden sm:inline">{t('invitationStatus.cancelled')}</span>
                       </span>
                     )}
                     {invitation.status === 'EXPIRED' && (
                       <span className="flex items-center gap-1 text-gray-400 text-xs sm:text-sm whitespace-nowrap">
                         <Clock size={12} className="sm:w-3.5 sm:h-3.5" />
-                        <span className="hidden sm:inline">Expirée</span>
+                        <span className="hidden sm:inline">{t('invitationStatus.expired')}</span>
                       </span>
                     )}
                   </div>
@@ -1293,7 +1301,7 @@ function EscortsPanel() {
                       onClick={() => cancelInvitation(invitation.id)}
                       className="flex-shrink-0 px-2 sm:px-3 py-1 text-xs sm:text-sm bg-red-500/20 text-red-400 rounded hover:bg-red-500/30 transition-colors"
                     >
-                      Annuler
+                      {t('cancel')}
                     </button>
                   )}
                 </div>
@@ -1301,7 +1309,7 @@ function EscortsPanel() {
 
               {sentInvitations.length === 0 && (
                 <div className="text-center text-gray-400 text-sm py-8">
-                  Aucune invitation envoyée
+                  {t('noInvitations')}
                 </div>
               )}
             </div>
@@ -1314,7 +1322,7 @@ function EscortsPanel() {
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-gray-900 rounded-xl sm:rounded-2xl border border-gray-800 max-w-2xl w-full max-h-[80vh] overflow-hidden flex flex-col">
             <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-800">
-              <h2 className="text-lg sm:text-xl font-bold text-white">Inviter une fille</h2>
+              <h2 className="text-lg sm:text-xl font-bold text-white">{t('inviteModal.title')}</h2>
               <button
                 onClick={() => {
                   setShowInviteModal(false)
@@ -1337,7 +1345,7 @@ function EscortsPanel() {
                     setSearchTerm(e.target.value)
                     searchEscorts(e.target.value)
                   }}
-                  placeholder="Rechercher une fille par nom ou ville..."
+                  placeholder={t('inviteModal.searchPlaceholder')}
                   className="w-full pl-10 pr-4 py-2.5 sm:py-3 text-sm sm:text-base bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500"
                 />
               </div>
@@ -1345,7 +1353,7 @@ function EscortsPanel() {
 
             <div className="flex-1 overflow-y-auto p-4 sm:p-6">
               {searching ? (
-                <div className="text-center text-gray-400 py-8">Recherche en cours...</div>
+                <div className="text-center text-gray-400 py-8">{t('inviteModal.searching')}</div>
               ) : searchResults.length > 0 ? (
                 <div className="space-y-2 sm:space-y-3">
                   {searchResults.map(escort => (
@@ -1369,25 +1377,25 @@ function EscortsPanel() {
 
                       <div className="flex-1 min-w-0">
                         <div className="text-white font-medium text-sm sm:text-base truncate">{escort.name}</div>
-                        <div className="text-xs sm:text-sm text-gray-400 truncate">{escort.city || 'Ville non spécifiée'}</div>
+                        <div className="text-xs sm:text-sm text-gray-400 truncate">{escort.city || t('inviteModal.cityNotSpecified')}</div>
                       </div>
 
                       <button
                         onClick={() => sendInvitation(escort.id)}
                         className="flex-shrink-0 px-3 sm:px-4 py-1.5 sm:py-2 bg-[#FF6B9D] hover:bg-[#FF6B9D]/90 text-white text-xs sm:text-sm rounded-lg transition-all"
                       >
-                        Inviter
+                        {t('inviteModal.invite')}
                       </button>
                     </div>
                   ))}
                 </div>
               ) : searchTerm.length >= 2 ? (
                 <div className="text-center text-gray-400 py-8">
-                  Aucune fille trouvée
+                  {t('inviteModal.noResults')}
                 </div>
               ) : (
                 <div className="text-center text-gray-400 py-8">
-                  Tapez au moins 2 caractères pour rechercher
+                  {t('inviteModal.minCharacters')}
                 </div>
               )}
             </div>

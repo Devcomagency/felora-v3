@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Heart, Play, Image as ImageIcon, Verified } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { buildCdnUrl } from '@/lib/media/cdn'
+import { useTranslations } from 'next-intl'
 
 interface EscortCardProps {
   escort: {
@@ -54,6 +55,7 @@ interface EscortCardProps {
 }
 
 export default function EscortCard({ escort, onLike, isLiked = false }: EscortCardProps) {
+  const t = useTranslations('search')
   const router = useRouter()
   const [imageError, setImageError] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
@@ -132,17 +134,17 @@ export default function EscortCard({ escort, onLike, isLiked = false }: EscortCa
           {escort.isVerifiedBadge && (
             <div className="px-2 py-1 rounded-full bg-felora-aurora/90 backdrop-blur-sm flex items-center gap-1">
               <Verified size={12} className="text-white" />
-              <span className="text-xs font-medium text-white">Vérifié</span>
+              <span className="text-xs font-medium text-white">{t('verified')}</span>
             </div>
           )}
           {escort.availableNow && (
             <div className="px-2 py-1 rounded-full bg-green-500/90 backdrop-blur-sm">
-              <span className="text-xs font-medium text-white">Dispo maintenant</span>
+              <span className="text-xs font-medium text-white">{t('availableNow')}</span>
             </div>
           )}
           {escort.hasWebcamLive && (
             <div className="px-2 py-1 rounded-full bg-purple-500/90 backdrop-blur-sm">
-              <span className="text-xs font-medium text-white">Live</span>
+              <span className="text-xs font-medium text-white">{t('live')}</span>
             </div>
           )}
         </div>
@@ -151,13 +153,13 @@ export default function EscortCard({ escort, onLike, isLiked = false }: EscortCa
         <button
           onClick={handleLike}
           className={`absolute top-3 right-3 px-3 py-1 rounded-full backdrop-blur-sm transition-colors ${
-            isLiked 
-              ? 'bg-red-500/20 border border-red-500/50' 
+            isLiked
+              ? 'bg-red-500/20 border border-red-500/50'
               : 'bg-black/40 hover:bg-black/60'
           }`}
         >
           <span className={`text-xs font-medium ${isLiked ? 'text-red-400' : 'text-white/80'}`}>
-            Favori
+            {t('favorite')}
           </span>
         </button>
 
@@ -169,7 +171,7 @@ export default function EscortCard({ escort, onLike, isLiked = false }: EscortCa
           {escort.stageName}
         </h3>
         <span className="text-sm text-white/60">
-          Escorte
+          {t('escort')}
         </span>
       </div>
 

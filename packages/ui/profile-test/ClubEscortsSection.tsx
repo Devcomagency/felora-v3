@@ -3,6 +3,7 @@
 import React from 'react'
 import { useRouter } from 'next/navigation'
 import { BadgeCheck } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 interface EscortPreview {
   id: string
@@ -19,6 +20,7 @@ interface ClubEscortsSectionProps {
 }
 
 export default function ClubEscortsSection({ escorts, isLoading }: ClubEscortsSectionProps) {
+  const t = useTranslations('clubEscorts')
   const router = useRouter()
 
   if (isLoading) {
@@ -48,7 +50,7 @@ export default function ClubEscortsSection({ escorts, isLoading }: ClubEscortsSe
     <div className="px-4 py-6 border-b border-white/5">
       {/* Header */}
       <div className="flex items-center gap-2 mb-4">
-        <h2 className="text-white font-semibold text-lg">Les filles</h2>
+        <h2 className="text-white font-semibold text-lg">{t('title')}</h2>
         <span className="text-xs text-white/40 bg-white/5 px-2 py-1 rounded-full">
           {escorts.length}
         </span>

@@ -4,11 +4,13 @@ import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Crown, User, Building, ArrowRight, Sparkles, Lock, TrendingUp, Users } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 type AccountType = 'client' | 'escort' | 'salon'
 
 export default function RegisterPage() {
   const router = useRouter()
+  const t = useTranslations('auth.register')
   const [hoveredCard, setHoveredCard] = useState<AccountType | null>(null)
 
   const cards: Array<{
@@ -26,38 +28,38 @@ export default function RegisterPage() {
   }> = [
     {
       id: 'client',
-      title: 'Client',
-      subtitle: 'Accès discret',
-      description: 'Explorez en toute confidentialité',
+      title: t('types.client.title'),
+      subtitle: t('types.client.subtitle'),
+      description: t('types.client.description'),
       gradient: 'from-cyan-500 to-blue-500',
       bgGradient: 'from-cyan-500/10 via-blue-500/5 to-transparent',
       accentColor: '#06B6D4',
       Icon: User,
-      benefits: ['Anonymat total', 'Chat sécurisé', 'Profils vérifiés'],
+      benefits: [t('types.client.benefit1'), t('types.client.benefit2'), t('types.client.benefit3')],
       href: '/register/client'
     },
     {
       id: 'escort',
-      title: 'Indépendante',
-      subtitle: 'Compte Pro',
-      description: 'Développez votre activité',
+      title: t('types.escort.title'),
+      subtitle: t('types.escort.subtitle'),
+      description: t('types.escort.description'),
       gradient: 'from-pink-500 via-purple-500 to-violet-600',
       bgGradient: 'from-pink-500/10 via-purple-500/5 to-transparent',
       accentColor: '#EC4899',
       Icon: Crown,
-      benefits: ['Badge vérifié', 'Contrôle géographique', 'Visibilité max'],
+      benefits: [t('types.escort.benefit1'), t('types.escort.benefit2'), t('types.escort.benefit3')],
       href: '/register/indepandante'
     },
     {
       id: 'salon',
-      title: 'Établissement',
-      subtitle: 'Gestion Pro',
-      description: 'Gérez votre entreprise',
+      title: t('types.salon.title'),
+      subtitle: t('types.salon.subtitle'),
+      description: t('types.salon.description'),
       gradient: 'from-violet-500 to-purple-600',
       bgGradient: 'from-violet-500/10 via-purple-500/5 to-transparent',
       accentColor: '#8B5CF6',
       Icon: Building,
-      benefits: ['Gestion équipe', 'Galerie média', 'Profil premium'],
+      benefits: [t('types.salon.benefit1'), t('types.salon.benefit2'), t('types.salon.benefit3')],
       href: '/register/salon'
     }
   ]
@@ -99,10 +101,10 @@ export default function RegisterPage() {
             transition={{ delay: 0.2, duration: 0.5 }}
           >
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-black tracking-tight mb-3 bg-gradient-to-r from-white via-white/90 to-white/80 bg-clip-text text-transparent">
-              Bienvenue sur FELORA
+              {t('title')}
             </h1>
             <p className="text-white/70 text-base md:text-lg max-w-2xl mx-auto font-light">
-              La plateforme premium suisse. Choisissez votre expérience.
+              {t('subtitle')}
             </p>
           </motion.div>
         </div>
@@ -130,7 +132,7 @@ export default function RegisterPage() {
                   >
                     <div className="flex items-center gap-1 px-3 py-1 rounded-full bg-gradient-to-r from-pink-500 to-violet-600 text-white text-xs font-bold shadow-lg shadow-pink-500/50">
                       <Sparkles className="w-3 h-3" />
-                      Populaire
+                      {t('popular')}
                     </div>
                   </motion.div>
                 )}
@@ -210,7 +212,7 @@ export default function RegisterPage() {
                           boxShadow: hoveredCard === card.id ? `0 8px 16px ${card.accentColor}20` : 'none'
                         }}
                       >
-                        <span className="font-semibold text-white text-sm">Continuer</span>
+                        <span className="font-semibold text-white text-sm">{t('continue')}</span>
                         <ArrowRight className="w-4 h-4 text-white group-hover:translate-x-1 transition-transform" />
                       </div>
                     </div>
@@ -229,12 +231,12 @@ export default function RegisterPage() {
           className="text-center mt-8 pb-4"
         >
           <div className="text-sm text-white/40">
-            Vous avez déjà un compte ?{' '}
+            {t('footer.hasAccount')}{' '}
             <button
               onClick={() => router.push('/login')}
               className="text-purple-400 hover:text-purple-300 font-semibold underline underline-offset-4 transition-colors"
             >
-              Se connecter
+              {t('footer.login')}
             </button>
           </div>
         </motion.div>

@@ -17,18 +17,55 @@
     "next": "Next",
     "previous": "Previous",
     "submit": "Submit",
-    "send": "Send"
+    "send": "Send",
+    "create": "Create",
+    "language": "Language",
+    "schedule": "Schedule",
+    "legal": "Legal",
+    "privacy": "Privacy",
+    "terms": "Terms",
+    "cookies": "Cookies"
   },
   "search": {
     "title": "Search",
+    "subtitle": "Discover exceptional profiles in Switzerland",
     "placeholder": "Search by name, city...",
+    "searchAriaLabel": "Search for escorts or clubs by name or city",
+    "openFilters": "Open search filters",
     "profiles": "Profiles",
     "establishments": "Establishments",
-    "noResults": "No results found",
+    "all": "All",
+    "clubs": "Clubs",
+    "salons": "Salons",
+    "institutes": "Institutes",
+    "agencies": "Agencies",
+    "independentProfiles": "Independent Profiles",
+    "profilesCount": "profiles",
+    "noProfilesFound": "No profiles found",
+    "loading": "Loading...",
     "loadMore": "Load more",
+    "establishmentsCount": "establishments",
+    "noClubsFound": "No clubs found",
+    "openMap": "Open interactive map",
+    "loadingSearch": "Loading search...",
+    "noResults": "No results found",
     "results": "{count} results",
     "filterBy": "Filter by",
-    "sortBy": "Sort by"
+    "sortBy": "Sort by",
+    "verified": "Verified",
+    "availableNow": "Available now",
+    "available": "Available",
+    "live": "Live",
+    "favorite": "Favorite",
+    "privateMedia": "Private media",
+    "escort": "Escort",
+    "salon": "Salon",
+    "institute": "Institute",
+    "agency": "Agency",
+    "club": "Club",
+    "open": "Open",
+    "closed": "Closed",
+    "hours": "Hours"
   },
   "map": {
     "title": "Interactive Map",
@@ -36,7 +73,76 @@
     "visibleProfiles": "{count} visible profiles",
     "zoomIn": "Zoom in",
     "zoomOut": "Zoom out",
-    "myLocation": "My location"
+    "myLocation": "My location",
+    "inDevelopment": "Feature under development",
+    "backToHome": "Back to home",
+    "initializingGeoData": "Initializing geographic data...",
+    "backButton": {
+      "ariaLabel": "Back"
+    },
+    "clusterPopup": {
+      "title": "{count, plural, =1 {# profile in this area} other {# profiles in this area}}",
+      "age": "{age} years old",
+      "zoomIn": "Zoom in on this area"
+    },
+    "glassPopup": {
+      "age": "{age} years old",
+      "viewProfile": "View full profile"
+    },
+    "externalPopup": {
+      "loading": "Loading...",
+      "age": "{age} years old",
+      "viewProfile": "View full profile"
+    },
+    "cluster": {
+      "ariaLabel": "{count} profiles in this area"
+    },
+    "popup": {
+      "viewProfile": "View profile"
+    },
+    "statusBar": {
+      "profilesVisible": "{count, plural, =0 {No visible profiles} =1 {# visible profile} other {# visible profiles}}",
+      "loading": "Loading...",
+      "error": "Error",
+      "ariaLabel": "View list of visible profiles"
+    },
+    "filters": {
+      "ariaLabel": "Open filters",
+      "clearFilters": "Clear filters",
+      "categories": {
+        "escort": "Escort",
+        "masseuse": "Erotic Masseuse",
+        "dominatrice": "BDSM Dominatrix",
+        "trans": "Transsexual",
+        "club": "🏢 Establishment"
+      }
+    },
+    "geolocation": {
+      "ariaLabel": "Locate on map",
+      "title": "See around me",
+      "notSupported": "Geolocation is not supported by this browser",
+      "permissionDenied": "Permission denied. Enable it in your browser settings.",
+      "errorDefault": "Unable to retrieve your position",
+      "unavailable": "Position unavailable",
+      "timeout": "Geolocation timeout exceeded"
+    },
+    "userLocation": {
+      "ariaLabel": "Your position",
+      "title": "Your position"
+    },
+    "sidebar": {
+      "title": "Visible profiles",
+      "subtitle": "{count, plural, =0 {No profiles in visible area} =1 {# profile in visible area} other {# profiles in visible area}}",
+      "noProfiles": "No visible profiles in this area",
+      "moreProfiles": "+{count} more profiles in the area",
+      "category": {
+        "escort": "Escort",
+        "masseuse": "Masseuse",
+        "dominatrice": "Dominatrix",
+        "trans": "Transsexual",
+        "club": "Club"
+      }
+    }
   },
   "navigation": {
     "home": "Home",
@@ -65,7 +171,137 @@
     "dontHaveAccount": "Don't have an account?",
     "resetPassword": "Reset password",
     "sendResetLink": "Send reset link",
-    "backToLogin": "Back to login"
+    "backToLogin": "Back to login",
+    "registerClient": {
+      "title": "Client Registration",
+      "subtitle": "Create your account in seconds",
+      "backButton": "Back",
+      "form": {
+        "fullName": "Full name",
+        "fullNamePlaceholder": "John Doe",
+        "email": "Email",
+        "emailPlaceholder": "john@example.com",
+        "password": "Password",
+        "passwordPlaceholder": "••••••••",
+        "confirmPassword": "Confirm password",
+        "confirmPasswordPlaceholder": "••••••••",
+        "isAdult": "I confirm I am 18 years or older",
+        "acceptTos": "I accept the {tosLink}",
+        "tosLink": "terms of service",
+        "required": "*"
+      },
+      "buttons": {
+        "creating": "Creating...",
+        "createAccount": "Create my account",
+        "alreadyAccount": "Already have an account?",
+        "login": "Log in"
+      },
+      "validation": {
+        "nameRequired": "Name is required",
+        "emailRequired": "Email is required",
+        "emailInvalid": "Invalid email",
+        "passwordRequired": "Password is required",
+        "passwordMinLength": "Minimum 8 characters",
+        "passwordMismatch": "Passwords do not match",
+        "isAdultRequired": "You must confirm you are 18 years or older",
+        "tosRequired": "You must accept the Terms of Service"
+      },
+      "messages": {
+        "success": "Client account created successfully!",
+        "error": "Error creating account"
+      }
+    },
+    "registerSalon": {
+      "title": "Establishment Registration",
+      "subtitle": "Create your professional profile in minutes",
+      "backButton": "Back",
+      "form": {
+        "companyName": "Establishment name",
+        "companyNamePlaceholder": "Your salon/club name",
+        "companyNameRequired": "Establishment name is required",
+        "email": "Email",
+        "emailPlaceholder": "contact@establishment.com",
+        "emailRequired": "Email is required",
+        "emailInvalid": "Invalid email",
+        "phone": "Phone",
+        "phonePlaceholder": "+41 22 123 45 67",
+        "phoneInvalid": "Invalid phone number",
+        "password": "Password",
+        "passwordPlaceholder": "••••••••",
+        "passwordRequired": "Password is required",
+        "passwordMinLength": "Minimum 8 characters",
+        "confirmPassword": "Confirm password",
+        "confirmPasswordMismatch": "Passwords do not match",
+        "isAdultConfirm": "I confirm the establishment is legal and complies with Swiss legislation",
+        "isAdultRequired": "You must confirm the establishment is legal",
+        "acceptTos": "I accept the",
+        "acceptTosLink": "terms of service",
+        "acceptTosRequired": "You must accept the Terms of Service",
+        "required": "*"
+      },
+      "buttons": {
+        "register": "Create my account",
+        "registering": "Creating...",
+        "login": "Log in"
+      },
+      "messages": {
+        "hasAccount": "Already have an account?",
+        "creationError": "Error creating account"
+      }
+    },
+    "registerEscort": {
+      "title": "Independent Registration",
+      "subtitle": "Create your professional profile in minutes",
+      "back": "Back",
+      "form": {
+        "stageName": "Stage name",
+        "stageNamePlaceholder": "Your stage name",
+        "email": "Email",
+        "emailPlaceholder": "your@email.com",
+        "password": "Password",
+        "passwordPlaceholder": "••••••••",
+        "confirmPassword": "Confirm password",
+        "phone": "Mobile",
+        "phonePlaceholder": "079 123 45 67",
+        "dateOfBirth": "Date of birth",
+        "required": "*",
+        "isAdult": "I confirm I am 18 years or older",
+        "acceptTos": "I accept the",
+        "acceptTosLink": "terms of service"
+      },
+      "emailVerification": {
+        "sendCode": "Send verification code",
+        "resend": "Resend ({seconds}s)",
+        "sending": "Sending...",
+        "codeSent": "A code has been sent to your email",
+        "codePlaceholder": "6-digit code",
+        "verify": "Verify"
+      },
+      "buttons": {
+        "createAccount": "Create my account",
+        "creating": "Creating...",
+        "alreadyHaveAccount": "Already have an account?",
+        "login": "Log in"
+      },
+      "errors": {
+        "stageNameRequired": "Stage name is required",
+        "emailRequired": "Email is required",
+        "emailInvalid": "Invalid email",
+        "emailNotVerified": "Please verify your email",
+        "passwordRequired": "Password is required",
+        "passwordTooShort": "Minimum 8 characters",
+        "passwordMismatch": "Passwords do not match",
+        "phoneRequired": "Mobile is required",
+        "phoneInvalid": "Invalid number (e.g. 079 123 45 67)",
+        "dateOfBirthRequired": "Date of birth is required",
+        "mustBe18": "You must be 18 years or older",
+        "confirmAdult": "You must confirm you are 18 years or older",
+        "acceptTosRequired": "You must accept the Terms of Service",
+        "emailSendError": "Email sending error",
+        "codeInvalid": "Invalid code",
+        "accountCreationError": "Error creating account"
+      }
+    }
   },
   "profile": {
     "edit": "Edit profile",
@@ -79,7 +315,39 @@
     "verified": "Verified",
     "myProfile": "My profile",
     "viewProfile": "View profile",
-    "editProfile": "Edit profile"
+    "editProfile": "Edit profile",
+    "error": {
+      "title": "An error occurred",
+      "description": "We're having trouble loading this profile. Please try again.",
+      "retry": "Retry",
+      "goHome": "Back to home"
+    },
+    "header": {
+      "back": "Back",
+      "backAriaLabel": "Back to previous page"
+    },
+    "kyc": {
+      "title": "🎉 Congratulations! KYC submitted successfully",
+      "description": "Your identity verification has been submitted. Here is your public profile!",
+      "nextStepsTitle": "📋 Next steps:",
+      "step1": "Your verification will be processed within 48h",
+      "step2": "Complete your profile for more visibility",
+      "step3": "Once verified, you will receive the ✓ badge"
+    },
+    "actions": {
+      "followed": "You are now following this profile",
+      "unfollowed": "You are no longer following this profile",
+      "addedToFavorites": "❤️ Added to favorites",
+      "removedFromFavorites": "Removed from favorites",
+      "saved": "📌 Profile saved",
+      "removedFromSaved": "Profile removed from saved",
+      "linkCopied": "Link copied to clipboard",
+      "shareText": "Discover {name}'s profile on Felora",
+      "loginToAddFavorites": "Log in to add favorites"
+    },
+    "common": {
+      "profile": "Profile"
+    }
   },
   "messages": {
     "title": "Messages",
@@ -90,7 +358,80 @@
     "online": "Online",
     "offline": "Offline",
     "writeMessage": "Write a message...",
-    "conversation": "Conversation"
+    "conversation": "Conversation",
+    "oldVersion": "Messages (Original Version)",
+    "oldVersionDescription": "This page uses the old V3 interface",
+    "encryptedConversation": "Encrypted conversation",
+    "yourConversations": "Your conversations",
+    "thisProfile": "this profile",
+    "introMessage": "Hello {name}, I really liked your profile! 😊",
+    "you": "You",
+    "conversationCreated": "Conversation created successfully!",
+    "conversationCreationError": "Error creating conversation",
+    "loadConversationsError": "Unable to load conversations",
+    "limitedAccess": "Limited access",
+    "limitedAccessDescription": "Only clients and escorts can use messaging.",
+    "backToHome": "Back to home",
+    "loginRequired": "Login required",
+    "loginRequiredDescription": "You must be logged in to use messaging.",
+    "login": "Login",
+    "loadingChat": "Loading chat...",
+    "backToPreviousPage": "Go back to previous page",
+    "back": "Back",
+    "blocked": "Blocked",
+    "conversationOptions": "Conversation options",
+    "options": "Options",
+    "ephemeralMessages": "Ephemeral messages",
+    "ephemeralEnabled": "Enabled ({hours}h)",
+    "ephemeralDisabled": "Disabled",
+    "report": "Report",
+    "userBlocked": "User blocked",
+    "userUnblocked": "User unblocked",
+    "actionImpossible": "Action impossible",
+    "block": "Block",
+    "unblock": "Unblock",
+    "deleteConversation": "Delete conversation",
+    "deleteConversationConfirm": "Are you sure you want to delete this conversation? This action is irreversible.",
+    "conversationDeleted": "Conversation deleted",
+    "deleteConversationError": "Unable to delete conversation",
+    "searchConversation": "Search conversation",
+    "searchConversationPlaceholder": "Search for a conversation...",
+    "blockedUserMessage": "You have blocked this user. Unblock to send messages.",
+    "loginToMessage": "Log in to message",
+    "selectConversation": "Select a conversation",
+    "selectConversationDescription": "Choose a conversation to start chatting.",
+    "loginToViewConversations": "Log in to view your conversations.",
+    "ephemeralMessagesDescription": "Messages will automatically disappear after the chosen duration",
+    "ephemeralDisabledOption": "Disabled",
+    "ephemeralDisabledDescription": "Messages remain indefinitely",
+    "ephemeral12Hours": "12 hours",
+    "ephemeral12HoursDescription": "Messages disappear after 12h",
+    "ephemeral24Hours": "24 hours",
+    "ephemeral24HoursDescription": "Messages disappear after 24h",
+    "ephemeral48Hours": "48 hours",
+    "ephemeral48HoursDescription": "Messages disappear after 2 days",
+    "ephemeral7Days": "7 days",
+    "ephemeral7DaysDescription": "Messages disappear after 1 week",
+    "cancel": "Cancel",
+    "saved": "✓ Saved",
+    "ephemeralModeActivated": "Ephemeral mode activated ({hours}h)",
+    "ephemeralModeDeactivated": "Ephemeral mode deactivated",
+    "settingsUpdateError": "Unable to update settings",
+    "apply": "Apply",
+    "fileTooLarge": "File too large. Maximum size: {maxSize}MB",
+    "unsupportedFileType": "Unsupported file type",
+    "emoji": "Emoji",
+    "voiceMessage": "Voice message",
+    "imageVideo": "Image/Video",
+    "attachment": "Attachment",
+    "contentDisappeared": "Content disappeared",
+    "viewed": "Viewed",
+    "notViewed": "Not viewed",
+    "singleView": "Single view",
+    "now": "Now",
+    "yesterday": "Yesterday",
+    "conversationsCount": "{count, plural, =0 {No conversations} =1 {# conversation} other {# conversations}}",
+    "unreadCount": "{count, plural, =0 {No unread} =1 {# unread} other {# unread}}"
   },
   "filters": {
     "all": "All",
@@ -105,7 +446,50 @@
     "clear": "Clear",
     "apply": "Apply",
     "showFilters": "Show filters",
-    "hideFilters": "Hide filters"
+    "hideFilters": "Hide filters",
+    "title": "Search filters",
+    "closeFilters": "Close filters",
+    "categories": "Categories",
+    "location": "Location",
+    "chooseCanton": "Choose a canton",
+    "chooseCity": "Choose a city",
+    "allCantons": "All cantons",
+    "allCities": "All cities",
+    "availableNow": "Available now",
+    "outcall": "Outcall",
+    "incall": "Incall",
+    "paymentMethods": "Payment methods",
+    "currencies": "Accepted currencies",
+    "profileAndPhysique": "Profile & Physique",
+    "age": "Age",
+    "years": "years",
+    "height": "Height",
+    "allBodyTypes": "All body types",
+    "hair": "Hair",
+    "eyes": "Eyes",
+    "bustSize": "Bust size",
+    "cup": "Cup",
+    "servicesAndSpecialties": "Services & Specialties",
+    "classic": "Classic",
+    "oral": "Oral",
+    "anal": "Anal",
+    "bdsmAndFetish": "BDSM & Fetish",
+    "massages": "Massages",
+    "equipment": "Equipment",
+    "serviceSelected": "service selected",
+    "servicesSelected": "services selected",
+    "qualityAndVerification": "Quality & Verification",
+    "verifiedProfile": "Verified profile",
+    "communication": "Communication",
+    "clienteleAndServices": "Clientele & Services",
+    "mostRecent": "Most recent",
+    "mostPopular": "Most popular",
+    "priceAsc": "Price ascending",
+    "priceDesc": "Price descending",
+    "bestRated": "Best rated",
+    "nameAZ": "Name A-Z",
+    "reset": "Reset",
+    "search": "Search"
   },
   "categories": {
     "escort": "Escort",
@@ -127,5 +511,623 @@
     "unauthorized": "Unauthorized",
     "forbidden": "Access forbidden",
     "tryAgain": "Please try again"
+  },
+  "home": {
+    "welcome": "Welcome to Felora",
+    "discover": "Discover",
+    "loadMore": "Load more",
+    "noContent": "No content available"
+  },
+  "favorites": {
+    "title": "Favorites",
+    "myFavorites": "My favorites",
+    "noFavorites": "No favorites yet",
+    "addToFavorites": "Add to favorites",
+    "removeFromFavorites": "Remove from favorites",
+    "loginRequired": "Log in to save your favorite profiles and find them easily.",
+    "login": "Log in",
+    "profilesCount": "{count} saved profile",
+    "profilesCount_plural": "{count} saved profiles",
+    "loading": "Loading your favorites...",
+    "error": "Unable to load your favorites at the moment.",
+    "emptyTitle": "No favorites yet",
+    "emptyDescription": "Add escorts or clubs to your favorites from their profile to find them quickly here.",
+    "discoverProfiles": "Discover profiles"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "statistics": "Statistics",
+    "views": "Views",
+    "likes": "Likes",
+    "messages": "Messages",
+    "revenue": "Revenue"
+  },
+  "dashboardEscort": {
+    "profil": {
+      "pageTitle": "My Profile",
+      "pageDescription": "Manage your public information and presentation",
+      "kycSuccess": {
+        "title": "🎉 Congratulations! KYC submitted successfully",
+        "description": "Your identity verification has been submitted. It's now time to finalize your profile!",
+        "nextStepsTitle": "📋 Recommended next steps:",
+        "step1": "Add your photos and descriptions",
+        "step2": "Configure your rates and services",
+        "step3": "Your verification will be processed within 48h"
+      }
+    }
+  },
+  "clubProfile": {
+    "notFound": "Club not found",
+    "errorLoading": "Error loading profile",
+    "openNow": "Open now",
+    "closed": "Closed",
+    "club": "Club",
+    "shareText": "Discover {name} on Felora",
+    "loginToFavorite": "Log in to add favorites",
+    "removedFromFavorites": "Removed from favorites",
+    "addedToFavorites": "⭐ Added to favorites",
+    "contactModal": {
+      "title": "Contact {name}",
+      "phone": "Phone",
+      "email": "Email",
+      "address": "Address",
+      "website": "Website"
+    }
+  },
+  "profileHeader": {
+    "verified": "Verified",
+    "stats": {
+      "views": "Views",
+      "reactions": "Reactions",
+      "posts": "Posts"
+    },
+    "age": "{age} years old",
+    "showMore": "Show more",
+    "showLess": "Show less",
+    "languages": "Languages",
+    "schedule": "Schedule",
+    "available": "Available",
+    "unavailable": "Unavailable",
+    "viewSchedule": "View schedule",
+    "days": {
+      "monday": "Monday",
+      "tuesday": "Tuesday",
+      "wednesday": "Wednesday",
+      "thursday": "Thursday",
+      "friday": "Friday",
+      "saturday": "Saturday",
+      "sunday": "Sunday"
+    },
+    "scheduleModal": {
+      "title": "Availability hours",
+      "noSchedule": "No schedule configured",
+      "weeklySchedule": "Weekly schedule",
+      "allDay": "All day",
+      "generalPause": "General break",
+      "absences": "Specific absences",
+      "noDetailedSchedule": "No detailed schedule configured"
+    }
+  },
+  "actionsBar": {
+    "viewMore": "View more",
+    "gift": "Gift",
+    "message": "Message",
+    "contact": "Contact",
+    "website": "Website",
+    "call": "Call",
+    "whatsapp": "WhatsApp",
+    "sms": "SMS",
+    "phoneNumber": "Number",
+    "report": "Report",
+    "share": "Share",
+    "favorite": "Favorite",
+    "favorites": "Favorites",
+    "phoneContact": {
+      "whatsappMessage": "Hello {name}, I'm writing from Felora.",
+      "smsMessage": "Hello {name}, I'm writing from Felora.",
+      "phoneTitle": "Phone: {number}",
+      "phoneAvailable": "Phone contact available",
+      "privateMessagingOnly": "Private messaging only",
+      "phoneNumberLabel": "Number",
+      "call": "Call",
+      "whatsapp": "WhatsApp",
+      "sms": "SMS"
+    }
+  },
+  "mediaFeed": {
+    "tabs": {
+      "public": "Public",
+      "premium": "Premium",
+      "private": "Private"
+    },
+    "noContent": "No content available",
+    "noContentDescription": "This profile hasn't posted any content yet.",
+    "unlockContent": {
+      "title": "Unlock content",
+      "chooseOption": "Choose an unlock option.",
+      "unlockMedia": "Unlock this media — 9 CHF",
+      "unlockGallery": "Unlock entire gallery — 29 CHF",
+      "proceedPayment": "Proceed to payment (demo)",
+      "premium": "Premium",
+      "unlock": "Unlock"
+    },
+    "menu": {
+      "manageMedia": "Manage media",
+      "share": "Share",
+      "report": "Report"
+    },
+    "mediaInfo": {
+      "videoThumbnail": "Thumbnail loading...",
+      "watchVideo": "Watch video",
+      "viewFullscreen": "View media fullscreen"
+    },
+    "private": "🔒"
+  },
+  "profileModal": {
+    "close": "Close",
+    "loading": "Loading unified profile...",
+    "error": {
+      "title": "Loading error",
+      "description": "Profile not found"
+    },
+    "sections": {
+      "physical": "Physical profile",
+      "services": "Services",
+      "servicesAndSpecialties": "Services & Specialties",
+      "languages": "Languages spoken",
+      "equipment": "Equipment",
+      "rates": "Rates",
+      "payments": "Payments",
+      "currencies": "Currencies",
+      "prestations": "Services",
+      "clientele": "Accepted clientele",
+      "location": "Location",
+      "contact": "Contact {name}"
+    },
+    "physical": {
+      "height": "Height",
+      "bodyType": "Body type",
+      "hairColor": "Hair",
+      "eyeColor": "Eyes",
+      "ethnicity": "Ethnicity",
+      "bustSize": "Bust size",
+      "breastType": "Breast type",
+      "pubicHair": "Pubic hair",
+      "specificities": "Specificities",
+      "tattoos": "Tattoos",
+      "piercings": "Piercings",
+      "smoker": "Smoker",
+      "nonSmoker": "Non-smoker"
+    },
+    "rates": {
+      "from": "From",
+      "fifteenMin": "15min",
+      "thirtyMin": "30min",
+      "oneHour": "1h",
+      "twoHours": "2h",
+      "halfDay": "½day",
+      "fullDay": "Day",
+      "overnight": "Night",
+      "customRates": "Custom rates"
+    },
+    "prestations": {
+      "incall": "Incall",
+      "incallDescription": "At my place",
+      "outcall": "Outcall",
+      "outcallDescription": "At your place / Hotel"
+    },
+    "clientele": {
+      "couples": "Couples",
+      "women": "Women",
+      "handicapped": "Disabled persons",
+      "seniors": "Seniors"
+    },
+    "contact": {
+      "title": "Contact {name}",
+      "subtitle": "Book your special moment",
+      "privateMessage": "Private message",
+      "phoneNumber": "Number",
+      "phoneAvailable": "Phone contact available",
+      "privateMessagingOnly": "Private messaging only",
+      "whatsapp": "WhatsApp",
+      "sms": "SMS",
+      "call": "Call"
+    }
+  },
+  "clubEscorts": {
+    "title": "The girls"
+  },
+  "giftModal": {
+    "title": "Send a gift to {name}",
+    "close": "Close",
+    "customAmount": "Custom amount",
+    "messageLabel": "Message (optional)",
+    "messagePlaceholder": "A little note with your gift...",
+    "sending": "Sending...",
+    "send": "Send",
+    "cancel": "Cancel"
+  },
+  "messageComposer": {
+    "title": "Message to {name}",
+    "close": "Close",
+    "placeholder": "Your message...",
+    "hint": "Press Ctrl/Cmd + Enter to send",
+    "cancel": "Cancel",
+    "sending": "Sending...",
+    "send": "Send"
+  },
+  "signup": {
+    "escort": {
+      "page": {
+        "loadingAccount": "Creating your account...",
+        "loadingMessage": "Please wait while your account is being created",
+        "errorAccount": "Error creating account"
+      },
+      "step1": {
+        "title": "Create your Escort account",
+        "subtitle": "Join the community and start earning",
+        "steps": {
+          "email": "Email",
+          "phone": "Phone",
+          "password": "Password",
+          "terms": "Terms"
+        },
+        "email": {
+          "title": "Your email address",
+          "subtitle": "We will send you a verification code",
+          "label": "Email",
+          "placeholder": "your@email.com",
+          "sendCode": "Send code",
+          "resendCode": "Resend code",
+          "sending": "Sending...",
+          "verificationCode": "Verification code",
+          "verifyEmail": "Verify email",
+          "emailVerified": "Email successfully verified"
+        },
+        "phone": {
+          "title": "Your phone number",
+          "subtitle": "For security and verification",
+          "label": "Phone",
+          "placeholder": "079 123 45 67 or +41 79 123 45 67"
+        },
+        "password": {
+          "title": "Create your password",
+          "subtitle": "Choose a secure password",
+          "label": "Password",
+          "placeholder": "••••••••",
+          "confirmLabel": "Confirm password",
+          "confirmPlaceholder": "••••••••"
+        },
+        "terms": {
+          "title": "Terms of service",
+          "subtitle": "Last step before creating your account",
+          "isAdult": "I am 18 years or older",
+          "isAdultDescription": "I certify that I am of legal age under Swiss law",
+          "acceptTos": "I accept the terms",
+          "acceptTosDescription": "Terms of Service and Privacy Policy",
+          "notRobot": "I am not a robot",
+          "notRobotDescription": "Security verification"
+        },
+        "buttons": {
+          "previous": "Previous",
+          "next": "Next",
+          "creating": "Creating...",
+          "chooseOffer": "Choose my plan"
+        }
+      },
+      "step2": {
+        "loading": "Loading plans...",
+        "title": "Choose your plan",
+        "subtitle": "Select the plan that best fits your needs",
+        "plans": {
+          "discovery": {
+            "label": "Discovery",
+            "description": "To get started on Felora",
+            "duration": "7 days",
+            "features": {
+              "verified": "Verified profile",
+              "photos": "Unlimited photos",
+              "messaging": "Secure messaging"
+            }
+          },
+          "premium": {
+            "label": "Premium",
+            "description": "Most popular",
+            "duration": "30 days",
+            "features": {
+              "badge": "Verified badge",
+              "videos": "Unlimited videos",
+              "stats": "Statistics"
+            }
+          },
+          "elite": {
+            "label": "Elite",
+            "description": "For professionals",
+            "duration": "90 days",
+            "features": {
+              "badge": "Premium badge",
+              "boost": "Featured placement",
+              "support": "VIP support"
+            }
+          },
+          "popular": "Popular",
+          "choose": "Choose",
+          "clickToValidate": "Click to validate"
+        },
+        "promo": {
+          "title": "Promo code",
+          "placeholder": "Enter your code (e.g. WELCOME10)",
+          "apply": "Apply",
+          "enterCode": "Enter a code",
+          "codeInvalid": "Invalid code",
+          "codeApplied": "Code {code} applied",
+          "validationError": "Unable to validate code"
+        },
+        "hint": "Click your selection again to continue"
+      },
+      "step3": {
+        "title": "Identity verification",
+        "subtitle": "Final step to secure your account and start earning",
+        "documents": {
+          "docFront": {
+            "label": "Identity document — front",
+            "description": "ID card, passport or driver's license",
+            "requirements": {
+              "valid": "Valid official document",
+              "clear": "Clear and readable photo",
+              "visible": "All information visible"
+            },
+            "tips": {
+              "reflections": "Avoid reflections",
+              "text": "Ensure text is sharp",
+              "frame": "Frame the document well"
+            }
+          },
+          "docBack": {
+            "label": "Identity document — back",
+            "description": "Back of your identity document",
+            "requirements": {
+              "same": "Same document as front",
+              "clear": "Clear and readable photo",
+              "barcode": "Barcode visible"
+            },
+            "tips": {
+              "verify": "Verify it's the same document",
+              "barcode": "Avoid reflections on barcode",
+              "frame": "Frame the document well"
+            }
+          },
+          "selfieSign": {
+            "label": "Selfie with \"FELORA\" sign",
+            "description": "Photo of you holding a paper with \"FELORA\" written on it",
+            "requirements": {
+              "face": "Your face clearly visible",
+              "sign": "Paper with \"FELORA\" readable",
+              "light": "Good lighting"
+            },
+            "tips": {
+              "write": "Write \"FELORA\" on white paper",
+              "hold": "Hold the paper near your face",
+              "look": "Look directly at the camera"
+            }
+          },
+          "livenessVideo": {
+            "label": "Presentation video",
+            "description": "Short video of you speaking to the camera",
+            "requirements": {
+              "duration": "10-30 second video",
+              "face": "Your face clearly visible",
+              "speak": "Speak clearly"
+            },
+            "tips": {
+              "say": "Say your name and \"FELORA\"",
+              "move": "Move your head slightly",
+              "light": "Ensure you are well lit"
+            }
+          },
+          "documentProvided": "Document provided ✓"
+        },
+        "progress": {
+          "title": "Progress",
+          "allProvided": "✓ All documents provided",
+          "missing": "{count} document(s) missing"
+        },
+        "buttons": {
+          "validate": "Validate verification",
+          "validating": "Validating...",
+          "completeLater": "Complete later"
+        },
+        "later": {
+          "title": "Complete later",
+          "description": "You will be able to complete your identity verification from your dashboard.",
+          "cancel": "Cancel",
+          "continue": "Continue"
+        },
+        "success": {
+          "title": "🎉 Congratulations!",
+          "subtitle": "Your identity verification has been successfully submitted",
+          "ready": "Ready to start!",
+          "nextSteps": "📋 Next steps:",
+          "step1": "Complete your profile with photos and descriptions",
+          "step2": "Configure your rates and availability",
+          "step3": "Your verification will be processed within 48h",
+          "redirecting": "Redirecting to your dashboard..."
+        },
+        "errors": {
+          "missingPieces": "Missing documents: {pieces}",
+          "noUserId": "User ID missing - please reload the page",
+          "filesLarge": "Files too large. Please compress your images/videos (max 3MB each).",
+          "submission": "Submission error"
+        }
+      }
+    }
+  },
+  "club": {
+    "profile": {
+      "status": {
+        "active": "Active profile",
+        "inactive": "Inactive profile",
+        "visibleToUsers": "Visible to users",
+        "hiddenFromUsers": "Hidden from users",
+        "activate": "Activate",
+        "deactivate": "Deactivate",
+        "activating": "Loading...",
+        "profileActivated": "Profile successfully activated",
+        "profileDeactivated": "Profile successfully deactivated",
+        "toggleError": "Error: {error}"
+      },
+      "progress": {
+        "information": "Information",
+        "photo": "Photo",
+        "informationCount": "{count}/4",
+        "photoCount": "{count}/1"
+      },
+      "tabs": {
+        "information": "Information",
+        "services": "Services",
+        "optional": "Opt.",
+        "schedule": "Schedule",
+        "myTeam": "My Team"
+      },
+      "info": {
+        "title": "Main information",
+        "clubName": "Club name",
+        "clubNamePlaceholder": "e.g. Luxe Club Geneva",
+        "clubNameRequired": "Name required",
+        "required": "Required",
+        "establishmentType": "Establishment type",
+        "establishmentTypes": {
+          "institut_massage": "Massage institute",
+          "agence_escorte": "Escort agency",
+          "salon_erotique": "Erotic salon",
+          "club": "Club"
+        },
+        "email": "Email",
+        "emailPlaceholder": "contact@your-club.ch",
+        "phone": "Phone",
+        "phonePlaceholder": "+41 XX XXX XX XX",
+        "description": "Description",
+        "descriptionPlaceholder": "Describe your establishment, atmosphere, services, etc.",
+        "descriptionRequired": "Description required",
+        "address": "Address",
+        "addressPlaceholder": "Start typing your address...",
+        "addressRequired": "Address required",
+        "positionFound": "📍 Position: {lat}, {lng}",
+        "website": "Website (optional)",
+        "websitePlaceholder": "https://your-site.ch",
+        "errors": {
+          "nameRequired": "Name required",
+          "descriptionRequired": "Description required",
+          "addressRequired": "Address required",
+          "loadingError": "Error loading profile",
+          "savingError": "Saving failed"
+        },
+        "messages": {
+          "profileUpdated": "Profile updated"
+        }
+      },
+      "media": {
+        "title": "Profile photo",
+        "subtitle": "1 mandatory cover photo: This photo will display prominently on your public profile",
+        "coverPhoto": "Cover photo",
+        "imageRequired": "IMAGE required",
+        "uploadInProgress": "Upload in progress...",
+        "clickToAddPhoto": "Click to add a photo",
+        "clickToAddVideo": "Click to add a video",
+        "addPhoto": "Add a photo",
+        "addVideo": "Add a video",
+        "imageUnavailable": "📷 Image unavailable",
+        "videoUnavailable": "🎥 Video unavailable",
+        "uploadSuccess": "{type} successfully uploaded",
+        "uploadError": "Upload error: {error}",
+        "deleteSuccess": "Media successfully deleted",
+        "deleteError": "Deletion error: {error}",
+        "loadingError": "Error loading media"
+      },
+      "services": {
+        "languagesTitle": "Languages spoken",
+        "paymentMethodsTitle": "Payment methods",
+        "servicesEquipmentsTitle": "Services & Equipment",
+        "languages": {
+          "french": "French",
+          "english": "English",
+          "german": "German",
+          "italian": "Italian",
+          "spanish": "Spanish",
+          "russian": "Russian",
+          "arabic": "Arabic",
+          "chinese": "Chinese"
+        },
+        "paymentMethods": {
+          "cash": "Cash",
+          "card": "Card",
+          "twint": "TWINT",
+          "transfer": "Transfer"
+        },
+        "servicesList": {
+          "bar": "Bar",
+          "private": "Private",
+          "security": "Security",
+          "parking": "Parking",
+          "vipRoom": "VIP room"
+        },
+        "equipmentsList": {
+          "shower": "Shower",
+          "jacuzzi": "Jacuzzi",
+          "sauna": "Sauna",
+          "airConditioning": "Air conditioning",
+          "smokingArea": "Smoking area",
+          "parking": "Parking",
+          "handicapAccess": "Handicap access",
+          "musicAmbiance": "Music ambiance",
+          "bar": "Bar",
+          "poleDance": "Pole dance"
+        },
+        "save": "Save",
+        "saving": "Saving…",
+        "settingsSaved": "Settings saved",
+        "loadingError": "Unable to load services",
+        "savingError": "Saving failed"
+      },
+      "team": {
+        "activeTeam": "Active team ({count})",
+        "invitations": "Invitations ({count})",
+        "inviteGirl": "Invite a girl",
+        "loading": "Loading…",
+        "noTeamMembers": "No girls in the team yet",
+        "noInvitations": "No invitations sent",
+        "removeFromClub": "Remove from club",
+        "removeConfirm": "Do you really want to remove {name} from the club?",
+        "invitationStatus": {
+          "pending": "Pending",
+          "accepted": "Accepted",
+          "declined": "Declined",
+          "cancelled": "Cancelled",
+          "expired": "Expired"
+        },
+        "sentOn": "Sent on {date}",
+        "cancel": "Cancel",
+        "cancelInvitation": "Do you really want to cancel this invitation?",
+        "inviteModal": {
+          "title": "Invite a girl",
+          "searchPlaceholder": "Search a girl by name or city...",
+          "searching": "Searching...",
+          "noResults": "No girl found",
+          "minCharacters": "Type at least 2 characters to search",
+          "cityNotSpecified": "City not specified",
+          "invite": "Invite",
+          "invitationSent": "Invitation successfully sent!",
+          "invitationError": "Error sending invitation",
+          "cancelError": "Error cancelling",
+          "removeError": "Error removing",
+          "cannotRemove": "Cannot remove this escort"
+        }
+      },
+      "actions": {
+        "viewProfile": "View profile",
+        "save": "Save",
+        "saving": "Saving…"
+      }
+    }
   }
 }

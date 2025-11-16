@@ -22,14 +22,14 @@ import { createNavigation } from 'next-intl/navigation'
 export const routing = defineRouting({
   // Liste des langues supportées (9 langues)
   locales: ['fr', 'de', 'it', 'en', 'es', 'ru', 'ar', 'pt', 'sq'],
-  
+
   // Langue par défaut (Français pour la Suisse)
   defaultLocale: 'fr',
-  
-  // Préfixe de locale dans l'URL
-  // 'as-needed': /search (fr par défaut), /en/search, /de/search
-  // 'always': /fr/search, /en/search, /de/search
-  localePrefix: 'as-needed'
+
+  // Désactiver le préfixe de langue dans l'URL
+  // La langue sera stockée dans un cookie
+  // Toutes les routes restent sans préfixe : /search, /map, etc.
+  localePrefix: 'never'
 })
 
 // Navigation typée avec support des locales

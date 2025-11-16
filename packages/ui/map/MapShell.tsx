@@ -102,16 +102,16 @@ function SyncView({ center, zoom }: { center: [number, number]; zoom: number }) 
 
 export default function MapShell({ initialViewState, onViewStateChange, className, children }: MapShellProps) {
   const [isMounted, setIsMounted] = useState(false)
-  
+
   useEffect(() => {
     setIsMounted(true)
   }, [])
-  
+
   // Protection SSR complète
   if (!isMounted || typeof window === 'undefined') {
     return (
       <div className={`${className} flex items-center justify-center bg-gray-900`}>
-        <div className="text-white">Chargement de la carte...</div>
+        <div className="text-white">Loading map...</div>
       </div>
     )
   }

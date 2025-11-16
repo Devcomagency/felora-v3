@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { usePublicProfile } from '@/hooks/useUnifiedProfile'
 import { ArrowLeft, MapPin, Star, Heart, MessageCircle, Crown, BadgeCheck, X, Clock, Users, Home, Car, CreditCard, Settings, Phone, Smartphone, MessageSquare, ExternalLink } from 'lucide-react'
 
@@ -37,6 +38,7 @@ interface ProfileClientUnifiedProps {
 }
 
 export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifiedProps) {
+  const t = useTranslations('profileModal')
   const { profile, loading, error } = usePublicProfile(profileId)
   const router = useRouter()
 
@@ -80,7 +82,7 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
             <div className="h-4 bg-gray-700 rounded w-48 mb-4"></div>
             <div className="h-4 bg-gray-700 rounded w-32"></div>
           </div>
-          <p className="text-gray-300 mt-4">Chargement du profil unifié...</p>
+          <p className="text-gray-300 mt-4">{t('loading')}</p>
         </div>
       </div>
     )
@@ -93,13 +95,13 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
           <div className="text-red-400 mb-4">
             <X className="w-8 h-8 mx-auto" />
           </div>
-          <h3 className="text-lg font-semibold mb-2">Erreur de chargement</h3>
-          <p className="text-gray-300 mb-4">{error || 'Profil non trouvé'}</p>
+          <h3 className="text-lg font-semibold mb-2">{t('error.title')}</h3>
+          <p className="text-gray-300 mb-4">{error || t('error.description')}</p>
           <button
             onClick={onClose}
             className="w-full px-4 py-2 bg-pink-600 hover:bg-pink-700 rounded transition-colors"
           >
-            Fermer
+            {t('close')}
           </button>
         </div>
       </div>
@@ -199,75 +201,75 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
               {/* 1. Profil physique - En premier selon la demande */}
               <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-5">
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-4">Profil physique</h3>
+                  <h3 className="text-lg font-semibold text-white mb-4">{t("sections.physical")}</h3>
                   <div className="grid grid-cols-2 gap-3">
                     {safeProfile.physical.height && (
                       <div className="p-3 bg-white/5 border border-white/10 rounded-xl hover:border-white/20 transition-colors">
-                        <div className="text-xs text-white/60 mb-1">Taille</div>
+                        <div className="text-xs text-white/60 mb-1">{t("physical.height")}</div>
                         <div className="text-white text-sm font-medium">{safeProfile.physical.height} cm</div>
                       </div>
                     )}
                     {safeProfile.physical.bodyType && (
                       <div className="p-3 bg-white/5 border border-white/10 rounded-xl hover:border-white/20 transition-colors">
-                        <div className="text-xs text-white/60 mb-1">Silhouette</div>
+                        <div className="text-xs text-white/60 mb-1">{t("physical.bodyType")}</div>
                         <div className="text-white text-sm font-medium">{safeProfile.physical.bodyType}</div>
                       </div>
                     )}
                     {safeProfile.physical.hairColor && (
                       <div className="p-3 bg-white/5 border border-white/10 rounded-xl hover:border-white/20 transition-colors">
-                        <div className="text-xs text-white/60 mb-1">Cheveux</div>
+                        <div className="text-xs text-white/60 mb-1">{t("physical.hairColor")}</div>
                         <div className="text-white text-sm font-medium">{safeProfile.physical.hairColor}</div>
                       </div>
                     )}
                     {safeProfile.physical.eyeColor && (
                       <div className="p-3 bg-white/5 border border-white/10 rounded-xl hover:border-white/20 transition-colors">
-                        <div className="text-xs text-white/60 mb-1">Yeux</div>
+                        <div className="text-xs text-white/60 mb-1">{t("physical.eyeColor")}</div>
                         <div className="text-white text-sm font-medium">{safeProfile.physical.eyeColor}</div>
                       </div>
                     )}
                     {safeProfile.physical.ethnicity && (
                       <div className="p-3 bg-white/5 border border-white/10 rounded-xl hover:border-white/20 transition-colors">
-                        <div className="text-xs text-white/60 mb-1">Origine</div>
+                        <div className="text-xs text-white/60 mb-1">{t("physical.ethnicity")}</div>
                         <div className="text-white text-sm font-medium">{safeProfile.physical.ethnicity}</div>
                       </div>
                     )}
                     {safeProfile.physical.bustSize && (
                       <div className="p-3 bg-white/5 border border-white/10 rounded-xl hover:border-white/20 transition-colors">
-                        <div className="text-xs text-white/60 mb-1">Tour poitrine</div>
+                        <div className="text-xs text-white/60 mb-1">{t("physical.bustSize")}</div>
                         <div className="text-white text-sm font-medium">{safeProfile.physical.bustSize}</div>
                       </div>
                     )}
                     {safeProfile.physical.breastType && (
                       <div className="p-3 bg-white/5 border border-white/10 rounded-xl hover:border-white/20 transition-colors">
-                        <div className="text-xs text-white/60 mb-1">Type poitrine</div>
+                        <div className="text-xs text-white/60 mb-1">{t("physical.breastType")}</div>
                         <div className="text-white text-sm font-medium">{safeProfile.physical.breastType}</div>
                       </div>
                     )}
                     {safeProfile.physical.pubicHair && (
                       <div className="p-3 bg-white/5 border border-white/10 rounded-xl hover:border-white/20 transition-colors">
-                        <div className="text-xs text-white/60 mb-1">Pilosité</div>
+                        <div className="text-xs text-white/60 mb-1">{t("physical.pubicHair")}</div>
                         <div className="text-white text-sm font-medium">{safeProfile.physical.pubicHair}</div>
                       </div>
                     )}
                     {(safeProfile.physical.tattoos || safeProfile.physical.piercings || safeProfile.physical.smoker !== undefined) && (
                       <div className="p-3 bg-white/5 border border-white/10 rounded-xl">
-                        <div className="text-xs text-white/60 mb-2">Spécificités</div>
+                        <div className="text-xs text-white/60 mb-2">{t("physical.specificities")}</div>
                         <div className="flex flex-wrap gap-1">
                           {safeProfile.physical.tattoos && (
                             <span className="text-xs px-2 py-1 bg-blue-500/20 text-blue-300 rounded">
-                              Tatouages
+                              {t("physical.tattoos")}
                             </span>
                           )}
                           {safeProfile.physical.piercings && (
                             <span className="text-xs px-2 py-1 bg-purple-500/20 text-purple-300 rounded">
-                              Piercings
+                              {t("physical.piercings")}
                             </span>
                           )}
                           {safeProfile.physical.smoker !== undefined && (
                             <span className={`text-xs px-2 py-1 rounded ${
                               safeProfile.physical.smoker ? 'bg-red-500/20 text-red-300' : 'bg-green-500/20 text-green-300'
                             }`}>
-                              {safeProfile.physical.smoker ? 'Fumeur' : 'Non-fumeur'}
+                              {safeProfile.physical.smoker ? t('physical.smoker') : t('physical.nonSmoker')}
                             </span>
                           )}
                         </div>
@@ -295,7 +297,7 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
                       <div className="p-4">
                         <h3 className="text-md font-medium text-white/90 mb-3 flex items-center gap-2">
                           <Heart className="w-4 h-4 text-purple-400" />
-                          Services
+                          {t("sections.services")}
                         </h3>
                         <div className="grid grid-cols-2 gap-2">
                           {safeProfile.options.amenities.filter(amenity => {
@@ -329,7 +331,7 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
               {(safeProfile.services && safeProfile.services.length > 0) && (
                 <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl">
                   <div className="p-5">
-                    <h3 className="text-lg font-semibold text-white mb-4">Services & Spécialités</h3>
+                    <h3 className="text-lg font-semibold text-white mb-4">{t("sections.servicesAndSpecialties")}</h3>
                     <div className="grid grid-cols-2 gap-2">
                       {safeProfile.services.map((service, index) => (
                         <div
@@ -351,7 +353,7 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
               {safeProfile.languages && Object.keys(safeProfile.languages).length > 0 && (
                 <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl">
                   <div className="p-5">
-                    <h3 className="text-lg font-semibold text-white mb-4">Langues parlées</h3>
+                    <h3 className="text-lg font-semibold text-white mb-4">{t("sections.languages")}</h3>
                     <div className="space-y-3">
                       {Object.entries(safeProfile.languages).map(([language, rating]) => (
                         <div
@@ -381,7 +383,7 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
                       <div className="p-4">
                         <h3 className="text-md font-medium text-white/90 mb-3 flex items-center gap-2">
                           <Settings className="w-4 h-4 text-orange-400" />
-                          Équipements
+                          {t("sections.equipment")}
                         </h3>
                         <div className="grid grid-cols-2 gap-2">
                           {safeProfile.options.amenities.filter(amenity => {
@@ -411,7 +413,7 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
                 <div className="p-4">
                   <h3 className="text-md font-medium text-white/90 mb-3 flex items-center gap-2">
                     <CreditCard className="w-4 h-4 text-pink-400" />
-                    Tarifs
+                    {t("sections.rates")}
                   </h3>
 
                   {/* Tarif principal compact */}
@@ -420,7 +422,7 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
                       <div className="text-lg font-bold text-white">
                         {safeProfile.rates.baseRate || safeProfile.rates.oneHour} {safeProfile.rates.currency}
                       </div>
-                      <div className="text-xs text-white/70">À partir de</div>
+                      <div className="text-xs text-white/70">{t("rates.from")}</div>
                     </div>
                   )}
 
@@ -431,7 +433,7 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
                         <div className="text-sm font-medium text-white">
                           {safeProfile.rates.fifteenMin}
                         </div>
-                        <div className="text-xs text-white/60">15min</div>
+                        <div className="text-xs text-white/60">{t("rates.fifteenMin")}</div>
                       </div>
                     )}
                     {safeProfile.rates.thirtyMin && (
@@ -439,7 +441,7 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
                         <div className="text-sm font-medium text-white">
                           {safeProfile.rates.thirtyMin}
                         </div>
-                        <div className="text-xs text-white/60">30min</div>
+                        <div className="text-xs text-white/60">{t("rates.thirtyMin")}</div>
                       </div>
                     )}
                     {safeProfile.rates.oneHour && safeProfile.rates.baseRate && safeProfile.rates.oneHour !== safeProfile.rates.baseRate && (
@@ -447,7 +449,7 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
                         <div className="text-sm font-medium text-white">
                           {safeProfile.rates.oneHour}
                         </div>
-                        <div className="text-xs text-white/60">1h</div>
+                        <div className="text-xs text-white/60">{t("rates.oneHour")}</div>
                       </div>
                     )}
                     {safeProfile.rates.twoHours && (
@@ -455,7 +457,7 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
                         <div className="text-sm font-medium text-white">
                           {safeProfile.rates.twoHours}
                         </div>
-                        <div className="text-xs text-white/60">2h</div>
+                        <div className="text-xs text-white/60">{t("rates.twoHours")}</div>
                       </div>
                     )}
                     {safeProfile.rates.halfDay && (
@@ -463,7 +465,7 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
                         <div className="text-sm font-medium text-white">
                           {safeProfile.rates.halfDay}
                         </div>
-                        <div className="text-xs text-white/60">½j</div>
+                        <div className="text-xs text-white/60">{t("rates.halfDay")}</div>
                       </div>
                     )}
                     {safeProfile.rates.fullDay && (
@@ -471,7 +473,7 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
                         <div className="text-sm font-medium text-white">
                           {safeProfile.rates.fullDay}
                         </div>
-                        <div className="text-xs text-white/60">Jour</div>
+                        <div className="text-xs text-white/60">{t("rates.fullDay")}</div>
                       </div>
                     )}
                     {safeProfile.rates.overnight && (
@@ -479,15 +481,15 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
                         <div className="text-sm font-medium text-white">
                           {safeProfile.rates.overnight}
                         </div>
-                        <div className="text-xs text-white/60">Nuit</div>
+                        <div className="text-xs text-white/60">{t("rates.overnight")}</div>
                       </div>
                     )}
                   </div>
 
-                  {/* Tarifs personnalisés */}
+                  {/* {t("rates.customRates")} */}
                   {safeProfile.customPrices && Array.isArray(safeProfile.customPrices) && safeProfile.customPrices.length > 0 && (
                     <div className="mt-4 pt-4 border-t border-white/10">
-                      <h4 className="text-sm font-semibold text-white/70 mb-3">Tarifs personnalisés</h4>
+                      <h4 className="text-sm font-semibold text-white/70 mb-3">{t("rates.customRates")}</h4>
                       <div className="space-y-2">
                         {safeProfile.customPrices.map((custom: any, index: number) => (
                           <div key={custom.id || index} className="flex items-center justify-between p-3 bg-white/5 border border-white/10 rounded-xl">
@@ -510,7 +512,7 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
                   <div className="p-4">
                     <h3 className="text-md font-medium text-white/90 mb-3 flex items-center gap-2">
                       <CreditCard className="w-4 h-4 text-green-400" />
-                      Paiements
+                      {t("sections.payments")}
                     </h3>
                     <div className="flex flex-wrap gap-2">
                       {safeProfile.options.paymentMethods.map((method, index) => (
@@ -530,7 +532,7 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
               {safeProfile.options?.acceptedCurrencies && safeProfile.options.acceptedCurrencies.length > 0 && (
                 <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl">
                   <div className="p-4">
-                    <h3 className="text-md font-medium text-white/90 mb-3">Devises</h3>
+                    <h3 className="text-md font-medium text-white/90 mb-3">{t("sections.currencies")}</h3>
                     <div className="flex flex-wrap gap-2">
                       {safeProfile.options.acceptedCurrencies.map((currency, index) => (
                         <span
@@ -551,7 +553,7 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
                   <div className="p-5">
                     <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                       <MapPin className="w-5 h-5 text-pink-400" />
-                      Prestations
+                      {t("sections.prestations")}
                     </h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {safeProfile.availability.incall && (
@@ -560,8 +562,8 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
                             <Home className="w-5 h-5 text-green-400" />
                           </div>
                           <div>
-                            <div className="text-white font-medium">Je reçois</div>
-                            <div className="text-xs text-green-300">Chez moi</div>
+                            <div className="text-white font-medium">{t("prestations.incall")}</div>
+                            <div className="text-xs text-green-300">{t("prestations.incallDescription")}</div>
                           </div>
                         </div>
                       )}
@@ -571,8 +573,8 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
                             <Car className="w-5 h-5 text-blue-400" />
                           </div>
                           <div>
-                            <div className="text-white font-medium">Je me déplace</div>
-                            <div className="text-xs text-blue-300">Chez vous / Hôtel</div>
+                            <div className="text-white font-medium">{t("prestations.outcall")}</div>
+                            <div className="text-xs text-blue-300">{t("prestations.outcallDescription")}</div>
                           </div>
                         </div>
                       )}
@@ -586,31 +588,31 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
                 <div className="p-5">
                   <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                     <Users className="w-5 h-5 text-pink-400" />
-                    Clientèle acceptée
+                    {t("sections.clientele")}
                   </h3>
                   <div className="grid grid-cols-2 gap-3">
                     {safeProfile.clientele.acceptsCouples && (
                       <div className="flex items-center gap-2 p-3 bg-gradient-to-r from-purple-500/10 to-pink-500/10 rounded-lg border border-purple-500/20">
                         <span className="w-2 h-2 bg-purple-400 rounded-full"></span>
-                        <span className="text-purple-300 text-sm font-medium">Couples</span>
+                        <span className="text-purple-300 text-sm font-medium">{t("clientele.couples")}</span>
                       </div>
                     )}
                     {safeProfile.clientele.acceptsWomen && (
                       <div className="flex items-center gap-2 p-3 bg-gradient-to-r from-purple-500/10 to-pink-500/10 rounded-lg border border-purple-500/20">
                         <span className="w-2 h-2 bg-purple-400 rounded-full"></span>
-                        <span className="text-purple-300 text-sm font-medium">Femmes</span>
+                        <span className="text-purple-300 text-sm font-medium">{t("clientele.women")}</span>
                       </div>
                     )}
                     {safeProfile.clientele.acceptsHandicapped && (
                       <div className="flex items-center gap-2 p-3 bg-gradient-to-r from-purple-500/10 to-pink-500/10 rounded-lg border border-purple-500/20">
                         <span className="w-2 h-2 bg-purple-400 rounded-full"></span>
-                        <span className="text-purple-300 text-sm font-medium">Personnes handicapées</span>
+                        <span className="text-purple-300 text-sm font-medium">{t("clientele.handicapped")}</span>
                       </div>
                     )}
                     {safeProfile.clientele.acceptsSeniors && (
                       <div className="flex items-center gap-2 p-3 bg-gradient-to-r from-purple-500/10 to-pink-500/10 rounded-lg border border-purple-500/20">
                         <span className="w-2 h-2 bg-purple-400 rounded-full"></span>
-                        <span className="text-purple-300 text-sm font-medium">Personnes âgées</span>
+                        <span className="text-purple-300 text-sm font-medium">{t("clientele.seniors")}</span>
                       </div>
                     )}
                   </div>
@@ -626,7 +628,7 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
                       <div className="p-4">
                         <h3 className="text-md font-medium text-white/90 mb-3 flex items-center gap-2">
                           <Home className="w-4 h-4 text-blue-400" />
-                          Lieu
+                          {t("sections.location")}
                         </h3>
                         <div className="grid grid-cols-2 gap-2">
                           {safeProfile.options.amenities.filter(amenity => amenity.startsWith('opt:') && (amenity.includes('privé') || amenity.includes('discret') || amenity.includes('luxe') || amenity.includes('appartement') || amenity.includes('studio') || amenity.includes('maison'))).map((amenity, index) => (
@@ -651,8 +653,8 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
               <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl">
                 <div className="p-4">
                   <div className="text-center mb-4">
-                    <h3 className="text-lg font-semibold text-white mb-1">Contactez {safeProfile.stageName}</h3>
-                    <p className="text-white/90 text-sm">Réservez votre moment privilégié</p>
+                    <h3 className="text-lg font-semibold text-white mb-1">{t("contact.title", { name: safeProfile.stageName })}</h3>
+                    <p className="text-white/90 text-sm">{t("contact.subtitle")}</p>
                   </div>
 
                   <div className="space-y-3">
@@ -662,7 +664,7 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
                       className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-blue-500/10 hover:from-pink-500/20 hover:via-purple-500/20 hover:to-blue-500/20 rounded-xl text-white font-medium transition-all duration-300 text-sm border border-pink-500/30 hover:border-pink-400/50"
                     >
                       <MessageCircle className="w-4 h-4" />
-                      <span>Message privé</span>
+                      <span>{t("contact.privateMessage")}</span>
                     </button>
 
                     {/* Section Téléphone - Gestion des 3 cas */}
@@ -699,21 +701,21 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
                                 className="flex items-center justify-center gap-1 px-3 py-2 bg-green-600/20 hover:bg-green-600/30 rounded-xl text-green-300 hover:text-green-200 font-medium transition-all duration-300 border border-green-600/30 text-xs"
                               >
                                 <MessageSquare className="w-3 h-3" />
-                                <span>WhatsApp</span>
+                                <span>{t("contact.whatsapp")}</span>
                               </a>
                               <a
                                 href={smsUrl}
                                 className="flex items-center justify-center gap-1 px-3 py-2 bg-blue-600/20 hover:bg-blue-600/30 rounded-xl text-blue-300 hover:text-blue-200 font-medium transition-all duration-300 border border-blue-600/30 text-xs"
                               >
                                 <Smartphone className="w-3 h-3" />
-                                <span>SMS</span>
+                                <span>{t("contact.sms")}</span>
                               </a>
                               <a
                                 href={callUrl}
                                 className="flex items-center justify-center gap-1 px-3 py-2 bg-orange-600/20 hover:bg-orange-600/30 rounded-xl text-orange-300 hover:text-orange-200 font-medium transition-all duration-300 border border-orange-600/30 text-xs"
                               >
                                 <Phone className="w-3 h-3" />
-                                <span>Appel</span>
+                                <span>{t("contact.call")}</span>
                               </a>
                             </div>
                           </div>
@@ -725,7 +727,7 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
                             <div className="text-center p-2 bg-white/5 rounded-xl border border-white/10">
                               <div className="flex items-center justify-center gap-2 text-white/60">
                                 <Phone className="w-4 h-4" />
-                                <span className="text-sm">Contact téléphonique disponible</span>
+                                <span className="text-sm">{t("contact.phoneAvailable")}</span>
                               </div>
                             </div>
                             <div className="grid grid-cols-3 gap-2">
@@ -736,21 +738,21 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
                                 className="flex items-center justify-center gap-1 px-3 py-2 bg-green-600/20 hover:bg-green-600/30 rounded-xl text-green-300 hover:text-green-200 font-medium transition-all duration-300 border border-green-600/30 text-xs"
                               >
                                 <MessageSquare className="w-3 h-3" />
-                                <span>WhatsApp</span>
+                                <span>{t("contact.whatsapp")}</span>
                               </a>
                               <a
                                 href={smsUrl}
                                 className="flex items-center justify-center gap-1 px-3 py-2 bg-blue-600/20 hover:bg-blue-600/30 rounded-xl text-blue-300 hover:text-blue-200 font-medium transition-all duration-300 border border-blue-600/30 text-xs"
                               >
                                 <Smartphone className="w-3 h-3" />
-                                <span>SMS</span>
+                                <span>{t("contact.sms")}</span>
                               </a>
                               <a
                                 href={callUrl}
                                 className="flex items-center justify-center gap-1 px-3 py-2 bg-orange-600/20 hover:bg-orange-600/30 rounded-xl text-orange-300 hover:text-orange-200 font-medium transition-all duration-300 border border-orange-600/30 text-xs"
                               >
                                 <Phone className="w-3 h-3" />
-                                <span>Appel</span>
+                                <span>{t("contact.call")}</span>
                               </a>
                             </div>
                           </div>
@@ -761,7 +763,7 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
                           <div className="text-center p-4 bg-purple-700/20 rounded-xl border border-purple-600/20">
                             <div className="flex items-center justify-center gap-2 text-purple-300">
                               <MessageCircle className="w-5 h-5" />
-                              <span className="text-sm font-medium">Contact par messagerie privée uniquement</span>
+                              <span className="text-sm font-medium">{t("contact.privateMessagingOnly")}</span>
                             </div>
                           </div>
                         );

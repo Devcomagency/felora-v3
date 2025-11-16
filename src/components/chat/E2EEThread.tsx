@@ -12,6 +12,7 @@ import { useNotification } from '@/components/providers/NotificationProvider'
 import TypingIndicator from './TypingIndicator'
 import FullscreenMediaViewer from './FullscreenMediaViewer'
 import LinkPreview from './LinkPreview'
+import { useTranslations } from 'next-intl'
 
 type Envelope = { id: string; messageId: string; senderUserId: string; cipherText: string; attachmentUrl?: string | null; attachmentMeta?: any; createdAt: string; status?: 'sending' | 'sent' | 'delivered' | 'read' | 'failed'; deliveredAt?: Date | string | null; readAt?: Date | string | null }
 
@@ -22,6 +23,7 @@ function extractUrls(text: string): string[] {
 }
 
 export default function E2EEThread({ conversationId, userId, partnerId, partnerName }: { conversationId: string; userId: string; partnerId: string; partnerName?: string }) {
+  const t = useTranslations('messages')
   const [envelopes, setEnvelopes] = useState<Envelope[]>([])
   const [loadingHistory, setLoadingHistory] = useState(true)
   const [mediaCache, setMediaCache] = useState<Record<string, { url: string; mime: string }>>({})
@@ -963,7 +965,7 @@ export default function E2EEThread({ conversationId, userId, partnerId, partnerN
               {/* Si c'est un message vu par le récepteur, cacher le média */}
         {isReceiverAndViewed ? (
           <div className="text-xs text-gray-500 italic py-1">
-            Contenu disparu
+            {t('contentDisappeared')}
           </div>
         ) : (
           <>
@@ -981,11 +983,11 @@ export default function E2EEThread({ conversationId, userId, partnerId, partnerN
             {viewMode === 'once' && mine && (
               <div className="mt-1 flex items-center gap-1.5 text-[11px]">
                 {isViewedOnce ? (
-                  <span className="text-green-400/80">✓ Vu</span>
+                  <span className="text-green-400/80">✓ {t('viewed')}</span>
                 ) : (
                   <span className="text-blue-400/80 flex items-center gap-1">
                     <div className="w-1 h-1 rounded-full bg-blue-400 animate-pulse" />
-                    Non vu
+                    {t('notViewed')}
                   </span>
                 )}
               </div>
@@ -999,7 +1001,7 @@ export default function E2EEThread({ conversationId, userId, partnerId, partnerN
                   {(env as any).viewMode === 'once' && (
                     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-purple-500/10 border border-purple-500/20 text-[11px] font-medium text-purple-300/90">
                       <Eye size={11} className="flex-shrink-0" />
-                      <span>Vue unique</span>
+                      <span>{t('singleView')}</span>
                     </span>
                   )}
                   {(env as any).downloadable === false && (
@@ -1152,10 +1154,10 @@ export default function E2EEThread({ conversationId, userId, partnerId, partnerN
                     {(() => {
                       try {
                         const date = new Date(env.createdAt)
-                        if (isNaN(date.getTime())) return 'Maintenant'
+                        if (isNaN(date.getTime())) return t('now')
                         return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                       } catch {
-                        return 'Maintenant'
+                        return t('now')
                       }
                     })()}
                   </span>

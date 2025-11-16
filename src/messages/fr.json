@@ -17,18 +17,55 @@
     "next": "Suivant",
     "previous": "Précédent",
     "submit": "Soumettre",
-    "send": "Envoyer"
+    "send": "Envoyer",
+    "create": "Créer",
+    "language": "Langue",
+    "schedule": "Agenda",
+    "legal": "Légal",
+    "privacy": "Confidentialité",
+    "terms": "Conditions",
+    "cookies": "Cookies"
   },
   "search": {
     "title": "Recherche",
+    "subtitle": "Découvrez des profils d'exception en Suisse",
     "placeholder": "Rechercher par nom, ville...",
+    "searchAriaLabel": "Rechercher des escortes ou clubs par nom ou ville",
+    "openFilters": "Ouvrir les filtres de recherche",
     "profiles": "Profils",
     "establishments": "Établissements",
-    "noResults": "Aucun résultat trouvé",
+    "all": "Tous",
+    "clubs": "Clubs",
+    "salons": "Salons",
+    "institutes": "Instituts",
+    "agencies": "Agences",
+    "independentProfiles": "Profils Indépendants",
+    "profilesCount": "profils",
+    "noProfilesFound": "Aucun profil trouvé",
+    "loading": "Chargement...",
     "loadMore": "Voir plus",
+    "establishmentsCount": "établissements",
+    "noClubsFound": "Aucun club trouvé",
+    "openMap": "Ouvrir la carte interactive",
+    "loadingSearch": "Chargement de la recherche...",
+    "noResults": "Aucun résultat trouvé",
     "results": "{count} résultats",
     "filterBy": "Filtrer par",
-    "sortBy": "Trier par"
+    "sortBy": "Trier par",
+    "verified": "Vérifié",
+    "availableNow": "Dispo maintenant",
+    "available": "Disponible",
+    "live": "Live",
+    "favorite": "Favori",
+    "privateMedia": "Médias privés",
+    "escort": "Escorte",
+    "salon": "Salon",
+    "institute": "Institut",
+    "agency": "Agence",
+    "club": "Club",
+    "open": "Ouvert",
+    "closed": "Fermé",
+    "hours": "Horaires"
   },
   "map": {
     "title": "Carte interactive",
@@ -36,7 +73,76 @@
     "visibleProfiles": "{count} profils visibles",
     "zoomIn": "Zoomer",
     "zoomOut": "Dézoomer",
-    "myLocation": "Ma position"
+    "myLocation": "Ma position",
+    "inDevelopment": "Fonctionnalité en cours de développement",
+    "backToHome": "Retour à l'accueil",
+    "initializingGeoData": "Initialisation des données géographiques...",
+    "backButton": {
+      "ariaLabel": "Retour"
+    },
+    "clusterPopup": {
+      "title": "{count, plural, =1 {# profil dans cette zone} other {# profils dans cette zone}}",
+      "age": "{age} ans",
+      "zoomIn": "Zoomer sur cette zone"
+    },
+    "glassPopup": {
+      "age": "{age} ans",
+      "viewProfile": "Voir le profil complet"
+    },
+    "externalPopup": {
+      "loading": "Chargement...",
+      "age": "{age} ans",
+      "viewProfile": "Voir le profil complet"
+    },
+    "cluster": {
+      "ariaLabel": "{count} profils dans cette zone"
+    },
+    "popup": {
+      "viewProfile": "Voir le profil"
+    },
+    "statusBar": {
+      "profilesVisible": "{count, plural, =0 {Aucun profil visible} =1 {# profil visible} other {# profils visibles}}",
+      "loading": "Chargement...",
+      "error": "Erreur",
+      "ariaLabel": "Voir la liste des profils visibles"
+    },
+    "filters": {
+      "ariaLabel": "Ouvrir les filtres",
+      "clearFilters": "Effacer les filtres",
+      "categories": {
+        "escort": "Escorte",
+        "masseuse": "Masseuse Érotique",
+        "dominatrice": "Dominatrice BDSM",
+        "trans": "Transsexuel",
+        "club": "🏢 Établissement"
+      }
+    },
+    "geolocation": {
+      "ariaLabel": "Se localiser sur la carte",
+      "title": "Voir autour de moi",
+      "notSupported": "La géolocalisation n'est pas supportée par ce navigateur",
+      "permissionDenied": "Permission refusée. Activez-la dans les paramètres de votre navigateur.",
+      "errorDefault": "Impossible de récupérer votre position",
+      "unavailable": "Position non disponible",
+      "timeout": "Délai de géolocalisation dépassé"
+    },
+    "userLocation": {
+      "ariaLabel": "Votre position",
+      "title": "Votre position"
+    },
+    "sidebar": {
+      "title": "Profils visibles",
+      "subtitle": "{count, plural, =0 {Aucun profil dans la zone visible} =1 {# profil dans la zone visible} other {# profils dans la zone visible}}",
+      "noProfiles": "Aucun profil visible dans cette zone",
+      "moreProfiles": "+{count} autres profils dans la zone",
+      "category": {
+        "escort": "Escort",
+        "masseuse": "Masseuse",
+        "dominatrice": "Dominatrice",
+        "trans": "Transsexuel",
+        "club": "Club"
+      }
+    }
   },
   "navigation": {
     "home": "Accueil",
@@ -65,13 +171,144 @@
     "dontHaveAccount": "Pas encore de compte ?",
     "resetPassword": "Réinitialiser le mot de passe",
     "sendResetLink": "Envoyer le lien de réinitialisation",
-    "backToLogin": "Retour à la connexion"
+    "backToLogin": "Retour à la connexion",
+    "registerClient": {
+      "title": "Inscription Client",
+      "subtitle": "Créez votre compte en quelques secondes",
+      "backButton": "Retour",
+      "form": {
+        "fullName": "Nom complet",
+        "fullNamePlaceholder": "Jean Dupont",
+        "email": "Email",
+        "emailPlaceholder": "jean@exemple.com",
+        "password": "Mot de passe",
+        "passwordPlaceholder": "••••••••",
+        "confirmPassword": "Confirmer le mot de passe",
+        "confirmPasswordPlaceholder": "••••••••",
+        "isAdult": "Je confirme avoir 18 ans ou plus",
+        "acceptTos": "J'accepte les {tosLink}",
+        "tosLink": "conditions générales d'utilisation",
+        "required": "*"
+      },
+      "buttons": {
+        "creating": "Création en cours...",
+        "createAccount": "Créer mon compte",
+        "alreadyAccount": "Vous avez déjà un compte ?",
+        "login": "Se connecter"
+      },
+      "validation": {
+        "nameRequired": "Le nom est requis",
+        "emailRequired": "L'email est requis",
+        "emailInvalid": "Email invalide",
+        "passwordRequired": "Le mot de passe est requis",
+        "passwordMinLength": "Minimum 8 caractères",
+        "passwordMismatch": "Les mots de passe ne correspondent pas",
+        "isAdultRequired": "Vous devez confirmer avoir 18 ans ou plus",
+        "tosRequired": "Vous devez accepter les CGU"
+      },
+      "messages": {
+        "success": "Compte client créé avec succès !",
+        "error": "Erreur lors de la création du compte"
+      }
+    },
+    "registerSalon": {
+      "title": "Inscription Établissement",
+      "subtitle": "Créez votre profil professionnel en quelques minutes",
+      "backButton": "Retour",
+      "form": {
+        "companyName": "Nom de l'établissement",
+        "companyNamePlaceholder": "Nom de votre salon/club",
+        "companyNameRequired": "Le nom de l'établissement est requis",
+        "email": "Email",
+        "emailPlaceholder": "contact@etablissement.com",
+        "emailRequired": "L'email est requis",
+        "emailInvalid": "Email invalide",
+        "phone": "Téléphone",
+        "phonePlaceholder": "+41 22 123 45 67",
+        "phoneInvalid": "Numéro de téléphone invalide",
+        "password": "Mot de passe",
+        "passwordPlaceholder": "••••••••",
+        "passwordRequired": "Le mot de passe est requis",
+        "passwordMinLength": "Minimum 8 caractères",
+        "confirmPassword": "Confirmer le mot de passe",
+        "confirmPasswordMismatch": "Les mots de passe ne correspondent pas",
+        "isAdultConfirm": "Je confirme que l'établissement est légal et respecte la législation suisse",
+        "isAdultRequired": "Vous devez confirmer que l'établissement est légal",
+        "acceptTos": "J'accepte les",
+        "acceptTosLink": "conditions générales d'utilisation",
+        "acceptTosRequired": "Vous devez accepter les CGU",
+        "required": "*"
+      },
+      "buttons": {
+        "register": "Créer mon compte",
+        "registering": "Création en cours...",
+        "login": "Se connecter"
+      },
+      "messages": {
+        "hasAccount": "Vous avez déjà un compte ?",
+        "creationError": "Erreur lors de la création du compte"
+      }
+    },
+    "registerEscort": {
+      "title": "Inscription Indépendante",
+      "subtitle": "Créez votre profil professionnel en quelques minutes",
+      "back": "Retour",
+      "form": {
+        "stageName": "Pseudo",
+        "stageNamePlaceholder": "Votre pseudo",
+        "email": "Email",
+        "emailPlaceholder": "votre@email.com",
+        "password": "Mot de passe",
+        "passwordPlaceholder": "••••••••",
+        "confirmPassword": "Confirmer le mot de passe",
+        "phone": "Portable",
+        "phonePlaceholder": "079 123 45 67",
+        "dateOfBirth": "Date de naissance",
+        "required": "*",
+        "isAdult": "Je confirme avoir 18 ans ou plus",
+        "acceptTos": "J'accepte les",
+        "acceptTosLink": "conditions générales d'utilisation"
+      },
+      "emailVerification": {
+        "sendCode": "Envoyer le code de vérification",
+        "resend": "Renvoyer ({seconds}s)",
+        "sending": "Envoi...",
+        "codeSent": "Un code a été envoyé à votre email",
+        "codePlaceholder": "Code à 6 chiffres",
+        "verify": "Vérifier"
+      },
+      "buttons": {
+        "createAccount": "Créer mon compte",
+        "creating": "Création en cours...",
+        "alreadyHaveAccount": "Vous avez déjà un compte ?",
+        "login": "Se connecter"
+      },
+      "errors": {
+        "stageNameRequired": "Le pseudo est requis",
+        "emailRequired": "L'email est requis",
+        "emailInvalid": "Email invalide",
+        "emailNotVerified": "Veuillez vérifier votre email",
+        "passwordRequired": "Le mot de passe est requis",
+        "passwordTooShort": "Minimum 8 caractères",
+        "passwordMismatch": "Les mots de passe ne correspondent pas",
+        "phoneRequired": "Le portable est requis",
+        "phoneInvalid": "Numéro invalide (ex: 079 123 45 67)",
+        "dateOfBirthRequired": "La date de naissance est requise",
+        "mustBe18": "Vous devez avoir 18 ans ou plus",
+        "confirmAdult": "Vous devez confirmer avoir 18 ans ou plus",
+        "acceptTosRequired": "Vous devez accepter les CGU",
+        "emailSendError": "Erreur envoi email",
+        "codeInvalid": "Code invalide",
+        "accountCreationError": "Erreur lors de la création du compte"
+      }
+    }
   },
   "profile": {
     "edit": "Modifier le profil",
     "save": "Enregistrer",
     "cancel": "Annuler",
     "photo": "Photo",
+    "video": "Vidéo",
     "name": "Nom",
     "bio": "Biographie",
     "location": "Localisation",
@@ -79,7 +316,39 @@
     "verified": "Vérifié",
     "myProfile": "Mon profil",
     "viewProfile": "Voir le profil",
-    "editProfile": "Modifier le profil"
+    "editProfile": "Modifier le profil",
+    "error": {
+      "title": "Une erreur est survenue",
+      "description": "Nous avons des difficultés à charger ce profil. Veuillez réessayer.",
+      "retry": "Réessayer",
+      "goHome": "Retour à l'accueil"
+    },
+    "header": {
+      "back": "Retour",
+      "backAriaLabel": "Retour à la page précédente"
+    },
+    "kyc": {
+      "title": "🎉 Félicitations ! KYC soumis avec succès",
+      "description": "Votre vérification d'identité a été transmise. Voici votre profil public !",
+      "nextStepsTitle": "📋 Prochaines étapes :",
+      "step1": "Votre vérification sera traitée sous 48h",
+      "step2": "Complétez votre profil pour plus de visibilité",
+      "step3": "Une fois vérifié, vous recevrez le badge ✓"
+    },
+    "actions": {
+      "followed": "Vous suivez maintenant ce profil",
+      "unfollowed": "Vous ne suivez plus ce profil",
+      "addedToFavorites": "❤️ Ajouté aux favoris",
+      "removedFromFavorites": "Retiré des favoris",
+      "saved": "📌 Profil sauvegardé",
+      "removedFromSaved": "Profil retiré des sauvegardes",
+      "linkCopied": "Lien copié dans le presse-papiers",
+      "shareText": "Découvrez le profil de {name} sur Felora",
+      "loginToAddFavorites": "Connectez-vous pour ajouter des favoris"
+    },
+    "common": {
+      "profile": "Profil"
+    }
   },
   "messages": {
     "title": "Messages",
@@ -90,7 +359,80 @@
     "online": "En ligne",
     "offline": "Hors ligne",
     "writeMessage": "Écrivez un message...",
-    "conversation": "Conversation"
+    "conversation": "Conversation",
+    "oldVersion": "Messages (Version Originale)",
+    "oldVersionDescription": "Cette page utilise l'ancienne interface V3",
+    "encryptedConversation": "Conversation chiffrée",
+    "yourConversations": "Vos conversations",
+    "thisProfile": "ce profil",
+    "introMessage": "Bonjour {name}, ton profil m'a beaucoup plu ! 😊",
+    "you": "Vous",
+    "conversationCreated": "Conversation créée avec succès !",
+    "conversationCreationError": "Erreur lors de la création de la conversation",
+    "loadConversationsError": "Impossible de charger les conversations",
+    "limitedAccess": "Accès limité",
+    "limitedAccessDescription": "Seuls les clients et les escortes peuvent utiliser la messagerie.",
+    "backToHome": "Retour à l'accueil",
+    "loginRequired": "Connexion requise",
+    "loginRequiredDescription": "Vous devez être connecté pour utiliser la messagerie.",
+    "login": "Se connecter",
+    "loadingChat": "Chargement du chat...",
+    "backToPreviousPage": "Revenir à la page précédente",
+    "back": "Retour",
+    "blocked": "Bloqué",
+    "conversationOptions": "Options de conversation",
+    "options": "Options",
+    "ephemeralMessages": "Messages éphémères",
+    "ephemeralEnabled": "Activé ({hours}h)",
+    "ephemeralDisabled": "Désactivé",
+    "report": "Signaler",
+    "userBlocked": "Utilisateur bloqué",
+    "userUnblocked": "Utilisateur débloqué",
+    "actionImpossible": "Action impossible",
+    "block": "Bloquer",
+    "unblock": "Débloquer",
+    "deleteConversation": "Supprimer la conversation",
+    "deleteConversationConfirm": "Êtes-vous sûr de vouloir supprimer cette conversation ? Cette action est irréversible.",
+    "conversationDeleted": "Conversation supprimée",
+    "deleteConversationError": "Impossible de supprimer la conversation",
+    "searchConversation": "Rechercher une conversation",
+    "searchConversationPlaceholder": "Rechercher une conversation...",
+    "blockedUserMessage": "Vous avez bloqué cet utilisateur. Débloquez pour envoyer des messages.",
+    "loginToMessage": "Connectez-vous pour messager",
+    "selectConversation": "Sélectionnez une conversation",
+    "selectConversationDescription": "Choisissez une conversation pour commencer à échanger.",
+    "loginToViewConversations": "Connectez-vous pour voir vos conversations.",
+    "ephemeralMessagesDescription": "Les messages disparaîtront automatiquement après la durée choisie",
+    "ephemeralDisabledOption": "Désactivé",
+    "ephemeralDisabledDescription": "Les messages restent indéfiniment",
+    "ephemeral12Hours": "12 heures",
+    "ephemeral12HoursDescription": "Les messages disparaissent après 12h",
+    "ephemeral24Hours": "24 heures",
+    "ephemeral24HoursDescription": "Les messages disparaissent après 24h",
+    "ephemeral48Hours": "48 heures",
+    "ephemeral48HoursDescription": "Les messages disparaissent après 2 jours",
+    "ephemeral7Days": "7 jours",
+    "ephemeral7DaysDescription": "Les messages disparaissent après 1 semaine",
+    "cancel": "Annuler",
+    "saved": "✓ Enregistré",
+    "ephemeralModeActivated": "Mode éphémère activé ({hours}h)",
+    "ephemeralModeDeactivated": "Mode éphémère désactivé",
+    "settingsUpdateError": "Impossible de modifier les paramètres",
+    "apply": "Appliquer",
+    "fileTooLarge": "Fichier trop volumineux. Taille maximale: {maxSize}MB",
+    "unsupportedFileType": "Type de fichier non supporté",
+    "emoji": "Emoji",
+    "voiceMessage": "Message vocal",
+    "imageVideo": "Image/Vidéo",
+    "attachment": "Pièce jointe",
+    "contentDisappeared": "Contenu disparu",
+    "viewed": "Vu",
+    "notViewed": "Non vu",
+    "singleView": "Vue unique",
+    "now": "Maintenant",
+    "yesterday": "Hier",
+    "conversationsCount": "{count, plural, =0 {Aucune conversation} =1 {# conversation} other {# conversations}}",
+    "unreadCount": "{count, plural, =0 {Aucun non lu} =1 {# non lu} other {# non lus}}"
   },
   "filters": {
     "all": "Tous",
@@ -105,13 +447,61 @@
     "clear": "Effacer",
     "apply": "Appliquer",
     "showFilters": "Afficher les filtres",
-    "hideFilters": "Masquer les filtres"
+    "hideFilters": "Masquer les filtres",
+    "title": "Filtres de recherche",
+    "closeFilters": "Fermer les filtres",
+    "categories": "Catégories",
+    "location": "Localisation",
+    "chooseCanton": "Choisir un canton",
+    "chooseCity": "Choisir une ville",
+    "allCantons": "Tous les cantons",
+    "allCities": "Toutes les villes",
+    "availableNow": "Dispo maintenant",
+    "outcall": "Se déplace",
+    "incall": "Reçoit",
+    "paymentMethods": "Méthodes de paiement",
+    "currencies": "Devises acceptées",
+    "profileAndPhysique": "Profil & Physique",
+    "age": "Âge",
+    "years": "ans",
+    "height": "Taille",
+    "allBodyTypes": "Toutes corpulences",
+    "hair": "Cheveux",
+    "eyes": "Yeux",
+    "bustSize": "Taille poitrine",
+    "cup": "Bonnet",
+    "servicesAndSpecialties": "Services & Spécialités",
+    "classic": "Classiques",
+    "oral": "Oral",
+    "anal": "Anal",
+    "bdsmAndFetish": "BDSM & Fétiches",
+    "massages": "Massages",
+    "equipment": "Équipements",
+    "serviceSelected": "service sélectionné",
+    "servicesSelected": "services sélectionnés",
+    "qualityAndVerification": "Qualité & Vérification",
+    "verifiedProfile": "Profil vérifié",
+    "communication": "Communication",
+    "clienteleAndServices": "Clientèle & Services",
+    "mostRecent": "Plus récent",
+    "mostPopular": "Plus populaires",
+    "priceAsc": "Prix croissant",
+    "priceDesc": "Prix décroissant",
+    "bestRated": "Mieux notées",
+    "nameAZ": "Nom A-Z",
+    "reset": "Réinitialiser",
+    "search": "Rechercher"
   },
   "categories": {
     "escort": "Escorte",
     "masseuse": "Masseuse Érotique",
     "dominatrice": "Dominatrice BDSM",
-    "transsexuel": "Transsexuel"
+    "transsexuel": "Transsexuel",
+    "salon": "Salon",
+    "massage": "Massage",
+    "vip": "VIP",
+    "bdsm": "BDSM",
+    "privateMedia": "Médias privés"
   },
   "establishments": {
     "club": "Club",
@@ -127,5 +517,623 @@
     "unauthorized": "Non autorisé",
     "forbidden": "Accès interdit",
     "tryAgain": "Veuillez réessayer"
+  },
+  "home": {
+    "welcome": "Bienvenue sur Felora",
+    "discover": "Découvrez",
+    "loadMore": "Charger plus",
+    "noContent": "Aucun contenu disponible"
+  },
+  "favorites": {
+    "title": "Favoris",
+    "myFavorites": "Mes favoris",
+    "noFavorites": "Aucun favori",
+    "addToFavorites": "Ajouter aux favoris",
+    "removeFromFavorites": "Retirer des favoris",
+    "loginRequired": "Connectez-vous pour enregistrer vos profils préférés et les retrouver facilement.",
+    "login": "Se connecter",
+    "profilesCount": "{count} profil enregistré",
+    "profilesCount_plural": "{count} profils enregistrés",
+    "loading": "Chargement de vos favoris...",
+    "error": "Impossible de charger vos favoris pour le moment.",
+    "emptyTitle": "Aucun favori pour l'instant",
+    "emptyDescription": "Ajoutez des escorts ou clubs à vos favoris depuis leur profil pour les retrouver rapidement ici.",
+    "discoverProfiles": "Découvrir des profils"
+  },
+  "dashboard": {
+    "title": "Tableau de bord",
+    "statistics": "Statistiques",
+    "views": "Vues",
+    "likes": "J'aime",
+    "messages": "Messages",
+    "revenue": "Revenus"
+  },
+  "dashboardEscort": {
+    "profil": {
+      "pageTitle": "Mon Profil",
+      "pageDescription": "Gérez vos informations publiques et votre présentation",
+      "kycSuccess": {
+        "title": "🎉 Félicitations ! KYC soumis avec succès",
+        "description": "Votre vérification d'identité a été transmise. Il est maintenant temps de finaliser votre profil !",
+        "nextStepsTitle": "📋 Prochaines étapes recommandées :",
+        "step1": "Ajoutez vos photos et descriptions",
+        "step2": "Configurez vos tarifs et services",
+        "step3": "Votre vérification sera traitée sous 48h"
+      }
+    }
+  },
+  "clubProfile": {
+    "notFound": "Club introuvable",
+    "errorLoading": "Erreur lors du chargement du profil",
+    "openNow": "Ouvert maintenant",
+    "closed": "Fermé",
+    "club": "Club",
+    "shareText": "Découvrez {name} sur Felora",
+    "loginToFavorite": "Connectez-vous pour ajouter des favoris",
+    "removedFromFavorites": "Retiré des favoris",
+    "addedToFavorites": "⭐ Ajouté aux favoris",
+    "contactModal": {
+      "title": "Contact {name}",
+      "phone": "Téléphone",
+      "email": "Email",
+      "address": "Adresse",
+      "website": "Site web"
+    }
+  },
+  "profileHeader": {
+    "verified": "Vérifié",
+    "stats": {
+      "views": "Vues",
+      "reactions": "Réactions",
+      "posts": "Posts"
+    },
+    "age": "{age} ans",
+    "showMore": "Voir plus",
+    "showLess": "Voir moins",
+    "languages": "Langues",
+    "schedule": "Agenda",
+    "available": "Disponible",
+    "unavailable": "Indisponible",
+    "viewSchedule": "Voir agenda",
+    "days": {
+      "monday": "Lundi",
+      "tuesday": "Mardi",
+      "wednesday": "Mercredi",
+      "thursday": "Jeudi",
+      "friday": "Vendredi",
+      "saturday": "Samedi",
+      "sunday": "Dimanche"
+    },
+    "scheduleModal": {
+      "title": "Horaires de disponibilité",
+      "noSchedule": "Aucun planning configuré",
+      "weeklySchedule": "Planning hebdomadaire",
+      "allDay": "Toute la journée",
+      "generalPause": "Pause générale",
+      "absences": "Absences spécifiques",
+      "noDetailedSchedule": "Aucun planning détaillé configuré"
+    }
+  },
+  "actionsBar": {
+    "viewMore": "Voir plus",
+    "gift": "Cadeau",
+    "message": "Message",
+    "contact": "Contact",
+    "website": "Site",
+    "call": "Appeler",
+    "whatsapp": "WhatsApp",
+    "sms": "SMS",
+    "phoneNumber": "Numéro",
+    "report": "Signaler",
+    "share": "Partager",
+    "favorite": "Favori",
+    "favorites": "Favoris",
+    "phoneContact": {
+      "whatsappMessage": "Bonjour {name}, je vous écris depuis Felora.",
+      "smsMessage": "Bonjour {name}, je vous écris depuis Felora.",
+      "phoneTitle": "Téléphone: {number}",
+      "phoneAvailable": "Contact téléphonique disponible",
+      "privateMessagingOnly": "Contact par messagerie privée uniquement",
+      "phoneNumberLabel": "Numéro",
+      "call": "Appeler",
+      "whatsapp": "WhatsApp",
+      "sms": "SMS"
+    }
+  },
+  "mediaFeed": {
+    "tabs": {
+      "public": "Public",
+      "premium": "Premium",
+      "private": "Privé"
+    },
+    "noContent": "Aucun contenu disponible",
+    "noContentDescription": "Ce profil n'a pas encore publié de contenu.",
+    "unlockContent": {
+      "title": "Déverrouiller le contenu",
+      "chooseOption": "Choisissez une option de déverrouillage.",
+      "unlockMedia": "Déverrouiller ce média — 9 CHF",
+      "unlockGallery": "Déverrouiller toute la galerie — 29 CHF",
+      "proceedPayment": "Procéder au paiement (démo)",
+      "premium": "Premium",
+      "unlock": "Déverrouiller"
+    },
+    "menu": {
+      "manageMedia": "Gérer le média",
+      "share": "Partager",
+      "report": "Signaler"
+    },
+    "mediaInfo": {
+      "videoThumbnail": "Thumbnail en cours...",
+      "watchVideo": "Lire la vidéo",
+      "viewFullscreen": "Voir le média en plein écran"
+    },
+    "private": "🔒"
+  },
+  "profileModal": {
+    "close": "Fermer",
+    "loading": "Chargement du profil unifié...",
+    "error": {
+      "title": "Erreur de chargement",
+      "description": "Profil non trouvé"
+    },
+    "sections": {
+      "physical": "Profil physique",
+      "services": "Services",
+      "servicesAndSpecialties": "Services & Spécialités",
+      "languages": "Langues parlées",
+      "equipment": "Équipements",
+      "rates": "Tarifs",
+      "payments": "Paiements",
+      "currencies": "Devises",
+      "prestations": "Prestations",
+      "clientele": "Clientèle acceptée",
+      "location": "Lieu",
+      "contact": "Contactez {name}"
+    },
+    "physical": {
+      "height": "Taille",
+      "bodyType": "Silhouette",
+      "hairColor": "Cheveux",
+      "eyeColor": "Yeux",
+      "ethnicity": "Origine",
+      "bustSize": "Tour poitrine",
+      "breastType": "Type poitrine",
+      "pubicHair": "Pilosité",
+      "specificities": "Spécificités",
+      "tattoos": "Tatouages",
+      "piercings": "Piercings",
+      "smoker": "Fumeur",
+      "nonSmoker": "Non-fumeur"
+    },
+    "rates": {
+      "from": "À partir de",
+      "fifteenMin": "15min",
+      "thirtyMin": "30min",
+      "oneHour": "1h",
+      "twoHours": "2h",
+      "halfDay": "½j",
+      "fullDay": "Jour",
+      "overnight": "Nuit",
+      "customRates": "Tarifs personnalisés"
+    },
+    "prestations": {
+      "incall": "Je reçois",
+      "incallDescription": "Chez moi",
+      "outcall": "Je me déplace",
+      "outcallDescription": "Chez vous / Hôtel"
+    },
+    "clientele": {
+      "couples": "Couples",
+      "women": "Femmes",
+      "handicapped": "Personnes handicapées",
+      "seniors": "Personnes âgées"
+    },
+    "contact": {
+      "title": "Contactez {name}",
+      "subtitle": "Réservez votre moment privilégié",
+      "privateMessage": "Message privé",
+      "phoneNumber": "Numéro",
+      "phoneAvailable": "Contact téléphonique disponible",
+      "privateMessagingOnly": "Contact par messagerie privée uniquement",
+      "whatsapp": "WhatsApp",
+      "sms": "SMS",
+      "call": "Appel"
+    }
+  },
+  "clubEscorts": {
+    "title": "Les filles"
+  },
+  "giftModal": {
+    "title": "Envoyer un cadeau à {name}",
+    "close": "Fermer",
+    "customAmount": "Montant personnalisé",
+    "messageLabel": "Message (optionnel)",
+    "messagePlaceholder": "Un petit mot avec votre cadeau...",
+    "sending": "Envoi...",
+    "send": "Envoyer",
+    "cancel": "Annuler"
+  },
+  "messageComposer": {
+    "title": "Message à {name}",
+    "close": "Fermer",
+    "placeholder": "Votre message...",
+    "hint": "Appuyez sur Ctrl/Cmd + Entrée pour envoyer",
+    "cancel": "Annuler",
+    "sending": "Envoi...",
+    "send": "Envoyer"
+  },
+  "signup": {
+    "escort": {
+      "page": {
+        "loadingAccount": "Création de votre compte...",
+        "loadingMessage": "Veuillez patienter pendant la création de votre compte",
+        "errorAccount": "Erreur lors de la création du compte"
+      },
+      "step1": {
+        "title": "Créer votre compte Escort",
+        "subtitle": "Rejoignez la communauté et commencez à gagner",
+        "steps": {
+          "email": "Email",
+          "phone": "Téléphone",
+          "password": "Mot de passe",
+          "terms": "Conditions"
+        },
+        "email": {
+          "title": "Votre adresse email",
+          "subtitle": "Nous vous enverrons un code de vérification",
+          "label": "Email",
+          "placeholder": "votre@email.com",
+          "sendCode": "Envoyer le code",
+          "resendCode": "Renvoyer le code",
+          "sending": "Envoi...",
+          "verificationCode": "Code de vérification",
+          "verifyEmail": "Vérifier l'email",
+          "emailVerified": "Email vérifié avec succès"
+        },
+        "phone": {
+          "title": "Votre numéro de téléphone",
+          "subtitle": "Pour la sécurité et la vérification",
+          "label": "Téléphone",
+          "placeholder": "079 123 45 67 ou +41 79 123 45 67"
+        },
+        "password": {
+          "title": "Créez votre mot de passe",
+          "subtitle": "Choisissez un mot de passe sécurisé",
+          "label": "Mot de passe",
+          "placeholder": "••••••••",
+          "confirmLabel": "Confirmer le mot de passe",
+          "confirmPlaceholder": "••••••••"
+        },
+        "terms": {
+          "title": "Conditions d'utilisation",
+          "subtitle": "Dernière étape avant la création de votre compte",
+          "isAdult": "J'ai 18 ans ou plus",
+          "isAdultDescription": "Je certifie être majeur(e) selon la législation suisse",
+          "acceptTos": "J'accepte les conditions",
+          "acceptTosDescription": "CGU et Politique de confidentialité",
+          "notRobot": "Je ne suis pas un robot",
+          "notRobotDescription": "Vérification de sécurité"
+        },
+        "buttons": {
+          "previous": "Précédent",
+          "next": "Suivant",
+          "creating": "Création...",
+          "chooseOffer": "Choisir mon offre"
+        }
+      },
+      "step2": {
+        "loading": "Chargement des offres…",
+        "title": "Choisissez votre offre",
+        "subtitle": "Sélectionnez le plan qui correspond le mieux à vos besoins",
+        "plans": {
+          "discovery": {
+            "label": "Découverte",
+            "description": "Pour démarrer sur Felora",
+            "duration": "7 jours",
+            "features": {
+              "verified": "Profil vérifié",
+              "photos": "Photos illimitées",
+              "messaging": "Messagerie sécurisée"
+            }
+          },
+          "premium": {
+            "label": "Premium",
+            "description": "Le plus populaire",
+            "duration": "30 jours",
+            "features": {
+              "badge": "Badge vérifié",
+              "videos": "Vidéos illimitées",
+              "stats": "Statistiques"
+            }
+          },
+          "elite": {
+            "label": "Elite",
+            "description": "Pour les professionnels",
+            "duration": "90 jours",
+            "features": {
+              "badge": "Badge Premium",
+              "boost": "Mise en avant",
+              "support": "Support VIP"
+            }
+          },
+          "popular": "Populaire",
+          "choose": "Choisir",
+          "clickToValidate": "Cliquer pour valider"
+        },
+        "promo": {
+          "title": "Code promo",
+          "placeholder": "Entrez votre code (ex: WELCOME10)",
+          "apply": "Appliquer",
+          "enterCode": "Entrez un code",
+          "codeInvalid": "Code invalide",
+          "codeApplied": "Code {code} appliqué",
+          "validationError": "Impossible de valider le code"
+        },
+        "hint": "Cliquez à nouveau sur votre sélection pour continuer"
+      },
+      "step3": {
+        "title": "Vérification d'identité",
+        "subtitle": "Dernière étape pour sécuriser votre compte et commencer à gagner",
+        "documents": {
+          "docFront": {
+            "label": "Pièce d'identité — recto",
+            "description": "Carte d'identité, passeport ou permis de conduire",
+            "requirements": {
+              "valid": "Document officiel valide",
+              "clear": "Photo claire et lisible",
+              "visible": "Toutes les informations visibles"
+            },
+            "tips": {
+              "reflections": "Évitez les reflets",
+              "text": "Assurez-vous que le texte est net",
+              "frame": "Cadrez bien le document"
+            }
+          },
+          "docBack": {
+            "label": "Pièce d'identité — verso",
+            "description": "Arrière de votre pièce d'identité",
+            "requirements": {
+              "same": "Même document que le recto",
+              "clear": "Photo claire et lisible",
+              "barcode": "Code-barres visible"
+            },
+            "tips": {
+              "verify": "Vérifiez que c'est le même document",
+              "barcode": "Évitez les reflets sur le code-barres",
+              "frame": "Cadrez bien le document"
+            }
+          },
+          "selfieSign": {
+            "label": "Selfie avec papier \"FELORA\"",
+            "description": "Photo de vous tenant un papier avec \"FELORA\" écrit",
+            "requirements": {
+              "face": "Votre visage bien visible",
+              "sign": "Papier avec \"FELORA\" lisible",
+              "light": "Bonne luminosité"
+            },
+            "tips": {
+              "write": "Écrivez \"FELORA\" sur un papier blanc",
+              "hold": "Tenez le papier près de votre visage",
+              "look": "Regardez directement la caméra"
+            }
+          },
+          "livenessVideo": {
+            "label": "Vidéo de présentation",
+            "description": "Vidéo courte de vous parlant à la caméra",
+            "requirements": {
+              "duration": "Vidéo de 10-30 secondes",
+              "face": "Votre visage bien visible",
+              "speak": "Parlez clairement"
+            },
+            "tips": {
+              "say": "Dites votre nom et \"FELORA\"",
+              "move": "Bougez légèrement la tête",
+              "light": "Assurez-vous d'être bien éclairé"
+            }
+          },
+          "documentProvided": "Document fourni ✓"
+        },
+        "progress": {
+          "title": "Progression",
+          "allProvided": "✓ Tous les documents fournis",
+          "missing": "{count} document(s) manquant(s)"
+        },
+        "buttons": {
+          "validate": "Valider la vérification",
+          "validating": "Validation en cours...",
+          "completeLater": "Compléter plus tard"
+        },
+        "later": {
+          "title": "Compléter plus tard",
+          "description": "Vous pourrez compléter votre vérification d'identité depuis votre tableau de bord.",
+          "cancel": "Annuler",
+          "continue": "Continuer"
+        },
+        "success": {
+          "title": "🎉 Félicitations !",
+          "subtitle": "Votre vérification d'identité a été soumise avec succès",
+          "ready": "Prêt à commencer !",
+          "nextSteps": "📋 Prochaines étapes :",
+          "step1": "Finalisez votre profil avec photos et descriptions",
+          "step2": "Configurez vos tarifs et disponibilités",
+          "step3": "Votre vérification sera traitée sous 48h",
+          "redirecting": "Redirection vers votre dashboard..."
+        },
+        "errors": {
+          "missingPieces": "Pièces manquantes: {pieces}",
+          "noUserId": "ID utilisateur manquant - veuillez recharger la page",
+          "filesLarge": "Fichiers trop volumineux. Veuillez compresser vos images/vidéos (max 3MB chacun).",
+          "submission": "Erreur de soumission"
+        }
+      }
+    }
+  },
+  "club": {
+    "profile": {
+      "status": {
+        "active": "Profil actif",
+        "inactive": "Profil inactif",
+        "visibleToUsers": "Visible par les utilisateurs",
+        "hiddenFromUsers": "Masqué aux utilisateurs",
+        "activate": "Activer",
+        "deactivate": "Désactiver",
+        "activating": "Chargement...",
+        "profileActivated": "Profil activé avec succès",
+        "profileDeactivated": "Profil désactivé avec succès",
+        "toggleError": "Erreur: {error}"
+      },
+      "progress": {
+        "information": "Informations",
+        "photo": "Photo",
+        "informationCount": "{count}/4",
+        "photoCount": "{count}/1"
+      },
+      "tabs": {
+        "information": "Informations",
+        "services": "Services",
+        "optional": "Opt.",
+        "schedule": "Horaires",
+        "myTeam": "Mon Équipe"
+      },
+      "info": {
+        "title": "Informations principales",
+        "clubName": "Nom du club",
+        "clubNamePlaceholder": "Ex. Club Luxe Geneva",
+        "clubNameRequired": "Nom requis",
+        "required": "Requis",
+        "establishmentType": "Type d'établissement",
+        "establishmentTypes": {
+          "institut_massage": "Institut de massage",
+          "agence_escorte": "Agence d'escorte",
+          "salon_erotique": "Salon érotique",
+          "club": "Club"
+        },
+        "email": "Email",
+        "emailPlaceholder": "contact@votre-club.ch",
+        "phone": "Téléphone",
+        "phonePlaceholder": "+41 XX XXX XX XX",
+        "description": "Description",
+        "descriptionPlaceholder": "Décrivez votre établissement, ambiance, services, etc.",
+        "descriptionRequired": "Description requise",
+        "address": "Adresse",
+        "addressPlaceholder": "Commencez à taper votre adresse...",
+        "addressRequired": "Adresse requise",
+        "positionFound": "📍 Position: {lat}, {lng}",
+        "website": "Site web (facultatif)",
+        "websitePlaceholder": "https://votre-site.ch",
+        "errors": {
+          "nameRequired": "Nom requis",
+          "descriptionRequired": "Description requise",
+          "addressRequired": "Adresse requise",
+          "loadingError": "Erreur de chargement du profil",
+          "savingError": "Échec de la sauvegarde"
+        },
+        "messages": {
+          "profileUpdated": "Profil mis à jour"
+        }
+      },
+      "media": {
+        "title": "Photo de profil",
+        "subtitle": "1 photo de couverture obligatoire : Cette photo s'affichera en grand sur votre profil public",
+        "coverPhoto": "Photo de couverture",
+        "imageRequired": "IMAGE requis",
+        "uploadInProgress": "Upload en cours...",
+        "clickToAddPhoto": "Cliquez pour ajouter une photo",
+        "clickToAddVideo": "Cliquez pour ajouter une vidéo",
+        "addPhoto": "Ajouter une photo",
+        "addVideo": "Ajouter une vidéo",
+        "imageUnavailable": "📷 Image indisponible",
+        "videoUnavailable": "🎥 Vidéo indisponible",
+        "uploadSuccess": "{type} uploadée avec succès",
+        "uploadError": "Erreur d'upload: {error}",
+        "deleteSuccess": "Média supprimé avec succès",
+        "deleteError": "Erreur de suppression: {error}",
+        "loadingError": "Erreur de chargement des médias"
+      },
+      "services": {
+        "languagesTitle": "Langues parlées",
+        "paymentMethodsTitle": "Moyens de paiement",
+        "servicesEquipmentsTitle": "Services & Équipements",
+        "languages": {
+          "french": "Français",
+          "english": "Anglais",
+          "german": "Allemand",
+          "italian": "Italien",
+          "spanish": "Espagnol",
+          "russian": "Russe",
+          "arabic": "Arabe",
+          "chinese": "Chinois"
+        },
+        "paymentMethods": {
+          "cash": "Cash",
+          "card": "Carte",
+          "twint": "TWINT",
+          "transfer": "Virement"
+        },
+        "servicesList": {
+          "bar": "Bar",
+          "private": "Privé",
+          "security": "Sécurité",
+          "parking": "Parking",
+          "vipRoom": "Salle VIP"
+        },
+        "equipmentsList": {
+          "shower": "Douche",
+          "jacuzzi": "Jacuzzi",
+          "sauna": "Sauna",
+          "airConditioning": "Climatisation",
+          "smokingArea": "Fumoir",
+          "parking": "Parking",
+          "handicapAccess": "Accès handicapé",
+          "musicAmbiance": "Ambiance musicale",
+          "bar": "Bar",
+          "poleDance": "Pole dance"
+        },
+        "save": "Enregistrer",
+        "saving": "Sauvegarde…",
+        "settingsSaved": "Paramètres enregistrés",
+        "loadingError": "Impossible de charger les services",
+        "savingError": "Échec de la sauvegarde"
+      },
+      "team": {
+        "activeTeam": "Équipe active ({count})",
+        "invitations": "Invitations ({count})",
+        "inviteGirl": "Inviter une fille",
+        "loading": "Chargement…",
+        "noTeamMembers": "Aucune fille dans l'équipe pour le moment",
+        "noInvitations": "Aucune invitation envoyée",
+        "removeFromClub": "Retirer du club",
+        "removeConfirm": "Voulez-vous vraiment retirer {name} du club ?",
+        "invitationStatus": {
+          "pending": "En attente",
+          "accepted": "Acceptée",
+          "declined": "Refusée",
+          "cancelled": "Annulée",
+          "expired": "Expirée"
+        },
+        "sentOn": "Envoyée le {date}",
+        "cancel": "Annuler",
+        "cancelInvitation": "Voulez-vous vraiment annuler cette invitation ?",
+        "inviteModal": {
+          "title": "Inviter une fille",
+          "searchPlaceholder": "Rechercher une fille par nom ou ville...",
+          "searching": "Recherche en cours...",
+          "noResults": "Aucune fille trouvée",
+          "minCharacters": "Tapez au moins 2 caractères pour rechercher",
+          "cityNotSpecified": "Ville non spécifiée",
+          "invite": "Inviter",
+          "invitationSent": "Invitation envoyée avec succès !",
+          "invitationError": "Erreur lors de l'envoi de l'invitation",
+          "cancelError": "Erreur lors de l'annulation",
+          "removeError": "Erreur lors du retrait",
+          "cannotRemove": "Impossible de retirer cette escort"
+        }
+      },
+      "actions": {
+        "viewProfile": "Voir profil",
+        "save": "Enregistrer",
+        "saving": "Sauvegarde…"
+      }
+    }
   }
 }

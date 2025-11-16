@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowLeft, Heart, Play, Crown, Smile, Share, MoreVertical, Flag, Edit, Trash2, Bookmark, Flame } from 'lucide-react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import useReactions, { ReactionType } from '../../../src/hooks/useReactions'
 import { useMediaInteractions } from '../../../src/hooks/useProfileInteractions'
 import ReactionBar from '../../../src/components/reactions/ReactionBar'
@@ -375,6 +376,7 @@ export default function MediaFeedWithGallery({
   hideTabsHeader = false,
   showPremiumTab = true
 }: MediaFeedWithGalleryProps) {
+  const t = useTranslations('mediaFeed')
   const router = useRouter()
   
   // Fonction par défaut pour onDeleteMedia
@@ -540,8 +542,8 @@ export default function MediaFeedWithGallery({
           <div className="w-16 h-16 mx-auto mb-4 bg-gray-700 rounded-full flex items-center justify-center">
             <Play size={32} />
           </div>
-          <p className="text-lg font-semibold text-gray-300">Aucun contenu disponible</p>
-          <p className="text-sm">Ce profil n'a pas encore publié de contenu.</p>
+          <p className="text-lg font-semibold text-gray-300">{t('noContent')}</p>
+          <p className="text-sm">{t('noContentDescription')}</p>
         </div>
       </div>
     )
@@ -560,7 +562,7 @@ export default function MediaFeedWithGallery({
                   : 'text-gray-400'
               }`}
             >
-              <span className="text-sm font-medium">Public</span>
+              <span className="text-sm font-medium">{t('tabs.public')}</span>
               <span className="ml-1 text-xs">({publicContent.length})</span>
             </button>
             {showPremiumTab && (
@@ -572,7 +574,7 @@ export default function MediaFeedWithGallery({
                     : 'text-gray-400'
                 }`}
               >
-                <span className="text-sm font-medium">Premium</span>
+                <span className="text-sm font-medium">{t('tabs.premium')}</span>
                 <span className="ml-1 text-xs">({premiumContent.length})</span>
               </button>
             )}
@@ -585,7 +587,7 @@ export default function MediaFeedWithGallery({
                     : 'text-gray-400'
                 }`}
               >
-                <span className="text-sm font-medium">Privé 🔒</span>
+                <span className="text-sm font-medium">{t('tabs.private')} {t('private')}</span>
                 <span className="ml-1 text-xs">({privateContent.length})</span>
               </button>
             )}
@@ -664,9 +666,9 @@ export default function MediaFeedWithGallery({
                     />
                     {!isOwner && (
                       <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm">
-                        <div className="text-white text-sm font-bold">{content.price ? `${content.price} CHF` : 'Premium'}</div>
+                        <div className="text-white text-sm font-bold">{content.price ? `${content.price} CHF` : t('unlockContent.premium')}</div>
                         <button className="mt-2 px-3 py-1 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full text-xs font-semibold text-white hover:scale-105 transition-transform">
-                          Déverrouiller
+                          {t('unlockContent.unlock')}
                         </button>
                       </div>
                     )}
@@ -719,24 +721,24 @@ export default function MediaFeedWithGallery({
       {unlockTarget && (
         <div className="fixed inset-0 z-[99999] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setUnlockTarget(null)}>
           <div className="bg-black/85 border border-white/10 rounded-2xl w-full max-w-sm p-5" onClick={e => e.stopPropagation()}>
-            <h3 className="text-white font-semibold text-lg mb-3">Déverrouiller le contenu</h3>
-            <p className="text-white/70 text-sm mb-4">Choisissez une option de déverrouillage.</p>
+            <h3 className="text-white font-semibold text-lg mb-3">{t('unlockContent.title')}</h3>
+            <p className="text-white/70 text-sm mb-4">{t('unlockContent.chooseOption')}</p>
             <div className="space-y-2 mb-4">
               <button
                 onClick={() => { handleUnlockContent(unlockTarget.id); setUnlockTarget(null) }}
                 className="w-full px-4 py-3 rounded-xl bg-gradient-to-r from-pink-500 to-purple-600 text-white font-medium hover:from-pink-600 hover:to-purple-700 transition-colors"
               >
-                Déverrouiller ce média — 9 CHF
+                {t('unlockContent.unlockMedia')}
               </button>
               <button
                 onClick={() => { handleUnlockGallery(); setUnlockTarget(null) }}
                 className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/15 text-white font-medium hover:bg-white/15 transition-colors"
               >
-                Déverrouiller toute la galerie — 29 CHF
+                {t('unlockContent.unlockGallery')}
               </button>
             </div>
             <div className="text-center">
-              <a href="/profile-test-signup/escort?step=2" className="text-xs text-white/60 hover:text-white underline">Procéder au paiement (démo)</a>
+              <a href="/profile-test-signup/escort?step=2" className="text-xs text-white/60 hover:text-white underline">{t('unlockContent.proceedPayment')}</a>
             </div>
           </div>
         </div>
@@ -799,15 +801,15 @@ export default function MediaFeedWithGallery({
                               }}
                               className="w-full flex items-center gap-2 px-3 py-2 hover:bg-white/10 text-left"
                             >
-                              <Edit size={16} /> Gérer le média
+                              <Edit size={16} /> {t('menu.manageMedia')}
                             </button>
                           )}
                           <button
                             onClick={() => {
                               if (navigator.share) {
-                                navigator.share({ 
-                                  title: profileName || 'Media', 
-                                  url: fullscreenMedia || window.location.href 
+                                navigator.share({
+                                  title: profileName || 'Media',
+                                  url: fullscreenMedia || window.location.href
                                 }).catch(() => {})
                               } else {
                                 navigator.clipboard.writeText(fullscreenMedia || window.location.href)
@@ -816,7 +818,7 @@ export default function MediaFeedWithGallery({
                             }}
                             className="w-full flex items-center gap-2 px-3 py-2 hover:bg-white/10 text-left"
                           >
-                            <Share size={16} /> Partager
+                            <Share size={16} /> {t('menu.share')}
                           </button>
                           <button
                             onClick={() => {
@@ -825,7 +827,7 @@ export default function MediaFeedWithGallery({
                             }}
                             className="w-full flex items-center gap-2 px-3 py-2 hover:bg-white/10 text-left text-red-300"
                           >
-                            <Flag size={16} /> Signaler
+                            <Flag size={16} /> {t('menu.report')}
                           </button>
                         </div>
                         </motion.div>

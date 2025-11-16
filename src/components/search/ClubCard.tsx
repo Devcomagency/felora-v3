@@ -3,6 +3,7 @@
 import React from 'react'
 import { MapPin, Clock, Star, Users } from 'lucide-react'
 import { Club } from '@/hooks/useClubs'
+import { useTranslations } from 'next-intl'
 
 interface ClubCardProps {
   club: Club
@@ -10,6 +11,8 @@ interface ClubCardProps {
 }
 
 export default function ClubCard({ club, onClick }: ClubCardProps) {
+  const t = useTranslations('search')
+
   const handleClick = () => {
     if (onClick) {
       onClick(club)
@@ -31,10 +34,10 @@ export default function ClubCard({ club, onClick }: ClubCardProps) {
 
   const getEstablishmentTypeLabel = (type: string) => {
     switch (type) {
-      case 'salon_erotique': return 'Salon'
-      case 'institut_massage': return 'Institut'
-      case 'agence_escorte': return 'Agence'
-      default: return 'Club'
+      case 'salon_erotique': return t('salon')
+      case 'institut_massage': return t('institute')
+      case 'agence_escorte': return t('agency')
+      default: return t('club')
     }
   }
 
@@ -85,11 +88,11 @@ export default function ClubCard({ club, onClick }: ClubCardProps) {
         {/* Badge ouvert/fermé */}
         <div className="absolute top-3 right-3">
           <span className={`px-2 py-1 rounded-full text-xs font-medium border backdrop-blur-sm ${
-            club.isActive 
-              ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' 
+            club.isActive
+              ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
               : 'bg-gray-500/20 text-gray-400 border-gray-500/30'
           }`}>
-            {club.isActive ? 'Ouvert' : 'Fermé'}
+            {club.isActive ? t('open') : t('closed')}
           </span>
         </div>
 
@@ -127,7 +130,7 @@ export default function ClubCard({ club, onClick }: ClubCardProps) {
             {club.openingHours && (
               <div className="flex items-center gap-1 text-white/70 text-xs">
                 <Clock size={12} />
-                <span>Horaires</span>
+                <span>{t('hours')}</span>
               </div>
             )}
           </div>

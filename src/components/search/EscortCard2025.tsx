@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { Play, MapPin, Star, Eye } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { buildCdnUrl } from '@/lib/media/cdn'
+import { useTranslations } from 'next-intl'
 
 interface EscortCard2025Props {
   escort: {
@@ -41,6 +42,7 @@ interface EscortCard2025Props {
 }
 
 export default function EscortCard2025({ escort, onLike, isLiked = false, priority = false }: EscortCard2025Props) {
+  const t = useTranslations('search')
   const router = useRouter()
   const [imageError, setImageError] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
@@ -93,12 +95,12 @@ export default function EscortCard2025({ escort, onLike, isLiked = false, priori
         <div className="absolute top-3 left-3 flex flex-col gap-2">
           {escort.isVerifiedBadge && (
             <div className="px-2 py-1 rounded-full bg-gradient-to-r from-pink-500/90 to-purple-500/90 backdrop-blur-sm border border-white/20">
-              <span className="text-xs font-medium text-white">✓ Vérifiée</span>
+              <span className="text-xs font-medium text-white">✓ {t('verified')}</span>
             </div>
           )}
           {escort.availableNow && (
             <div className="px-2 py-1 rounded-full bg-emerald-500/90 backdrop-blur-sm border border-emerald-400/30">
-              <span className="text-xs font-medium text-white">Disponible</span>
+              <span className="text-xs font-medium text-white">{t('available')}</span>
             </div>
           )}
         </div>
@@ -119,7 +121,7 @@ export default function EscortCard2025({ escort, onLike, isLiked = false, priori
           {/* Badge médias privés */}
           {(escort.hasPrivatePhotos || escort.hasPrivateVideos) && (
             <div className="inline-flex px-2.5 py-1 rounded-full bg-gradient-to-r from-pink-500/20 to-purple-500/20 border border-pink-500/30">
-              <span className="text-xs font-medium text-white">🔒 Médias privés</span>
+              <span className="text-xs font-medium text-white">🔒 {t('privateMedia')}</span>
             </div>
           )}
         </div>

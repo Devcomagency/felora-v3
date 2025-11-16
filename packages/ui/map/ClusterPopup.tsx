@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { X, MapPin, Star } from 'lucide-react'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 import type { EscortPinDTO } from '../../../core/services/geo/types'
 
 interface ClusterPopupProps {
@@ -11,6 +12,7 @@ interface ClusterPopupProps {
 }
 
 export default function ClusterPopup({ escorts, onClose }: ClusterPopupProps) {
+  const t = useTranslations('map')
   const [escortsDetails, setEscortsDetails] = useState<Record<string, any>>({})
   const [loadingDetails, setLoadingDetails] = useState<Record<string, boolean>>({})
 
@@ -139,7 +141,7 @@ export default function ClusterPopup({ escorts, onClose }: ClusterPopupProps) {
                   fontWeight: 'bold',
                   color: 'white'
                 }}>
-                  {escorts.length} profil{escorts.length > 1 ? 's' : ''} dans cette zone
+                  {t('clusterPopup.title', { count: escorts.length })}
                 </h2>
               </div>
               
@@ -302,7 +304,7 @@ export default function ClusterPopup({ escorts, onClose }: ClusterPopupProps) {
                         fontSize: '14px',
                         color: 'rgba(255, 255, 255, 0.7)'
                       }}>
-                        {details?.age ? `${details.age} ans • ` : ''}{escort.city}
+                        {details?.age ? t('clusterPopup.age', { age: details.age }) + ' • ' : ''}{escort.city}
                       </p>
 
                       {details?.rating && (

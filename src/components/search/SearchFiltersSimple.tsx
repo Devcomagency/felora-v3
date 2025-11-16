@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 import { X, MapPin } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useTranslations } from 'next-intl'
 
 interface SearchFiltersSimpleProps {
   filters: {
@@ -45,6 +46,8 @@ export default function SearchFiltersSimple({
   onClose,
   isOpen
 }: SearchFiltersSimpleProps) {
+  const tFilters = useTranslations('filters')
+
   const [localFilters, setLocalFilters] = useState({
     ...filters,
     categories: filters.categories || []
@@ -113,7 +116,7 @@ export default function SearchFiltersSimple({
                 borderColor: 'rgba(255, 255, 255, 0.1)'
               }}
             >
-              <h2 className="text-xl font-black tracking-tight bg-gradient-to-r from-white via-white/90 to-white/80 bg-clip-text text-transparent">Filtres</h2>
+              <h2 className="text-xl font-black tracking-tight bg-gradient-to-r from-white via-white/90 to-white/80 bg-clip-text text-transparent">{tFilters('title')}</h2>
               <button
                 onClick={onClose}
                 className="w-10 h-10 rounded-full flex items-center justify-center transition-all hover:scale-110"
@@ -122,7 +125,7 @@ export default function SearchFiltersSimple({
                   backdropFilter: 'blur(20px)',
                   border: '1px solid rgba(255, 255, 255, 0.2)'
                 }}
-                aria-label="Fermer les filtres"
+                aria-label={tFilters('closeFilters')}
               >
                 <X size={18} className="text-white" />
               </button>
@@ -133,7 +136,7 @@ export default function SearchFiltersSimple({
               {/* Catégories */}
               <div>
                 <label className="block text-sm font-bold text-white mb-3">
-                  Catégorie
+                  {tFilters('category')}
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   {escortCategories.map(category => (
@@ -161,7 +164,7 @@ export default function SearchFiltersSimple({
               <div>
                 <label className="block text-sm font-bold text-white mb-2">
                   <MapPin size={16} className="inline mr-2" />
-                  Canton
+                  {tFilters('canton')}
                 </label>
                 <select
                   value={localFilters.canton || ''}
@@ -173,7 +176,7 @@ export default function SearchFiltersSimple({
                     borderColor: 'rgba(255, 255, 255, 0.1)'
                   }}
                 >
-                  <option value="" style={{ background: '#1a1a1a' }}>Tous les cantons</option>
+                  <option value="" style={{ background: '#1a1a1a' }}>{tFilters('allCantons')}</option>
                   {Object.keys(swissLocations).map(canton => (
                     <option key={canton} value={canton} style={{ background: '#1a1a1a' }}>
                       {canton === 'GE' ? 'Genève' :
@@ -199,7 +202,7 @@ export default function SearchFiltersSimple({
                   exit={{ opacity: 0, height: 0 }}
                 >
                   <label className="block text-sm font-bold text-white mb-2">
-                    Ville
+                    {tFilters('city')}
                   </label>
                   <select
                     value={localFilters.city || ''}
@@ -211,7 +214,7 @@ export default function SearchFiltersSimple({
                       borderColor: 'rgba(255, 255, 255, 0.1)'
                     }}
                   >
-                    <option value="" style={{ background: '#1a1a1a' }}>Toutes les villes</option>
+                    <option value="" style={{ background: '#1a1a1a' }}>{tFilters('allCities')}</option>
                     {swissLocations[localFilters.canton as keyof typeof swissLocations]?.map(city => (
                       <option key={city} value={city} style={{ background: '#1a1a1a' }}>{city}</option>
                     ))}
@@ -222,7 +225,7 @@ export default function SearchFiltersSimple({
               {/* Tri */}
               <div>
                 <label className="block text-sm font-bold text-white mb-2">
-                  Trier par
+                  {tFilters('sortBy')}
                 </label>
                 <select
                   value={localFilters.sort || 'recent'}
@@ -234,11 +237,11 @@ export default function SearchFiltersSimple({
                     borderColor: 'rgba(255, 255, 255, 0.1)'
                   }}
                 >
-                  <option value="recent" style={{ background: '#1a1a1a' }}>Plus récents</option>
-                  <option value="popular" style={{ background: '#1a1a1a' }}>Plus populaires</option>
-                  <option value="rating" style={{ background: '#1a1a1a' }}>Mieux notés</option>
-                  <option value="price-asc" style={{ background: '#1a1a1a' }}>Prix croissant</option>
-                  <option value="price-desc" style={{ background: '#1a1a1a' }}>Prix décroissant</option>
+                  <option value="recent" style={{ background: '#1a1a1a' }}>{tFilters('mostRecent')}</option>
+                  <option value="popular" style={{ background: '#1a1a1a' }}>{tFilters('mostPopular')}</option>
+                  <option value="rating" style={{ background: '#1a1a1a' }}>{tFilters('bestRated')}</option>
+                  <option value="price-asc" style={{ background: '#1a1a1a' }}>{tFilters('priceAsc')}</option>
+                  <option value="price-desc" style={{ background: '#1a1a1a' }}>{tFilters('priceDesc')}</option>
                 </select>
               </div>
             </div>
@@ -260,13 +263,13 @@ export default function SearchFiltersSimple({
                   borderColor: 'rgba(255, 255, 255, 0.2)'
                 }}
               >
-                Réinitialiser
+                {tFilters('reset')}
               </button>
               <button
                 onClick={handleApply}
                 className="flex-1 px-6 py-3.5 text-white font-bold rounded-xl transition-all bg-gradient-to-r from-pink-500/20 to-purple-500/20 hover:from-pink-500/30 hover:to-purple-500/30 border border-pink-500/30 hover:border-pink-500/50 shadow-lg hover:shadow-pink-500/20"
               >
-                Appliquer
+                {tFilters('apply')}
               </button>
             </div>
           </motion.div>

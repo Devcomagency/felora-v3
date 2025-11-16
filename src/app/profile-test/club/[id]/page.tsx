@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter, useParams } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import ProfileHeader from '../../../../../packages/ui/profile-test/ProfileHeader'
 import ActionsBar from '../../../../../packages/ui/profile-test/ActionsBar'
 import MediaFeedWithGallery from '../../../../../packages/ui/profile-test/MediaFeedWithGallery'
@@ -103,6 +104,7 @@ function ProfileSkeleton() {
 }
 
 export default function ClubProfileTestPage() {
+  const t = useTranslations('clubProfile')
   const { data: session, status } = useSession()
   const [profile, setProfile] = useState<ClubProfile | null>(null)
   const [loading, setLoading] = useState(true)
@@ -240,14 +242,14 @@ export default function ClubProfileTestPage() {
   const handleShare = useCallback(() => {
     if (navigator.share) {
       navigator.share({
-        title: profile?.name || 'Club',
-        text: `Check out ${profile?.name}'s club on Felora`,
+        title: profile?.name || t('club'),
+        text: t('shareText', { name: profile?.name }),
         url: window.location.href
       })
     } else {
       navigator.clipboard.writeText(window.location.href)
     }
-  }, [profile?.name])
+  }, [profile?.name, t])
 
   const handleReport = useCallback((profileId: string) => {
     setShowReportModal(true)
@@ -264,20 +266,20 @@ export default function ClubProfileTestPage() {
   const handleFavoriteToggle = useCallback(() => {
     if (!profile) return
     if (status === 'unauthenticated' || !session?.user?.id) {
-      toast.info('Connectez-vous pour ajouter des favoris')
+      toast.info(t('loginToFavorite'))
       return
     }
 
     if (isFavorite) {
       removeFavoriteId(profile.id)
       setIsFavorite(false)
-      toast.success('Retiré des favoris')
+      toast.success(t('removedFromFavorites'))
     } else {
       addFavoriteId(profile.id)
       setIsFavorite(true)
-      toast.success('⭐ Ajouté aux favoris')
+      toast.success(t('addedToFavorites'))
     }
-  }, [isFavorite, profile, session, status])
+  }, [isFavorite, profile, session, status, t])
 
   // Load localStorage states
   useEffect(() => {
@@ -390,8 +392,8 @@ export default function ClubProfileTestPage() {
 
   // Render states
   if (loading) return <ProfileSkeleton />
-  if (notFound) return <div className="min-h-screen bg-black flex items-center justify-center text-white">Club Not Found</div>
-  if (error || !profile) return <div className="min-h-screen bg-black flex items-center justify-center text-white">Error Loading Profile</div>
+  if (notFound) return <div className="min-h-screen bg-black flex items-center justify-center text-white">{t('notFound')}</div>
+  if (error || !profile) return <div className="min-h-screen bg-black flex items-center justify-center text-white">{t('errorLoading')}</div>
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -441,7 +443,7 @@ export default function ClubProfileTestPage() {
 
           // ✅ Construire le texte de disponibilité en fonction du statut réel de l'API
           const isOpen = profile.agendaIsOpenNow ?? false
-          const scheduleText = isOpen ? 'Ouvert maintenant' : 'Fermé'
+          const scheduleText = isOpen ? t('openNow') : t('closed')
 
           const finalAvailability = {
             available: isOpen,
@@ -534,7 +536,7 @@ export default function ClubProfileTestPage() {
         <div className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-gradient-to-br from-gray-900 via-black to-gray-900 rounded-2xl border border-gray-800 max-w-md w-full p-6">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-white">Contact {profile.name}</h2>
+              <h2 className="text-xl font-bold text-white">{t('contactModal.title', { name: profile.name })}</h2>
               <button
                 onClick={() => setShowContactModal(false)}
                 className="p-2 hover:bg-gray-800 rounded-full transition-colors text-gray-400 hover:text-white"
@@ -558,7 +560,7 @@ export default function ClubProfileTestPage() {
                     </svg>
                   </div>
                   <div className="flex-1">
-                    <div className="text-sm text-gray-400">Téléphone</div>
+                    <div className="text-sm text-gray-400">{t('contactModal.phone')}</div>
                     <div className="text-green-300 font-medium font-mono">{profile.contact.phone}</div>
                   </div>
                 </a>
@@ -576,7 +578,7 @@ export default function ClubProfileTestPage() {
                     </svg>
                   </div>
                   <div className="flex-1">
-                    <div className="text-sm text-gray-400">Email</div>
+                    <div className="text-sm text-gray-400">{t('contactModal.email')}</div>
                     <div className="text-purple-300 font-medium truncate">{profile.contact.email}</div>
                   </div>
                 </a>
@@ -592,7 +594,7 @@ export default function ClubProfileTestPage() {
                     </svg>
                   </div>
                   <div className="flex-1">
-                    <div className="text-sm text-gray-400 mb-1">Adresse</div>
+                    <div className="text-sm text-gray-400 mb-1">{t('contactModal.address')}</div>
                     <div className="text-blue-300 font-medium">{profile.location.address}</div>
                   </div>
                 </div>
@@ -612,7 +614,7 @@ export default function ClubProfileTestPage() {
                     </svg>
                   </div>
                   <div className="flex-1">
-                    <div className="text-sm text-gray-400">Site web</div>
+                    <div className="text-sm text-gray-400">{t('contactModal.website')}</div>
                     <div className="text-cyan-300 font-medium truncate">{profile.contact.website}</div>
                   </div>
                 </a>

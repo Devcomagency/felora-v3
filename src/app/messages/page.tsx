@@ -19,14 +19,17 @@ import { compressImageIfNeeded } from '@/utils/imageCompression'
 import { useNetworkError } from '@/hooks/useNetworkError'
 import NetworkErrorBanner from '@/components/NetworkErrorBanner'
 import ReportModal from '@/components/ReportModal'
+import { useTranslations } from 'next-intl'
 
 // Old messages page (V3 original)
 function OldMessagesPage() {
+  const t = useTranslations('messages')
+
   return (
     <div className="min-h-screen bg-black text-white flex items-center justify-center">
       <div className="text-center">
-        <h1 className="text-2xl font-bold mb-4">Messages (Version Originale)</h1>
-        <p className="text-gray-400">Cette page utilise l'ancienne interface V3</p>
+        <h1 className="text-2xl font-bold mb-4">{t('oldVersion')}</h1>
+        <p className="text-gray-400">{t('oldVersionDescription')}</p>
       </div>
     </div>
   )
@@ -34,6 +37,7 @@ function OldMessagesPage() {
 
 // New messages page (V2 design)
 function NewMessagesPage() {
+  const t = useTranslations('messages')
   const { data: session, status } = useSession()
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [activeConversation, setActiveConversation] = useState<Conversation | null>(null)
@@ -59,14 +63,14 @@ function NewMessagesPage() {
       const currentUserId = session?.user?.id || ''
       // Trouver l'autre participant (pas l'utilisateur courant)
       const other = parts.find(p => p?.id !== currentUserId) || parts[0]
-      return other?.name || 'Conversation'
+      return other?.name || t('conversation')
     }
-    return 'Messages'
-  }, [activeConversation, session?.user?.id])
+    return t('title')
+  }, [activeConversation, session?.user?.id, t])
   const headerSubtitle = useMemo(() => {
-    if (activeConversation) return 'Conversation chiffrée'
-    return 'Vos conversations'
-  }, [activeConversation])
+    if (activeConversation) return t('encryptedConversation')
+    return t('yourConversations')
+  }, [activeConversation, t])
   const otherParticipant = useMemo(() => {
     if (activeConversation && Array.isArray((activeConversation as any).participants)) {
       const parts = (activeConversation as any).participants
@@ -154,10 +158,10 @@ function NewMessagesPage() {
       const profileRes = await fetch(`/api/escort/profile/${encodeURIComponent(pendingUserToMessage)}`, {
         credentials: 'include'
       })
-      let profileName = 'ce profil'
+      let profileName = t('thisProfile')
       if (profileRes.ok) {
         const profileData = await profileRes.json()
-        profileName = profileData?.stageName || profileData?.name || 'ce profil'
+        profileName = profileData?.stageName || profileData?.name || t('thisProfile')
       }
 
       try {
@@ -170,7 +174,7 @@ function NewMessagesPage() {
           credentials: 'include',
           body: JSON.stringify({
             participantId: pendingUserToMessage,
-            introMessage: `Bonjour ${profileName}, ton profil m'a beaucoup plu ! 😊`
+            introMessage: t('introMessage', { name: profileName })
           })
         })
 
@@ -197,10 +201,10 @@ function NewMessagesPage() {
           return [conversation, ...prev]
         })
 
-        toastSuccess('Conversation créée avec succès !')
+        toastSuccess(t('conversationCreated'))
       } catch (error) {
         console.error('Erreur lors de la création de la conversation:', error)
-        
+
         // Fallback : Créer une conversation simulée si l'API échoue
         const simulatedConversation: Conversation = {
           id: `temp-${Date.now()}`,
@@ -208,7 +212,7 @@ function NewMessagesPage() {
           participants: [
             {
               id: session.user.id,
-              name: session.user.name || 'Vous',
+              name: session.user.name || t('you'),
               role: 'client',
               isPremium: false,
               isVerified: false,
@@ -228,7 +232,7 @@ function NewMessagesPage() {
             conversationId: `temp-${Date.now()}`,
             senderId: session.user.id,
             type: 'text',
-            content: `Bonjour ${profileName}, ton profil m'a beaucoup plu ! 😊`,
+            content: t('introMessage', { name: profileName }),
             status: 'sent',
             createdAt: new Date(),
             updatedAt: new Date()
@@ -253,15 +257,15 @@ function NewMessagesPage() {
           return [simulatedConversation, ...prev]
         })
 
-        toastSuccess('Conversation créée avec succès !')
+        toastSuccess(t('conversationCreated'))
       }
     } catch (error) {
       console.error('Erreur lors de la création de la conversation:', error)
-      toastError('Erreur lors de la création de la conversation')
+      toastError(t('conversationCreationError'))
     } finally {
       setPendingUserToMessage(null)
     }
-  }, [pendingUserToMessage, session?.user?.id, toastSuccess, toastError])
+  }, [pendingUserToMessage, session?.user?.id, toastSuccess, toastError, t])
 
   useEffect(() => {
     if (pendingUserToMessage && session?.user?.id) {
@@ -318,12 +322,12 @@ function NewMessagesPage() {
     } catch (error) {
       console.error('Erreur lors du chargement des conversations:', error)
       handleError(error as Error, loadConversations)
-      toastError('Impossible de charger les conversations')
+      toastError(t('loadConversationsError'))
       setConversations([])
-    } finally { 
-      setIsLoading(false) 
+    } finally {
+      setIsLoading(false)
     }
-  }, [toastError, handleError, clearError])
+  }, [toastError, handleError, clearError, t])
 
   useEffect(() => {
     if (status === 'loading') { setIsLoading(true); return }
@@ -424,15 +428,15 @@ function NewMessagesPage() {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-white mb-4">Accès limité</h1>
+          <h1 className="text-2xl font-bold text-white mb-4">{t('limitedAccess')}</h1>
           <p className="text-gray-400 mb-6">
-            Seuls les clients et les escortes peuvent utiliser la messagerie.
+            {t('limitedAccessDescription')}
           </p>
           <button
             onClick={() => router.push('/')}
             className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg font-medium hover:from-purple-600 hover:to-pink-600 transition-all"
           >
-            Retour à l'accueil
+            {t('backToHome')}
           </button>
         </div>
       </div>
@@ -444,15 +448,15 @@ function NewMessagesPage() {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-white mb-4">Connexion requise</h1>
+          <h1 className="text-2xl font-bold text-white mb-4">{t('loginRequired')}</h1>
           <p className="text-gray-400 mb-6">
-            Vous devez être connecté pour utiliser la messagerie.
+            {t('loginRequiredDescription')}
           </p>
           <button
             onClick={() => router.push('/login')}
             className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg font-medium hover:from-purple-600 hover:to-pink-600 transition-all"
           >
-            Se connecter
+            {t('login')}
           </button>
         </div>
       </div>
@@ -464,7 +468,7 @@ function NewMessagesPage() {
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-white">Chargement du chat...</p>
+          <p className="text-white">{t('loadingChat')}</p>
         </div>
       </div>
     )
@@ -497,8 +501,8 @@ function NewMessagesPage() {
                 }
               }}
               className="p-3 text-white hover:bg-white/20 rounded-xl transition-all duration-200 hover:scale-105"
-              aria-label="Revenir à la page précédente"
-              title="Retour"
+              aria-label={t('backToPreviousPage')}
+              title={t('back')}
             >
               <ArrowLeft size={20} />
             </button>
@@ -506,7 +510,7 @@ function NewMessagesPage() {
               <h1 className="text-xl font-bold text-white flex items-center gap-2">
                 {headerTitle}
                 {isBlocked && (
-                  <span className="px-2 py-1 text-xs rounded-full bg-red-500/20 text-red-300 border border-red-500/30">Bloqué</span>
+                  <span className="px-2 py-1 text-xs rounded-full bg-red-500/20 text-red-300 border border-red-500/30">{t('blocked')}</span>
                 )}
                 {ephemeralMode && activeConversation && (
                   <span className="px-2 py-1 text-xs rounded-md bg-orange-500/10 text-orange-300 border border-orange-500/20 flex items-center gap-1">
@@ -526,8 +530,8 @@ function NewMessagesPage() {
                 className="p-3 text-white hover:bg-white/20 rounded-xl transition-all duration-200 hover:scale-105"
                 aria-haspopup="menu"
                 aria-expanded={showHeaderMenu}
-                aria-label="Options de conversation"
-                title="Options"
+                aria-label={t('conversationOptions')}
+                title={t('options')}
               >
                 <MoreVertical size={20} />
               </button>
@@ -540,9 +544,9 @@ function NewMessagesPage() {
                   >
                     <span>🔥</span>
                     <div className="flex-1">
-                      <div>Messages éphémères</div>
+                      <div>{t('ephemeralMessages')}</div>
                       <div className="text-xs text-gray-400">
-                        {ephemeralMode ? `Activé (${ephemeralDuration / 3600}h)` : 'Désactivé'}
+                        {ephemeralMode ? t('ephemeralEnabled', { hours: ephemeralDuration / 3600 }) : t('ephemeralDisabled')}
                       </div>
                     </div>
                   </button>
@@ -550,7 +554,7 @@ function NewMessagesPage() {
                     role="menuitem"
                     className="w-full text-left px-4 py-3 text-sm text-white/90 hover:bg-white/10"
                     onClick={() => { setShowHeaderMenu(false); setShowReportModal(true) }}
-                  >Signaler</button>
+                  >{t('report')}</button>
                   <button
                     role="menuitem"
                     className="w-full text-left px-4 py-3 text-sm text-white/90 hover:bg-white/10"
@@ -562,24 +566,24 @@ function NewMessagesPage() {
                           if (!res.ok) throw new Error('toggle_failed')
                           const d = await res.json()
                           setIsBlocked(!!d?.blocked)
-                          toastSuccess(d?.blocked ? 'Utilisateur bloqué' : 'Utilisateur débloqué')
+                          toastSuccess(d?.blocked ? t('userBlocked') : t('userUnblocked'))
                         }
                       } catch {
-                        toastError('Action impossible')
+                        toastError(t('actionImpossible'))
                       }
                     }}
-                  >{isBlocked ? 'Débloquer' : 'Bloquer'}</button>
+                  >{isBlocked ? t('unblock') : t('block')}</button>
                   <button
                     role="menuitem"
                     className="w-full text-left px-4 py-3 text-sm text-red-400 hover:bg-red-500/10 border-t border-white/5"
                     onClick={async () => {
                       setShowHeaderMenu(false)
                       if (!activeConversation?.id) return
-                      
-                      if (!confirm('Êtes-vous sûr de vouloir supprimer cette conversation ? Cette action est irréversible.')) {
+
+                      if (!confirm(t('deleteConversationConfirm'))) {
                         return
                       }
-                      
+
                       try {
                         const res = await fetch('/api/e2ee/conversations/remove', {
                           method: 'POST',
@@ -587,18 +591,18 @@ function NewMessagesPage() {
                           credentials: 'include',
                           body: JSON.stringify({ conversationId: activeConversation.id })
                         })
-                        
+
                         if (!res.ok) throw new Error('delete_failed')
-                        
-                        toastSuccess('Conversation supprimée')
+
+                        toastSuccess(t('conversationDeleted'))
                         setActiveConversation(null)
                         // Recharger la liste des conversations
                         loadConversations()
                       } catch {
-                        toastError('Impossible de supprimer la conversation')
+                        toastError(t('deleteConversationError'))
                       }
                     }}
-                  >Supprimer la conversation</button>
+                  >{t('deleteConversation')}</button>
                 </div>
               )}
             </div>
@@ -609,9 +613,9 @@ function NewMessagesPage() {
           <div className="max-w-7xl mx-auto mt-4">
             <div className="relative">
               <input
-                aria-label="Rechercher une conversation"
+                aria-label={t('searchConversation')}
                 type="text"
-                placeholder="Rechercher une conversation..."
+                placeholder={t('searchConversationPlaceholder')}
                 value={headerSearch}
                 onChange={(e) => setHeaderSearch(e.target.value)}
                 className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:border-pink-500 focus:outline-none transition-colors"
@@ -654,7 +658,7 @@ function NewMessagesPage() {
                       <div className="border-t border-gray-700/50 p-3">
                         {isBlocked ? (
                           <div className="text-center text-xs text-gray-400 py-2">
-                            Vous avez bloqué cet utilisateur. Débloquez pour envoyer des messages.
+                            {t('blockedUserMessage')}
                           </div>
                         ) : (
                           <PageComposer active={!isBlocked} />
@@ -666,7 +670,7 @@ function NewMessagesPage() {
                       <MessageCircle size={48} className="mb-4 opacity-50" />
                       {!session?.user ? (
                         <div className="text-center">
-                          <h3 
+                          <h3
                             className="text-lg font-medium mb-2 text-white"
                             style={{
                               background: 'linear-gradient(135deg, var(--felora-aurora) 0%, var(--felora-plasma) 100%)',
@@ -675,22 +679,22 @@ function NewMessagesPage() {
                               backgroundClip: 'text'
                             }}
                           >
-                            Connectez‑vous pour messager
+                            {t('loginToMessage')}
                           </h3>
-                          <a 
-                            href="/login" 
+                          <a
+                            href="/login"
                             className="inline-block mt-2 px-6 py-3 rounded-lg text-white font-semibold transition-all hover:scale-105"
                             style={{
                               background: 'linear-gradient(135deg, var(--felora-aurora) 0%, var(--felora-plasma) 100%)',
                               boxShadow: '0 4px 15px rgba(255, 107, 157, 0.3)'
                             }}
                           >
-                            Se connecter
+                            {t('login')}
                           </a>
                         </div>
                       ) : (
                         <>
-                          <h3 
+                          <h3
                             className="text-lg font-medium mb-2"
                             style={{
                               background: 'linear-gradient(135deg, var(--felora-aurora) 0%, var(--felora-plasma) 100%)',
@@ -699,10 +703,10 @@ function NewMessagesPage() {
                               backgroundClip: 'text'
                             }}
                           >
-                            Sélectionnez une conversation
+                            {t('selectConversation')}
                           </h3>
                           <p className="text-sm text-center max-w-md" style={{ color: 'var(--felora-silver-60)' }}>
-                            Choisissez une conversation pour commencer à échanger.
+                            {t('selectConversationDescription')}
                           </p>
                         </>
                       )}
@@ -727,7 +731,7 @@ function NewMessagesPage() {
                     {!session?.user ? (
                       <div className="h-full flex flex-col items-center justify-center p-4 text-white/70">
                         <p className="mb-3" style={{ color: 'var(--felora-silver-70)' }}>
-                          Connectez‑vous pour voir vos conversations.
+                          {t('loginToViewConversations')}
                         </p>
                         <a
                           href="/login"
@@ -737,7 +741,7 @@ function NewMessagesPage() {
                             boxShadow: '0 4px 15px rgba(255, 107, 157, 0.3)'
                           }}
                         >
-                          Se connecter
+                          {t('login')}
                         </a>
                       </div>
                     ) : (
@@ -772,7 +776,7 @@ function NewMessagesPage() {
             <div className="max-w-7xl mx-auto px-2 sm:px-4 pt-2">
               {isBlocked && (
                 <div className="mb-2 text-center text-xs" style={{ color: 'var(--felora-silver-70)' }}>
-                  Vous avez bloqué cet utilisateur. Débloquez pour envoyer des messages.
+                  {t('blockedUserMessage')}
                 </div>
               )}
               <PageComposer active={!isBlocked} />
@@ -817,10 +821,10 @@ function NewMessagesPage() {
                   backgroundClip: 'text'
                 }}
               >
-                <span>🔥</span> Messages éphémères
+                <span>🔥</span> {t('ephemeralMessages')}
               </h3>
               <p className="text-sm text-gray-400 mb-6">
-                Les messages disparaîtront automatiquement après la durée choisie
+                {t('ephemeralMessagesDescription')}
               </p>
 
               <div className="space-y-3 mb-6">
@@ -828,40 +832,40 @@ function NewMessagesPage() {
                   onClick={() => { setEphemeralMode(false); setEphemeralDuration(0) }}
                   className={`w-full text-left px-4 py-3 rounded-lg transition-all ${!ephemeralMode ? 'bg-white/10 border-2 border-pink-500' : 'bg-white/5 border border-white/10'}`}
                 >
-                  <div className="font-medium">Désactivé</div>
-                  <div className="text-xs text-gray-400">Les messages restent indéfiniment</div>
+                  <div className="font-medium">{t('ephemeralDisabledOption')}</div>
+                  <div className="text-xs text-gray-400">{t('ephemeralDisabledDescription')}</div>
                 </button>
 
                 <button
                   onClick={() => { setEphemeralMode(true); setEphemeralDuration(43200) }}
                   className={`w-full text-left px-4 py-3 rounded-lg transition-all ${ephemeralMode && ephemeralDuration === 43200 ? 'bg-white/10 border-2 border-pink-500' : 'bg-white/5 border border-white/10'}`}
                 >
-                  <div className="font-medium">12 heures</div>
-                  <div className="text-xs text-gray-400">Les messages disparaissent après 12h</div>
+                  <div className="font-medium">{t('ephemeral12Hours')}</div>
+                  <div className="text-xs text-gray-400">{t('ephemeral12HoursDescription')}</div>
                 </button>
 
                 <button
                   onClick={() => { setEphemeralMode(true); setEphemeralDuration(86400) }}
                   className={`w-full text-left px-4 py-3 rounded-lg transition-all ${ephemeralMode && ephemeralDuration === 86400 ? 'bg-white/10 border-2 border-pink-500' : 'bg-white/5 border border-white/10'}`}
                 >
-                  <div className="font-medium">24 heures</div>
-                  <div className="text-xs text-gray-400">Les messages disparaissent après 24h</div>
+                  <div className="font-medium">{t('ephemeral24Hours')}</div>
+                  <div className="text-xs text-gray-400">{t('ephemeral24HoursDescription')}</div>
                 </button>
 
                 <button
                   onClick={() => { setEphemeralMode(true); setEphemeralDuration(172800) }}
                   className={`w-full text-left px-4 py-3 rounded-lg transition-all ${ephemeralMode && ephemeralDuration === 172800 ? 'bg-white/10 border-2 border-pink-500' : 'bg-white/5 border border-white/10'}`}
                 >
-                  <div className="font-medium">48 heures</div>
-                  <div className="text-xs text-gray-400">Les messages disparaissent après 2 jours</div>
+                  <div className="font-medium">{t('ephemeral48Hours')}</div>
+                  <div className="text-xs text-gray-400">{t('ephemeral48HoursDescription')}</div>
                 </button>
 
                 <button
                   onClick={() => { setEphemeralMode(true); setEphemeralDuration(604800) }}
                   className={`w-full text-left px-4 py-3 rounded-lg transition-all ${ephemeralMode && ephemeralDuration === 604800 ? 'bg-white/10 border-2 border-pink-500' : 'bg-white/5 border border-white/10'}`}
                 >
-                  <div className="font-medium">7 jours</div>
-                  <div className="text-xs text-gray-400">Les messages disparaissent après 1 semaine</div>
+                  <div className="font-medium">{t('ephemeral7Days')}</div>
+                  <div className="text-xs text-gray-400">{t('ephemeral7DaysDescription')}</div>
                 </button>
               </div>
 
@@ -870,7 +874,7 @@ function NewMessagesPage() {
                   onClick={() => setShowEphemeralMenu(false)}
                   className="px-6 py-2 rounded-lg transition-colors bg-white/10 text-white/90 hover:bg-white/20"
                 >
-                  Annuler
+                  {t('cancel')}
                 </button>
                 <button
                   onClick={async () => {
@@ -891,23 +895,23 @@ function NewMessagesPage() {
                       // Animation de succès avant de fermer
                       const btn = document.activeElement as HTMLButtonElement
                       if (btn) {
-                        btn.textContent = '✓ Enregistré'
+                        btn.textContent = t('saved')
                         btn.style.background = 'linear-gradient(to right, #10b981, #059669)'
                         setTimeout(() => {
                           setShowEphemeralMenu(false)
-                          toastSuccess(ephemeralMode ? `Mode éphémère activé (${ephemeralDuration / 3600}h)` : 'Mode éphémère désactivé')
+                          toastSuccess(ephemeralMode ? t('ephemeralModeActivated', { hours: ephemeralDuration / 3600 }) : t('ephemeralModeDeactivated'))
                         }, 500)
                       } else {
                         setShowEphemeralMenu(false)
-                        toastSuccess(ephemeralMode ? `Mode éphémère activé (${ephemeralDuration / 3600}h)` : 'Mode éphémère désactivé')
+                        toastSuccess(ephemeralMode ? t('ephemeralModeActivated', { hours: ephemeralDuration / 3600 }) : t('ephemeralModeDeactivated'))
                       }
                     } catch {
-                      toastError('Impossible de modifier les paramètres')
+                      toastError(t('settingsUpdateError'))
                     }
                   }}
                   className="px-6 py-2 rounded-lg transition-all bg-gradient-to-r from-pink-500 to-purple-500 text-white hover:scale-105"
                 >
-                  Appliquer
+                  {t('apply')}
                 </button>
               </div>
             </div>
@@ -920,6 +924,7 @@ function NewMessagesPage() {
 
 // Lightweight page-level composer that proxies to ChatWindow via window.__feloraChatSend
 function PageComposer({ active }: { active: boolean }) {
+  const t = useTranslations('messages')
   const [text, setText] = useState('')
   const [showEmoji, setShowEmoji] = useState(false)
   const [previewFile, setPreviewFile] = useState<File | null>(null)
@@ -950,18 +955,18 @@ function PageComposer({ active }: { active: boolean }) {
   const handleFileSelect = async (file: File) => {
     // Vérifier la taille du fichier
     if (file.size > MESSAGING_CONSTANTS.MAX_FILE_SIZE) {
-      alert(`Fichier trop volumineux. Taille maximale: ${MESSAGING_CONSTANTS.MAX_FILE_SIZE / (1024 * 1024)}MB`)
+      alert(t('fileTooLarge', { maxSize: MESSAGING_CONSTANTS.MAX_FILE_SIZE / (1024 * 1024) }))
       return
     }
 
     // Vérifier le type de fichier
-    const isSupported = 
+    const isSupported =
       MEDIA_CONSTANTS.SUPPORTED_IMAGE_TYPES.includes(file.type as any) ||
       MEDIA_CONSTANTS.SUPPORTED_VIDEO_TYPES.includes(file.type as any) ||
       MEDIA_CONSTANTS.SUPPORTED_AUDIO_TYPES.includes(file.type as any)
 
     if (!isSupported) {
-      alert('Type de fichier non supporté')
+      alert(t('unsupportedFileType'))
       return
     }
 
@@ -986,13 +991,13 @@ function PageComposer({ active }: { active: boolean }) {
           <textarea
             value={text}
             onChange={e => setText(e.target.value)}
-            placeholder={active ? 'Écrire un message…' : 'Sélectionnez une conversation'}
+            placeholder={active ? t('writeMessage') : t('selectConversation')}
             disabled={!active}
             rows={1}
             className="flex-1 bg-transparent border-0 outline-none text-white placeholder-gray-400 resize-none text-sm sm:text-base"
-            style={{ 
-              minHeight: '36px', 
-              maxHeight: '120px' 
+            style={{
+              minHeight: '36px',
+              maxHeight: '120px'
             }}
             onInput={(e) => {
               const t = e.currentTarget
@@ -1019,7 +1024,7 @@ function PageComposer({ active }: { active: boolean }) {
             <button
               onClick={() => setShowEmoji(v => !v)}
               className="p-2 text-white/70 hover:text-white hover:bg-white/20 rounded-lg transition-all duration-200"
-              aria-label="Emoji"
+              aria-label={t('emoji')}
               disabled={!active}
             >
               <Smile size={18} />
@@ -1027,7 +1032,7 @@ function PageComposer({ active }: { active: boolean }) {
             <button
               onClick={() => setShowVoiceRecorder(true)}
               className="p-2 text-white/70 hover:text-white hover:bg-white/20 rounded-lg transition-all duration-200"
-              aria-label="Message vocal"
+              aria-label={t('voiceMessage')}
               disabled={!active}
             >
               <Mic size={18} />
@@ -1035,7 +1040,7 @@ function PageComposer({ active }: { active: boolean }) {
             <button
               onClick={() => mediaInputRef.current?.click()}
               className="p-2 text-white/70 hover:text-white hover:bg-white/20 rounded-lg transition-all duration-200"
-              aria-label="Image/Vidéo"
+              aria-label={t('imageVideo')}
               disabled={!active}
             >
               <ImageIcon size={18} />
@@ -1043,7 +1048,7 @@ function PageComposer({ active }: { active: boolean }) {
             <button
               onClick={() => fileInputRef.current?.click()}
               className="p-2 text-white/70 hover:text-white hover:bg-white/20 rounded-lg transition-all duration-200"
-              aria-label="Pièce jointe"
+              aria-label={t('attachment')}
               disabled={!active}
             >
               <Paperclip size={18} />
@@ -1056,11 +1061,11 @@ function PageComposer({ active }: { active: boolean }) {
           onClick={() => onSend()}
           disabled={!active || !text.trim()}
           className={`p-3 rounded-xl transition-all duration-200 flex-shrink-0 ${
-            (!active || !text.trim()) 
-              ? 'bg-white/10 text-white/40 cursor-not-allowed' 
+            (!active || !text.trim())
+              ? 'bg-white/10 text-white/40 cursor-not-allowed'
               : 'bg-pink-500 text-white hover:bg-pink-600 hover:scale-105'
           }`}
-          aria-label="Envoyer"
+          aria-label={t('send')}
         >
           <Send size={18} />
         </button>

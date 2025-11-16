@@ -6,6 +6,7 @@ import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { Conversation } from '../../types/chat'
+import { useTranslations } from 'next-intl'
 
 interface ConversationListProps {
   conversations: Conversation[]
@@ -32,6 +33,7 @@ export default function ConversationList({
   loading = false,
   currentUserId
 }: ConversationListProps) {
+  const t = useTranslations('messages')
   const [showActions, setShowActions] = useState<string | null>(null)
 
   // Filter and sort conversations
@@ -67,7 +69,7 @@ export default function ConversationList({
     
     // Vérifier que la date est valide
     if (isNaN(messageDate.getTime())) {
-      return 'Maintenant'
+      return t('now')
     }
     
     const diffInHours = (now.getTime() - messageDate.getTime()) / (1000 * 60 * 60)
@@ -75,7 +77,7 @@ export default function ConversationList({
     if (diffInHours < 24) {
       return format(messageDate, 'HH:mm', { locale: fr })
     } else if (diffInHours < 48) {
-      return 'Hier'
+      return t('yesterday')
     } else if (diffInHours < 168) {
       return format(messageDate, 'EEEE', { locale: fr })
     } else {
@@ -254,11 +256,9 @@ export default function ConversationList({
       {/* Footer with stats */}
       <div className="p-4 border-t border-gray-700/50 bg-gray-800/20">
         <div className="flex items-center justify-between text-xs text-gray-400">
-          <span>{conversations.length} conversation{conversations.length > 1 ? 's' : ''}</span>
+          <span>{t('conversationsCount', { count: conversations.length })}</span>
           <span>
-            {conversations.reduce((sum, conv) => sum + conv.unreadCount, 0)} non lu{
-              conversations.reduce((sum, conv) => sum + conv.unreadCount, 0) > 1 ? 's' : ''
-            }
+            {t('unreadCount', { count: conversations.reduce((sum, conv) => sum + conv.unreadCount, 0) })}
           </span>
         </div>
       </div>

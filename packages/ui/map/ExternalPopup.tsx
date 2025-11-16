@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { X, Star } from 'lucide-react'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 import type { EscortPinDTO } from '../../../core/services/geo/types'
 
 interface ExternalPopupProps {
@@ -11,6 +12,7 @@ interface ExternalPopupProps {
 }
 
 export default function ExternalPopup({ escort, onClose }: ExternalPopupProps) {
+  const t = useTranslations('map')
   const [escortDetails, setEscortDetails] = useState<any>(null)
   const [loadingDetails, setLoadingDetails] = useState(false)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
@@ -202,7 +204,7 @@ export default function ExternalPopup({ escort, onClose }: ExternalPopupProps) {
                   margin: '0 auto 16px'
                 }} />
                 <p style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '14px' }}>
-                  Chargement...
+                  {t('externalPopup.loading')}
                 </p>
               </div>
             ) : escortDetails ? (
@@ -367,7 +369,7 @@ export default function ExternalPopup({ escort, onClose }: ExternalPopupProps) {
                     fontSize: '14px',
                     margin: '0 0 8px 0'
                   }}>
-                    {escortDetails.age ? `${escortDetails.age} ans • ` : ''}{escortDetails.city}
+                    {escortDetails.age ? t('externalPopup.age', { age: escortDetails.age }) + ' • ' : ''}{escortDetails.city}
                   </p>
 
                   {escortDetails.rating && (
@@ -447,7 +449,7 @@ export default function ExternalPopup({ escort, onClose }: ExternalPopupProps) {
                     e.currentTarget.style.boxShadow = '0 4px 12px rgba(236, 72, 153, 0.3)'
                   }}
                 >
-                  Voir le profil complet
+                  {t('externalPopup.viewProfile')}
                 </Link>
               </>
             ) : (
@@ -482,7 +484,7 @@ export default function ExternalPopup({ escort, onClose }: ExternalPopupProps) {
                   }}
                   onClick={onClose}
                 >
-                  Voir le profil
+                  {t('externalPopup.viewProfile')}
                 </Link>
               </div>
             )}

@@ -4,6 +4,7 @@ import React, { useState, Suspense, useRef, useEffect, useCallback } from 'react
 import '@/styles/scrollbar.css'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
+import { useTranslations } from 'next-intl'
 import {
   Search,
   SlidersHorizontal,
@@ -39,6 +40,7 @@ function SearchContent() {
   const router = useRouter()
   const { status } = useSession()
   const isAuthenticated = status === "authenticated"
+  const t = useTranslations('search')
 
   // États pour les escortes
   const {
@@ -165,7 +167,7 @@ function SearchContent() {
               FELORA
             </h1>
             <p className="text-sm text-white/60 mt-1 font-light">
-              Découvrez des profils d'exception en Suisse
+              {t('subtitle')}
             </p>
           </div>
 
@@ -176,7 +178,7 @@ function SearchContent() {
                 <Search size={20} className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white/40" aria-hidden="true" />
                 <input
                   type="text"
-                  placeholder="Rechercher par nom, ville..."
+                  placeholder={t('placeholder')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full pl-12 pr-4 py-4 text-white placeholder-white/40 rounded-2xl transition-all border focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500/50"
@@ -185,7 +187,7 @@ function SearchContent() {
                     backdropFilter: 'blur(20px)',
                     borderColor: 'rgba(255, 255, 255, 0.1)'
                   }}
-                  aria-label="Rechercher des escortes ou clubs par nom ou ville"
+                  aria-label={t('searchAriaLabel')}
                 />
               </div>
 
@@ -197,7 +199,7 @@ function SearchContent() {
                   backdropFilter: 'blur(20px)',
                   border: '1px solid rgba(255, 255, 255, 0.1)'
                 }}
-                aria-label="Ouvrir les filtres de recherche"
+                aria-label={t('openFilters')}
               >
                 <SlidersHorizontal size={20} className="text-white/80" aria-hidden="true" />
               </button>
@@ -217,7 +219,7 @@ function SearchContent() {
                 aria-label="Afficher les profils"
                 aria-current={activeSection === 'escorts' ? 'page' : undefined}
               >
-                Profils
+                {t('profiles')}
                 {activeSection === 'escorts' && (
                   <span className="absolute -bottom-2 left-0 w-full h-0.5 bg-gradient-to-r from-[#FF6B9D] to-[#B794F6] rounded-full" />
                 )}
@@ -232,7 +234,7 @@ function SearchContent() {
                 aria-label="Afficher les établissements"
                 aria-current={activeSection === 'clubs' ? 'page' : undefined}
               >
-                Établissements
+                {t('establishments')}
                 {activeSection === 'clubs' && (
                   <span className="absolute -bottom-2 left-0 w-full h-0.5 bg-gradient-to-r from-[#FF6B9D] to-[#B794F6] rounded-full" />
                 )}
@@ -245,11 +247,11 @@ function SearchContent() {
             <div className="px-4 pb-4">
               <div className="flex gap-2 overflow-x-auto scrollbar-hide">
                 {[
-                  { key: '', label: 'Tous' },
-                  { key: 'club', label: 'Clubs' },
-                  { key: 'salon_erotique', label: 'Salons' },
-                  { key: 'institut_massage', label: 'Instituts' },
-                  { key: 'agence_escorte', label: 'Agences' }
+                  { key: '', label: t('all') },
+                  { key: 'club', label: t('clubs') },
+                  { key: 'salon_erotique', label: t('salons') },
+                  { key: 'institut_massage', label: t('institutes') },
+                  { key: 'agence_escorte', label: t('agencies') }
                 ].map((type) => (
                   <button
                     key={type.key}
@@ -279,9 +281,9 @@ function SearchContent() {
             <>
               <section ref={escortsSectionRef} className="py-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-black tracking-tight bg-gradient-to-r from-white via-white/90 to-white/80 bg-clip-text text-transparent">Profils Indépendants</h2>
+                  <h2 className="text-xl font-black tracking-tight bg-gradient-to-r from-white via-white/90 to-white/80 bg-clip-text text-transparent">{t('independentProfiles')}</h2>
                   {escortsTotal > 0 && (
-                    <span className="text-sm text-white/60 font-medium">{escortsTotal} profils</span>
+                    <span className="text-sm text-white/60 font-medium">{escortsTotal} {t('profilesCount')}</span>
                   )}
                 </div>
 
@@ -297,7 +299,7 @@ function SearchContent() {
                   </div>
                 ) : escorts.length === 0 ? (
                   <div className="text-center py-12">
-                    <p className="text-white/60">Aucun profil trouvé</p>
+                    <p className="text-white/60">{t('noProfilesFound')}</p>
                   </div>
                 ) : (
                   <>
@@ -321,7 +323,7 @@ function SearchContent() {
                           disabled={escortsLoading}
                           className="px-6 py-3.5 text-white font-bold rounded-xl transition-all disabled:opacity-50 bg-gradient-to-r from-pink-500/20 to-purple-500/20 hover:from-pink-500/30 hover:to-purple-500/30 border border-pink-500/30 hover:border-pink-500/50 shadow-lg hover:shadow-pink-500/20"
                         >
-                          {escortsLoading ? 'Chargement...' : 'Voir plus'}
+                          {escortsLoading ? t('loading') : t('loadMore')}
                         </button>
                       </div>
                     )}
@@ -335,9 +337,9 @@ function SearchContent() {
           {activeSection === 'clubs' && (
             <section ref={clubsSectionRef} className="py-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-black tracking-tight bg-gradient-to-r from-white via-white/90 to-white/80 bg-clip-text text-transparent">Établissements</h2>
+              <h2 className="text-xl font-black tracking-tight bg-gradient-to-r from-white via-white/90 to-white/80 bg-clip-text text-transparent">{t('establishments')}</h2>
               {clubsTotal > 0 && (
-                <span className="text-sm text-white/60 font-medium">{clubsTotal} établissements</span>
+                <span className="text-sm text-white/60 font-medium">{clubsTotal} {t('establishmentsCount')}</span>
               )}
             </div>
 
@@ -353,7 +355,7 @@ function SearchContent() {
                 </div>
               ) : clubs.length === 0 ? (
                 <div className="text-center py-12">
-                  <p className="text-white/60">Aucun club trouvé</p>
+                  <p className="text-white/60">{t('noClubsFound')}</p>
                 </div>
               ) : (
                 <>
@@ -375,7 +377,7 @@ function SearchContent() {
                         disabled={clubsLoading}
                         className="px-6 py-3.5 text-white font-bold rounded-xl transition-all disabled:opacity-50 bg-gradient-to-r from-pink-500/20 to-purple-500/20 hover:from-pink-500/30 hover:to-purple-500/30 border border-pink-500/30 hover:border-pink-500/50 shadow-lg hover:shadow-pink-500/20"
                       >
-                        {clubsLoading ? 'Chargement...' : 'Voir plus'}
+                        {clubsLoading ? t('loading') : t('loadMore')}
                       </button>
                     </div>
                   )}
@@ -395,7 +397,7 @@ function SearchContent() {
             borderColor: 'rgba(255, 107, 157, 0.3)',
             boxShadow: '0 8px 24px rgba(255, 107, 157, 0.2)'
           }}
-          aria-label="Ouvrir la carte interactive"
+          aria-label={t('openMap')}
         >
           <MapPin size={24} className="text-white" aria-hidden="true" />
         </button>
@@ -414,6 +416,8 @@ function SearchContent() {
 
 // Composant de chargement
 function SearchLoading() {
+  const t = useTranslations('search')
+
   return (
     <div className="fixed inset-0 bg-black flex items-center justify-center overflow-hidden">
       {/* Background Effects */}
@@ -424,7 +428,7 @@ function SearchLoading() {
 
       <div className="relative z-10 flex flex-col items-center gap-4 max-w-[500px] mx-auto">
         <div className="w-16 h-16 border-4 border-white/10 border-t-pink-500 rounded-full animate-spin"></div>
-        <p className="text-white/70 font-light">Chargement de la recherche...</p>
+        <p className="text-white/70 font-light">{t('loadingSearch')}</p>
       </div>
     </div>
   )

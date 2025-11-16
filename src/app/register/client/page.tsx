@@ -5,9 +5,11 @@ import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { signIn } from 'next-auth/react'
 import { User, Mail, Lock, Eye, EyeOff, Shield, CheckCircle, Loader2, ArrowLeft } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 export default function ClientRegisterPage() {
   const router = useRouter()
+  const t = useTranslations('auth.registerClient')
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -38,31 +40,31 @@ export default function ClientRegisterPage() {
     const errors: Record<string, string> = {}
 
     if (!formData.name.trim()) {
-      errors.name = 'Le nom est requis'
+      errors.name = t('validation.nameRequired')
     }
 
     if (!formData.email.trim()) {
-      errors.email = 'L\'email est requis'
+      errors.email = t('validation.emailRequired')
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      errors.email = 'Email invalide'
+      errors.email = t('validation.emailInvalid')
     }
 
     if (!formData.password) {
-      errors.password = 'Le mot de passe est requis'
+      errors.password = t('validation.passwordRequired')
     } else if (formData.password.length < 8) {
-      errors.password = 'Minimum 8 caractères'
+      errors.password = t('validation.passwordMinLength')
     }
 
     if (formData.password !== formData.confirmPassword) {
-      errors.confirmPassword = 'Les mots de passe ne correspondent pas'
+      errors.confirmPassword = t('validation.passwordMismatch')
     }
 
     if (!formData.isAdult) {
-      errors.isAdult = 'Vous devez confirmer avoir 18 ans ou plus'
+      errors.isAdult = t('validation.isAdultRequired')
     }
 
     if (!formData.acceptTos) {
-      errors.acceptTos = 'Vous devez accepter les CGU'
+      errors.acceptTos = t('validation.tosRequired')
     }
 
     return errors
@@ -118,13 +120,13 @@ export default function ClientRegisterPage() {
           console.log('Login failed, but account created:', e)
         }
 
-        const msg = encodeURIComponent('Compte client créé avec succès !')
+        const msg = encodeURIComponent(t('messages.success'))
         router.push(`/?message=${msg}`)
       } else {
-        setError(data?.error || 'Erreur lors de la création du compte')
+        setError(data?.error || t('messages.error'))
       }
     } catch (err: any) {
-      setError(err?.message || 'Erreur lors de la création du compte')
+      setError(err?.message || t('messages.error'))
     } finally {
       setLoading(false)
     }
@@ -149,7 +151,7 @@ export default function ClientRegisterPage() {
           className="flex items-center gap-2 text-white/60 hover:text-white transition-colors mb-6 group w-fit"
         >
           <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
-          <span className="text-sm">Retour</span>
+          <span className="text-sm">{t('backButton')}</span>
         </motion.button>
 
         {/* Header */}
@@ -171,10 +173,10 @@ export default function ClientRegisterPage() {
             transition={{ delay: 0.2 }}
           >
             <h1 className="text-4xl md:text-5xl font-black tracking-tight mb-3 bg-gradient-to-r from-white via-white/90 to-white/80 bg-clip-text text-transparent">
-              Inscription Client
+              {t('title')}
             </h1>
             <p className="text-white/60 text-sm max-w-md mx-auto">
-              Créez votre compte en quelques secondes
+              {t('subtitle')}
             </p>
           </motion.div>
         </div>
@@ -203,7 +205,7 @@ export default function ClientRegisterPage() {
                 {/* Name */}
                 <div>
                   <label className="block text-sm font-medium text-white/80 mb-2">
-                    Nom complet <span className="text-red-400">*</span>
+                    {t('form.fullName')} <span className="text-red-400">{t('form.required')}</span>
                   </label>
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
@@ -215,7 +217,7 @@ export default function ClientRegisterPage() {
                       className={`w-full pl-11 pr-4 py-3 bg-white/5 border ${
                         fieldErrors.name ? 'border-red-500/50' : 'border-white/10'
                       } rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:border-cyan-500/50 transition-colors`}
-                      placeholder="Jean Dupont"
+                      placeholder={t('form.fullNamePlaceholder')}
                     />
                   </div>
                   {fieldErrors.name && (
@@ -226,7 +228,7 @@ export default function ClientRegisterPage() {
                 {/* Email */}
                 <div>
                   <label className="block text-sm font-medium text-white/80 mb-2">
-                    Email <span className="text-red-400">*</span>
+                    {t('form.email')} <span className="text-red-400">{t('form.required')}</span>
                   </label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
@@ -238,7 +240,7 @@ export default function ClientRegisterPage() {
                       className={`w-full pl-11 pr-4 py-3 bg-white/5 border ${
                         fieldErrors.email ? 'border-red-500/50' : 'border-white/10'
                       } rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:border-cyan-500/50 transition-colors`}
-                      placeholder="jean@exemple.com"
+                      placeholder={t('form.emailPlaceholder')}
                     />
                   </div>
                   {fieldErrors.email && (
@@ -249,7 +251,7 @@ export default function ClientRegisterPage() {
                 {/* Password */}
                 <div>
                   <label className="block text-sm font-medium text-white/80 mb-2">
-                    Mot de passe <span className="text-red-400">*</span>
+                    {t('form.password')} <span className="text-red-400">{t('form.required')}</span>
                   </label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
@@ -262,7 +264,7 @@ export default function ClientRegisterPage() {
                       className={`w-full pl-11 pr-11 py-3 bg-white/5 border ${
                         fieldErrors.password ? 'border-red-500/50' : 'border-white/10'
                       } rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:border-cyan-500/50 transition-colors`}
-                      placeholder="••••••••"
+                      placeholder={t('form.passwordPlaceholder')}
                     />
                     <button
                       type="button"
@@ -280,7 +282,7 @@ export default function ClientRegisterPage() {
                 {/* Confirm Password */}
                 <div>
                   <label className="block text-sm font-medium text-white/80 mb-2">
-                    Confirmer le mot de passe <span className="text-red-400">*</span>
+                    {t('form.confirmPassword')} <span className="text-red-400">{t('form.required')}</span>
                   </label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
@@ -292,7 +294,7 @@ export default function ClientRegisterPage() {
                       className={`w-full pl-11 pr-4 py-3 bg-white/5 border ${
                         fieldErrors.confirmPassword ? 'border-red-500/50' : 'border-white/10'
                       } rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:border-cyan-500/50 transition-colors`}
-                      placeholder="••••••••"
+                      placeholder={t('form.confirmPasswordPlaceholder')}
                     />
                   </div>
                   {fieldErrors.confirmPassword && (
@@ -319,7 +321,7 @@ export default function ClientRegisterPage() {
                       </div>
                     </div>
                     <span className="text-sm text-white/70 group-hover:text-white/90 transition-colors">
-                      Je confirme avoir 18 ans ou plus
+                      {t('form.isAdult')}
                     </span>
                   </label>
                   {fieldErrors.isAdult && (
@@ -345,7 +347,7 @@ export default function ClientRegisterPage() {
                     <span className="text-sm text-white/70 group-hover:text-white/90 transition-colors">
                       J'accepte les{' '}
                       <a href="/legal/cgu" target="_blank" className="text-cyan-400 hover:text-cyan-300 underline">
-                        conditions générales d'utilisation
+                        {t('form.tosLink')}
                       </a>
                     </span>
                   </label>
@@ -363,25 +365,25 @@ export default function ClientRegisterPage() {
                   {loading ? (
                     <>
                       <Loader2 className="w-5 h-5 animate-spin" />
-                      Création en cours...
+                      {t('buttons.creating')}
                     </>
                   ) : (
                     <>
                       <CheckCircle className="w-5 h-5" />
-                      Créer mon compte
+                      {t('buttons.createAccount')}
                     </>
                   )}
                 </button>
 
                 {/* Login Link */}
                 <div className="text-center text-sm text-white/40">
-                  Vous avez déjà un compte ?{' '}
+                  {t('buttons.alreadyAccount')}{' '}
                   <button
                     type="button"
                     onClick={() => router.push('/login')}
                     className="text-cyan-400 hover:text-cyan-300 font-semibold underline underline-offset-4 transition-colors"
                   >
-                    Se connecter
+                    {t('buttons.login')}
                   </button>
                 </div>
               </form>

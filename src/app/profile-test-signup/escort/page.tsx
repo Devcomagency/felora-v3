@@ -2,6 +2,7 @@
 import { Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useMemo, useState } from 'react'
+import { useTranslations } from 'next-intl'
 import Stepper from '@/components/signup-v2/Stepper'
 import Step1PreSignup from '@/components/signup-v2/Step1PreSignup'
 import Step1PreSignupMobile from '@/components/signup-v2/Step1PreSignupMobile'
@@ -11,6 +12,7 @@ import Step3KYC from '@/components/signup-v2/Step3KYC'
 import Step3KYCMobile from '@/components/signup-v2/Step3KYCMobile'
 
 function EscortSignupContent(){
+  const t = useTranslations('signup.escort')
   const sp = useSearchParams()
   const router = useRouter()
   const [userId, setUserId] = useState<string>('')
@@ -91,11 +93,11 @@ function EscortSignupContent(){
               router.push('/profile-test-signup/escort?step=2')
             } else {
               console.error('❌ Account creation failed:', d?.error)
-              throw new Error(d?.error || 'Erreur lors de la création du compte')
+              throw new Error(d?.error || t('page.errorAccount'))
             }
           } catch (e:any) {
             console.error('💥 Signup error:', e)
-            alert(e?.message || 'Erreur lors de la création du compte')
+            alert(e?.message || t('page.errorAccount'))
           } finally {
             console.log('🏁 Setting routing to false...')
             setRouting(false)
@@ -108,7 +110,7 @@ function EscortSignupContent(){
         <div className="max-w-2xl mx-auto">
           <div className="glass-card rounded-2xl p-8 border border-white/10 bg-white/5 text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500 mx-auto mb-4"></div>
-            <p className="text-white/80">Création de votre compte...</p>
+            <p className="text-white/80">{t('page.loadingAccount')}</p>
           </div>
         </div>
       )}

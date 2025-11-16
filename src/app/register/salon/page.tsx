@@ -5,9 +5,11 @@ import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { signIn } from 'next-auth/react'
 import { Building, Mail, Lock, Eye, EyeOff, Shield, CheckCircle, Loader2, ArrowLeft, User, Phone } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 export default function ClubRegisterPage() {
   const router = useRouter()
+  const t = useTranslations('auth.registerSalon')
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -38,35 +40,35 @@ export default function ClubRegisterPage() {
     const errors: Record<string, string> = {}
 
     if (!formData.companyName.trim()) {
-      errors.companyName = 'Le nom de l\'établissement est requis'
+      errors.companyName = t('form.companyNameRequired')
     }
 
     if (!formData.email.trim()) {
-      errors.email = 'L\'email est requis'
+      errors.email = t('form.emailRequired')
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      errors.email = 'Email invalide'
+      errors.email = t('form.emailInvalid')
     }
 
     if (formData.phone && !/^[\d\s\+\(\)-]+$/.test(formData.phone)) {
-      errors.phone = 'Numéro de téléphone invalide'
+      errors.phone = t('form.phoneInvalid')
     }
 
     if (!formData.password) {
-      errors.password = 'Le mot de passe est requis'
+      errors.password = t('form.passwordRequired')
     } else if (formData.password.length < 8) {
-      errors.password = 'Minimum 8 caractères'
+      errors.password = t('form.passwordMinLength')
     }
 
     if (formData.password !== formData.confirmPassword) {
-      errors.confirmPassword = 'Les mots de passe ne correspondent pas'
+      errors.confirmPassword = t('form.confirmPasswordMismatch')
     }
 
     if (!formData.isAdult) {
-      errors.isAdult = 'Vous devez confirmer que l\'établissement est légal'
+      errors.isAdult = t('form.isAdultRequired')
     }
 
     if (!formData.acceptTos) {
-      errors.acceptTos = 'Vous devez accepter les CGU'
+      errors.acceptTos = t('form.acceptTosRequired')
     }
 
     return errors
@@ -118,10 +120,10 @@ export default function ClubRegisterPage() {
 
         router.push('/club/profile')
       } else {
-        setError(data?.error || 'Erreur lors de la création du compte')
+        setError(data?.error || t('messages.creationError'))
       }
     } catch (err: any) {
-      setError(err?.message || 'Erreur lors de la création du compte')
+      setError(err?.message || t('messages.creationError'))
     } finally {
       setLoading(false)
     }
@@ -146,7 +148,7 @@ export default function ClubRegisterPage() {
           className="flex items-center gap-2 text-white/60 hover:text-white transition-colors mb-6 group w-fit"
         >
           <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
-          <span className="text-sm">Retour</span>
+          <span className="text-sm">{t('backButton')}</span>
         </motion.button>
 
         {/* Header */}
@@ -168,10 +170,10 @@ export default function ClubRegisterPage() {
             transition={{ delay: 0.2 }}
           >
             <h1 className="text-4xl md:text-5xl font-black tracking-tight mb-3 bg-gradient-to-r from-white via-white/90 to-white/80 bg-clip-text text-transparent">
-              Inscription Établissement
+              {t('title')}
             </h1>
             <p className="text-white/60 text-sm max-w-md mx-auto">
-              Créez votre profil professionnel en quelques minutes
+              {t('subtitle')}
             </p>
           </motion.div>
         </div>
@@ -197,7 +199,7 @@ export default function ClubRegisterPage() {
                 {/* Company Name */}
                 <div>
                   <label className="block text-sm font-medium text-white/80 mb-2">
-                    Nom de l'établissement <span className="text-red-400">*</span>
+                    {t('form.companyName')} <span className="text-red-400">{t('form.required')}</span>
                   </label>
                   <div className="relative">
                     <Building className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
@@ -209,7 +211,7 @@ export default function ClubRegisterPage() {
                       className={`w-full pl-11 pr-4 py-3 bg-white/5 border ${
                         fieldErrors.companyName ? 'border-red-500/50' : 'border-white/10'
                       } rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:border-violet-500/50 transition-colors`}
-                      placeholder="Nom de votre salon/club"
+                      placeholder={t('form.companyNamePlaceholder')}
                     />
                   </div>
                   {fieldErrors.companyName && (
@@ -220,7 +222,7 @@ export default function ClubRegisterPage() {
                 {/* Email */}
                 <div>
                   <label className="block text-sm font-medium text-white/80 mb-2">
-                    Email <span className="text-red-400">*</span>
+                    {t('form.email')} <span className="text-red-400">{t('form.required')}</span>
                   </label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
@@ -232,7 +234,7 @@ export default function ClubRegisterPage() {
                       className={`w-full pl-11 pr-4 py-3 bg-white/5 border ${
                         fieldErrors.email ? 'border-red-500/50' : 'border-white/10'
                       } rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:border-violet-500/50 transition-colors`}
-                      placeholder="contact@etablissement.com"
+                      placeholder={t('form.emailPlaceholder')}
                     />
                   </div>
                   {fieldErrors.email && (
@@ -243,7 +245,7 @@ export default function ClubRegisterPage() {
                 {/* Phone (optional) */}
                 <div>
                   <label className="block text-sm font-medium text-white/80 mb-2">
-                    Téléphone
+                    {t('form.phone')}
                   </label>
                   <div className="relative">
                     <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
@@ -254,7 +256,7 @@ export default function ClubRegisterPage() {
                       className={`w-full pl-11 pr-4 py-3 bg-white/5 border ${
                         fieldErrors.phone ? 'border-red-500/50' : 'border-white/10'
                       } rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:border-violet-500/50 transition-colors`}
-                      placeholder="+41 22 123 45 67"
+                      placeholder={t('form.phonePlaceholder')}
                     />
                   </div>
                   {fieldErrors.phone && (
@@ -265,7 +267,7 @@ export default function ClubRegisterPage() {
                 {/* Password */}
                 <div>
                   <label className="block text-sm font-medium text-white/80 mb-2">
-                    Mot de passe <span className="text-red-400">*</span>
+                    {t('form.password')} <span className="text-red-400">{t('form.required')}</span>
                   </label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
@@ -278,7 +280,7 @@ export default function ClubRegisterPage() {
                       className={`w-full pl-11 pr-11 py-3 bg-white/5 border ${
                         fieldErrors.password ? 'border-red-500/50' : 'border-white/10'
                       } rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:border-violet-500/50 transition-colors`}
-                      placeholder="••••••••"
+                      placeholder={t('form.passwordPlaceholder')}
                     />
                     <button
                       type="button"
@@ -296,7 +298,7 @@ export default function ClubRegisterPage() {
                 {/* Confirm Password */}
                 <div>
                   <label className="block text-sm font-medium text-white/80 mb-2">
-                    Confirmer le mot de passe <span className="text-red-400">*</span>
+                    {t('form.confirmPassword')} <span className="text-red-400">{t('form.required')}</span>
                   </label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
@@ -308,7 +310,7 @@ export default function ClubRegisterPage() {
                       className={`w-full pl-11 pr-4 py-3 bg-white/5 border ${
                         fieldErrors.confirmPassword ? 'border-red-500/50' : 'border-white/10'
                       } rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:border-violet-500/50 transition-colors`}
-                      placeholder="••••••••"
+                      placeholder={t('form.passwordPlaceholder')}
                     />
                   </div>
                   {fieldErrors.confirmPassword && (
@@ -335,7 +337,7 @@ export default function ClubRegisterPage() {
                       </div>
                     </div>
                     <span className="text-sm text-white/70 group-hover:text-white/90 transition-colors">
-                      Je confirme que l'établissement est légal et respecte la législation suisse <span className="text-red-400">*</span>
+                      {t('form.isAdultConfirm')} <span className="text-red-400">{t('form.required')}</span>
                     </span>
                   </label>
                   {fieldErrors.isAdult && (
@@ -359,11 +361,11 @@ export default function ClubRegisterPage() {
                       </div>
                     </div>
                     <span className="text-sm text-white/70 group-hover:text-white/90 transition-colors">
-                      J'accepte les{' '}
+                      {t('form.acceptTos')}{' '}
                       <a href="/legal/cgu" target="_blank" className="text-violet-400 hover:text-violet-300 underline">
-                        conditions générales d'utilisation
+                        {t('form.acceptTosLink')}
                       </a>{' '}
-                      <span className="text-red-400">*</span>
+                      <span className="text-red-400">{t('form.required')}</span>
                     </span>
                   </label>
                   {fieldErrors.acceptTos && (
@@ -380,11 +382,11 @@ export default function ClubRegisterPage() {
                   {loading ? (
                     <>
                       <Loader2 className="w-5 h-5 animate-spin" />
-                      Création en cours...
+                      {t('buttons.registering')}
                     </>
                   ) : (
                     <>
-                      Créer mon compte
+                      {t('buttons.register')}
                       <Building className="w-5 h-5" />
                     </>
                   )}
@@ -392,13 +394,13 @@ export default function ClubRegisterPage() {
 
                 {/* Login Link */}
                 <div className="text-center text-sm text-white/40 pt-2">
-                  Vous avez déjà un compte ?{' '}
+                  {t('messages.hasAccount')}{' '}
                   <button
                     type="button"
                     onClick={() => router.push('/login')}
                     className="text-violet-400 hover:text-violet-300 font-semibold underline underline-offset-4 transition-colors"
                   >
-                    Se connecter
+                    {t('buttons.login')}
                   </button>
                 </div>
               </form>

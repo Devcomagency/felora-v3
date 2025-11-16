@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { X, ChevronLeft, ChevronRight } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 interface MediaItem {
   url: string
@@ -29,6 +30,7 @@ interface GlassPopupProps {
 }
 
 export default function GlassPopup({ escort, onClose, onViewProfile }: GlassPopupProps) {
+  const t = useTranslations('map')
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
 
   // Auto-rotation du carousel (optionnel, comme dans l'ancienne version)
@@ -259,7 +261,7 @@ export default function GlassPopup({ escort, onClose, onViewProfile }: GlassPopu
               marginBottom: '8px',
             }}
           >
-            {escort.age ? `${escort.age} ans • ` : ''}{escort.location}
+            {escort.age ? t('glassPopup.age', { age: escort.age }) + ' • ' : ''}{escort.location}
           </div>
 
           {escort.rating && (
@@ -331,7 +333,7 @@ export default function GlassPopup({ escort, onClose, onViewProfile }: GlassPopu
           }}
           className="hover:transform hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(255,107,157,0.4)]"
         >
-          Voir le profil complet
+          {t('glassPopup.viewProfile')}
         </button>
       </div>
     </div>

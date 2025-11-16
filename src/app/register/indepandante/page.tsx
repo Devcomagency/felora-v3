@@ -5,9 +5,12 @@ import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { signIn } from 'next-auth/react'
 import { Crown, Mail, Lock, Eye, EyeOff, Shield, CheckCircle, Loader2, ArrowLeft, Phone, User, Calendar } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 export default function EscortRegisterPage() {
   const router = useRouter()
+  const t = useTranslations('auth.registerEscort')
+
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -71,7 +74,7 @@ export default function EscortRegisterPage() {
         body: JSON.stringify({ email: formData.email })
       })
       const d = await res.json()
-      if (!res.ok || !d?.success) throw new Error(d?.error || 'Erreur envoi email')
+      if (!res.ok || !d?.success) throw new Error(d?.error || t('errors.emailSendError'))
 
       // En développement, log le code dans la console (pas d'alert)
       if (d?.developmentCode) {
@@ -87,7 +90,7 @@ export default function EscortRegisterPage() {
         })
       }, 1000)
     } catch (e: any) {
-      setError(e?.message || 'Erreur envoi email')
+      setError(e?.message || t('errors.emailSendError'))
     } finally {
       setEmailSending(false)
     }
@@ -102,11 +105,11 @@ export default function EscortRegisterPage() {
         body: JSON.stringify({ email: formData.email, code: emailCode })
       })
       const d = await res.json()
-      if (!res.ok || !d?.success) throw new Error(d?.error || 'Code invalide')
+      if (!res.ok || !d?.success) throw new Error(d?.error || t('errors.codeInvalid'))
       setEmailVerified(true)
       setError(null)
     } catch (e: any) {
-      setError(e?.message || 'Code invalide')
+      setError(e?.message || t('errors.codeInvalid'))
     }
   }
 
@@ -114,54 +117,54 @@ export default function EscortRegisterPage() {
     const errors: Record<string, string> = {}
 
     if (!formData.stageName.trim()) {
-      errors.stageName = 'Le pseudo est requis'
+      errors.stageName = t('errors.stageNameRequired')
     }
 
     if (!formData.email.trim()) {
-      errors.email = 'L\'email est requis'
+      errors.email = t('errors.emailRequired')
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      errors.email = 'Email invalide'
+      errors.email = t('errors.emailInvalid')
     }
 
     if (!emailVerified) {
-      errors.email = 'Veuillez vérifier votre email'
+      errors.email = t('errors.emailNotVerified')
     }
 
     if (!formData.password) {
-      errors.password = 'Le mot de passe est requis'
+      errors.password = t('errors.passwordRequired')
     } else if (formData.password.length < 8) {
-      errors.password = 'Minimum 8 caractères'
+      errors.password = t('errors.passwordTooShort')
     }
 
     if (formData.password !== formData.confirmPassword) {
-      errors.confirmPassword = 'Les mots de passe ne correspondent pas'
+      errors.confirmPassword = t('errors.passwordMismatch')
     }
 
     if (!formData.phone.trim()) {
-      errors.phone = 'Le portable est requis'
+      errors.phone = t('errors.phoneRequired')
     } else {
       const normalized = normalizeSwissPhone(formData.phone)
       if (!normalized) {
-        errors.phone = 'Numéro invalide (ex: 079 123 45 67)'
+        errors.phone = t('errors.phoneInvalid')
       }
     }
 
     if (!formData.dateOfBirth) {
-      errors.dateOfBirth = 'La date de naissance est requise'
+      errors.dateOfBirth = t('errors.dateOfBirthRequired')
     } else {
       const birthDate = new Date(formData.dateOfBirth)
       const age = (new Date().getTime() - birthDate.getTime()) / (1000 * 60 * 60 * 24 * 365.25)
       if (age < 18) {
-        errors.dateOfBirth = 'Vous devez avoir 18 ans ou plus'
+        errors.dateOfBirth = t('errors.mustBe18')
       }
     }
 
     if (!formData.isAdult) {
-      errors.isAdult = 'Vous devez confirmer avoir 18 ans ou plus'
+      errors.isAdult = t('errors.confirmAdult')
     }
 
     if (!formData.acceptTos) {
-      errors.acceptTos = 'Vous devez accepter les CGU'
+      errors.acceptTos = t('errors.acceptTosRequired')
     }
 
     return errors
@@ -227,10 +230,10 @@ export default function EscortRegisterPage() {
         // Rediriger vers le flux de paiement et KYC
         router.push('/profile-test-signup/escort?step=2')
       } else {
-        setError(data?.error || 'Erreur lors de la création du compte')
+        setError(data?.error || t('errors.accountCreationError'))
       }
     } catch (err: any) {
-      setError(err?.message || 'Erreur lors de la création du compte')
+      setError(err?.message || t('errors.accountCreationError'))
     } finally {
       setLoading(false)
     }
@@ -255,7 +258,7 @@ export default function EscortRegisterPage() {
           className="flex items-center gap-2 text-white/60 hover:text-white transition-colors mb-6 group w-fit"
         >
           <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
-          <span className="text-sm">Retour</span>
+          <span className="text-sm">{t('back')}</span>
         </motion.button>
 
         {/* Header */}
@@ -277,10 +280,10 @@ export default function EscortRegisterPage() {
             transition={{ delay: 0.2 }}
           >
             <h1 className="text-4xl md:text-5xl font-black tracking-tight mb-3 bg-gradient-to-r from-white via-white/90 to-white/80 bg-clip-text text-transparent">
-              Inscription Indépendante
+              {t('title')}
             </h1>
             <p className="text-white/60 text-sm max-w-md mx-auto">
-              Créez votre profil professionnel en quelques minutes
+              {t('subtitle')}
             </p>
           </motion.div>
         </div>
@@ -306,7 +309,7 @@ export default function EscortRegisterPage() {
                 {/* Pseudo */}
                 <div>
                   <label className="block text-sm font-medium text-white/80 mb-2">
-                    Pseudo <span className="text-red-400">*</span>
+                    {t('form.stageName')} <span className="text-red-400">{t('form.required')}</span>
                   </label>
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
@@ -318,7 +321,7 @@ export default function EscortRegisterPage() {
                       className={`w-full pl-11 pr-4 py-3 bg-white/5 border ${
                         fieldErrors.stageName ? 'border-red-500/50' : 'border-white/10'
                       } rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:border-pink-500/50 transition-colors`}
-                      placeholder="Votre pseudo"
+                      placeholder={t('form.stageNamePlaceholder')}
                     />
                   </div>
                   {fieldErrors.stageName && (
@@ -329,7 +332,7 @@ export default function EscortRegisterPage() {
                 {/* Email avec vérification */}
                 <div>
                   <label className="block text-sm font-medium text-white/80 mb-2">
-                    Email <span className="text-red-400">*</span>
+                    {t('form.email')} <span className="text-red-400">{t('form.required')}</span>
                   </label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
@@ -342,7 +345,7 @@ export default function EscortRegisterPage() {
                       className={`w-full pl-11 pr-4 py-3 bg-white/5 border ${
                         fieldErrors.email ? 'border-red-500/50' : emailVerified ? 'border-green-500/50' : 'border-white/10'
                       } rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:border-pink-500/50 transition-colors disabled:opacity-50`}
-                      placeholder="votre@email.com"
+                      placeholder={t('form.emailPlaceholder')}
                     />
                     {emailVerified && (
                       <CheckCircle className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-400" />
@@ -362,17 +365,17 @@ export default function EscortRegisterPage() {
                           disabled={emailSending || cooldownSec > 0}
                           className="w-full px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white/80 hover:bg-white/10 transition-colors text-sm disabled:opacity-50"
                         >
-                          {emailSending ? 'Envoi...' : cooldownSec > 0 ? `Renvoyer (${cooldownSec}s)` : 'Envoyer le code de vérification'}
+                          {emailSending ? t('emailVerification.sending') : cooldownSec > 0 ? t('emailVerification.resend', { seconds: cooldownSec }) : t('emailVerification.sendCode')}
                         </button>
                       ) : (
                         <div className="space-y-2">
-                          <p className="text-xs text-white/60">Un code a été envoyé à votre email</p>
+                          <p className="text-xs text-white/60">{t('emailVerification.codeSent')}</p>
                           <div className="flex gap-2">
                             <input
                               type="text"
                               value={emailCode}
                               onChange={(e) => setEmailCode(e.target.value)}
-                              placeholder="Code à 6 chiffres"
+                              placeholder={t('emailVerification.codePlaceholder')}
                               className="flex-1 px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/30 focus:outline-none focus:border-pink-500/50"
                             />
                             <button
@@ -380,7 +383,7 @@ export default function EscortRegisterPage() {
                               onClick={verifyEmailCode}
                               className="px-4 py-2 rounded-lg bg-gradient-to-r from-pink-500/20 to-purple-500/20 hover:from-pink-500/30 hover:to-purple-500/30 border border-pink-500/30 text-white text-sm font-medium transition-all"
                             >
-                              Vérifier
+                              {t('emailVerification.verify')}
                             </button>
                           </div>
                         </div>
@@ -392,7 +395,7 @@ export default function EscortRegisterPage() {
                 {/* Phone */}
                 <div>
                   <label className="block text-sm font-medium text-white/80 mb-2">
-                    Portable <span className="text-red-400">*</span>
+                    {t('form.phone')} <span className="text-red-400">{t('form.required')}</span>
                   </label>
                   <div className="relative">
                     <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
@@ -404,7 +407,7 @@ export default function EscortRegisterPage() {
                       className={`w-full pl-11 pr-4 py-3 bg-white/5 border ${
                         fieldErrors.phone ? 'border-red-500/50' : 'border-white/10'
                       } rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:border-pink-500/50 transition-colors`}
-                      placeholder="079 123 45 67"
+                      placeholder={t('form.phonePlaceholder')}
                     />
                   </div>
                   {fieldErrors.phone && (
@@ -415,7 +418,7 @@ export default function EscortRegisterPage() {
                 {/* Date of Birth */}
                 <div>
                   <label className="block text-sm font-medium text-white/80 mb-2">
-                    Date de naissance <span className="text-red-400">*</span>
+                    {t('form.dateOfBirth')} <span className="text-red-400">{t('form.required')}</span>
                   </label>
                   <div className="relative">
                     <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
@@ -438,7 +441,7 @@ export default function EscortRegisterPage() {
                 {/* Password */}
                 <div>
                   <label className="block text-sm font-medium text-white/80 mb-2">
-                    Mot de passe <span className="text-red-400">*</span>
+                    {t('form.password')} <span className="text-red-400">{t('form.required')}</span>
                   </label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
@@ -450,7 +453,7 @@ export default function EscortRegisterPage() {
                       className={`w-full pl-11 pr-12 py-3 bg-white/5 border ${
                         fieldErrors.password ? 'border-red-500/50' : 'border-white/10'
                       } rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:border-pink-500/50 transition-colors`}
-                      placeholder="••••••••"
+                      placeholder={t('form.passwordPlaceholder')}
                     />
                     <button
                       type="button"
@@ -468,7 +471,7 @@ export default function EscortRegisterPage() {
                 {/* Confirm Password */}
                 <div>
                   <label className="block text-sm font-medium text-white/80 mb-2">
-                    Confirmer le mot de passe <span className="text-red-400">*</span>
+                    {t('form.confirmPassword')} <span className="text-red-400">{t('form.required')}</span>
                   </label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
@@ -480,7 +483,7 @@ export default function EscortRegisterPage() {
                       className={`w-full pl-11 pr-4 py-3 bg-white/5 border ${
                         fieldErrors.confirmPassword ? 'border-red-500/50' : 'border-white/10'
                       } rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:border-pink-500/50 transition-colors`}
-                      placeholder="••••••••"
+                      placeholder={t('form.passwordPlaceholder')}
                     />
                   </div>
                   {fieldErrors.confirmPassword && (
@@ -507,7 +510,7 @@ export default function EscortRegisterPage() {
                       </div>
                     </div>
                     <span className="text-sm text-white/70 group-hover:text-white/90 transition-colors">
-                      Je confirme avoir 18 ans ou plus <span className="text-red-400">*</span>
+                      {t('form.isAdult')} <span className="text-red-400">{t('form.required')}</span>
                     </span>
                   </label>
                   {fieldErrors.isAdult && (
@@ -531,11 +534,11 @@ export default function EscortRegisterPage() {
                       </div>
                     </div>
                     <span className="text-sm text-white/70 group-hover:text-white/90 transition-colors">
-                      J'accepte les{' '}
+                      {t('form.acceptTos')}{' '}
                       <a href="/legal/cgu" target="_blank" className="text-pink-400 hover:text-pink-300 underline">
-                        conditions générales d'utilisation
+                        {t('form.acceptTosLink')}
                       </a>{' '}
-                      <span className="text-red-400">*</span>
+                      <span className="text-red-400">{t('form.required')}</span>
                     </span>
                   </label>
                   {fieldErrors.acceptTos && (
@@ -552,11 +555,11 @@ export default function EscortRegisterPage() {
                   {loading ? (
                     <>
                       <Loader2 className="w-5 h-5 animate-spin" />
-                      Création en cours...
+                      {t('buttons.creating')}
                     </>
                   ) : (
                     <>
-                      Créer mon compte
+                      {t('buttons.createAccount')}
                       <Crown className="w-5 h-5" />
                     </>
                   )}
@@ -564,13 +567,13 @@ export default function EscortRegisterPage() {
 
                 {/* Login Link */}
                 <div className="text-center text-sm text-white/40 pt-2">
-                  Vous avez déjà un compte ?{' '}
+                  {t('buttons.alreadyHaveAccount')}{' '}
                   <button
                     type="button"
                     onClick={() => router.push('/login')}
                     className="text-pink-400 hover:text-pink-300 font-semibold underline underline-offset-4 transition-colors"
                   >
-                    Se connecter
+                    {t('buttons.login')}
                   </button>
                 </div>
               </form>

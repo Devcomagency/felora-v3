@@ -11,6 +11,7 @@ import useReactions from '@/hooks/useReactions'
 import { stableMediaId } from '@/lib/reactions/stableMediaId'
 import ResponsiveVideoContainer, { useScreenCharacteristics } from './ResponsiveVideoContainer'
 import { useSession } from 'next-auth/react'
+import { useTranslations } from 'next-intl'
 import Hls from 'hls.js'
 
 // Types pour le feed
@@ -131,6 +132,9 @@ function PlayPauseAnimation({
 
 export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps) {
   console.log('🎬 [VIDEO FEED CARD] Component rendering for media:', item.id)
+
+  // Traductions
+  const t = useTranslations('profile')
 
   // Refs et états
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -687,7 +691,7 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
             {/* Type de média */}
             <div className="text-xs">
               <span className="text-[#5FE1D7] font-semibold drop-shadow">
-                {item.type === 'VIDEO' ? 'Vidéo' : 'Photo'}
+                {item.type === 'VIDEO' ? t('video') : t('photo')}
               </span>
             </div>
           </div>

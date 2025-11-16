@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, useMemo } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { Loader2, Heart, ArrowLeft } from 'lucide-react'
 import ImprovedProfileCard from '@/components/ImprovedProfileCard'
 import { FAVORITES_EVENT, readFavoriteIds } from '@/lib/favorites'
@@ -26,6 +27,8 @@ const PLACEHOLDER_MEDIA = '/placeholder-avatar.jpg'
 export default function FavoritesPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const t = useTranslations('favorites')
+  const tCommon = useTranslations('common')
   const [favoriteIds, setFavoriteIds] = useState<string[]>([])
   const [profiles, setProfiles] = useState<FavoriteSummary[]>([])
   const [loading, setLoading] = useState(false)
@@ -70,7 +73,7 @@ export default function FavoritesPage() {
               const data = await res.json()
               return mapProfileSummary(data)
             } catch (err) {
-              console.warn('Impossible de charger le favori', id, err)
+              console.warn('Failed to load favorite', id, err)
               return null
             }
           })
@@ -80,7 +83,7 @@ export default function FavoritesPage() {
         }
       } catch (err) {
         if (!cancelled) {
-          setError('Impossible de charger vos favoris pour le moment.')
+          setError(t('error'))
         }
       } finally {
         if (!cancelled) {
@@ -112,15 +115,15 @@ export default function FavoritesPage() {
           <div className="w-14 h-14 mx-auto rounded-full bg-white/5 flex items-center justify-center">
             <Heart className="w-6 h-6 text-white" />
           </div>
-          <h1 className="text-2xl font-bold">Mes favoris</h1>
+          <h1 className="text-2xl font-bold">{t('myFavorites')}</h1>
           <p className="text-white/70 text-sm">
-            Connectez-vous pour enregistrer vos profils préférés et les retrouver facilement.
+            {t('loginRequired')}
           </p>
           <button
             onClick={() => router.push('/login?callbackUrl=/favorites')}
             className="mt-2 inline-flex items-center justify-center px-5 py-2.5 rounded-full bg-white text-black font-medium hover:bg-white/90 transition-colors"
           >
-            Se connecter
+            {t('login')}
           </button>
         </div>
       </div>
@@ -136,12 +139,12 @@ export default function FavoritesPage() {
             className="flex items-center gap-2 text-white/80 hover:text-white transition-colors"
           >
             <ArrowLeft size={18} />
-            <span className="text-sm font-medium">Retour</span>
+            <span className="text-sm font-medium">{tCommon('back')}</span>
           </button>
           <div className="text-center flex-1">
-            <h1 className="text-lg font-semibold">Mes favoris</h1>
+            <h1 className="text-lg font-semibold">{t('myFavorites')}</h1>
             <p className="text-xs text-white/50">
-              {favoriteIds.length} profil{favoriteIds.length > 1 ? 's' : ''} enregistré{favoriteIds.length > 1 ? 's' : ''}
+              {favoriteIds.length > 1 ? t('profilesCount_plural', { count: favoriteIds.length }) : t('profilesCount', { count: favoriteIds.length })}
             </p>
           </div>
           <div className="w-10" />
@@ -158,7 +161,7 @@ export default function FavoritesPage() {
         {loading && (
           <div className="flex items-center gap-3 text-white/60 text-sm mb-4">
             <Loader2 className="w-4 h-4 animate-spin" />
-            Chargement de vos favoris...
+            {t('loading')}
           </div>
         )}
 
@@ -167,15 +170,15 @@ export default function FavoritesPage() {
             <div className="w-14 h-14 mx-auto rounded-2xl bg-white/5 flex items-center justify-center">
               <Heart className="w-6 h-6 text-white/70" />
             </div>
-            <h2 className="text-xl font-semibold">Aucun favori pour l’instant</h2>
+            <h2 className="text-xl font-semibold">{t('emptyTitle')}</h2>
             <p className="text-white/60 text-sm max-w-sm mx-auto">
-              Ajoutez des escorts ou clubs à vos favoris depuis leur profil pour les retrouver rapidement ici.
+              {t('emptyDescription')}
             </p>
             <button
               onClick={() => router.push('/search')}
               className="mt-2 inline-flex items-center justify-center px-5 py-2.5 rounded-full bg-white text-black font-medium hover:bg-white/90 transition-colors"
             >
-              Découvrir des profils
+              {t('discoverProfiles')}
             </button>
           </div>
         ) : (

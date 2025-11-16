@@ -1,13 +1,1025 @@
 {
-  "common": {"search": "Kërko", "filters": "Filtrat", "loading": "Duke u ngarkuar...", "error": "Gabim", "retry": "Provo përsëri", "close": "Mbyll", "save": "Ruaj", "cancel": "Anulo", "yes": "Po", "no": "Jo", "delete": "Fshi", "edit": "Ndrysho", "confirm": "Konfirmo", "back": "Mbrapa", "next": "Përpara", "previous": "I mëparshmi", "submit": "Dërgo", "send": "Dërgo"},
-  "search": {"title": "Kërkim", "placeholder": "Kërko sipas emrit, qytetit...", "profiles": "Profile", "establishments": "Vendndodhje", "noResults": "Nuk u gjetën rezultate", "loadMore": "Ngarko më shumë", "results": "{count} rezultate", "filterBy": "Filtro sipas", "sortBy": "Rendit sipas"},
-  "map": {"title": "Harta interaktive", "loading": "Duke u ngarkuar harta...", "visibleProfiles": "{count} profile të dukshme", "zoomIn": "Zmadho", "zoomOut": "Zvogëlo", "myLocation": "Vendndodhja ime"},
+  "common": {"search": "Kërko", "filters": "Filtrat", "loading": "Duke u ngarkuar...", "error": "Gabim", "retry": "Provo përsëri", "close": "Mbyll", "save": "Ruaj", "cancel": "Anulo", "yes": "Po", "no": "Jo", "delete": "Fshi", "edit": "Ndrysho", "confirm": "Konfirmo", "back": "Mbrapa", "next": "Përpara", "previous": "I mëparshmi", "submit": "Dërgo", "send": "Dërgo", "create": "Krijo", "language": "Gjuha", "schedule": "Orari", "legal": "Ligjore", "privacy": "Privatësia", "terms": "Kushtet", "cookies": "Cookies"},
+  "search": {"title": "Kërkim", "subtitle": "Zbuloni profile të jashtëzakonshme në Zvicër", "placeholder": "Kërko sipas emrit, qytetit...", "searchAriaLabel": "Kërkoni escort ose klube sipas emrit ose qytetit", "openFilters": "Hap filtrat e kërkimit", "profiles": "Profile", "establishments": "Vendndodhje", "all": "Të gjitha", "clubs": "Klube", "salons": "Sallone", "institutes": "Institute", "agencies": "Agjenci", "independentProfiles": "Profile të Pavarura", "profilesCount": "profile", "noProfilesFound": "Nuk u gjetën profile", "loading": "Duke u ngarkuar...", "loadMore": "Ngarko më shumë", "establishmentsCount": "vendndodhje", "noClubsFound": "Nuk u gjetën klube", "openMap": "Hap hartën interaktive", "loadingSearch": "Duke u ngarkuar kërkimi...", "noResults": "Nuk u gjetën rezultate", "results": "{count} rezultate", "filterBy": "Filtro sipas", "sortBy": "Rendit sipas", "verified": "I verifikuar", "availableNow": "Disponueshme tani", "available": "Disponueshme", "live": "Live", "favorite": "I preferuar", "privateMedia": "Media private", "escort": "Shoqëruese", "salon": "Salon", "institute": "Institut", "agency": "Agjenci", "club": "Klub", "open": "Hapur", "closed": "Mbyllur", "hours": "Orari"},
+  "map": {
+    "title": "Harta interaktive",
+    "loading": "Duke u ngarkuar harta...",
+    "visibleProfiles": "{count} profile të dukshme",
+    "zoomIn": "Zmadho",
+    "zoomOut": "Zvogëlo",
+    "myLocation": "Vendndodhja ime",
+    "inDevelopment": "Funksionalitet në zhvillim",
+    "backToHome": "Kthehu në ballina",
+    "initializingGeoData": "Duke inicializuar të dhënat gjeografike...",
+    "backButton": {
+      "ariaLabel": "Mbrapa"
+    },
+    "clusterPopup": {
+      "title": "{count, plural, =1 {# profil në këtë zonë} other {# profile në këtë zonë}}",
+      "age": "{age} vjeç",
+      "zoomIn": "Zmadho në këtë zonë"
+    },
+    "glassPopup": {
+      "age": "{age} vjeç",
+      "viewProfile": "Shiko profilin e plotë"
+    },
+    "externalPopup": {
+      "loading": "Duke u ngarkuar...",
+      "age": "{age} vjeç",
+      "viewProfile": "Shiko profilin e plotë"
+    },
+    "cluster": {
+      "ariaLabel": "{count} profile në këtë zonë"
+    },
+    "popup": {
+      "viewProfile": "Shiko profilin"
+    },
+    "statusBar": {
+      "profilesVisible": "{count, plural, =0 {Asnjë profil i dukshëm} =1 {# profil i dukshëm} other {# profile të dukshme}}",
+      "loading": "Duke u ngarkuar...",
+      "error": "Gabim",
+      "ariaLabel": "Shiko listën e profileve të dukshme"
+    },
+    "filters": {
+      "ariaLabel": "Hap filtrat",
+      "clearFilters": "Pastro filtrat",
+      "categories": {
+        "escort": "Shoqëruese",
+        "masseuse": "Masazh Erotik",
+        "dominatrice": "Dominatrix BDSM",
+        "trans": "Transeksual",
+        "club": "🏢 Vendndodhje"
+      }
+    },
+    "geolocation": {
+      "ariaLabel": "Më lokalizoni në hartë",
+      "title": "Shiko rreth meje",
+      "notSupported": "Gjeolokalizimi nuk mbështetet nga ky shfletues",
+      "permissionDenied": "Leji e refuzuar. Aktivizoje në cilësimet e shfletuesit tuaj.",
+      "errorDefault": "Nuk mund të merret pozicioni juaj",
+      "unavailable": "Pozicioni i padisponueshëm",
+      "timeout": "Koha e gjeolokalizimit ka skaduar"
+    },
+    "userLocation": {
+      "ariaLabel": "Pozicioni juaj",
+      "title": "Pozicioni juaj"
+    },
+    "sidebar": {
+      "title": "Profile të dukshme",
+      "subtitle": "{count, plural, =0 {Asnjë profil në zonën e dukshme} =1 {# profil në zonën e dukshme} other {# profile në zonën e dukshme}}",
+      "noProfiles": "Asnjë profil i dukshëm në këtë zonë",
+      "moreProfiles": "+{count} profile të tjera në zonë",
+      "category": {
+        "escort": "Shoqëruese",
+        "masseuse": "Masazh",
+        "dominatrice": "Dominatrix",
+        "trans": "Transeksual",
+        "club": "Klub"
+      }
+    }
+  },
   "navigation": {"home": "Ballina", "search": "Kërkim", "map": "Harta", "messages": "Mesazhet", "profile": "Profili", "settings": "Cilësimet", "logout": "Dil", "login": "Hyr", "register": "Regjistrohu", "dashboard": "Paneli", "favorites": "Të preferuarat"},
-  "auth": {"login": "Hyr", "register": "Regjistrohu", "email": "Email", "password": "Fjalëkalimi", "confirmPassword": "Konfirmo fjalëkalimin", "forgotPassword": "Harruat fjalëkalimin?", "rememberMe": "Më mbaj mend", "or": "ose", "continueWith": "Vazhdo me {provider}", "alreadyHaveAccount": "Keni një llogari?", "dontHaveAccount": "Nuk keni llogari?", "resetPassword": "Rivendos fjalëkalimin", "sendResetLink": "Dërgo lidhjen e rivendosjes", "backToLogin": "Kthehu te hyrja"},
-  "profile": {"edit": "Ndrysho profilin", "save": "Ruaj", "cancel": "Anulo", "photo": "Foto", "name": "Emri", "bio": "Biografia", "location": "Vendndodhja", "language": "Gjuha", "verified": "I verifikuar", "myProfile": "Profili im", "viewProfile": "Shiko profilin", "editProfile": "Ndrysho profilin"},
-  "messages": {"title": "Mesazhet", "newMessage": "Mesazh i ri", "noMessages": "Nuk ka mesazhe", "send": "Dërgo", "typing": "Po shkruan...", "online": "Online", "offline": "Offline", "writeMessage": "Shkruaj një mesazh...", "conversation": "Bisedë"},
-  "filters": {"all": "Të gjitha", "category": "Kategoria", "city": "Qyteti", "canton": "Kantoni", "sortBy": "Rendit sipas", "recent": "Të fundit", "relevance": "Relevanca", "distance": "Distanca", "price": "Çmimi", "clear": "Pastro", "apply": "Apliko", "showFilters": "Shfaq filtrat", "hideFilters": "Fshih filtrat"},
+  "auth": {
+    "login": "Hyr",
+    "register": "Regjistrohu",
+    "email": "Email",
+    "password": "Fjalëkalimi",
+    "confirmPassword": "Konfirmo fjalëkalimin",
+    "forgotPassword": "Harruat fjalëkalimin?",
+    "rememberMe": "Më mbaj mend",
+    "or": "ose",
+    "continueWith": "Vazhdo me {provider}",
+    "alreadyHaveAccount": "Keni një llogari?",
+    "dontHaveAccount": "Nuk keni llogari?",
+    "resetPassword": "Rivendos fjalëkalimin",
+    "sendResetLink": "Dërgo lidhjen e rivendosjes",
+    "backToLogin": "Kthehu te hyrja",
+    "registerClient": {
+      "title": "Regjistrimi i Klientit",
+      "subtitle": "Krijoni llogarinë tuaj në disa sekonda",
+      "backButton": "Mbrapa",
+      "form": {
+        "fullName": "Emri i plotë",
+        "fullNamePlaceholder": "Agim Kelmendi",
+        "email": "Email",
+        "emailPlaceholder": "agim@example.com",
+        "password": "Fjalëkalimi",
+        "passwordPlaceholder": "••••••••",
+        "confirmPassword": "Konfirmo fjalëkalimin",
+        "confirmPasswordPlaceholder": "••••••••",
+        "isAdult": "Konfirmoj se jam 18 vjeç ose më shumë",
+        "acceptTos": "Pranoj {tosLink}",
+        "tosLink": "kushtet e përgjithshme të përdorimit",
+        "required": "*"
+      },
+      "buttons": {
+        "creating": "Duke krijuar...",
+        "createAccount": "Krijo llogarinë time",
+        "alreadyAccount": "Keni tashmë një llogari?",
+        "login": "Hyr"
+      },
+      "validation": {
+        "nameRequired": "Emri është i detyruar",
+        "emailRequired": "Email-i është i detyruar",
+        "emailInvalid": "Email i pavlefshëm",
+        "passwordRequired": "Fjalëkalimi është i detyruar",
+        "passwordMinLength": "Minimum 8 karaktere",
+        "passwordMismatch": "Fjalëkalimet nuk përputhen",
+        "isAdultRequired": "Duhet të konfirmoni se jeni 18 vjeç ose më shumë",
+        "tosRequired": "Duhet të pranoni kushtet e përgjithshme"
+      },
+      "messages": {
+        "success": "Llogaria e klientit u krijua me sukses!",
+        "error": "Gabim në krijimin e llogarisë"
+      }
+    },
+    "registerSalon": {
+      "title": "Regjistrimi i Vendndodhjes",
+      "subtitle": "Krijoni profilin tuaj profesional në disa minuta",
+      "backButton": "Mbrapa",
+      "form": {
+        "companyName": "Emri i vendndodhjes",
+        "companyNamePlaceholder": "Emri i sallonit/klubit tuaj",
+        "companyNameRequired": "Emri i vendndodhjes është i detyruar",
+        "email": "Email",
+        "emailPlaceholder": "contact@establishment.com",
+        "emailRequired": "Email-i është i detyruar",
+        "emailInvalid": "Email i pavlefshëm",
+        "phone": "Telefoni",
+        "phonePlaceholder": "+41 22 123 45 67",
+        "phoneInvalid": "Numër telefoni i pavlefshëm",
+        "password": "Fjalëkalimi",
+        "passwordPlaceholder": "••••••••",
+        "passwordRequired": "Fjalëkalimi është i detyruar",
+        "passwordMinLength": "Minimum 8 karaktere",
+        "confirmPassword": "Konfirmo fjalëkalimin",
+        "confirmPasswordMismatch": "Fjalëkalimet nuk përputhen",
+        "isAdultConfirm": "Konfirmoj se vendndodhja është legale dhe respekton legjislacionin zviceran",
+        "isAdultRequired": "Duhet të konfirmoni se vendndodhja është legale",
+        "acceptTos": "Pranoj",
+        "acceptTosLink": "kushtet e përgjithshme të përdorimit",
+        "acceptTosRequired": "Duhet të pranoni kushtet e përgjithshme",
+        "required": "*"
+      },
+      "buttons": {
+        "register": "Krijo llogarinë time",
+        "registering": "Duke krijuar...",
+        "login": "Hyr"
+      },
+      "messages": {
+        "hasAccount": "Keni tashmë një llogari?",
+        "creationError": "Gabim në krijimin e llogarisë"
+      }
+    },
+    "registerEscort": {
+      "title": "Regjistrimi i Pavarur",
+      "subtitle": "Krijoni profilin tuaj profesional në disa minuta",
+      "back": "Mbrapa",
+      "form": {
+        "stageName": "Pseudonimi",
+        "stageNamePlaceholder": "Pseudonimi juaj",
+        "email": "Email",
+        "emailPlaceholder": "your@email.com",
+        "password": "Fjalëkalimi",
+        "passwordPlaceholder": "••••••••",
+        "confirmPassword": "Konfirmo fjalëkalimin",
+        "phone": "Celulari",
+        "phonePlaceholder": "079 123 45 67",
+        "dateOfBirth": "Data e lindjes",
+        "required": "*",
+        "isAdult": "Konfirmoj se jam 18 vjeç ose më shumë",
+        "acceptTos": "Pranoj",
+        "acceptTosLink": "kushtet e përgjithshme të përdorimit"
+      },
+      "emailVerification": {
+        "sendCode": "Dërgo kodin e verifikimit",
+        "resend": "Ridërgo ({seconds}s)",
+        "sending": "Duke dërguar...",
+        "codeSent": "Një kod është dërguar në email-in tuaj",
+        "codePlaceholder": "Kod me 6 shifra",
+        "verify": "Verifiko"
+      },
+      "buttons": {
+        "createAccount": "Krijo llogarinë time",
+        "creating": "Duke krijuar...",
+        "alreadyHaveAccount": "Keni tashmë një llogari?",
+        "login": "Hyr"
+      },
+      "errors": {
+        "stageNameRequired": "Pseudonimi është i detyruar",
+        "emailRequired": "Email-i është i detyruar",
+        "emailInvalid": "Email i pavlefshëm",
+        "emailNotVerified": "Ju lutemi verifikoni email-in tuaj",
+        "passwordRequired": "Fjalëkalimi është i detyruar",
+        "passwordTooShort": "Minimum 8 karaktere",
+        "passwordMismatch": "Fjalëkalimet nuk përputhen",
+        "phoneRequired": "Celulari është i detyruar",
+        "phoneInvalid": "Numër i pavlefshëm (shembull: 079 123 45 67)",
+        "dateOfBirthRequired": "Data e lindjes është e detyrueshme",
+        "mustBe18": "Duhet të jeni 18 vjeç ose më shumë",
+        "confirmAdult": "Duhet të konfirmoni se jeni 18 vjeç ose më shumë",
+        "acceptTosRequired": "Duhet të pranoni kushtet e përgjithshme",
+        "emailSendError": "Gabim në dërgimin e email-it",
+        "codeInvalid": "Kod i pavlefshëm",
+        "accountCreationError": "Gabim në krijimin e llogarisë"
+      }
+    }
+  },
+  "profile": {
+    "edit": "Ndrysho profilin",
+    "save": "Ruaj",
+    "cancel": "Anulo",
+    "photo": "Foto",
+    "name": "Emri",
+    "bio": "Biografia",
+    "location": "Vendndodhja",
+    "language": "Gjuha",
+    "verified": "I verifikuar",
+    "myProfile": "Profili im",
+    "viewProfile": "Shiko profilin",
+    "editProfile": "Ndrysho profilin",
+    "error": {
+      "title": "Ndodhi një gabim",
+      "description": "Kemi vështirësi në ngarkimin e këtij profili. Ju lutemi provoni përsëri.",
+      "retry": "Provo përsëri",
+      "goHome": "Kthehu në ballina"
+    },
+    "header": {
+      "back": "Mbrapa",
+      "backAriaLabel": "Kthehu në faqen e mëparshme"
+    },
+    "kyc": {
+      "title": "🎉 Urime! KYC u dërgua me sukses",
+      "description": "Verifikimi juaj i identitetit është dërguar. Ja profili juaj publik!",
+      "nextStepsTitle": "📋 Hapat e ardhshëm:",
+      "step1": "Verifikimi juaj do të përpunohet brenda 48 orëve",
+      "step2": "Plotësoni profilin tuaj për më shumë dukshmëri",
+      "step3": "Pasi të verifikohet, do të merrni stemën ✓"
+    },
+    "actions": {
+      "followed": "Tani po ndiqni këtë profil",
+      "unfollowed": "Nuk po ndiqni më këtë profil",
+      "addedToFavorites": "❤️ U shtua te të preferuarat",
+      "removedFromFavorites": "U hoq nga të preferuarat",
+      "saved": "📌 Profili u ruajt",
+      "removedFromSaved": "Profili u hoq nga të ruajturit",
+      "linkCopied": "Lidhja u kopjua në kujtesë",
+      "shareText": "Zbulo profilin e {name} në Felora",
+      "loginToAddFavorites": "Hyni për të shtuar të preferuara"
+    },
+    "common": {
+      "profile": "Profili"
+    }
+  },
+  "messages": {
+    "title": "Mesazhet",
+    "newMessage": "Mesazh i ri",
+    "noMessages": "Nuk ka mesazhe",
+    "send": "Dërgo",
+    "typing": "Po shkruan...",
+    "online": "Online",
+    "offline": "Offline",
+    "writeMessage": "Shkruaj një mesazh...",
+    "conversation": "Bisedë",
+    "oldVersion": "Mesazhet (Versioni Origjinal)",
+    "oldVersionDescription": "Kjo faqe përdor ndërfaqen e vjetër V3",
+    "encryptedConversation": "Bisedë e enkriptuar",
+    "yourConversations": "Bisedat tuaja",
+    "thisProfile": "ky profil",
+    "introMessage": "Përshëndetje {name}, profili yt më pëlqeu shumë! 😊",
+    "you": "Ju",
+    "conversationCreated": "Biseda u krijua me sukses!",
+    "conversationCreationError": "Gabim në krijimin e bisedës",
+    "loadConversationsError": "Nuk mund të ngarkohen bisedat",
+    "limitedAccess": "Qasje e kufizuar",
+    "limitedAccessDescription": "Vetëm klientët dhe shoqërueset mund të përdorin mesazhet.",
+    "backToHome": "Kthehu në ballina",
+    "loginRequired": "Kërkohet hyrje",
+    "loginRequiredDescription": "Duhet të hyni për të përdorur mesazhet.",
+    "login": "Hyr",
+    "loadingChat": "Duke ngarkuar bisedën...",
+    "backToPreviousPage": "Kthehu në faqen e mëparshme",
+    "back": "Mbrapa",
+    "blocked": "Bllokuar",
+    "conversationOptions": "Opsionet e bisedës",
+    "options": "Opsione",
+    "ephemeralMessages": "Mesazhe të përkohshme",
+    "ephemeralEnabled": "Aktivizuar ({hours}orë)",
+    "ephemeralDisabled": "Çaktivizuar",
+    "report": "Raporto",
+    "userBlocked": "Përdoruesi u bllokua",
+    "userUnblocked": "Përdoruesi u zhbllokua",
+    "actionImpossible": "Veprimi i pamundur",
+    "block": "Blloko",
+    "unblock": "Zhblloko",
+    "deleteConversation": "Fshi bisedën",
+    "deleteConversationConfirm": "A jeni i sigurt që dëshironi të fshini këtë bisedë? Ky veprim është i pakthyeshëm.",
+    "conversationDeleted": "Biseda u fshi",
+    "deleteConversationError": "Nuk mund të fshihet biseda",
+    "searchConversation": "Kërko bisedë",
+    "searchConversationPlaceholder": "Kërko një bisedë...",
+    "blockedUserMessage": "Keni bllokuar këtë përdorues. Zhbllokoni për të dërguar mesazhe.",
+    "loginToMessage": "Hyni për të dërguar mesazhe",
+    "selectConversation": "Zgjidhni një bisedë",
+    "selectConversationDescription": "Zgjidhni një bisedë për të filluar të bisedoni.",
+    "loginToViewConversations": "Hyni për të parë bisedat tuaja.",
+    "ephemeralMessagesDescription": "Mesazhet do të zhduken automatikisht pas kohëzgjatjes së zgjedhur",
+    "ephemeralDisabledOption": "Çaktivizuar",
+    "ephemeralDisabledDescription": "Mesazhet qëndrojnë pafundësisht",
+    "ephemeral12Hours": "12 orë",
+    "ephemeral12HoursDescription": "Mesazhet zhduken pas 12 orësh",
+    "ephemeral24Hours": "24 orë",
+    "ephemeral24HoursDescription": "Mesazhet zhduken pas 24 orësh",
+    "ephemeral48Hours": "48 orë",
+    "ephemeral48HoursDescription": "Mesazhet zhduken pas 2 ditësh",
+    "ephemeral7Days": "7 ditë",
+    "ephemeral7DaysDescription": "Mesazhet zhduken pas 1 jave",
+    "cancel": "Anulo",
+    "saved": "✓ U ruajt",
+    "ephemeralModeActivated": "Modaliteti i përkohshëm u aktivizua ({hours}orë)",
+    "ephemeralModeDeactivated": "Modaliteti i përkohshëm u çaktivizua",
+    "settingsUpdateError": "Nuk mund të ndryshohen cilësimet",
+    "apply": "Apliko",
+    "fileTooLarge": "Skedari shumë i madh. Madhësia maksimale: {maxSize}MB",
+    "unsupportedFileType": "Lloji i skedarit nuk mbështetet",
+    "emoji": "Emoji",
+    "voiceMessage": "Mesazh zanor",
+    "imageVideo": "Imazh/Video",
+    "attachment": "Bashkëngjitje",
+    "contentDisappeared": "Përmbajtja zhduku",
+    "viewed": "Parë",
+    "notViewed": "Jo parë",
+    "singleView": "Shikimi i vetëm",
+    "now": "Tani",
+    "yesterday": "Dje",
+    "conversationsCount": "{count, plural, =0 {Asnjë bisedë} =1 {# bisedë} other {# biseda}}",
+    "unreadCount": "{count, plural, =0 {Asnjë e palexuar} =1 {# e palexuar} other {# të palexuara}}"
+  },
+  "filters": {
+    "all": "Të gjitha",
+    "category": "Kategoria",
+    "city": "Qyteti",
+    "canton": "Kantoni",
+    "sortBy": "Rendit sipas",
+    "recent": "Të fundit",
+    "relevance": "Relevanca",
+    "distance": "Distanca",
+    "price": "Çmimi",
+    "clear": "Pastro",
+    "apply": "Apliko",
+    "showFilters": "Shfaq filtrat",
+    "hideFilters": "Fshih filtrat",
+    "title": "Filtrat e kërkimit",
+    "closeFilters": "Mbyll filtrat",
+    "categories": "Kategoritë",
+    "location": "Vendndodhja",
+    "chooseCanton": "Zgjidh kantonin",
+    "chooseCity": "Zgjidh qytetin",
+    "allCantons": "Të gjithë kantonet",
+    "allCities": "Të gjitha qytetet",
+    "availableNow": "Disponueshme tani",
+    "outcall": "Shkon",
+    "incall": "Pret",
+    "paymentMethods": "Metodat e pagesës",
+    "currencies": "Monedhat e pranuara",
+    "profileAndPhysique": "Profili & Fiziku",
+    "age": "Mosha",
+    "years": "vjeç",
+    "height": "Gjatësia",
+    "allBodyTypes": "Të gjitha tipet e trupit",
+    "hair": "Flokët",
+    "eyes": "Sytë",
+    "bustSize": "Madhësia e gjirit",
+    "cup": "Kupa",
+    "servicesAndSpecialties": "Shërbimet & Specialitetet",
+    "classic": "Klasike",
+    "oral": "Orale",
+    "anal": "Anale",
+    "bdsmAndFetish": "BDSM & Fetish",
+    "massages": "Masazhe",
+    "equipment": "Pajisjet",
+    "serviceSelected": "shërbim i zgjedhur",
+    "servicesSelected": "shërbime të zgjedhura",
+    "qualityAndVerification": "Cilësia & Verifikimi",
+    "verifiedProfile": "Profil i verifikuar",
+    "communication": "Komunikimi",
+    "clienteleAndServices": "Klientela & Shërbimet",
+    "mostRecent": "Më të fundit",
+    "mostPopular": "Më popullore",
+    "priceAsc": "Çmimi në rritje",
+    "priceDesc": "Çmimi në ulje",
+    "bestRated": "Më të vlerësuarat",
+    "nameAZ": "Emri A-Z",
+    "reset": "Rivendos",
+    "search": "Kërko"
+  },
   "categories": {"escort": "Shoqëruese", "masseuse": "Masazh erotik", "dominatrice": "Dominatrix BDSM", "transsexuel": "Transeksual"},
   "establishments": {"club": "Klub", "salon": "Salon", "studio": "Studio", "private": "Privat", "type": "Lloji i vendndodhjes"},
-  "errors": {"generic": "Ndodhi një gabim", "network": "Gabim në lidhje", "notFound": "Faqja nuk u gjet", "unauthorized": "I paautorizuar", "forbidden": "Qasja e ndaluar", "tryAgain": "Ju lutemi provoni përsëri"}
+  "errors": {"generic": "Ndodhi një gabim", "network": "Gabim në lidhje", "notFound": "Faqja nuk u gjet", "unauthorized": "I paautorizuar", "forbidden": "Qasja e ndaluar", "tryAgain": "Ju lutemi provoni përsëri"},
+  "home": {"welcome": "Mirë se vini në Felora", "discover": "Zbulo", "loadMore": "Ngarko më shumë", "noContent": "Nuk ka përmbajtje të disponueshme"},
+  "favorites": {
+    "title": "Të preferuarat",
+    "myFavorites": "Të preferuarat e mia",
+    "noFavorites": "Asnjë e preferuar",
+    "addToFavorites": "Shto te të preferuarat",
+    "removeFromFavorites": "Hiq nga të preferuarat",
+    "loginRequired": "Hyni për të ruajtur profilet tuaja të preferuara dhe për t'i gjetur lehtësisht.",
+    "login": "Hyr",
+    "profilesCount": "{count} profil i ruajtur",
+    "profilesCount_plural": "{count} profile të ruajtura",
+    "loading": "Duke ngarkuar të preferuarat tuaja...",
+    "error": "Nuk mund të ngarkohen të preferuarat tuaja për momentin.",
+    "emptyTitle": "Asnjë e preferuar për momentin",
+    "emptyDescription": "Shtoni escort ose klube te të preferuarat tuaja nga profili i tyre për t'i gjetur shpejt këtu.",
+    "discoverProfiles": "Zbulo profile"
+  },
+  "dashboard": {"title": "Paneli", "statistics": "Statistikat", "views": "Shikimet", "likes": "Pëlqime", "messages": "Mesazhet", "revenue": "Të ardhurat"},
+  "dashboardEscort": {
+    "profil": {
+      "pageTitle": "Profili Im",
+      "pageDescription": "Menaxho informacionet tuaja publike dhe prezantimin",
+      "kycSuccess": {
+        "title": "🎉 Urime! KYC u dërgua me sukses",
+        "description": "Verifikimi juaj i identitetit është dërguar. Tani është koha të finalizoni profilin tuaj!",
+        "nextStepsTitle": "📋 Hapat e ardhshëm të rekomanduar:",
+        "step1": "Shtoni fotot dhe përshkrimet tuaja",
+        "step2": "Konfiguroni tarifat dhe shërbimet tuaja",
+        "step3": "Verifikimi juaj do të përpunohet brenda 48 orëve"
+      }
+    }
+  },
+  "clubProfile": {
+    "notFound": "Klubi nuk u gjet",
+    "errorLoading": "Gabim në ngarkimin e profilit",
+    "openNow": "Hapur tani",
+    "closed": "Mbyllur",
+    "club": "Klub",
+    "shareText": "Zbulo {name} në Felora",
+    "loginToFavorite": "Hyni për të shtuar të preferuara",
+    "removedFromFavorites": "U hoq nga të preferuarat",
+    "addedToFavorites": "⭐ U shtua te të preferuarat",
+    "contactModal": {
+      "title": "Kontakto {name}",
+      "phone": "Telefon",
+      "email": "Email",
+      "address": "Adresa",
+      "website": "Faqja web"
+    }
+  },
+  "profileHeader": {
+    "verified": "I verifikuar",
+    "stats": {
+      "views": "Shikime",
+      "reactions": "Reagime",
+      "posts": "Postime"
+    },
+    "age": "{age} vjeç",
+    "showMore": "Shfaq më shumë",
+    "showLess": "Shfaq më pak",
+    "languages": "Gjuhët",
+    "schedule": "Orari",
+    "available": "Disponueshme",
+    "unavailable": "Jo disponueshme",
+    "viewSchedule": "Shiko orarin",
+    "days": {
+      "monday": "E hënë",
+      "tuesday": "E martë",
+      "wednesday": "E mërkurë",
+      "thursday": "E enjte",
+      "friday": "E premte",
+      "saturday": "E shtunë",
+      "sunday": "E diel"
+    },
+    "scheduleModal": {
+      "title": "Orët e disponueshmërisë",
+      "noSchedule": "Nuk ka orar të konfiguruar",
+      "weeklySchedule": "Orari javor",
+      "allDay": "Gjithë ditën",
+      "generalPause": "Pushim i përgjithshëm",
+      "absences": "Mungesa specifike",
+      "noDetailedSchedule": "Nuk ka orar të detajuar të konfiguruar"
+    }
+  },
+  "actionsBar": {
+    "viewMore": "Shiko më shumë",
+    "gift": "Dhuratë",
+    "message": "Mesazh",
+    "contact": "Kontakt",
+    "website": "Faqja web",
+    "call": "Telefono",
+    "whatsapp": "WhatsApp",
+    "sms": "SMS",
+    "phoneNumber": "Numri",
+    "report": "Raporto",
+    "share": "Shpërndaj",
+    "favorite": "I preferuar",
+    "favorites": "Të preferuarat",
+    "phoneContact": {
+      "whatsappMessage": "Përshëndetje {name}, po të shkruaj nga Felora.",
+      "smsMessage": "Përshëndetje {name}, po të shkruaj nga Felora.",
+      "phoneTitle": "Telefon: {number}",
+      "phoneAvailable": "Kontakti telefonik i disponueshëm",
+      "privateMessagingOnly": "Vetëm mesazhe private",
+      "phoneNumberLabel": "Numri",
+      "call": "Telefono",
+      "whatsapp": "WhatsApp",
+      "sms": "SMS"
+    }
+  },
+  "clubEscorts": {
+    "title": "Vajzat"
+  },
+  "mediaFeed": {
+    "tabs": {
+      "public": "Publik",
+      "premium": "Premium",
+      "private": "Privat"
+    },
+    "noContent": "Nuk ka përmbajtje të disponueshme",
+    "noContentDescription": "Ky profil nuk ka publikuar ende përmbajtje.",
+    "unlockContent": {
+      "title": "Shkyç përmbajtjen",
+      "chooseOption": "Zgjidhni një opsion të zhbllokimit.",
+      "unlockMedia": "Shkyç këtë media — 9 CHF",
+      "unlockGallery": "Shkyç të gjithë galerinë — 29 CHF",
+      "proceedPayment": "Vazhdo me pagesën (demo)",
+      "premium": "Premium",
+      "unlock": "Shkyç"
+    },
+    "menu": {
+      "manageMedia": "Menaxho median",
+      "share": "Shpërndaj",
+      "report": "Raporto"
+    },
+    "mediaInfo": {
+      "videoThumbnail": "Miniatura në proces...",
+      "watchVideo": "Luaj videon",
+      "viewFullscreen": "Shiko median në ekran të plotë"
+    },
+    "private": "🔒"
+  },
+  "profileModal": {
+    "close": "Mbyll",
+    "loading": "Duke ngarkuar profilin e unifikuar...",
+    "error": {
+      "title": "Gabim në ngarkim",
+      "description": "Profili nuk u gjet"
+    },
+    "sections": {
+      "physical": "Profili fizik",
+      "services": "Shërbimet",
+      "servicesAndSpecialties": "Shërbimet & Specialitetet",
+      "languages": "Gjuhët e folura",
+      "equipment": "Pajisjet",
+      "rates": "Tarifat",
+      "payments": "Pagesat",
+      "currencies": "Monedhat",
+      "prestations": "Prestacionet",
+      "clientele": "Klientela e pranuar",
+      "location": "Vendi",
+      "contact": "Kontakto {name}"
+    },
+    "physical": {
+      "height": "Gjatësia",
+      "bodyType": "Siluetat",
+      "hairColor": "Flokët",
+      "eyeColor": "Sytë",
+      "ethnicity": "Origjina",
+      "bustSize": "Madhësia e gjirit",
+      "breastType": "Lloji i gjirit",
+      "pubicHair": "Qimet pubike",
+      "specificities": "Specifika",
+      "tattoos": "Tatuazhe",
+      "piercings": "Piercing",
+      "smoker": "Duhanpirës",
+      "nonSmoker": "Jo duhanpirës"
+    },
+    "rates": {
+      "from": "Nga",
+      "fifteenMin": "15min",
+      "thirtyMin": "30min",
+      "oneHour": "1orë",
+      "twoHours": "2orë",
+      "halfDay": "½ditë",
+      "fullDay": "Ditë",
+      "overnight": "Natë",
+      "customRates": "Tarifa të personalizuara"
+    },
+    "prestations": {
+      "incall": "Unë pranoj",
+      "incallDescription": "Te unë",
+      "outcall": "Unë shkoj",
+      "outcallDescription": "Te ju / Hotel"
+    },
+    "clientele": {
+      "couples": "Çifte",
+      "women": "Gra",
+      "handicapped": "Persona me aftësi të kufizuara",
+      "seniors": "Persona të moshuar"
+    },
+    "contact": {
+      "title": "Kontakto {name}",
+      "subtitle": "Rezervoni momentin tuaj të privilegjuar",
+      "privateMessage": "Mesazh privat",
+      "phoneNumber": "Numri",
+      "phoneAvailable": "Kontakti telefonik i disponueshëm",
+      "privateMessagingOnly": "Vetëm mesazhe private",
+      "whatsapp": "WhatsApp",
+      "sms": "SMS",
+      "call": "Thirrje"
+    }
+  },
+  "giftModal": {
+    "title": "Dërgo një dhuratë për {name}",
+    "close": "Mbyll",
+    "customAmount": "Shumë e personalizuar",
+    "messageLabel": "Mesazh (opsional)",
+    "messagePlaceholder": "Një shënim i vogël me dhuratën tuaj...",
+    "sending": "Duke dërguar...",
+    "send": "Dërgo",
+    "cancel": "Anulo"
+  },
+  "messageComposer": {
+    "title": "Mesazh për {name}",
+    "close": "Mbyll",
+    "placeholder": "Mesazhi juaj...",
+    "hint": "Shtypni Ctrl/Cmd + Enter për të dërguar",
+    "cancel": "Anulo",
+    "sending": "Duke dërguar...",
+    "send": "Dërgo"
+  },
+  "signup": {
+    "escort": {
+      "page": {
+        "loadingAccount": "Duke krijuar llogarinë tuaj...",
+        "loadingMessage": "Ju lutemi prisni ndërsa krijohet llogaria juaj",
+        "errorAccount": "Gabim në krijimin e llogarisë"
+      },
+      "step1": {
+        "title": "Krijoni llogarinë tuaj të Shoqëruesit",
+        "subtitle": "Bashkohuni me komunitetin dhe filloni të fitoni",
+        "steps": {
+          "email": "Email",
+          "phone": "Telefoni",
+          "password": "Fjalëkalimi",
+          "terms": "Kushtet"
+        },
+        "email": {
+          "title": "Adresa juaj e email-it",
+          "subtitle": "Do t'ju dërgojmë një kod verifikimi",
+          "label": "Email",
+          "placeholder": "your@email.com",
+          "sendCode": "Dërgo kodin",
+          "resendCode": "Ridërgo kodin",
+          "sending": "Duke dërguar...",
+          "verificationCode": "Kodi i verifikimit",
+          "verifyEmail": "Verifiko email-in",
+          "emailVerified": "Email-i u verifikua me sukses"
+        },
+        "phone": {
+          "title": "Numri juaj i telefonit",
+          "subtitle": "Për siguri dhe verifikim",
+          "label": "Telefoni",
+          "placeholder": "079 123 45 67 ose +41 79 123 45 67"
+        },
+        "password": {
+          "title": "Krijoni fjalëkalimin tuaj",
+          "subtitle": "Zgjidhni një fjalëkalim të sigurt",
+          "label": "Fjalëkalimi",
+          "placeholder": "••••••••",
+          "confirmLabel": "Konfirmo fjalëkalimin",
+          "confirmPlaceholder": "••••••••"
+        },
+        "terms": {
+          "title": "Kushtet e përdorimit",
+          "subtitle": "Hapi i fundit para se të krijoni llogarinë tuaj",
+          "isAdult": "Jam 18 vjeç ose më shumë",
+          "isAdultDescription": "Certifikoj se jam madhë sipas legjislacionit zviceran",
+          "acceptTos": "Pranoj kushtet",
+          "acceptTosDescription": "Kushtet e përgjithshme dhe Politika e privatësisë",
+          "notRobot": "Nuk jam robot",
+          "notRobotDescription": "Verifikimi i sigurisë"
+        },
+        "buttons": {
+          "previous": "I mëparshmi",
+          "next": "Përpara",
+          "creating": "Duke krijuar...",
+          "chooseOffer": "Zgjidh ofertën time"
+        }
+      },
+      "step2": {
+        "loading": "Duke ngarkuar ofertat…",
+        "title": "Zgjidhni ofertën tuaj",
+        "subtitle": "Zgjidhni planin që përshtatet më mirë me nevojat tuaja",
+        "plans": {
+          "discovery": {
+            "label": "Zbulimi",
+            "description": "Për të filluar në Felora",
+            "duration": "7 ditë",
+            "features": {
+              "verified": "Profil i verifikuar",
+              "photos": "Foto të pakufizuara",
+              "messaging": "Mesazhe të siguruara"
+            }
+          },
+          "premium": {
+            "label": "Premium",
+            "description": "Më i popullarizuari",
+            "duration": "30 ditë",
+            "features": {
+              "badge": "Stemë e verifikuar",
+              "videos": "Video të pakufizuara",
+              "stats": "Statistika"
+            }
+          },
+          "elite": {
+            "label": "Elite",
+            "description": "Për profesionistët",
+            "duration": "90 ditë",
+            "features": {
+              "badge": "Stemë Premium",
+              "boost": "Promovim",
+              "support": "Mbështetje VIP"
+            }
+          },
+          "popular": "Popullore",
+          "choose": "Zgjidh",
+          "clickToValidate": "Kliko për të validuar"
+        },
+        "promo": {
+          "title": "Kod promovues",
+          "placeholder": "Vendosni kodin tuaj (shembull: WELCOME10)",
+          "apply": "Apliko",
+          "enterCode": "Vendosni një kod",
+          "codeInvalid": "Kod i pavlefshëm",
+          "codeApplied": "Kodi {code} u aplikua",
+          "validationError": "Nuk mund të validohet kodi"
+        },
+        "hint": "Klikoni përsëri në zgjedhjen tuaj për të vazhduar"
+      },
+      "step3": {
+        "title": "Verifikimi i identitetit",
+        "subtitle": "Hapi i fundit për të siguruar llogarinë tuaj dhe filluar të fitoni",
+        "documents": {
+          "docFront": {
+            "label": "Dokumenti i identitetit - ballë",
+            "description": "Kartë identiteti, pasaportë ose patentë shoferi",
+            "requirements": {
+              "valid": "Dokument zyrtar i vlefshëm",
+              "clear": "Foto e qartë dhe e lexueshme",
+              "visible": "Të gjitha informacionet e dukshme"
+            },
+            "tips": {
+              "reflections": "Shmangni pasqyrimet",
+              "text": "Sigurohuni që teksti të jetë i qartë",
+              "frame": "Kornizoni mirë dokumentin"
+            }
+          },
+          "docBack": {
+            "label": "Dokumenti i identitetit - pas",
+            "description": "Prapa e dokumentit tuaj të identitetit",
+            "requirements": {
+              "same": "I njëjti dokument si ballë",
+              "clear": "Foto e qartë dhe e lexueshme",
+              "barcode": "Barkodi i dukshëm"
+            },
+            "tips": {
+              "verify": "Verifikoni se është i njëjti dokument",
+              "barcode": "Shmangni pasqyrimet në barkod",
+              "frame": "Kornizoni mirë dokumentin"
+            }
+          },
+          "selfieSign": {
+            "label": "Selfie me letër \"FELORA\"",
+            "description": "Foto e juaj duke mbajtur një letër me \"FELORA\" të shkruar",
+            "requirements": {
+              "face": "Fytyra juaj mirë e dukshme",
+              "sign": "Letra me \"FELORA\" e lexueshme",
+              "light": "Ndriçim i mirë"
+            },
+            "tips": {
+              "write": "Shkruani \"FELORA\" në një letër të bardhë",
+              "hold": "Mbajeni letrën pranë fytyrës suaj",
+              "look": "Shikoni drejtpërdrejt në kamerë"
+            }
+          },
+          "livenessVideo": {
+            "label": "Video prezantuese",
+            "description": "Video e shkurtër e juaj duke folur me kamerën",
+            "requirements": {
+              "duration": "Video 10-30 sekonda",
+              "face": "Fytyra juaj mirë e dukshme",
+              "speak": "Flisni qartë"
+            },
+            "tips": {
+              "say": "Thoni emrin tuaj dhe \"FELORA\"",
+              "move": "Lëvizni pak kokën",
+              "light": "Sigurohuni që jeni mirë të ndriçuar"
+            }
+          },
+          "documentProvided": "Dokumenti i dhënë ✓"
+        },
+        "progress": {
+          "title": "Progresi",
+          "allProvided": "✓ Të gjitha dokumentet e dhëna",
+          "missing": "{count} dokument(e) që mungon(jnë)"
+        },
+        "buttons": {
+          "validate": "Valido verifikimin",
+          "validating": "Duke validuar...",
+          "completeLater": "Plotëso më vonë"
+        },
+        "later": {
+          "title": "Plotëso më vonë",
+          "description": "Mund të plotësoni verifikimin tuaj të identitetit nga paneli juaj.",
+          "cancel": "Anulo",
+          "continue": "Vazhdo"
+        },
+        "success": {
+          "title": "🎉 Urime!",
+          "subtitle": "Verifikimi juaj i identitetit u dërgua me sukses",
+          "ready": "Gati për të filluar!",
+          "nextSteps": "📋 Hapat e ardhshëm:",
+          "step1": "Finalizoni profilin tuaj me foto dhe përshkrime",
+          "step2": "Konfiguroni tarifat dhe disponueshmërinë tuaj",
+          "step3": "Verifikimi juaj do të përpunohet brenda 48 orëve",
+          "redirecting": "Duke ridrejtuar në panelin tuaj..."
+        },
+        "errors": {
+          "missingPieces": "Pjesë që mungojnë: {pieces}",
+          "noUserId": "ID e përdoruesit mungon - ju lutemi ringarkoni faqen",
+          "filesLarge": "Skedarët shumë të mëdhenj. Ju lutemi kompresoni imazhet/videot tuaja (max 3MB secili).",
+          "submission": "Gabim në dërgim"
+        }
+      }
+    }
+  },
+  "club": {
+    "profile": {
+      "status": {
+        "active": "Profili aktiv",
+        "inactive": "Profili joaktiv",
+        "visibleToUsers": "I dukshëm për përdoruesit",
+        "hiddenFromUsers": "I fshehur nga përdoruesit",
+        "activate": "Aktivizo",
+        "deactivate": "Çaktivizo",
+        "activating": "Duke u ngarkuar...",
+        "profileActivated": "Profili u aktivizua me sukses",
+        "profileDeactivated": "Profili u çaktivizua me sukses",
+        "toggleError": "Gabim: {error}"
+      },
+      "progress": {
+        "information": "Informacione",
+        "photo": "Foto",
+        "informationCount": "{count}/4",
+        "photoCount": "{count}/1"
+      },
+      "tabs": {
+        "information": "Informacione",
+        "services": "Shërbimet",
+        "optional": "Ops.",
+        "schedule": "Orari",
+        "myTeam": "Ekipi im"
+      },
+      "info": {
+        "title": "Informacione kryesore",
+        "clubName": "Emri i klubit",
+        "clubNamePlaceholder": "Shembull: Club Luxe Geneva",
+        "clubNameRequired": "Emri është i detyruar",
+        "required": "I detyruar",
+        "establishmentType": "Lloji i vendndodhjes",
+        "establishmentTypes": {
+          "institut_massage": "Institut masazhi",
+          "agence_escorte": "Agjenci shoqëruese",
+          "salon_erotique": "Salon erotik",
+          "club": "Klub"
+        },
+        "email": "Email",
+        "emailPlaceholder": "contact@votre-club.ch",
+        "phone": "Telefon",
+        "phonePlaceholder": "+41 XX XXX XX XX",
+        "description": "Përshkrimi",
+        "descriptionPlaceholder": "Përshkruani vendndodhjen tuaj, atmosferën, shërbimet, etj.",
+        "descriptionRequired": "Përshkrimi është i detyruar",
+        "address": "Adresa",
+        "addressPlaceholder": "Filloni të shkruani adresën tuaj...",
+        "addressRequired": "Adresa është e detyrueshme",
+        "positionFound": "📍 Pozicioni: {lat}, {lng}",
+        "website": "Faqja web (opsionale)",
+        "websitePlaceholder": "https://votre-site.ch",
+        "errors": {
+          "nameRequired": "Emri është i detyruar",
+          "descriptionRequired": "Përshkrimi është i detyruar",
+          "addressRequired": "Adresa është e detyrueshme",
+          "loadingError": "Gabim në ngarkimin e profilit",
+          "savingError": "Ruajtja dështoi"
+        },
+        "messages": {
+          "profileUpdated": "Profili u përditësua"
+        }
+      },
+      "media": {
+        "title": "Foto e profilit",
+        "subtitle": "1 foto kopertine e detyrueshme: Kjo foto do të shfaqet në madhësi të madhe në profilin tuaj publik",
+        "coverPhoto": "Foto kopertine",
+        "imageRequired": "IMAZHI i detyrueshëm",
+        "uploadInProgress": "Duke u ngarkuar...",
+        "clickToAddPhoto": "Kliko për të shtuar një foto",
+        "clickToAddVideo": "Kliko për të shtuar një video",
+        "addPhoto": "Shto foto",
+        "addVideo": "Shto video",
+        "imageUnavailable": "📷 Imazh i padisponueshëm",
+        "videoUnavailable": "🎥 Video e padisponueshme",
+        "uploadSuccess": "{type} u ngarkua me sukses",
+        "uploadError": "Gabim në ngarkim: {error}",
+        "deleteSuccess": "Media u fshi me sukses",
+        "deleteError": "Gabim në fshirje: {error}",
+        "loadingError": "Gabim në ngarkimin e medias"
+      },
+      "services": {
+        "languagesTitle": "Gjuhët e folura",
+        "paymentMethodsTitle": "Metodat e pagesës",
+        "servicesEquipmentsTitle": "Shërbimet & Pajisjet",
+        "languages": {
+          "french": "Frengjisht",
+          "english": "Anglisht",
+          "german": "Gjermanisht",
+          "italian": "Italisht",
+          "spanish": "Spanjisht",
+          "russian": "Rusisht",
+          "arabic": "Arabisht",
+          "chinese": "Kinezisht"
+        },
+        "paymentMethods": {
+          "cash": "Para në dorë",
+          "card": "Kartë",
+          "twint": "TWINT",
+          "transfer": "Transfertë"
+        },
+        "servicesList": {
+          "bar": "Bar",
+          "private": "Privat",
+          "security": "Siguri",
+          "parking": "Parking",
+          "vipRoom": "Dhomë VIP"
+        },
+        "equipmentsList": {
+          "shower": "Dush",
+          "jacuzzi": "Xhakuzi",
+          "sauna": "Sauna",
+          "airConditioning": "Kondicionim",
+          "smokingArea": "Zonë duhanpirje",
+          "parking": "Parking",
+          "handicapAccess": "Qasje për personat me aftësi të kufizuara",
+          "musicAmbiance": "Atmosferë muzikore",
+          "bar": "Bar",
+          "poleDance": "Pole dance"
+        },
+        "save": "Ruaj",
+        "saving": "Duke ruajtur…",
+        "settingsSaved": "Cilësimet u ruajtën",
+        "loadingError": "Nuk mund të ngarkohen shërbimet",
+        "savingError": "Ruajtja dështoi"
+      },
+      "team": {
+        "activeTeam": "Ekipi aktiv ({count})",
+        "invitations": "Ftesat ({count})",
+        "inviteGirl": "Fto një vajzë",
+        "loading": "Duke u ngarkuar…",
+        "noTeamMembers": "Asnjë vajzë në ekip për momentin",
+        "noInvitations": "Asnjë ftesë e dërguar",
+        "removeFromClub": "Hiq nga klubi",
+        "removeConfirm": "A jeni i sigurt që dëshironi të hiqni {name} nga klubi?",
+        "invitationStatus": {
+          "pending": "Në pritje",
+          "accepted": "Pranuar",
+          "declined": "Refuzuar",
+          "cancelled": "Anuluar",
+          "expired": "Skaduar"
+        },
+        "sentOn": "Dërguar më {date}",
+        "cancel": "Anulo",
+        "cancelInvitation": "A jeni i sigurt që dëshironi të anuloni këtë ftesë?",
+        "inviteModal": {
+          "title": "Fto një vajzë",
+          "searchPlaceholder": "Kërko një vajzë sipas emrit ose qytetit...",
+          "searching": "Duke kërkuar...",
+          "noResults": "Asnjë vajzë e gjetur",
+          "minCharacters": "Shkruani të paktën 2 karaktere për të kërkuar",
+          "cityNotSpecified": "Qyteti i paspecifikuar",
+          "invite": "Fto",
+          "invitationSent": "Ftesa u dërgua me sukses!",
+          "invitationError": "Gabim në dërgimin e ftesës",
+          "cancelError": "Gabim në anulim",
+          "removeError": "Gabim në heqje",
+          "cannotRemove": "Nuk mund të hiqet kjo shoqëruese"
+        }
+      },
+      "actions": {
+        "viewProfile": "Shiko profilin",
+        "save": "Ruaj",
+        "saving": "Duke ruajtur…"
+      }
+    }
+  }
 }

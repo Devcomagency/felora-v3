@@ -2,6 +2,7 @@
 
 import dynamic from 'next/dynamic'
 import { Suspense } from 'react'
+import { useTranslations } from 'next-intl'
 import { useFeatureFlag } from '@/hooks/useFeatureFlag'
 import { MapErrorBoundary } from '@/components/error/MapErrorBoundary'
 
@@ -13,6 +14,8 @@ const MapTest = dynamic(() => import('@packages/ui/map-test/MapTest'), {
 
 // Old map page (V3 original) - Updated with premium design
 function OldMapPage() {
+  const t = useTranslations('map')
+
   return (
     <div className="fixed inset-0 bg-black text-white overflow-hidden">
       {/* Background Effects - same as other pages */}
@@ -25,10 +28,10 @@ function OldMapPage() {
       <div className="relative z-10 h-full flex items-center justify-center px-4">
         <div className="text-center max-w-md">
           <h1 className="text-3xl md:text-4xl font-black tracking-tight mb-3 bg-gradient-to-r from-white via-white/90 to-white/80 bg-clip-text text-transparent">
-            Carte interactive
+            {t('title')}
           </h1>
           <p className="text-white/60 text-sm md:text-base font-light mb-8">
-            Fonctionnalité en cours de développement
+            {t('inDevelopment')}
           </p>
 
           {/* Bouton retour - même style que les autres pages */}
@@ -36,7 +39,7 @@ function OldMapPage() {
             onClick={() => window.location.href = '/'}
             className="w-full rounded-xl py-3.5 font-bold text-base transition-all bg-gradient-to-r from-pink-500/20 to-purple-500/20 hover:from-pink-500/30 hover:to-purple-500/30 border border-pink-500/30 hover:border-pink-500/50 text-white shadow-lg hover:shadow-pink-500/20"
           >
-            Retour à l'accueil
+            {t('backToHome')}
           </button>
         </div>
       </div>
@@ -56,6 +59,8 @@ function NewMapPage() {
 }
 
 function MapSkeleton() {
+  const t = useTranslations('map')
+
   return (
     <div className="fixed inset-0 bg-black text-white overflow-hidden">
       {/* Background Effects - same as other pages */}
@@ -80,10 +85,10 @@ function MapSkeleton() {
             />
           </div>
           <h2 className="text-2xl md:text-3xl font-black tracking-tight mb-2 bg-gradient-to-r from-white via-white/90 to-white/80 bg-clip-text text-transparent">
-            Chargement de la carte
+            {t('loading')}
           </h2>
           <p className="text-white/60 text-sm md:text-base font-light">
-            Initialisation des données géographiques...
+            {t('initializingGeoData')}
           </p>
         </div>
       </div>

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { X, MapPin, Filter } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 interface SearchFiltersProps {
   filters: {
@@ -171,6 +172,10 @@ const PAIEMENTS = ['Cash', 'TWINT', 'Crypto', 'Visa', 'Mastercard', 'Amex', 'Mae
 const DEVISES = ['CHF', 'EUR', 'USD']
 
 export default function SearchFilters({ filters, onFiltersChange, onClose, isOpen }: SearchFiltersProps) {
+  const t = useTranslations('search')
+  const tFilters = useTranslations('filters')
+  const tCategories = useTranslations('categories')
+
   // États des filtres basés sur les vrais champs de la base de données
   const [selectedCategories, setSelectedCategories] = useState<string[]>(filters.categories || [])
   const [selectedCanton, setSelectedCanton] = useState(filters.canton || '')
@@ -449,7 +454,7 @@ export default function SearchFilters({ filters, onFiltersChange, onClose, isOpe
       >
         {/* Header */}
         <div className="sticky top-0 z-10 flex items-center justify-between p-6 border-b border-white/10 bg-black/50 backdrop-blur-sm">
-          <h2 className="text-2xl font-bold text-white">Filtres de recherche</h2>
+          <h2 className="text-2xl font-bold text-white">{tFilters('title')}</h2>
           <button
             onClick={onClose}
             className="p-2 rounded-lg hover:bg-white/10 transition-colors"
@@ -462,27 +467,34 @@ export default function SearchFilters({ filters, onFiltersChange, onClose, isOpe
         <div className="p-6 space-y-6">
           {/* Catégories */}
           <div>
-            <h4 className="text-lg font-semibold mb-4 text-white">Catégories</h4>
+            <h4 className="text-lg font-semibold mb-4 text-white">{tFilters('categories')}</h4>
             <div className="flex flex-wrap gap-2">
-              {['Escorte', 'Salon', 'Massage', 'VIP', 'BDSM', 'Médias privés'].map((category) => {
-                const isSelected = selectedCategories.includes(category.toLowerCase())
+              {[
+                { key: 'escort', label: tCategories('escort') },
+                { key: 'salon', label: tCategories('salon') },
+                { key: 'massage', label: tCategories('massage') },
+                { key: 'vip', label: tCategories('vip') },
+                { key: 'bdsm', label: tCategories('bdsm') },
+                { key: 'privateMedia', label: tCategories('privateMedia') }
+              ].map(({ key, label }) => {
+                const isSelected = selectedCategories.includes(key)
                 return (
-                  <button 
-                    key={category}
+                  <button
+                    key={key}
                     onClick={() => {
                       if (isSelected) {
-                        setSelectedCategories(prev => prev.filter(cat => cat !== category.toLowerCase()))
+                        setSelectedCategories(prev => prev.filter(cat => cat !== key))
                       } else {
-                        setSelectedCategories(prev => [...prev, category.toLowerCase()])
+                        setSelectedCategories(prev => [...prev, key])
                       }
                     }}
                     className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                      isSelected 
-                        ? 'bg-pink-500/20 text-pink-400 border border-pink-500/50' 
+                      isSelected
+                        ? 'bg-pink-500/20 text-pink-400 border border-pink-500/50'
                         : 'bg-white/5 text-white/80 border border-white/20 hover:bg-white/10'
                     }`}
                   >
-                    {category}
+                    {label}
                   </button>
                 )
               })}
@@ -493,7 +505,7 @@ export default function SearchFilters({ filters, onFiltersChange, onClose, isOpe
           <div className="p-4 bg-cyan-500/5 border border-cyan-500/20 rounded-xl">
             <h4 className="text-lg font-semibold mb-4 text-cyan-400 flex items-center gap-2">
               <MapPin size={20} />
-              Localisation
+              {tFilters('location')}
             </h4>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -509,7 +521,7 @@ export default function SearchFilters({ filters, onFiltersChange, onClose, isOpe
                 }}
                 className="px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white text-sm focus:border-cyan-500/50 focus:outline-none"
               >
-                <option value="">Choisir un canton</option>
+                <option value="">{tFilters('chooseCanton')}</option>
                 {Object.keys(swissCities).map(canton => (
                   <option key={canton} value={canton}>{canton}</option>
                 ))}
@@ -537,7 +549,7 @@ export default function SearchFilters({ filters, onFiltersChange, onClose, isOpe
                 className="px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white text-sm focus:border-cyan-500/50 focus:outline-none"
                 disabled={!selectedCanton}
               >
-                <option value="">Choisir une ville</option>
+                <option value="">{tFilters('chooseCity')}</option>
                 {selectedCanton && swissCities[selectedCanton as keyof typeof swissCities]?.map(city => (
                   <option key={city} value={city}>{city}</option>
                 ))}
@@ -547,9 +559,9 @@ export default function SearchFilters({ filters, onFiltersChange, onClose, isOpe
             {/* Options de service */}
             <div className="flex flex-wrap gap-2 mt-4">
               {[
-                { key: 'availableNow', label: 'Dispo maintenant', value: availableNow, setter: setAvailableNow },
-                { key: 'outcall', label: 'Se déplace', value: outcall, setter: setOutcall },
-                { key: 'incall', label: 'Reçoit', value: incall, setter: setIncall }
+                { key: 'availableNow', label: tFilters('availableNow'), value: availableNow, setter: setAvailableNow },
+                { key: 'outcall', label: tFilters('outcall'), value: outcall, setter: setOutcall },
+                { key: 'incall', label: tFilters('incall'), value: incall, setter: setIncall }
               ].map(filter => (
                 <button
                   key={filter.key}
@@ -572,7 +584,7 @@ export default function SearchFilters({ filters, onFiltersChange, onClose, isOpe
 
             {/* Méthodes de paiement - NOUVEAU FILTRE DASHBOARD */}
             <div>
-              <h4 className="text-lg font-semibold mb-4 text-white">Méthodes de paiement</h4>
+              <h4 className="text-lg font-semibold mb-4 text-white">{tFilters('paymentMethods')}</h4>
               <div className="flex flex-wrap gap-2">
                 {PAIEMENTS.map(paiement => (
                   <button
@@ -592,7 +604,7 @@ export default function SearchFilters({ filters, onFiltersChange, onClose, isOpe
 
             {/* Devises acceptées - NOUVEAU FILTRE DASHBOARD */}
             <div>
-              <h4 className="text-lg font-semibold mb-4 text-white">Devises acceptées</h4>
+              <h4 className="text-lg font-semibold mb-4 text-white">{tFilters('currencies')}</h4>
               <div className="flex flex-wrap gap-2">
                 {DEVISES.map(devise => (
                   <button
@@ -616,12 +628,12 @@ export default function SearchFilters({ filters, onFiltersChange, onClose, isOpe
                 onClick={() => setOpenProfileFilters(!openProfileFilters)}
                 className="text-lg font-semibold mb-4 text-white flex items-center gap-2"
               >
-                Profil & Physique {openProfileFilters ? '▲' : '▼'}
+                {tFilters('profileAndPhysique')} {openProfileFilters ? '▲' : '▼'}
               </button>
               {openProfileFilters && (
                 <div className="space-y-4">
                   <div>
-                    <span className="text-sm text-white/80">Âge: {ageRange[0]} - {ageRange[1]} ans</span>
+                    <span className="text-sm text-white/80">{tFilters('age')}: {ageRange[0]} - {ageRange[1]} {tFilters('years')}</span>
                     <div className="flex gap-2 mt-2">
                       <input
                         type="range"
@@ -647,9 +659,9 @@ export default function SearchFilters({ filters, onFiltersChange, onClose, isOpe
                       />
                     </div>
                   </div>
-                  
+
                   <div>
-                    <span className="text-sm text-white/80">Taille: {heightRange[0]} - {heightRange[1]} cm</span>
+                    <span className="text-sm text-white/80">{tFilters('height')}: {heightRange[0]} - {heightRange[1]} cm</span>
                     <input
                       type="range"
                       min="150"
@@ -666,18 +678,18 @@ export default function SearchFilters({ filters, onFiltersChange, onClose, isOpe
                       onChange={(e) => setBodyType(e.target.value)}
                       className="px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm"
                     >
-                      <option value="">Toutes corpulences</option>
+                      <option value="">{tFilters('allBodyTypes')}</option>
                       {bodyTypes.map(type => (
                         <option key={type} value={type}>{bodyTypeLabels[type]}</option>
                       ))}
                     </select>
-                    
+
                     <select
                       value={hairColor}
                       onChange={(e) => setHairColor(e.target.value)}
                       className="px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm"
                     >
-                      <option value="">Cheveux</option>
+                      <option value="">{tFilters('hair')}</option>
                       {hairColors.map(color => (
                         <option key={color} value={color}>{hairColorLabels[color]}</option>
                       ))}
@@ -690,20 +702,20 @@ export default function SearchFilters({ filters, onFiltersChange, onClose, isOpe
                       onChange={(e) => setEyeColor(e.target.value)}
                       className="px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm"
                     >
-                      <option value="">Yeux</option>
+                      <option value="">{tFilters('eyes')}</option>
                       {eyeColors.map(color => (
                         <option key={color} value={color}>{color}</option>
                       ))}
                     </select>
-                    
+
                     <select
                       value={breastSize}
                       onChange={(e) => setBreastSize(e.target.value)}
                       className="px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm"
                     >
-                      <option value="">Taille poitrine</option>
+                      <option value="">{tFilters('bustSize')}</option>
                       {breastSizes.map(size => (
-                        <option key={size} value={size}>Bonnet {size}</option>
+                        <option key={size} value={size}>{tFilters('cup')} {size}</option>
                       ))}
                     </select>
                   </div>
@@ -713,12 +725,12 @@ export default function SearchFilters({ filters, onFiltersChange, onClose, isOpe
 
             {/* Services & Spécialités - EXACTEMENT COMME DASHBOARD */}
             <div>
-              <h4 className="text-lg font-semibold mb-4 text-white">Services & Spécialités</h4>
+              <h4 className="text-lg font-semibold mb-4 text-white">{tFilters('servicesAndSpecialties')}</h4>
               <div className="max-h-60 overflow-y-auto space-y-4">
 
                 {/* Classiques */}
                 <div>
-                  <h5 className="text-sm font-medium text-cyan-400 mb-2">Classiques</h5>
+                  <h5 className="text-sm font-medium text-cyan-400 mb-2">{tFilters('classic')}</h5>
                   <div className="flex flex-wrap gap-2">
                     {SERVICES_CLASSIQUES.map(service => (
                       <button
@@ -738,7 +750,7 @@ export default function SearchFilters({ filters, onFiltersChange, onClose, isOpe
 
                 {/* Oral */}
                 <div>
-                  <h5 className="text-sm font-medium text-cyan-400 mb-2">Oral</h5>
+                  <h5 className="text-sm font-medium text-cyan-400 mb-2">{tFilters('oral')}</h5>
                   <div className="flex flex-wrap gap-2">
                     {SERVICES_ORAL.map(service => (
                       <button
@@ -758,7 +770,7 @@ export default function SearchFilters({ filters, onFiltersChange, onClose, isOpe
 
                 {/* Anal */}
                 <div>
-                  <h5 className="text-sm font-medium text-cyan-400 mb-2">Anal</h5>
+                  <h5 className="text-sm font-medium text-cyan-400 mb-2">{tFilters('anal')}</h5>
                   <div className="flex flex-wrap gap-2">
                     {SERVICES_ANAL.map(service => (
                       <button
@@ -778,7 +790,7 @@ export default function SearchFilters({ filters, onFiltersChange, onClose, isOpe
 
                 {/* BDSM & Fétiches */}
                 <div>
-                  <h5 className="text-sm font-medium text-cyan-400 mb-2">BDSM & Fétiches</h5>
+                  <h5 className="text-sm font-medium text-cyan-400 mb-2">{tFilters('bdsmAndFetish')}</h5>
                   <div className="flex flex-wrap gap-2">
                     {SERVICES_BDSM.map(service => (
                       <button
@@ -798,7 +810,7 @@ export default function SearchFilters({ filters, onFiltersChange, onClose, isOpe
 
                 {/* Massages */}
                 <div>
-                  <h5 className="text-sm font-medium text-cyan-400 mb-2">Massages</h5>
+                  <h5 className="text-sm font-medium text-cyan-400 mb-2">{tFilters('massages')}</h5>
                   <div className="flex flex-wrap gap-2">
                     {SERVICES_MASSAGE.map(service => (
                       <button
@@ -818,7 +830,7 @@ export default function SearchFilters({ filters, onFiltersChange, onClose, isOpe
 
                 {/* Équipements */}
                 <div>
-                  <h5 className="text-sm font-medium text-cyan-400 mb-2">Équipements</h5>
+                  <h5 className="text-sm font-medium text-cyan-400 mb-2">{tFilters('equipment')}</h5>
                   <div className="flex flex-wrap gap-2">
                     {EQUIPEMENTS.map(service => (
                       <button
@@ -839,14 +851,14 @@ export default function SearchFilters({ filters, onFiltersChange, onClose, isOpe
 
               {services.length > 0 && (
                 <p className="text-xs text-white/60 mt-3">
-                  {services.length} service{services.length > 1 ? 's' : ''} sélectionné{services.length > 1 ? 's' : ''}
+                  {services.length} {services.length > 1 ? tFilters('servicesSelected') : tFilters('serviceSelected')}
                 </p>
               )}
             </div>
 
             {/* Qualité & Vérification */}
             <div>
-              <h4 className="text-lg font-semibold mb-4 text-white">Qualité & Vérification</h4>
+              <h4 className="text-lg font-semibold mb-4 text-white">{tFilters('qualityAndVerification')}</h4>
               <div className="flex flex-wrap gap-2">
                 <button
                   onClick={() => setVerified(!verified)}
@@ -856,14 +868,14 @@ export default function SearchFilters({ filters, onFiltersChange, onClose, isOpe
                       : 'bg-white/5 text-white/80 border border-white/20 hover:bg-white/10'
                   }`}
                 >
-                  Profil vérifié
+                  {tFilters('verifiedProfile')}
                 </button>
               </div>
             </div>
 
             {/* Communication - EXACTEMENT COMME DASHBOARD */}
             <div>
-              <h4 className="text-lg font-semibold mb-4 text-white">Communication</h4>
+              <h4 className="text-lg font-semibold mb-4 text-white">{tFilters('communication')}</h4>
               <div className="flex flex-wrap gap-2">
                 {LANGUES_DASHBOARD.map(language => (
                   <button
@@ -883,7 +895,7 @@ export default function SearchFilters({ filters, onFiltersChange, onClose, isOpe
 
             {/* Clientèle Acceptée - NOUVEAU FILTRE DASHBOARD */}
             <div>
-              <h4 className="text-lg font-semibold mb-4 text-white">Clientèle & Services</h4>
+              <h4 className="text-lg font-semibold mb-4 text-white">{tFilters('clienteleAndServices')}</h4>
               <div className="flex flex-wrap gap-2">
                 {CLIENTELE.map(type => (
                   <button
@@ -908,17 +920,17 @@ export default function SearchFilters({ filters, onFiltersChange, onClose, isOpe
           <div className="space-y-4">
             {/* Tri */}
             <div>
-              <label className="block text-sm font-medium text-white/80 mb-2">Trier par</label>
+              <label className="block text-sm font-medium text-white/80 mb-2">{tFilters('sortBy')}</label>
               <select
                 value={filters.sort || 'recent'}
                 onChange={(e) => onFiltersChange({ ...filters, sort: e.target.value })}
                 className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white focus:border-cyan-500/50 focus:outline-none"
               >
-                <option value="recent">Plus récent</option>
-                <option value="price_low">Prix croissant</option>
-                <option value="price_high">Prix décroissant</option>
-                <option value="rating">Mieux notées</option>
-                <option value="name">Nom A-Z</option>
+                <option value="recent">{tFilters('mostRecent')}</option>
+                <option value="price_low">{tFilters('priceAsc')}</option>
+                <option value="price_high">{tFilters('priceDesc')}</option>
+                <option value="rating">{tFilters('bestRated')}</option>
+                <option value="name">{tFilters('nameAZ')}</option>
               </select>
             </div>
             
@@ -928,13 +940,13 @@ export default function SearchFilters({ filters, onFiltersChange, onClose, isOpe
                 onClick={resetFilters}
                 className="flex-1 px-4 py-3 rounded-lg border border-white/20 bg-white/10 text-white hover:bg-white/15 transition-colors font-medium"
               >
-                Réinitialiser
+                {tFilters('reset')}
               </button>
               <button
                 onClick={applyFilters}
                 className="flex-1 px-6 py-3 rounded-lg bg-gradient-to-r from-pink-500 to-purple-500 text-white font-semibold hover:from-pink-600 hover:to-purple-600 transition-all"
               >
-                Rechercher
+                {tFilters('search')}
               </button>
             </div>
           </div>

@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react'
 import { useRouter, useParams } from 'next/navigation'
 import { ArrowLeft, Star, BadgeCheck, CheckCircle, X } from 'lucide-react'
 import { toast } from 'sonner'
+import { useTranslations } from 'next-intl'
 import { useProfileViewTracker } from '@/hooks/useViewTracker'
 import { stableMediaId } from '@/lib/reactions/stableMediaId'
 import ProfileHeader from '../../../../packages/ui/profile-test/ProfileHeader'
@@ -154,25 +155,26 @@ const ProfileSkeleton = React.memo(function ProfileSkeleton() {
 // Error fallback
 const ErrorFallback = React.memo(function ErrorFallback({ onRetry }: { onRetry?: () => void }) {
   const router = useRouter()
+  const t = useTranslations('profile')
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center">
       <div className="glass-card p-8 text-center max-w-md mx-4">
         <div className="text-6xl mb-4">⚠️</div>
-        <h1 className="text-2xl font-bold text-white mb-2">Something went wrong</h1>
-        <p className="text-gray-400 mb-6">We're having trouble loading this profile. Please try again.</p>
+        <h1 className="text-2xl font-bold text-white mb-2">{t('error.title')}</h1>
+        <p className="text-gray-400 mb-6">{t('error.description')}</p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <button
             onClick={() => onRetry ? onRetry() : router.back()}
             className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors"
           >
-            Retry
+            {t('error.retry')}
           </button>
           <button
             onClick={() => router.push('/')}
             className="px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-lg hover:from-pink-600 hover:to-purple-700 transition-all"
           >
-            Go Home
+            {t('error.goHome')}
           </button>
         </div>
       </div>
@@ -181,6 +183,7 @@ const ErrorFallback = React.memo(function ErrorFallback({ onRetry }: { onRetry?:
 })
 
 export default function EscortProfilePage() {
+  const t = useTranslations('profile')
   const { data: session, status } = useSession()
   const [profile, setProfile] = useState<EscortProfile | null>(null)
   const [loading, setLoading] = useState(true)
@@ -372,12 +375,12 @@ export default function EscortProfilePage() {
     const key = `follow_${profileId}`
     const currentState = localStorage.getItem(key) === 'true'
     localStorage.setItem(key, (!currentState).toString())
-    
-    toast.success(currentState ? 'Vous ne suivez plus ce profil' : 'Vous suivez maintenant ce profil')
+
+    toast.success(currentState ? t('actions.unfollowed') : t('actions.followed'))
 
     // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 500))
-  }, [])
+  }, [t])
 
   const handleLike = useCallback(async (profileId: string) => {
     const key = `like_${profileId}`
@@ -385,21 +388,21 @@ export default function EscortProfilePage() {
     localStorage.setItem(key, (!currentState).toString())
 
     if (!currentState) {
-      toast.success('❤️ Ajouté aux favoris')
+      toast.success(t('actions.addedToFavorites'))
     }
 
     await new Promise(resolve => setTimeout(resolve, 300))
-  }, [])
+  }, [t])
 
   const handleSave = useCallback(async (profileId: string) => {
     const key = `save_${profileId}`
     const currentState = localStorage.getItem(key) === 'true'
     localStorage.setItem(key, (!currentState).toString())
 
-    toast.success(currentState ? 'Profil retiré des sauvegardes' : '📌 Profil sauvegardé')
+    toast.success(currentState ? t('actions.removedFromSaved') : t('actions.saved'))
 
     await new Promise(resolve => setTimeout(resolve, 300))
-  }, [])
+  }, [t])
 
   const handleMediaLike = useCallback(async (index: number) => {
     const key = `media_like_${resolvedId}_${index}`
@@ -428,15 +431,15 @@ export default function EscortProfilePage() {
   const handleShare = useCallback(() => {
     if (navigator.share) {
       navigator.share({
-        title: profile?.name || 'Profile',
-        text: `Check out ${profile?.name}'s profile on Felora`,
+        title: profile?.name || t('common.profile'),
+        text: t('actions.shareText', { name: profile?.name }),
         url: window.location.href
       })
     } else {
       navigator.clipboard.writeText(window.location.href)
-      toast.success('Lien copié dans le presse-papiers')
+      toast.success(t('actions.linkCopied'))
     }
-  }, [profile?.name])
+  }, [profile?.name, t])
 
   const handleReport = useCallback((profileId: string) => {
     router.push(`/report?type=profile&id=${profileId}`)
@@ -561,7 +564,7 @@ export default function EscortProfilePage() {
     if (!profile) return
     if (status === 'unauthenticated' || !session?.user?.id) {
       console.log('🔒 [FAVORITES] Utilisateur non connecté, affichage toast', { status, hasSession: !!session })
-      toast.info('Connectez-vous pour ajouter des favoris', {
+      toast.info(t('actions.loginToAddFavorites'), {
         duration: 4000,
       })
       return
@@ -570,13 +573,13 @@ export default function EscortProfilePage() {
     if (isFavorite) {
       removeFavoriteId(profile.id)
       setIsFavorite(false)
-      toast.success('Retiré des favoris')
+      toast.success(t('actions.removedFromFavorites'))
     } else {
       addFavoriteId(profile.id)
       setIsFavorite(true)
-      toast.success('⭐ Ajouté aux favoris')
+      toast.success(t('actions.addedToFavorites'))
     }
-  }, [isFavorite, profile, session, status])
+  }, [isFavorite, profile, session, status, t])
 
   // Generate extended profile data from the real data
   const extendedProfileData = useMemo(() => {
@@ -636,8 +639,8 @@ export default function EscortProfilePage() {
                 router.back()
               }}
               className="w-10 h-10 flex items-center justify-center hover:bg-white/10 rounded-full transition-colors"
-              title="Retour"
-              aria-label="Retour à la page précédente"
+              title={t('header.back')}
+              aria-label={t('header.backAriaLabel')}
             >
               <ArrowLeft size={24} className="text-white" />
             </button>
@@ -662,24 +665,24 @@ export default function EscortProfilePage() {
                   <CheckCircle className="text-green-400" size={24} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-green-400 text-base sm:text-lg font-bold mb-1 sm:mb-2">🎉 Félicitations ! KYC soumis avec succès</h3>
+                  <h3 className="text-green-400 text-base sm:text-lg font-bold mb-1 sm:mb-2">{t('kyc.title')}</h3>
                   <p className="text-green-300 text-xs sm:text-sm mb-2">
-                    Votre vérification d'identité a été transmise. Voici votre profil public !
+                    {t('kyc.description')}
                   </p>
                   <div className="bg-green-500/10 rounded-lg p-2 sm:p-3">
-                    <p className="text-green-200 text-xs font-medium mb-1 sm:mb-2">📋 Prochaines étapes :</p>
+                    <p className="text-green-200 text-xs font-medium mb-1 sm:mb-2">{t('kyc.nextStepsTitle')}</p>
                     <ul className="space-y-1 text-green-200 text-xs">
                       <li className="flex items-center gap-2">
                         <span className="w-1.5 h-1.5 bg-green-400 rounded-full flex-shrink-0"></span>
-                        <span>Votre vérification sera traitée sous 48h</span>
+                        <span>{t('kyc.step1')}</span>
                       </li>
                       <li className="flex items-center gap-2">
                         <span className="w-1.5 h-1.5 bg-green-400 rounded-full flex-shrink-0"></span>
-                        <span>Complétez votre profil pour plus de visibilité</span>
+                        <span>{t('kyc.step2')}</span>
                       </li>
                       <li className="flex items-center gap-2">
                         <span className="w-1.5 h-1.5 bg-green-400 rounded-full flex-shrink-0"></span>
-                        <span>Une fois vérifié, vous recevrez le badge ✓</span>
+                        <span>{t('kyc.step3')}</span>
                       </li>
                     </ul>
                   </div>

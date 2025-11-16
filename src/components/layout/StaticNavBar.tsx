@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useRef, useCallback } from 'react'
+import React, { useState, useEffect, useRef, useCallback, useTransition } from 'react'
 import { useRouter as useNextRouter, usePathname as useNextPathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useSession, signOut } from 'next-auth/react'
@@ -35,6 +35,7 @@ export default function StaticNavBar() {
   const locale = useLocale()
   const t = useTranslations('navigation')
   const tCommon = useTranslations('common')
+  const [isPending, startTransition] = useTransition()
 
   const isMessages = nextPathname?.startsWith('/messages')
   const isAdmin = nextPathname?.startsWith('/admin')
@@ -147,8 +148,15 @@ export default function StaticNavBar() {
 
   const handleLanguageChange = (langCode: string) => {
     setShowLanguageSelector(false)
-    // Utiliser le router i18n pour changer de langue
-    router.replace(pathname, { locale: langCode })
+    setShowMenu(false)
+
+    // Définir le cookie de langue manuellement
+    document.cookie = `NEXT_LOCALE=${langCode}; path=/; max-age=31536000; SameSite=Lax`
+
+    // Recharger la page pour appliquer la nouvelle langue
+    startTransition(() => {
+      window.location.reload()
+    })
   }
 
   const navItems = (() => {

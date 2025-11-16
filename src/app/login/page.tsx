@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { signIn, getSession } from 'next-auth/react'
 import { motion } from 'framer-motion'
 import { Shield, LogIn, Mail, Lock, ArrowRight, Sparkles } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 interface LoginForm {
   email: string
@@ -16,6 +17,7 @@ interface LoginForm {
 function LoginContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const t = useTranslations('auth.login')
   const [form, setForm] = useState<LoginForm>({
     email: '',
     password: '',
@@ -35,9 +37,9 @@ function LoginContent() {
     // Vérifier si l'utilisateur a été redirigé après suspension/bannissement
     const error = searchParams.get('error')
     if (error === 'suspended') {
-      setErrors(['Votre compte a été suspendu ou banni. Veuillez contacter le support si vous pensez qu\'il s\'agit d\'une erreur.'])
+      setErrors([t('errors.accountSuspended')])
     }
-  }, [searchParams, router])
+  }, [searchParams, router, t])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -47,10 +49,10 @@ function LoginContent() {
     // Validation
     const newErrors: string[] = []
     if (!form.email || !form.email.includes('@')) {
-      newErrors.push('Email invalide')
+      newErrors.push(t('errors.invalidEmail'))
     }
     if (!form.password) {
-      newErrors.push('Mot de passe requis')
+      newErrors.push(t('errors.passwordRequired'))
     }
 
     if (newErrors.length > 0) {
@@ -81,7 +83,7 @@ function LoginContent() {
         window.location.href = '/'
       }
     } catch (error) {
-      setErrors(['Erreur de connexion'])
+      setErrors([t('errors.connectionError')])
     } finally {
       setLoading(false)
     }
@@ -129,10 +131,10 @@ function LoginContent() {
               transition={{ delay: 0.2, duration: 0.5 }}
             >
               <h1 className="text-3xl md:text-4xl font-black tracking-tight mb-3 bg-gradient-to-r from-white via-white/90 to-white/80 bg-clip-text text-transparent">
-                Bienvenue sur FELORA
+                {t('title')}
               </h1>
               <p className="text-white/70 text-base md:text-lg font-light">
-                Connectez-vous à votre compte
+                {t('subtitle')}
               </p>
             </motion.div>
           </motion.div>
@@ -180,12 +182,12 @@ function LoginContent() {
                 <label className="block mb-2">
                   <span className="text-sm text-white/70 font-medium inline-flex items-center gap-2">
                     <Mail className="w-4 h-4" />
-                    Email
+                    {t('form.email')}
                   </span>
                 </label>
                 <input
                   type="email"
-                  placeholder="votre@email.com"
+                  placeholder={t('form.emailPlaceholder')}
                   value={form.email}
                   onChange={(e) => updateForm('email', e.target.value)}
                   className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-white placeholder-white/40 outline-none focus:border-pink-500/50 focus:ring-2 focus:ring-pink-500/20 transition-all"
@@ -196,12 +198,12 @@ function LoginContent() {
                 <label className="block mb-2">
                   <span className="text-sm text-white/70 font-medium inline-flex items-center gap-2">
                     <Lock className="w-4 h-4" />
-                    Mot de passe
+                    {t('form.password')}
                   </span>
                 </label>
                 <input
                   type="password"
-                  placeholder="••••••••"
+                  placeholder={t('form.passwordPlaceholder')}
                   value={form.password}
                   onChange={(e) => updateForm('password', e.target.value)}
                   className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-white placeholder-white/40 outline-none focus:border-pink-500/50 focus:ring-2 focus:ring-pink-500/20 transition-all"
@@ -216,14 +218,14 @@ function LoginContent() {
                     onChange={(e) => updateForm('rememberMe', e.target.checked)}
                     className="w-4 h-4 rounded border-white/20 bg-white/5 text-pink-500 focus:ring-pink-500/20"
                   />
-                  Se souvenir de moi
+                  {t('form.rememberMe')}
                 </label>
                 <button
                   type="button"
                   onClick={() => router.push('/forgot-password')}
                   className="text-sm text-pink-300 hover:text-pink-200 transition-colors"
                 >
-                  Mot de passe oublié ?
+                  {t('form.forgotPassword')}
                 </button>
               </div>
 
@@ -239,10 +241,10 @@ function LoginContent() {
                 {loading ? (
                   <>
                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Connexion en cours...
+                    {t('form.loggingIn')}
                   </>
                 ) : (
-                  'Se connecter'
+                  t('form.submit')
                 )}
               </button>
             </form>
@@ -250,12 +252,12 @@ function LoginContent() {
             {/* Footer */}
             <div className="mt-6 space-y-4">
               <div className="text-center text-sm text-white/60">
-                Pas encore de compte ?{' '}
+                {t('footer.noAccount')}{' '}
                 <button
                   onClick={() => router.push('/register')}
                   className="text-pink-300 hover:text-pink-200 font-semibold transition-colors"
                 >
-                  S'inscrire
+                  {t('footer.register')}
                 </button>
               </div>
 
@@ -265,7 +267,7 @@ function LoginContent() {
                   className="text-sm px-4 py-2 rounded-lg border border-white/10 text-white/60 hover:text-white hover:border-white/20 transition-all inline-flex items-center gap-2"
                 >
                   <ArrowRight size={16} className="rotate-180" />
-                  Retour à l'accueil
+                  {t('footer.backToHome')}
                 </button>
               </div>
 
@@ -274,17 +276,17 @@ function LoginContent() {
                 <div className="flex items-center justify-center gap-4 text-xs text-white/50">
                   <div className="flex items-center gap-1.5">
                     <Shield className="w-3.5 h-3.5 text-pink-300" />
-                    <span>Sécurisé</span>
+                    <span>{t('trust.secure')}</span>
                   </div>
                   <span>•</span>
                   <div className="flex items-center gap-1.5">
                     <Lock className="w-3.5 h-3.5 text-purple-300" />
-                    <span>Crypté E2E</span>
+                    <span>{t('trust.encrypted')}</span>
                   </div>
                   <span>•</span>
                   <div className="flex items-center gap-1.5">
                     <Sparkles className="w-3.5 h-3.5 text-pink-300" />
-                    <span>Premium</span>
+                    <span>{t('trust.premium')}</span>
                   </div>
                 </div>
               </div>
@@ -298,13 +300,14 @@ function LoginContent() {
 
 // Composant de fallback pour le Suspense
 function LoginFallback() {
+  const t = useTranslations('auth.login')
   return (
     <main className="fixed inset-0 bg-black text-white overflow-hidden">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-pink-900/10 via-black to-black" />
       <div className="relative z-10 h-full flex items-center justify-center">
         <div className="text-center">
           <div className="w-8 h-8 border-2 border-white/30 border-t-pink-500 rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-white/70">Chargement...</p>
+          <p className="text-white/70">{t('loading')}</p>
         </div>
       </div>
     </main>

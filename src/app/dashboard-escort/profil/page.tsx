@@ -5,9 +5,12 @@ import { useSearchParams } from 'next/navigation'
 import ModernProfileEditor from '@/components/dashboard/ModernProfileEditor'
 import { useFeatureFlag } from '@/hooks/useFeatureFlag'
 import { CheckCircle, X } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 // Success message component
 function KYCSuccessMessage({ onClose }: { onClose: () => void }) {
+  const t = useTranslations('dashboardEscort.profil')
+
   return (
     <div className="mb-6 bg-gradient-to-r from-green-500/10 via-emerald-500/10 to-teal-500/10 border border-green-500/30 rounded-2xl p-6">
       <div className="flex items-start justify-between">
@@ -16,24 +19,24 @@ function KYCSuccessMessage({ onClose }: { onClose: () => void }) {
             <CheckCircle className="text-green-400" size={24} />
           </div>
           <div className="flex-1">
-            <h3 className="text-green-400 text-lg font-bold mb-2">🎉 Félicitations ! KYC soumis avec succès</h3>
+            <h3 className="text-green-400 text-lg font-bold mb-2">{t('kycSuccess.title')}</h3>
             <p className="text-green-300 text-sm mb-3">
-              Votre vérification d'identité a été transmise. Il est maintenant temps de finaliser votre profil !
+              {t('kycSuccess.description')}
             </p>
             <div className="bg-green-500/10 rounded-lg p-3">
-              <p className="text-green-200 text-xs font-medium mb-2">📋 Prochaines étapes recommandées :</p>
+              <p className="text-green-200 text-xs font-medium mb-2">{t('kycSuccess.nextStepsTitle')}</p>
               <ul className="space-y-1 text-green-200 text-xs">
                 <li className="flex items-center gap-2">
                   <span className="w-1.5 h-1.5 bg-green-400 rounded-full"></span>
-                  Ajoutez vos photos et descriptions
+                  {t('kycSuccess.step1')}
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="w-1.5 h-1.5 bg-green-400 rounded-full"></span>
-                  Configurez vos tarifs et services
+                  {t('kycSuccess.step2')}
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="w-1.5 h-1.5 bg-green-400 rounded-full"></span>
-                  Votre vérification sera traitée sous 48h
+                  {t('kycSuccess.step3')}
                 </li>
               </ul>
             </div>
@@ -64,6 +67,8 @@ function OldProfilPage({ showKYCSuccess, onCloseSuccess }: { showKYCSuccess: boo
 
 // New profile page (V2 design)
 function NewProfilPage({ showKYCSuccess, onCloseSuccess }: { showKYCSuccess: boolean, onCloseSuccess: () => void }) {
+  const t = useTranslations('dashboardEscort.profil')
+
   return (
     <div className="space-y-6">
       {showKYCSuccess && <KYCSuccessMessage onClose={onCloseSuccess} />}
@@ -86,10 +91,10 @@ function NewProfilPage({ showKYCSuccess, onCloseSuccess }: { showKYCSuccess: boo
               backgroundClip: 'text'
             }}
           >
-            Mon Profil
+            {t('pageTitle')}
           </h1>
           <p className="text-sm" style={{ color: 'var(--felora-silver-70)' }}>
-            Gérez vos informations publiques et votre présentation
+            {t('pageDescription')}
           </p>
         </div>
         <ModernProfileEditor />
