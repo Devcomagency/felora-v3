@@ -746,9 +746,25 @@
   "signup": {
     "plans": {
       "loading": "Carregando ofertas…",
-      "week": {"label": "7 dias", "description": "Ideal para começar e testar a plataforma por 7 dias."},
-      "month": {"label": "30 dias", "description": "O melhor equilíbrio visibilidade/preço para progredir rapidamente."},
-      "quarter": {"label": "90 dias", "description": "Perfeito para presença contínua e resultados duradouros."},
+      "header": {
+        "title": "Escolha seu plano",
+        "subtitle": "Selecione o plano que melhor se adapta às suas necessidades"
+      },
+      "week": {
+        "label": "7 dias",
+        "duration": "7 dias",
+        "description": "Ideal para começar e testar a plataforma por 7 dias."
+      },
+      "month": {
+        "label": "30 dias",
+        "duration": "30 dias",
+        "description": "O melhor equilíbrio visibilidade/preço para progredir rapidamente."
+      },
+      "quarter": {
+        "label": "90 dias",
+        "duration": "90 dias",
+        "description": "Perfeito para presença contínua e resultados duradouros."
+      },
       "features": {
         "unlimitedPhotos": "Fotos ilimitadas",
         "unlimitedPlayback": "Reprodução ilimitada / Play-Pause",
@@ -761,13 +777,29 @@
         "standardSupport": "Suporte padrão",
         "prioritySupport": "Suporte prioritário"
       },
-      "badges": {"bestseller": "Mais vendido", "premium": "Premium"},
-      "cta": {"choosePlan": "Eu escolho este plano", "description": "Eu escolho meu plano e ativo meu perfil para validar."},
+      "badges": {
+        "bestseller": "Mais vendido",
+        "premium": "Premium"
+      },
+      "cta": {
+        "choosePlan": "Escolher",
+        "clickToValidate": "Clique para validar",
+        "hint": "Clique novamente na sua seleção para continuar",
+        "description": "Eu escolho meu plano e ativo meu perfil para validar."
+      },
       "promo": {
-        "placeholder": "Código promocional (ex: WELCOME10, PROMO50)",
+        "title": "Código promocional",
+        "placeholder": "Digite seu código (ex: WELCOME10)",
         "apply": "Aplicar",
-        "errors": {"enterCode": "Digite um código", "invalidCode": "Código inválido", "validationFailed": "Não foi possível validar o código"},
-        "success": {"applied": "Código aplicado", "codeApplied": "Código {code} aplicado"}
+        "errors": {
+          "enterCode": "Digite um código",
+          "invalidCode": "Código inválido",
+          "validationFailed": "Não foi possível validar o código"
+        },
+        "success": {
+          "applied": "Código aplicado",
+          "codeApplied": "Código {code} aplicado"
+        }
       }
     },
     "escort": {

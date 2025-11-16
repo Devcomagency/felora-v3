@@ -1127,16 +1127,23 @@
   "signup": {
     "plans": {
       "loading": "Loading plans…",
+      "header": {
+        "title": "Choose your plan",
+        "subtitle": "Select the plan that best fits your needs"
+      },
       "week": {
         "label": "7 days",
+        "duration": "7 days",
         "description": "Ideal to start and test the platform for 7 days."
       },
       "month": {
         "label": "30 days",
+        "duration": "30 days",
         "description": "The best visibility/price balance to progress quickly."
       },
       "quarter": {
         "label": "90 days",
+        "duration": "90 days",
         "description": "Perfect for continuous presence and lasting results."
       },
       "features": {
@@ -1156,11 +1163,14 @@
         "premium": "Premium"
       },
       "cta": {
-        "choosePlan": "I choose this plan",
+        "choosePlan": "Choose",
+        "clickToValidate": "Click to validate",
+        "hint": "Click again on your selection to continue",
         "description": "I choose my plan and activate my profile to validate."
       },
       "promo": {
-        "placeholder": "Promo code (e.g.: WELCOME10, PROMO50)",
+        "title": "Promo code",
+        "placeholder": "Enter your code (e.g.: WELCOME10)",
         "apply": "Apply",
         "errors": {
           "enterCode": "Enter a code",

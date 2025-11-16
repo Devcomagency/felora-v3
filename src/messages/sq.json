@@ -746,9 +746,25 @@
   "signup": {
     "plans": {
       "loading": "Duke ngarkuar ofertat…",
-      "week": {"label": "7 ditë", "description": "Ideale për të filluar dhe testuar platformën për 7 ditë."},
-      "month": {"label": "30 ditë", "description": "Ekuilibri më i mirë i dukshmërisë/çmimit për të përparuar shpejt."},
-      "quarter": {"label": "90 ditë", "description": "Perfekte për prezencë të vazhdueshme dhe rezultate të qëndrueshme."},
+      "header": {
+        "title": "Zgjidh planin tënd",
+        "subtitle": "Zgjidh planin që përshtatet më mirë me nevojat e tua"
+      },
+      "week": {
+        "label": "7 ditë",
+        "duration": "7 ditë",
+        "description": "Ideale për të filluar dhe testuar platformën për 7 ditë."
+      },
+      "month": {
+        "label": "30 ditë",
+        "duration": "30 ditë",
+        "description": "Ekuilibri më i mirë i dukshmërisë/çmimit për të përparuar shpejt."
+      },
+      "quarter": {
+        "label": "90 ditë",
+        "duration": "90 ditë",
+        "description": "Perfekte për prezencë të vazhdueshme dhe rezultate të qëndrueshme."
+      },
       "features": {
         "unlimitedPhotos": "Foto të pakufizuara",
         "unlimitedPlayback": "Riprodhim i pakufizuar / Play-Pause",
@@ -761,13 +777,29 @@
         "standardSupport": "Mbështetje standarde",
         "prioritySupport": "Mbështetje me prioritet"
       },
-      "badges": {"bestseller": "Më i shituri", "premium": "Premium"},
-      "cta": {"choosePlan": "Zgjedh këtë plan", "description": "Zgjedh planin tim dhe aktivizo profilin tim për të vërtetuar."},
+      "badges": {
+        "bestseller": "Më i shituri",
+        "premium": "Premium"
+      },
+      "cta": {
+        "choosePlan": "Zgjidh",
+        "clickToValidate": "Kliko për të vërtetuar",
+        "hint": "Kliko përsëri mbi zgjedhjen tënde për të vazhduar",
+        "description": "Zgjedh planin tim dhe aktivizo profilin tim për të vërtetuar."
+      },
       "promo": {
-        "placeholder": "Kodi promocional (p.sh.: WELCOME10, PROMO50)",
+        "title": "Kodi promocional",
+        "placeholder": "Vendos kodin tënd (p.sh.: WELCOME10)",
         "apply": "Apliko",
-        "errors": {"enterCode": "Vendos një kod", "invalidCode": "Kod i pavlefshëm", "validationFailed": "Nuk mund të vërtetohej kodi"},
-        "success": {"applied": "Kodi u aplikua", "codeApplied": "Kodi {code} u aplikua"}
+        "errors": {
+          "enterCode": "Vendos një kod",
+          "invalidCode": "Kod i pavlefshëm",
+          "validationFailed": "Nuk mund të vërtetohej kodi"
+        },
+        "success": {
+          "applied": "Kodi u aplikua",
+          "codeApplied": "Kodi {code} u aplikua"
+        }
       }
     },
     "escort": {

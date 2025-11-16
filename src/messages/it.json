@@ -849,16 +849,23 @@
   "signup": {
     "plans": {
       "loading": "Caricamento offerte…",
+      "header": {
+        "title": "Scegli il tuo piano",
+        "subtitle": "Seleziona il piano più adatto alle tue esigenze"
+      },
       "week": {
         "label": "7 giorni",
+        "duration": "7 giorni",
         "description": "Ideale per iniziare e testare la piattaforma per 7 giorni."
       },
       "month": {
         "label": "30 giorni",
+        "duration": "30 giorni",
         "description": "Il miglior equilibrio visibilità/prezzo per progredire rapidamente."
       },
       "quarter": {
         "label": "90 giorni",
+        "duration": "90 giorni",
         "description": "Perfetto per presenza continua e risultati duraturi."
       },
       "features": {
@@ -878,11 +885,14 @@
         "premium": "Premium"
       },
       "cta": {
-        "choosePlan": "Scelgo questo piano",
+        "choosePlan": "Scegli",
+        "clickToValidate": "Clicca per convalidare",
+        "hint": "Clicca di nuovo sulla tua selezione per continuare",
         "description": "Scelgo il mio piano e attivo il mio profilo per convalidare."
       },
       "promo": {
-        "placeholder": "Codice promozionale (es: WELCOME10, PROMO50)",
+        "title": "Codice promozionale",
+        "placeholder": "Inserisci il tuo codice (es: WELCOME10)",
         "apply": "Applica",
         "errors": {
           "enterCode": "Inserisci un codice",

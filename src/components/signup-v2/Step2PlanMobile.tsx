@@ -2,10 +2,12 @@
 import { useEffect, useMemo, useState, useRef } from 'react'
 import { Check, Star, Zap, Crown, Gift, Shield, ArrowRight, Sparkles, Tag } from 'lucide-react'
 import { motion } from 'framer-motion'
+import { useTranslations } from 'next-intl'
 
 type Plan = { id:string; code:string; name:string; priceCents:number; interval:string; popular:boolean }
 
 export default function Step2PlanMobile({ onSelect }:{ onSelect:(plan:Plan)=>void }){
+  const t = useTranslations('signup.plans')
   const [plans, setPlans] = useState<Plan[]>([])
   const [loading, setLoading] = useState(true)
   const [hoveredPlan, setHoveredPlan] = useState<string | null>(null)
@@ -57,28 +59,47 @@ export default function Step2PlanMobile({ onSelect }:{ onSelect:(plan:Plan)=>voi
       <div className="flex items-center justify-center py-12">
         <div className="text-center space-y-4">
           <div className="w-12 h-12 border-4 border-white/20 border-t-purple-500 rounded-full animate-spin mx-auto"></div>
-          <p className="text-white/70">Chargement des offres…</p>
+          <p className="text-white/70">{t('loading')}</p>
         </div>
       </div>
     )
   }
 
   const labelByCode: Record<string, string> = {
-    WEEK: 'Découverte',
-    MONTH: 'Premium',
-    QUARTER: 'Elite',
+    WEEK: t('week.label'),
+    MONTH: t('month.label'),
+    QUARTER: t('quarter.label'),
   }
 
   const descByCode: Record<string, string> = {
-    WEEK: "Pour démarrer sur Felora",
-    MONTH: "Le plus populaire",
-    QUARTER: "Pour les professionnels",
+    WEEK: t('week.description'),
+    MONTH: t('month.description'),
+    QUARTER: t('quarter.description'),
   }
 
   const featuresByCode: Record<string, string[]> = {
-    WEEK: ['Profil vérifié', 'Photos illimitées', 'Messagerie sécurisée'],
-    MONTH: ['Badge vérifié', 'Vidéos illimitées', 'Statistiques'],
-    QUARTER: ['Badge Premium', 'Mise en avant', 'Support VIP']
+    WEEK: [
+      t('features.unlimitedPhotos'),
+      t('features.unlimitedPlayback'),
+      t('features.e2eeMessaging')
+    ],
+    MONTH: [
+      t('features.unlimitedPhotos'),
+      t('features.unlimitedPlayback'),
+      t('features.e2eeMessaging'),
+      t('features.giftSystem'),
+      t('features.enhancedPromotion'),
+      t('features.advancedStats')
+    ],
+    QUARTER: [
+      t('features.unlimitedPhotos'),
+      t('features.unlimitedPlayback'),
+      t('features.e2eeMessaging'),
+      t('features.giftSystem'),
+      t('features.premiumPromotion'),
+      t('features.advancedStats'),
+      t('features.prioritySupport')
+    ]
   }
 
   const getPlanIcon = (code: string) => {
@@ -123,9 +144,9 @@ export default function Step2PlanMobile({ onSelect }:{ onSelect:(plan:Plan)=>voi
 
   const getDuration = (code: string) => {
     switch (code) {
-      case 'WEEK': return '7 jours'
-      case 'MONTH': return '30 jours'
-      case 'QUARTER': return '90 jours'
+      case 'WEEK': return t('week.duration')
+      case 'MONTH': return t('month.duration')
+      case 'QUARTER': return t('quarter.duration')
       default: return ''
     }
   }
@@ -176,7 +197,7 @@ export default function Step2PlanMobile({ onSelect }:{ onSelect:(plan:Plan)=>voi
           {/* Popular Badge - Tag en haut à droite */}
           {plan.popular && (
             <div className="absolute top-4 right-4 z-10 px-2.5 py-1 rounded-md bg-pink-500 text-white text-[10px] font-bold uppercase tracking-wider shadow-lg">
-              Populaire
+              {t('badges.bestseller')}
             </div>
           )}
 
@@ -258,7 +279,7 @@ export default function Step2PlanMobile({ onSelect }:{ onSelect:(plan:Plan)=>voi
               }}
             >
               <span className="font-semibold text-white text-sm">
-                {isSelected ? 'Cliquer pour valider' : 'Choisir'}
+                {isSelected ? t('cta.clickToValidate') : t('cta.choosePlan')}
               </span>
               {isSelected ? (
                 <Check className="w-5 h-5 text-white animate-pulse" />
@@ -297,10 +318,10 @@ export default function Step2PlanMobile({ onSelect }:{ onSelect:(plan:Plan)=>voi
           transition={{ delay: 0.2, duration: 0.5 }}
         >
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-black tracking-tight mb-3 bg-gradient-to-r from-white via-white/90 to-white/80 bg-clip-text text-transparent">
-            Choisissez votre offre
+            {t('header.title')}
           </h1>
           <p className="text-white/70 text-base md:text-lg max-w-2xl mx-auto font-light">
-            Sélectionnez le plan qui correspond le mieux à vos besoins
+            {t('header.subtitle')}
           </p>
         </motion.div>
       </motion.div>
@@ -334,12 +355,12 @@ export default function Step2PlanMobile({ onSelect }:{ onSelect:(plan:Plan)=>voi
         <div className="rounded-2xl bg-gradient-to-br from-white/5 to-transparent border border-white/10 p-6 backdrop-blur-xl">
           <div className="flex items-center gap-2 mb-3">
             <Tag className="w-5 h-5 text-pink-300" />
-            <h3 className="text-white font-semibold">Code promo</h3>
+            <h3 className="text-white font-semibold">{t('promo.title')}</h3>
           </div>
           <div className="flex gap-2 items-center">
             <input
               className="flex-1 bg-black/40 border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder:text-white/40 focus:border-pink-500/50 focus:outline-none transition-colors"
-              placeholder="Entrez votre code (ex: WELCOME10)"
+              placeholder={t('promo.placeholder')}
               value={promoInput}
               onChange={(e)=>{ setPromoInput(e.target.value.toUpperCase()); setPromoErr(''); setPromoMsg('') }}
             />
@@ -348,21 +369,21 @@ export default function Step2PlanMobile({ onSelect }:{ onSelect:(plan:Plan)=>voi
               onClick={async ()=>{
                 setPromoErr(''); setPromoMsg('')
                 const code = promoInput.trim().toUpperCase()
-                if (!code) { setPromoErr('Entrez un code'); return }
+                if (!code) { setPromoErr(t('promo.errors.enterCode')); return }
                 try {
                   const r = await fetch('/api/signup-v2/promo/validate', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ code }) })
                   const d = await r.json()
-                  if (!r.ok || !d?.success) { setPromo(null); setPromoErr(d?.error || 'Code invalide'); return }
+                  if (!r.ok || !d?.success) { setPromo(null); setPromoErr(d?.error || t('promo.errors.invalidCode')); return }
                   setPromo({ code: d.promo.code, type: d.promo.type, value: d.promo.value, applicablePlans: d.promo.applicablePlans || null })
-                  setPromoMsg(d?.message || 'Code appliqué')
-                } catch { setPromoErr('Impossible de valider le code') }
+                  setPromoMsg(d?.message || t('promo.success.applied'))
+                } catch { setPromoErr(t('promo.errors.validationFailed')) }
               }}
             >
-              Appliquer
+              {t('promo.apply')}
             </button>
           </div>
           {promoErr && (<div className="text-red-400 text-sm mt-2 flex items-center gap-1">❌ {promoErr}</div>)}
-          {promo && !promoErr && (<div className="text-green-400 text-sm mt-2 flex items-center gap-1">✓ {promoMsg || `Code ${promo.code} appliqué`}</div>)}
+          {promo && !promoErr && (<div className="text-green-400 text-sm mt-2 flex items-center gap-1">✓ {promoMsg || t('promo.success.codeApplied', { code: promo.code })}</div>)}
         </div>
       </motion.div>
 
@@ -375,7 +396,7 @@ export default function Step2PlanMobile({ onSelect }:{ onSelect:(plan:Plan)=>voi
         >
           <p className="text-white/50 text-sm flex items-center justify-center gap-2">
             <Shield size={16} />
-            Cliquez à nouveau sur votre sélection pour continuer
+            {t('cta.hint')}
           </p>
         </motion.div>
       )}

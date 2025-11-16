@@ -746,9 +746,25 @@
   "signup": {
     "plans": {
       "loading": "جاري تحميل العروض…",
-      "week": {"label": "7 أيام", "description": "مثالي للبدء واختبار المنصة لمدة 7 أيام."},
-      "month": {"label": "30 يوماً", "description": "أفضل توازن بين الظهور والسعر للتقدم بسرعة."},
-      "quarter": {"label": "90 يوماً", "description": "مثالي للحضور المستمر والنتائج الدائمة."},
+      "header": {
+        "title": "اختر خطتك",
+        "subtitle": "اختر الخطة التي تناسب احتياجاتك بشكل أفضل"
+      },
+      "week": {
+        "label": "7 أيام",
+        "duration": "7 أيام",
+        "description": "مثالي للبدء واختبار المنصة لمدة 7 أيام."
+      },
+      "month": {
+        "label": "30 يوماً",
+        "duration": "30 يوماً",
+        "description": "أفضل توازن بين الظهور والسعر للتقدم بسرعة."
+      },
+      "quarter": {
+        "label": "90 يوماً",
+        "duration": "90 يوماً",
+        "description": "مثالي للحضور المستمر والنتائج الدائمة."
+      },
       "features": {
         "unlimitedPhotos": "صور غير محدودة",
         "unlimitedPlayback": "تشغيل غير محدود / Play-Pause",
@@ -761,13 +777,29 @@
         "standardSupport": "دعم قياسي",
         "prioritySupport": "دعم ذو أولوية"
       },
-      "badges": {"bestseller": "الأكثر مبيعاً", "premium": "مميز"},
-      "cta": {"choosePlan": "أختار هذه الخطة", "description": "أختار خطتي وأفعّل ملفي الشخصي للتحقق."},
+      "badges": {
+        "bestseller": "الأكثر مبيعاً",
+        "premium": "مميز"
+      },
+      "cta": {
+        "choosePlan": "اختر",
+        "clickToValidate": "انقر للتحقق",
+        "hint": "انقر مرة أخرى على اختيارك للمتابعة",
+        "description": "أختار خطتي وأفعّل ملفي الشخصي للتحقق."
+      },
       "promo": {
-        "placeholder": "رمز ترويجي (مثال: WELCOME10، PROMO50)",
+        "title": "رمز ترويجي",
+        "placeholder": "أدخل رمزك (مثال: WELCOME10)",
         "apply": "تطبيق",
-        "errors": {"enterCode": "أدخل رمزاً", "invalidCode": "رمز غير صالح", "validationFailed": "تعذر التحقق من الرمز"},
-        "success": {"applied": "تم تطبيق الرمز", "codeApplied": "تم تطبيق الرمز {code}"}
+        "errors": {
+          "enterCode": "أدخل رمزاً",
+          "invalidCode": "رمز غير صالح",
+          "validationFailed": "تعذر التحقق من الرمز"
+        },
+        "success": {
+          "applied": "تم تطبيق الرمز",
+          "codeApplied": "تم تطبيق الرمز {code}"
+        }
       }
     },
     "escort": {
