@@ -588,6 +588,278 @@
         "step1": "Add your photos and descriptions",
         "step2": "Configure your rates and services",
         "step3": "Your verification will be processed within 48h"
+      },
+      "clubs": {
+        "title": "My Clubs",
+        "loading": "Loading...",
+        "tabs": {
+          "invitations": "Invitations",
+          "myClubs": "My clubs"
+        },
+        "invitations": {
+          "received": "Invitation received on",
+          "expires": "Expires on",
+          "accept": "Accept",
+          "decline": "Decline",
+          "noInvitations": "No pending invitations",
+          "noInvitationsDescription": "Clubs can invite you to appear on their profile",
+          "history": "History",
+          "accepted": "✓ Accepted",
+          "declined": "✗ Declined",
+          "expired": "⏱ Expired"
+        },
+        "myClubs": {
+          "viewProfile": "View profile",
+          "leaveClub": "Leave club",
+          "leaveConfirm": "Do you really want to leave {clubName}?",
+          "noClubs": "You are not affiliated with any club",
+          "noClubsDescription": "Accept an invitation to appear on a club's profile"
+        }
+      },
+      "tabs": {
+        "basic": {
+          "label": "Basic Information",
+          "description": "General profile (required)"
+        },
+        "appearance": {
+          "label": "Physical Appearance",
+          "description": "Physical characteristics"
+        },
+        "services": {
+          "label": "Clientele & Services",
+          "description": "Groups + tags"
+        },
+        "pricing": {
+          "label": "Rates & Payments",
+          "description": "Pricing and hours"
+        },
+        "agenda": {
+          "label": "Schedule",
+          "description": "Availability & absences"
+        },
+        "clubs": {
+          "label": "My Clubs",
+          "description": "Partner clubs & invitations"
+        }
+      },
+      "completion": {
+        "title": "Profile Completion",
+        "verified": "Verified",
+        "verifying": "Verifying",
+        "certify": "Certify",
+        "requiredActions": "Required actions"
+      },
+      "requiredChecks": {
+        "profilePhoto": "Profile photo",
+        "stageName": "Stage name",
+        "age": "Age",
+        "description": "Description (≥ 200 chars.)"
+      },
+      "basic": {
+        "profilePhoto": "Profile photo",
+        "profilePhotoRequired": "⚠️ 1 profile photo required",
+        "mandatory": "MANDATORY",
+        "remove": "Remove",
+        "ok": "OK",
+        "notePhotoOnly": "Required - Photo only",
+        "dropOrClick": "Drop or click to add",
+        "photoOnly": "Photo only (max 500MB)",
+        "photoOrVideo": "Photo or video (max 500MB)",
+        "uploadProgress": "Uploading...",
+        "preparing": "Preparing…",
+        "mediaUploaded": "Media uploaded ✅",
+        "uploadFailed": "Upload failed",
+        "profileRequired": "Create your profile first (save your info), then try again.",
+        "compressionFailed": "Video compression failed: {error}",
+        "fileTooLarge": "File too large (500MB limit).",
+        "title": "Basic Information",
+        "stageName": "Stage name",
+        "category": "Category",
+        "selectCategory": "Select",
+        "categories": {
+          "escort": "👠 Escort",
+          "masseuse": "💆 Erotic Masseuse",
+          "dominatrice": "🔗 BDSM Dominatrix",
+          "transsexuelle": "🌸 Transsexual",
+          "other": "💼 Other"
+        },
+        "age": "Age",
+        "ageGroups": {
+          "18-25": "18-25 years",
+          "26-30": "26-30 years",
+          "31-40": "31-40 years",
+          "40plus": "40+ years"
+        },
+        "years": "years",
+        "certifyAge": "Certify my age",
+        "description": "Description",
+        "descriptionPlaceholder": "Describe yourself in an attractive and professional way...",
+        "languages": "Spoken languages",
+        "languagesHelp": "Rate your proficiency level for each language (1 = Beginner, 5 = Fluent)",
+        "location": {
+          "title": "Location",
+          "required": "Required",
+          "canton": "Canton",
+          "city": "City",
+          "cityPlaceholder": "e.g.: Geneva",
+          "fullAddress": "Full address",
+          "addressPlaceholder": "Type your Swiss address...",
+          "privacy": {
+            "precise": "Precise",
+            "approximate": "Approximate (±150m)"
+          }
+        },
+        "phone": {
+          "title": "Phone Contact",
+          "number": "Phone number",
+          "numberPlaceholder": "+41 79 123 45 67",
+          "visibility": "Number visibility",
+          "visible": "📞 Visible number (displayed + WhatsApp/SMS/Call buttons)",
+          "hidden": "📞 Hidden number (WhatsApp/SMS/Call buttons only)",
+          "none": "🔒 Private messaging only"
+        },
+        "geoBlocking": {
+          "title": "Geographic Blocking",
+          "optional": "Optional",
+          "description": "Block access to your profile from certain countries",
+          "blockedCount": "{count} country blocked",
+          "blockedCountPlural": "{count} countries blocked"
+        }
+      },
+      "appearance": {
+        "title": "Physical Appearance",
+        "height": "Height (cm)",
+        "heightOver": "> 200 cm",
+        "bodyType": "Body type",
+        "bodyTypes": {
+          "select": "Select",
+          "mince": "Slim",
+          "sportive": "Athletic",
+          "pulpeuse": "Curvy",
+          "ronde": "Voluptuous"
+        },
+        "breastSize": "Bust size",
+        "breastSizes": {
+          "select": "Select"
+        },
+        "hairColor": "Hair — Color",
+        "hairColors": {
+          "select": "Select",
+          "brun": "Brown",
+          "blond": "Blonde",
+          "chatain": "Chestnut",
+          "gris": "Grey",
+          "roux": "Red",
+          "autre": "Other"
+        },
+        "breastType": "Breast",
+        "breastTypes": {
+          "naturelle": "Natural",
+          "siliconee": "Silicone"
+        },
+        "eyeColor": "Eye color",
+        "eyeColors": {
+          "select": "Select",
+          "bleu": "Blue",
+          "vert": "Green",
+          "marron": "Brown",
+          "noisette": "Hazel",
+          "gris": "Grey"
+        },
+        "ethnicity": "Ethnicity",
+        "ethnicities": {
+          "select": "Select",
+          "europeenne": "European",
+          "africaine": "African",
+          "asiatique": "Asian",
+          "latine": "Latin",
+          "metisse": "Mixed",
+          "autre": "Other"
+        },
+        "tattoosPiercings": "Tattoos / Piercings",
+        "tattoos": "Tattoos",
+        "piercings": "Piercings",
+        "pubicHair": "Pubic hair",
+        "pubicHairTypes": {
+          "naturel": "Natural",
+          "rase": "Shaved",
+          "partiel": "Partial"
+        },
+        "smoker": "Smoker"
+      },
+      "services": {
+        "title": "Clientele & Services",
+        "description": "Select what you offer. Use search to filter.",
+        "clientele": "Accepted clientele",
+        "clienteleTypes": {
+          "couples": "Couples",
+          "women": "Women",
+          "handicapped": "People with disabilities",
+          "seniors": "Seniors"
+        },
+        "serviceMode": "Service mode",
+        "incall": "I receive",
+        "outcall": "I travel"
+      },
+      "pricing": {
+        "title": "Rates and availability",
+        "startingFrom": "Starting from",
+        "detailedRates": "Detailed rates (optional)",
+        "durations": {
+          "15min": "15 minutes",
+          "30min": "30 minutes",
+          "1hour": "1 hour",
+          "2hours": "2 hours",
+          "halfDay": "Half day",
+          "fullDay": "Full day",
+          "overnight": "Overnight"
+        },
+        "tip": "💡 Tip: Rates help clients find you easily and increase your visibility.",
+        "customDurations": "Custom durations",
+        "addCustom": "+ Add",
+        "customDurationPlaceholder": "E.g.: 90 minutes, 3 hours, Weekend...",
+        "priceCHF": "Price CHF",
+        "delete": "Delete",
+        "customNote": "Custom durations are visible on your profile and in searches.",
+        "warningNote": "⚠️ Without rates, your profile won't appear in price searches.",
+        "availability": "Availability: Configure your schedule in the tab",
+        "agendaTab": "Schedule"
+      },
+      "agenda": {
+        "title": "Schedule",
+        "weeklySchedule": "Weekly hours",
+        "days": {
+          "Lundi": "Monday",
+          "Mardi": "Tuesday",
+          "Mercredi": "Wednesday",
+          "Jeudi": "Thursday",
+          "Vendredi": "Friday",
+          "Samedi": "Saturday",
+          "Dimanche": "Sunday"
+        },
+        "open": "✅ Open",
+        "closed": "❌ Closed",
+        "opening": "Opening",
+        "closing": "Closing",
+        "pause": "Pause my account",
+        "pauseStart": "Pause start",
+        "pauseReturn": "Return",
+        "absences": "Exceptional absence days",
+        "addAbsence": "Add absence",
+        "noAbsences": "No planned absences",
+        "autoSave": "Changes are saved automatically.",
+        "templates": {
+          "weekdays": "Weekdays",
+          "weekend": "Weekend only",
+          "applied": "Template \"{template}\" applied"
+        }
+      },
+      "save": {
+        "saving": "Saving...",
+        "saved": "Changes saved",
+        "error": "Error saving",
+        "retry": "Retry {count}/{max}...",
+        "retryFailed": "{error} (failed after {max} attempts)"
       }
     }
   },

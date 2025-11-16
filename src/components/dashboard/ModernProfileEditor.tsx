@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useMemo } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { User, Image, Eye, Heart, Clock, Settings as SettingsIcon, CheckCircle2, AlertTriangle, ShieldCheck, Pause, Calendar, Save, X, BadgeCheck, Search, Loader2, Star, MapPin, ExternalLink, Zap, Trash2 } from 'lucide-react'
 import * as Dialog from '@radix-ui/react-dialog'
+import { useTranslations } from 'next-intl'
 import AddressAutocomplete from '../ui/AddressAutocomplete'
 import PremiumAddressAutocomplete from '../ui/PremiumAddressAutocomplete'
 import LocationPreviewMap from '../ui/LocationPreviewMap'
@@ -168,6 +169,7 @@ const StarRating = ({
 
 // Composant pour l'onglet Mes Clubs
 function MyClubsTab() {
+  const t = useTranslations('dashboardEscort.profil.clubs')
   const [invitations, setInvitations] = useState<any[]>([])
   const [clubs, setClubs] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -461,6 +463,7 @@ function MyClubsTab() {
 }
 
 export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly?: boolean }) {
+  const t = useTranslations('dashboardEscort.profil')
   const router = useRouter()
   const [activeTab, setActiveTab] = useState('basic')
   const fileInputsRef = useRef<Array<HTMLInputElement | null>>([])
@@ -849,12 +852,12 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
 
 
   const tabs = [
-    { key: 'basic', label: 'Informations de base', icon: User, description: 'Profil général (obligatoire)' },
-    { key: 'appearance', label: 'Apparence physique', icon: Eye, description: 'Caractéristiques physiques' },
-    { key: 'services', label: 'Clientèle & Services', icon: Heart, description: 'Groupes + tags' },
-    { key: 'pricing', label: 'Tarifs & Paiements', icon: Clock, description: 'Prix et horaires' },
-    { key: 'agenda', label: 'Agenda', icon: Calendar, description: 'Disponibilités & absences' },
-    { key: 'clubs', label: 'Mes Clubs', icon: BadgeCheck, description: 'Clubs partenaires & invitations' },
+    { key: 'basic', label: t('tabs.basic.label'), icon: User, description: t('tabs.basic.description') },
+    { key: 'appearance', label: t('tabs.appearance.label'), icon: Eye, description: t('tabs.appearance.description') },
+    { key: 'services', label: t('tabs.services.label'), icon: Heart, description: t('tabs.services.description') },
+    { key: 'pricing', label: t('tabs.pricing.label'), icon: Clock, description: t('tabs.pricing.description') },
+    { key: 'agenda', label: t('tabs.agenda.label'), icon: Calendar, description: t('tabs.agenda.description') },
+    { key: 'clubs', label: t('tabs.clubs.label'), icon: BadgeCheck, description: t('tabs.clubs.description') },
   ]
 
   const updateProfileData = (field: string, value: any) => {

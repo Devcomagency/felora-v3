@@ -594,6 +594,278 @@
         "step1": "Ajoutez vos photos et descriptions",
         "step2": "Configurez vos tarifs et services",
         "step3": "Votre vérification sera traitée sous 48h"
+      },
+      "clubs": {
+        "title": "Mes Clubs",
+        "loading": "Chargement...",
+        "tabs": {
+          "invitations": "Invitations",
+          "myClubs": "Mes clubs"
+        },
+        "invitations": {
+          "received": "Invitation reçue le",
+          "expires": "Expire le",
+          "accept": "Accepter",
+          "decline": "Refuser",
+          "noInvitations": "Aucune invitation en attente",
+          "noInvitationsDescription": "Les clubs peuvent vous inviter à apparaître sur leur profil",
+          "history": "Historique",
+          "accepted": "✓ Acceptée",
+          "declined": "✗ Refusée",
+          "expired": "⏱ Expirée"
+        },
+        "myClubs": {
+          "viewProfile": "Voir profil",
+          "leaveClub": "Quitter le club",
+          "leaveConfirm": "Voulez-vous vraiment quitter {clubName} ?",
+          "noClubs": "Vous n'êtes affiliée à aucun club",
+          "noClubsDescription": "Acceptez une invitation pour apparaître sur le profil d'un club"
+        }
+      },
+      "tabs": {
+        "basic": {
+          "label": "Informations de base",
+          "description": "Profil général (obligatoire)"
+        },
+        "appearance": {
+          "label": "Apparence physique",
+          "description": "Caractéristiques physiques"
+        },
+        "services": {
+          "label": "Clientèle & Services",
+          "description": "Groupes + tags"
+        },
+        "pricing": {
+          "label": "Tarifs & Paiements",
+          "description": "Prix et horaires"
+        },
+        "agenda": {
+          "label": "Agenda",
+          "description": "Disponibilités & absences"
+        },
+        "clubs": {
+          "label": "Mes Clubs",
+          "description": "Clubs partenaires & invitations"
+        }
+      },
+      "completion": {
+        "title": "Complétude du profil",
+        "verified": "Vérifié",
+        "verifying": "En vérification",
+        "certify": "Certifier",
+        "requiredActions": "Actions requises"
+      },
+      "requiredChecks": {
+        "profilePhoto": "Photo de profil",
+        "stageName": "Pseudo",
+        "age": "Âge",
+        "description": "Description (≥ 200 car.)"
+      },
+      "basic": {
+        "profilePhoto": "Photo de profil",
+        "profilePhotoRequired": "⚠️ 1 photo de profil obligatoire",
+        "mandatory": "OBLIGATOIRE",
+        "remove": "Retirer",
+        "ok": "OK",
+        "notePhotoOnly": "Obligatoire - Photo uniquement",
+        "dropOrClick": "Déposez ou cliquez pour ajouter",
+        "photoOnly": "Photo uniquement (max 500MB)",
+        "photoOrVideo": "Photo ou vidéo (max 500MB)",
+        "uploadProgress": "Upload en cours...",
+        "preparing": "Préparation…",
+        "mediaUploaded": "Média uploadé ✅",
+        "uploadFailed": "Échec de l'upload",
+        "profileRequired": "Créez d'abord votre profil (enregistrez vos infos), puis réessayez.",
+        "compressionFailed": "Compression vidéo échouée: {error}",
+        "fileTooLarge": "Fichier trop volumineux (limite 500MB).",
+        "title": "Informations de base",
+        "stageName": "Pseudo",
+        "category": "Catégorie",
+        "selectCategory": "Sélectionner",
+        "categories": {
+          "escort": "👠 Escort",
+          "masseuse": "💆 Masseuse érotique",
+          "dominatrice": "🔗 Dominatrice BDSM",
+          "transsexuelle": "🌸 Transsexuelle",
+          "other": "💼 Autre"
+        },
+        "age": "Âge",
+        "ageGroups": {
+          "18-25": "18-25 ans",
+          "26-30": "26-30 ans",
+          "31-40": "31-40 ans",
+          "40plus": "40+ ans"
+        },
+        "years": "ans",
+        "certifyAge": "Certifier mon âge",
+        "description": "Description",
+        "descriptionPlaceholder": "Décrivez-vous de manière attractive et professionnelle...",
+        "languages": "Langues parlées",
+        "languagesHelp": "Évaluez votre niveau de maîtrise pour chaque langue (1 = Débutant, 5 = Courant)",
+        "location": {
+          "title": "Localisation",
+          "required": "Requis",
+          "canton": "Canton",
+          "city": "Ville",
+          "cityPlaceholder": "ex: Genève",
+          "fullAddress": "Adresse complète",
+          "addressPlaceholder": "Tapez votre adresse suisse...",
+          "privacy": {
+            "precise": "Précise",
+            "approximate": "Approximative (±150m)"
+          }
+        },
+        "phone": {
+          "title": "Contact téléphonique",
+          "number": "Numéro de téléphone",
+          "numberPlaceholder": "+41 79 123 45 67",
+          "visibility": "Visibilité du numéro",
+          "visible": "📞 Numéro visible (affiché + boutons WhatsApp/SMS/Appel)",
+          "hidden": "📞 Numéro caché (boutons WhatsApp/SMS/Appel uniquement)",
+          "none": "🔒 Messagerie privée uniquement"
+        },
+        "geoBlocking": {
+          "title": "Blocage géographique",
+          "optional": "Optionnel",
+          "description": "Bloquez l'accès à votre profil depuis certains pays",
+          "blockedCount": "{count} pays bloqué",
+          "blockedCountPlural": "{count} pays bloqués"
+        }
+      },
+      "appearance": {
+        "title": "Apparence physique",
+        "height": "Taille (cm)",
+        "heightOver": "> 200 cm",
+        "bodyType": "Silhouette",
+        "bodyTypes": {
+          "select": "Sélectionner",
+          "mince": "Mince",
+          "sportive": "Sportive",
+          "pulpeuse": "Pulpeuse",
+          "ronde": "Ronde"
+        },
+        "breastSize": "Tour de poitrine",
+        "breastSizes": {
+          "select": "Sélectionner"
+        },
+        "hairColor": "Cheveux — Couleur",
+        "hairColors": {
+          "select": "Sélectionner",
+          "brun": "Brun",
+          "blond": "Blond",
+          "chatain": "Châtain",
+          "gris": "Gris",
+          "roux": "Roux",
+          "autre": "Autre"
+        },
+        "breastType": "Poitrine",
+        "breastTypes": {
+          "naturelle": "Naturelle",
+          "siliconee": "Siliconée"
+        },
+        "eyeColor": "Couleur des yeux",
+        "eyeColors": {
+          "select": "Sélectionner",
+          "bleu": "Bleu",
+          "vert": "Vert",
+          "marron": "Marron",
+          "noisette": "Noisette",
+          "gris": "Gris"
+        },
+        "ethnicity": "Origine",
+        "ethnicities": {
+          "select": "Sélectionner",
+          "europeenne": "Européenne",
+          "africaine": "Africaine",
+          "asiatique": "Asiatique",
+          "latine": "Latine",
+          "metisse": "Métisse",
+          "autre": "Autre"
+        },
+        "tattoosPiercings": "Tatouages / Piercings",
+        "tattoos": "Tatouages",
+        "piercings": "Piercings",
+        "pubicHair": "Pilosité",
+        "pubicHairTypes": {
+          "naturel": "Naturel",
+          "rase": "Rasé",
+          "partiel": "Partiel"
+        },
+        "smoker": "Fumeur/Fumeuse"
+      },
+      "services": {
+        "title": "Clientèle & Services",
+        "description": "Sélectionnez ce que vous proposez. Utilisez la recherche pour filtrer.",
+        "clientele": "Clientèle acceptée",
+        "clienteleTypes": {
+          "couples": "Couples",
+          "women": "Femmes",
+          "handicapped": "Personnes handicapées",
+          "seniors": "Seniors"
+        },
+        "serviceMode": "Mode de service",
+        "incall": "Je reçois",
+        "outcall": "Je me déplace"
+      },
+      "pricing": {
+        "title": "Tarifs et disponibilités",
+        "startingFrom": "À partir de",
+        "detailedRates": "Tarifs détaillés (optionnel)",
+        "durations": {
+          "15min": "15 minutes",
+          "30min": "30 minutes",
+          "1hour": "1 heure",
+          "2hours": "2 heures",
+          "halfDay": "Demi-journée",
+          "fullDay": "Journée complète",
+          "overnight": "Nuit complète"
+        },
+        "tip": "💡 Astuce : Les tarifs aident les clients à vous trouver facilement et augmentent votre visibilité.",
+        "customDurations": "Durées personnalisées",
+        "addCustom": "+ Ajouter",
+        "customDurationPlaceholder": "Ex: 90 minutes, 3 heures, Week-end...",
+        "priceCHF": "Prix CHF",
+        "delete": "Supprimer",
+        "customNote": "Les durées personnalisées sont visibles sur votre profil et dans les recherches.",
+        "warningNote": "⚠️ Sans tarifs, votre profil n'apparaîtra pas dans les recherches par prix.",
+        "availability": "Disponibilité : Configurez votre agenda dans l'onglet",
+        "agendaTab": "Agenda"
+      },
+      "agenda": {
+        "title": "Agenda",
+        "weeklySchedule": "Heures de présence (hebdo)",
+        "days": {
+          "Lundi": "Lundi",
+          "Mardi": "Mardi",
+          "Mercredi": "Mercredi",
+          "Jeudi": "Jeudi",
+          "Vendredi": "Vendredi",
+          "Samedi": "Samedi",
+          "Dimanche": "Dimanche"
+        },
+        "open": "✅ Ouvert",
+        "closed": "❌ Fermé",
+        "opening": "Ouverture",
+        "closing": "Fermeture",
+        "pause": "Mettre mon compte en pause",
+        "pauseStart": "Début de pause",
+        "pauseReturn": "Retour",
+        "absences": "Jours d'absence exceptionnels",
+        "addAbsence": "Ajouter une absence",
+        "noAbsences": "Aucune absence planifiée",
+        "autoSave": "Les changements sont enregistrés automatiquement.",
+        "templates": {
+          "weekdays": "Semaine",
+          "weekend": "Week-end only",
+          "applied": "Template \"{template}\" appliqué"
+        }
+      },
+      "save": {
+        "saving": "Enregistrement...",
+        "saved": "Modifications enregistrées",
+        "error": "Erreur lors de la sauvegarde",
+        "retry": "Retry {count}/{max}...",
+        "retryFailed": "{error} (échec après {max} tentatives)"
       }
     }
   },
