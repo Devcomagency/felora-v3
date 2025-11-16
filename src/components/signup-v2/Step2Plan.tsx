@@ -1,9 +1,11 @@
 "use client"
 import { useEffect, useMemo, useState } from 'react'
+import { useTranslations } from 'next-intl'
 
 type Plan = { id:string; code:string; name:string; priceCents:number; interval:string; popular:boolean }
 
 export default function Step2Plan({ onSelect }:{ onSelect:(plan:Plan)=>void }){
+  const t = useTranslations('signup.plans')
   const [plans, setPlans] = useState<Plan[]>([])
   const [loading, setLoading] = useState(true)
   const [promoInput, setPromoInput] = useState('')
@@ -21,7 +23,7 @@ export default function Step2Plan({ onSelect }:{ onSelect:(plan:Plan)=>void }){
     })()
   }, [])
 
-  if (loading) return <div className="text-white/70">Chargement des offres…</div>
+  if (loading) return <div className="text-white/70">{t('loading')}</div>
 
   const effectivePrice = (p: Plan) => {
     if (!promo) return p.priceCents
@@ -34,41 +36,41 @@ export default function Step2Plan({ onSelect }:{ onSelect:(plan:Plan)=>void }){
   }
 
   const labelByCode: Record<string, string> = {
-    WEEK: '7 jours',
-    MONTH: '30 jours',
-    QUARTER: '90 jours',
+    WEEK: t('week.label'),
+    MONTH: t('month.label'),
+    QUARTER: t('quarter.label'),
   }
   const descByCode: Record<string, string> = {
-    WEEK: "Idéal pour démarrer et tester la plateforme en 7 jours.",
-    MONTH: "Le meilleur équilibre visibilité/prix pour progresser rapidement.",
-    QUARTER: "Parfait pour une présence continue et des résultats durables.",
+    WEEK: t('week.description'),
+    MONTH: t('month.description'),
+    QUARTER: t('quarter.description'),
   }
   const featuresByCode: Record<string, string[]> = {
     WEEK: [
-      'Photos illimitées',
-      'Lecture / Play‑Pause illimitée',
-      'Messagerie chiffrée de bout en bout (E2EE)',
-      'Système de cadeaux intégré',
-      'Mise en avant basique',
-      'Support standard',
+      t('features.unlimitedPhotos'),
+      t('features.unlimitedPlayback'),
+      t('features.e2eeMessaging'),
+      t('features.giftSystem'),
+      t('features.basicPromotion'),
+      t('features.standardSupport'),
     ],
     MONTH: [
-      'Photos illimitées',
-      'Lecture / Play‑Pause illimitée',
-      'Messagerie chiffrée de bout en bout (E2EE)',
-      'Système de cadeaux intégré',
-      'Mise en avant renforcée',
-      'Statistiques avancées',
-      'Support standard',
+      t('features.unlimitedPhotos'),
+      t('features.unlimitedPlayback'),
+      t('features.e2eeMessaging'),
+      t('features.giftSystem'),
+      t('features.enhancedPromotion'),
+      t('features.advancedStats'),
+      t('features.standardSupport'),
     ],
     QUARTER: [
-      'Photos illimitées',
-      'Lecture / Play‑Pause illimitée',
-      'Messagerie chiffrée de bout en bout (E2EE)',
-      'Système de cadeaux intégré',
-      'Mise en avant premium',
-      'Statistiques avancées',
-      'Support prioritaire',
+      t('features.unlimitedPhotos'),
+      t('features.unlimitedPlayback'),
+      t('features.e2eeMessaging'),
+      t('features.giftSystem'),
+      t('features.premiumPromotion'),
+      t('features.advancedStats'),
+      t('features.prioritySupport'),
     ],
   }
 
@@ -85,13 +87,13 @@ export default function Step2Plan({ onSelect }:{ onSelect:(plan:Plan)=>void }){
               {/* Badge Best-seller (30 jours) */}
               {(p.code === 'MONTH' || p.popular) && (
                 <span className="absolute top-2 right-2 px-2 py-1 text-[10px] font-semibold rounded-full bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow">
-                  Best‑seller
+                  {t('badges.bestseller')}
                 </span>
               )}
               {/* Badge Premium (90 jours) */}
               {p.code === 'QUARTER' && (
                 <span className="absolute top-2 right-2 px-2 py-1 text-[10px] font-semibold rounded-full bg-gradient-to-r from-amber-400 to-yellow-500 text-black shadow">
-                  Premium
+                  {t('badges.premium')}
                 </span>
               )}
               <div className="flex flex-col gap-1">
@@ -118,7 +120,7 @@ export default function Step2Plan({ onSelect }:{ onSelect:(plan:Plan)=>void }){
                 {/* CTA clair dans la carte */}
                 <div className="mt-4 flex justify-center">
                   <span className="inline-block px-3 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-pink-500 to-violet-600 text-white shadow">
-                    Je choisis ce plan
+                    {t('cta.choosePlan')}
                   </span>
                 </div>
               </div>
@@ -129,7 +131,7 @@ export default function Step2Plan({ onSelect }:{ onSelect:(plan:Plan)=>void }){
 
       {/* Légende CTA globale */}
       <p className="text-white/70 text-sm">
-        Je choisis mon plan et j’active mon profil pour valider.
+        {t('cta.description')}
       </p>
 
       {/* Code promo (placé dessous) */}
@@ -137,7 +139,7 @@ export default function Step2Plan({ onSelect }:{ onSelect:(plan:Plan)=>void }){
         <div className="flex gap-2 items-center">
           <input
             className="flex-1 bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white"
-            placeholder="Code promo (ex: WELCOME10, PROMO50)"
+            placeholder={t('promo.placeholder')}
             value={promoInput}
             onChange={(e)=>{ setPromoInput(e.target.value.toUpperCase()); setPromoErr(''); setPromoMsg('') }}
           />
@@ -146,19 +148,19 @@ export default function Step2Plan({ onSelect }:{ onSelect:(plan:Plan)=>void }){
             onClick={async ()=>{
               setPromoErr(''); setPromoMsg('')
               const code = promoInput.trim().toUpperCase()
-              if (!code) { setPromoErr('Entrez un code'); return }
+              if (!code) { setPromoErr(t('promo.errors.enterCode')); return }
               try {
                 const r = await fetch('/api/signup-v2/promo/validate', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ code }) })
                 const d = await r.json()
-                if (!r.ok || !d?.success) { setPromo(null); setPromoErr(d?.error || 'Code invalide'); return }
+                if (!r.ok || !d?.success) { setPromo(null); setPromoErr(d?.error || t('promo.errors.invalidCode')); return }
                 setPromo({ code: d.promo.code, type: d.promo.type, value: d.promo.value, applicablePlans: d.promo.applicablePlans || null })
-                setPromoMsg(d?.message || 'Code appliqué')
-              } catch { setPromoErr('Impossible de valider le code') }
+                setPromoMsg(d?.message || t('promo.success.applied'))
+              } catch { setPromoErr(t('promo.errors.validationFailed')) }
             }}
-          >Appliquer</button>
+          >{t('promo.apply')}</button>
         </div>
         {promoErr && (<div className="text-red-400 text-xs mt-2">{promoErr}</div>)}
-        {promo && !promoErr && (<div className="text-green-400 text-xs mt-2">{promoMsg || `Code ${promo.code} appliqué`}</div>)}
+        {promo && !promoErr && (<div className="text-green-400 text-xs mt-2">{promoMsg || t('promo.success.codeApplied', {code: promo.code})}</div>)}
       </div>
     </div>
   )

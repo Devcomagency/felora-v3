@@ -1125,6 +1125,54 @@
     "send": "Send"
   },
   "signup": {
+    "plans": {
+      "loading": "Loading plans…",
+      "week": {
+        "label": "7 days",
+        "description": "Ideal to start and test the platform for 7 days."
+      },
+      "month": {
+        "label": "30 days",
+        "description": "The best visibility/price balance to progress quickly."
+      },
+      "quarter": {
+        "label": "90 days",
+        "description": "Perfect for continuous presence and lasting results."
+      },
+      "features": {
+        "unlimitedPhotos": "Unlimited photos",
+        "unlimitedPlayback": "Unlimited playback / Play-Pause",
+        "e2eeMessaging": "End-to-end encrypted messaging (E2EE)",
+        "giftSystem": "Integrated gift system",
+        "basicPromotion": "Basic promotion",
+        "enhancedPromotion": "Enhanced promotion",
+        "premiumPromotion": "Premium promotion",
+        "advancedStats": "Advanced statistics",
+        "standardSupport": "Standard support",
+        "prioritySupport": "Priority support"
+      },
+      "badges": {
+        "bestseller": "Best-seller",
+        "premium": "Premium"
+      },
+      "cta": {
+        "choosePlan": "I choose this plan",
+        "description": "I choose my plan and activate my profile to validate."
+      },
+      "promo": {
+        "placeholder": "Promo code (e.g.: WELCOME10, PROMO50)",
+        "apply": "Apply",
+        "errors": {
+          "enterCode": "Enter a code",
+          "invalidCode": "Invalid code",
+          "validationFailed": "Unable to validate code"
+        },
+        "success": {
+          "applied": "Code applied",
+          "codeApplied": "Code {code} applied"
+        }
+      }
+    },
     "escort": {
       "page": {
         "loadingAccount": "Creating your account...",
