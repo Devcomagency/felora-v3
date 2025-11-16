@@ -158,7 +158,37 @@
     "favorites": "Favorites"
   },
   "auth": {
-    "login": "Login",
+    "login": {
+      "title": "Login",
+      "subtitle": "Access your premium space",
+      "loading": "Loading...",
+      "form": {
+        "email": "Email",
+        "emailPlaceholder": "your@email.com",
+        "password": "Password",
+        "passwordPlaceholder": "••••••••",
+        "rememberMe": "Remember me",
+        "forgotPassword": "Forgot password?",
+        "submit": "Sign in",
+        "loggingIn": "Signing in..."
+      },
+      "errors": {
+        "invalidEmail": "Invalid email address",
+        "passwordRequired": "Password is required",
+        "accountSuspended": "Your account has been suspended",
+        "connectionError": "Connection error. Please try again."
+      },
+      "footer": {
+        "noAccount": "Don't have an account?",
+        "register": "Sign up",
+        "backToHome": "Back to home"
+      },
+      "trust": {
+        "secure": "Secure connection",
+        "encrypted": "Encrypted data",
+        "premium": "Premium service"
+      }
+    },
     "register": "Register",
     "email": "Email",
     "password": "Password",

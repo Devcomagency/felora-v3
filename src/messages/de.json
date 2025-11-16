@@ -158,7 +158,37 @@
     "favorites": "Favoriten"
   },
   "auth": {
-    "login": "Anmelden",
+    "login": {
+      "title": "Anmeldung",
+      "subtitle": "Zugriff auf Ihren Premium-Bereich",
+      "loading": "Laden...",
+      "form": {
+        "email": "E-Mail",
+        "emailPlaceholder": "ihre@email.com",
+        "password": "Passwort",
+        "passwordPlaceholder": "••••••••",
+        "rememberMe": "Angemeldet bleiben",
+        "forgotPassword": "Passwort vergessen?",
+        "submit": "Anmelden",
+        "loggingIn": "Anmeldung läuft..."
+      },
+      "errors": {
+        "invalidEmail": "Ungültige E-Mail-Adresse",
+        "passwordRequired": "Passwort ist erforderlich",
+        "accountSuspended": "Ihr Konto wurde gesperrt",
+        "connectionError": "Verbindungsfehler. Bitte versuchen Sie es erneut."
+      },
+      "footer": {
+        "noAccount": "Noch kein Konto?",
+        "register": "Registrieren",
+        "backToHome": "Zurück zur Startseite"
+      },
+      "trust": {
+        "secure": "Sichere Verbindung",
+        "encrypted": "Verschlüsselte Daten",
+        "premium": "Premium-Service"
+      }
+    },
     "register": {
       "title": "Konto erstellen",
       "subtitle": "Wählen Sie den Kontotyp, der zu Ihnen passt",

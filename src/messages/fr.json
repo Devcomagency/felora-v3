@@ -158,7 +158,37 @@
     "favorites": "Favoris"
   },
   "auth": {
-    "login": "Connexion",
+    "login": {
+      "title": "Connexion",
+      "subtitle": "Accédez à votre espace premium",
+      "loading": "Chargement...",
+      "form": {
+        "email": "Email",
+        "emailPlaceholder": "votre@email.com",
+        "password": "Mot de passe",
+        "passwordPlaceholder": "••••••••",
+        "rememberMe": "Se souvenir de moi",
+        "forgotPassword": "Mot de passe oublié ?",
+        "submit": "Se connecter",
+        "loggingIn": "Connexion en cours..."
+      },
+      "errors": {
+        "invalidEmail": "Adresse email invalide",
+        "passwordRequired": "Le mot de passe est requis",
+        "accountSuspended": "Votre compte a été suspendu",
+        "connectionError": "Erreur de connexion. Veuillez réessayer."
+      },
+      "footer": {
+        "noAccount": "Pas encore de compte ?",
+        "register": "S'inscrire",
+        "backToHome": "Retour à l'accueil"
+      },
+      "trust": {
+        "secure": "Connexion sécurisée",
+        "encrypted": "Données chiffrées",
+        "premium": "Service premium"
+      }
+    },
     "register": "Inscription",
     "email": "Email",
     "password": "Mot de passe",

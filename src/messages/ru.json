@@ -158,7 +158,37 @@
     "favorites": "Избранное"
   },
   "auth": {
-    "login": "Войти",
+    "login": {
+      "title": "Вход",
+      "subtitle": "Доступ к вашему премиум-пространству",
+      "loading": "Загрузка...",
+      "form": {
+        "email": "Электронная почта",
+        "emailPlaceholder": "ваш@email.com",
+        "password": "Пароль",
+        "passwordPlaceholder": "••••••••",
+        "rememberMe": "Запомнить меня",
+        "forgotPassword": "Забыли пароль?",
+        "submit": "Войти",
+        "loggingIn": "Вход..."
+      },
+      "errors": {
+        "invalidEmail": "Неверный адрес электронной почты",
+        "passwordRequired": "Требуется пароль",
+        "accountSuspended": "Ваша учетная запись заблокирована",
+        "connectionError": "Ошибка подключения. Пожалуйста, попробуйте снова."
+      },
+      "footer": {
+        "noAccount": "Нет аккаунта?",
+        "register": "Зарегистрироваться",
+        "backToHome": "Вернуться на главную"
+      },
+      "trust": {
+        "secure": "Безопасное соединение",
+        "encrypted": "Зашифрованные данные",
+        "premium": "Премиум-сервис"
+      }
+    },
     "register": {
       "title": "Создать аккаунт",
       "subtitle": "Выберите тип аккаунта, который вам подходит",

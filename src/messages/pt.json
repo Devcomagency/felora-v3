@@ -80,7 +80,37 @@
   },
   "navigation": {"home": "Início", "search": "Pesquisa", "map": "Mapa", "messages": "Mensagens", "profile": "Perfil", "settings": "Configurações", "logout": "Sair", "login": "Entrar", "register": "Registrar", "dashboard": "Painel", "favorites": "Favoritos"},
   "auth": {
-    "login": "Entrar",
+    "login": {
+      "title": "Entrar",
+      "subtitle": "Acesse seu espaço premium",
+      "loading": "Carregando...",
+      "form": {
+        "email": "E-mail",
+        "emailPlaceholder": "seu@email.com",
+        "password": "Senha",
+        "passwordPlaceholder": "••••••••",
+        "rememberMe": "Lembrar de mim",
+        "forgotPassword": "Esqueceu a senha?",
+        "submit": "Entrar",
+        "loggingIn": "Entrando..."
+      },
+      "errors": {
+        "invalidEmail": "Endereço de e-mail inválido",
+        "passwordRequired": "A senha é obrigatória",
+        "accountSuspended": "Sua conta foi suspensa",
+        "connectionError": "Erro de conexão. Por favor, tente novamente."
+      },
+      "footer": {
+        "noAccount": "Não tem uma conta?",
+        "register": "Cadastre-se",
+        "backToHome": "Voltar ao início"
+      },
+      "trust": {
+        "secure": "Conexão segura",
+        "encrypted": "Dados criptografados",
+        "premium": "Serviço premium"
+      }
+    },
     "register": {
       "title": "Criar uma conta",
       "subtitle": "Escolha o tipo de conta que lhe convém",

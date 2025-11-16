@@ -80,7 +80,37 @@
   },
   "navigation": {"home": "Ballina", "search": "Kërkim", "map": "Harta", "messages": "Mesazhet", "profile": "Profili", "settings": "Cilësimet", "logout": "Dil", "login": "Hyr", "register": "Regjistrohu", "dashboard": "Paneli", "favorites": "Të preferuarat"},
   "auth": {
-    "login": "Hyr",
+    "login": {
+      "title": "Hyni",
+      "subtitle": "Hyni në hapësirën tuaj premium",
+      "loading": "Duke ngarkuar...",
+      "form": {
+        "email": "Email",
+        "emailPlaceholder": "juaj@email.com",
+        "password": "Fjalëkalimi",
+        "passwordPlaceholder": "••••••••",
+        "rememberMe": "Më mbaj mend",
+        "forgotPassword": "Keni harruar fjalëkalimin?",
+        "submit": "Hyni",
+        "loggingIn": "Duke hyrë..."
+      },
+      "errors": {
+        "invalidEmail": "Adresë email e pavlefshme",
+        "passwordRequired": "Fjalëkalimi është i detyrueshëm",
+        "accountSuspended": "Llogaria juaj është pezulluar",
+        "connectionError": "Gabim në lidhje. Ju lutemi provoni përsëri."
+      },
+      "footer": {
+        "noAccount": "Nuk keni llogari?",
+        "register": "Regjistrohuni",
+        "backToHome": "Kthehu në fillim"
+      },
+      "trust": {
+        "secure": "Lidhje e sigurt",
+        "encrypted": "Të dhëna të enkriptuara",
+        "premium": "Shërbim premium"
+      }
+    },
     "register": {
       "title": "Krijo një llogari",
       "subtitle": "Zgjidhni llojin e llogarisë që ju përshtatet",

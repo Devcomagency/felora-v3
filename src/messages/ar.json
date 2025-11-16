@@ -80,7 +80,37 @@
   },
   "navigation": {"home": "الرئيسية", "search": "بحث", "map": "خريطة", "messages": "الرسائل", "profile": "الملف الشخصي", "settings": "الإعدادات", "logout": "تسجيل الخروج", "login": "تسجيل الدخول", "register": "التسجيل", "dashboard": "لوحة التحكم", "favorites": "المفضلة"},
   "auth": {
-    "login": "تسجيل الدخول",
+    "login": {
+      "title": "تسجيل الدخول",
+      "subtitle": "الوصول إلى مساحتك المميزة",
+      "loading": "جاري التحميل...",
+      "form": {
+        "email": "البريد الإلكتروني",
+        "emailPlaceholder": "your@email.com",
+        "password": "كلمة المرور",
+        "passwordPlaceholder": "••••••••",
+        "rememberMe": "تذكرني",
+        "forgotPassword": "هل نسيت كلمة المرور؟",
+        "submit": "تسجيل الدخول",
+        "loggingIn": "جاري تسجيل الدخول..."
+      },
+      "errors": {
+        "invalidEmail": "عنوان البريد الإلكتروني غير صالح",
+        "passwordRequired": "كلمة المرور مطلوبة",
+        "accountSuspended": "تم تعليق حسابك",
+        "connectionError": "خطأ في الاتصال. يرجى المحاولة مرة أخرى."
+      },
+      "footer": {
+        "noAccount": "ليس لديك حساب؟",
+        "register": "سجل الآن",
+        "backToHome": "العودة إلى الصفحة الرئيسية"
+      },
+      "trust": {
+        "secure": "اتصال آمن",
+        "encrypted": "بيانات مشفرة",
+        "premium": "خدمة مميزة"
+      }
+    },
     "register": {
       "title": "إنشاء حساب",
       "subtitle": "اختر نوع الحساب المناسب لك",
