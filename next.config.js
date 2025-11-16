@@ -32,10 +32,18 @@ const nextConfig = {
       '*': [
         'node_modules/@swc/core-linux-x64-gnu',
         'node_modules/@swc/core-linux-x64-musl',
+        'node_modules/@swc/core-darwin-x64',
+        'node_modules/@swc/core-darwin-arm64',
         'node_modules/@esbuild/linux-x64',
+        'node_modules/@esbuild/darwin-x64',
+        'node_modules/@esbuild/darwin-arm64',
         'node_modules/next/dist/compiled/@edge-runtime/primitives/**/*',
+        'node_modules/webpack/**/*',
+        'node_modules/@sentry/profiling-node/**/*',
       ],
     },
+    // Optimiser les imports barrel (framer-motion, lucide-react)
+    optimizePackageImports: ['lucide-react', 'framer-motion', '@radix-ui/react-dialog'],
   },
 
   // Optimisations et sécurité de base

@@ -2,10 +2,23 @@
 
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
-import ModernProfileEditor from '@/components/dashboard/ModernProfileEditor'
+import dynamic from 'next/dynamic'
 import { useFeatureFlag } from '@/hooks/useFeatureFlag'
 import { CheckCircle, X } from 'lucide-react'
 import { useTranslations } from 'next-intl'
+
+// Lazy load ModernProfileEditor to reduce bundle size
+const ModernProfileEditor = dynamic(
+  () => import('@/components/dashboard/ModernProfileEditor'),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center py-20">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+      </div>
+    )
+  }
+)
 
 // Success message component
 function KYCSuccessMessage({ onClose }: { onClose: () => void }) {

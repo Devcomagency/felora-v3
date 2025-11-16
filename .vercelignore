@@ -1,1 +1,24 @@
-# Force redeploy Fri Sep 19 19:51:07 CEST 2025 - FIX API FALLBACK CASSÉE
+# Development files
+.env.local
+.env*.local
+
+# Documentation (reduce bundle size)
+docs/
+*.md
+!README.md
+
+# Tests
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx
+playwright-report/
+test-results/
+
+# Mobile (Capacitor)
+android/
+ios/
+capacitor.config.ts
+
+# Scripts
+scripts/cleanup-keep-user.js
