@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { X, AlertTriangle, Flag } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { REPORT_REASONS_BY_TYPE, REPORT_REASON_LABELS, type ReportType, type ReportReason } from '@/types/reports'
 
 interface ReportModalProps {
@@ -21,6 +22,8 @@ export default function ReportModal({
   targetId,
   targetName
 }: ReportModalProps) {
+  const t = useTranslations('reportModal')
+
   const [reason, setReason] = useState<ReportReason | ''>('')
   const [description, setDescription] = useState('')
   const [email, setEmail] = useState('')
@@ -33,7 +36,7 @@ export default function ReportModal({
     e.preventDefault()
 
     if (!reason) {
-      alert('Veuillez sélectionner une raison')
+      alert(t('errors.selectReason'))
       return
     }
 
@@ -66,11 +69,11 @@ export default function ReportModal({
           setSubmitted(false)
         }, 2000)
       } else {
-        alert(data.error || 'Erreur lors de l\'envoi du signalement')
+        alert(data.error || t('errors.submitError'))
       }
     } catch (error) {
       console.error('Error submitting report:', error)
-      alert('Erreur de connexion')
+      alert(t('errors.connectionError'))
     } finally {
       setSubmitting(false)
     }
@@ -85,9 +88,9 @@ export default function ReportModal({
           <div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-4">
             <Flag className="text-green-400" size={32} />
           </div>
-          <h3 className="text-xl font-bold text-white mb-2">Signalement envoyé</h3>
+          <h3 className="text-xl font-bold text-white mb-2">{t('success.title')}</h3>
           <p className="text-gray-400">
-            Merci pour votre signalement. Notre équipe va l'examiner dans les plus brefs délais.
+            {t('success.message')}
           </p>
         </div>
       </div>
@@ -104,7 +107,7 @@ export default function ReportModal({
               <AlertTriangle className="text-red-400" size={20} />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-white">Signaler</h2>
+              <h2 className="text-xl font-bold text-white">{t('title')}</h2>
               {targetName && (
                 <p className="text-sm text-gray-400">{targetName}</p>
               )}
@@ -113,7 +116,7 @@ export default function ReportModal({
           <button
             onClick={onClose}
             className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
-            aria-label="Fermer"
+            aria-label={t('close')}
           >
             <X className="text-gray-400" size={20} />
           </button>
@@ -124,7 +127,7 @@ export default function ReportModal({
           {/* Raison */}
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-3">
-              Raison du signalement <span className="text-red-400">*</span>
+              {t('reasonLabel')} <span className="text-red-400">{t('reasonRequired')}</span>
             </label>
             <div className="space-y-2">
               {reasons.map((r) => (
@@ -155,35 +158,35 @@ export default function ReportModal({
           {/* Description (optionnelle) */}
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
-              Description (optionnelle)
+              {t('descriptionLabel')}
             </label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={4}
-              placeholder="Donnez plus de détails sur le problème..."
+              placeholder={t('descriptionPlaceholder')}
               className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-red-500 transition-colors resize-none"
               maxLength={500}
             />
             <div className="text-xs text-gray-500 mt-1">
-              {description.length}/500 caractères
+              {t('charactersCount', { count: description.length })}
             </div>
           </div>
 
           {/* Email (optionnel) */}
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
-              Votre email (optionnel)
+              {t('emailLabel')}
             </label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="votre@email.com"
+              placeholder={t('emailPlaceholder')}
               className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-red-500 transition-colors"
             />
             <p className="text-xs text-gray-500 mt-1">
-              Pour que nous puissions vous contacter si nécessaire
+              {t('emailHelp')}
             </p>
           </div>
 
@@ -194,7 +197,7 @@ export default function ReportModal({
               onClick={onClose}
               className="flex-1 px-4 py-3 bg-gray-800 border border-gray-700 text-gray-300 rounded-lg hover:bg-gray-700 transition-colors font-medium"
             >
-              Annuler
+              {t('cancel')}
             </button>
             <button
               type="submit"
@@ -204,12 +207,12 @@ export default function ReportModal({
               {submitting ? (
                 <>
                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                  Envoi...
+                  {t('submitting')}
                 </>
               ) : (
                 <>
                   <Flag size={18} />
-                  Signaler
+                  {t('submit')}
                 </>
               )}
             </button>

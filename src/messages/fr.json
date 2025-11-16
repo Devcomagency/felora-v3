@@ -1135,5 +1135,46 @@
         "saving": "Sauvegarde…"
       }
     }
+  },
+  "reportModal": {
+    "title": "Signaler",
+    "close": "Fermer",
+    "reasonLabel": "Raison du signalement",
+    "reasonRequired": "*",
+    "descriptionLabel": "Description (optionnelle)",
+    "descriptionPlaceholder": "Donnez plus de détails sur le problème...",
+    "charactersCount": "{count}/500 caractères",
+    "emailLabel": "Votre email (optionnel)",
+    "emailPlaceholder": "votre@email.com",
+    "emailHelp": "Pour que nous puissions vous contacter si nécessaire",
+    "cancel": "Annuler",
+    "submit": "Signaler",
+    "submitting": "Envoi...",
+    "success": {
+      "title": "Signalement envoyé",
+      "message": "Merci pour votre signalement. Notre équipe va l'examiner dans les plus brefs délais."
+    },
+    "errors": {
+      "selectReason": "Veuillez sélectionner une raison",
+      "submitError": "Erreur lors de l'envoi du signalement",
+      "connectionError": "Erreur de connexion"
+    }
+  },
+  "schedule": {
+    "title": "Horaires d'ouverture",
+    "open247": "Ouvert 24h/24, 7j/7",
+    "closed": "Fermé",
+    "from": "De",
+    "to": "à",
+    "copyToAll": "Copier à tous",
+    "days": {
+      "lundi": "Lundi",
+      "mardi": "Mardi",
+      "mercredi": "Mercredi",
+      "jeudi": "Jeudi",
+      "vendredi": "Vendredi",
+      "samedi": "Samedi",
+      "dimanche": "Dimanche"
+    }
   }
 }

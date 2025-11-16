@@ -1,8 +1,10 @@
 "use client"
 
 import { useState, useTransition, useEffect, useCallback, useRef } from 'react'
+import { useTranslations } from 'next-intl'
 
 export default function HorairesPanel(){
+  const t = useTranslations('schedule')
   const [schedule, setSchedule] = useState<Record<string, { open: string; close: string; closed: boolean }>>({
     lundi: { open: '18:00', close: '05:00', closed: false },
     mardi: { open: '18:00', close: '05:00', closed: false },
@@ -42,13 +44,13 @@ export default function HorairesPanel(){
   }, [])
 
   const days = [
-    { key: 'lundi', label: 'Lundi' },
-    { key: 'mardi', label: 'Mardi' },
-    { key: 'mercredi', label: 'Mercredi' },
-    { key: 'jeudi', label: 'Jeudi' },
-    { key: 'vendredi', label: 'Vendredi' },
-    { key: 'samedi', label: 'Samedi' },
-    { key: 'dimanche', label: 'Dimanche' },
+    { key: 'lundi', label: t('days.lundi') },
+    { key: 'mardi', label: t('days.mardi') },
+    { key: 'mercredi', label: t('days.mercredi') },
+    { key: 'jeudi', label: t('days.jeudi') },
+    { key: 'vendredi', label: t('days.vendredi') },
+    { key: 'samedi', label: t('days.samedi') },
+    { key: 'dimanche', label: t('days.dimanche') },
   ]
 
   // Fonction pour parser les horaires depuis la string openingHours
@@ -161,7 +163,7 @@ export default function HorairesPanel(){
           onChange={e => setIsOpen24_7(e.target.checked)}
           className="rounded border-gray-600 bg-gray-800 text-purple-600 focus:ring-purple-500"
         />
-        <label htmlFor="open247" className="text-sm text-gray-300">Ouvert 24h/24, 7j/7</label>
+        <label htmlFor="open247" className="text-sm text-gray-300">{t('open247')}</label>
       </div>
 
       {!isOpen24_7 && (
@@ -178,13 +180,13 @@ export default function HorairesPanel(){
                     onChange={e => updateDaySchedule(key, 'closed', e.target.checked)}
                     className="rounded border-gray-600 bg-gray-800 text-red-600 focus:ring-red-500"
                   />
-                  <span className="text-xs text-gray-400">Fermé</span>
+                  <span className="text-xs text-gray-400">{t('closed')}</span>
                 </div>
 
                 {!schedule[key].closed && (
                   <div className="flex flex-wrap items-center gap-2 sm:gap-2 flex-1">
                     <div className="flex items-center gap-1.5 sm:gap-2">
-                      <span className="text-xs text-gray-400">De</span>
+                      <span className="text-xs text-gray-400">{t('from')}</span>
                       <input
                         type="time"
                         value={schedule[key].open}
@@ -193,7 +195,7 @@ export default function HorairesPanel(){
                       />
                     </div>
                     <div className="flex items-center gap-1.5 sm:gap-2">
-                      <span className="text-xs text-gray-400">à</span>
+                      <span className="text-xs text-gray-400">{t('to')}</span>
                       <input
                         type="time"
                         value={schedule[key].close}
@@ -206,7 +208,7 @@ export default function HorairesPanel(){
                       onClick={() => copyToAllDays(key)}
                       className="text-xs px-2 py-1 bg-purple-600/20 text-purple-300 rounded hover:bg-purple-600/30 transition-colors whitespace-nowrap"
                     >
-                      Copier à tous
+                      {t('copyToAll')}
                     </button>
                   </div>
                 )}
