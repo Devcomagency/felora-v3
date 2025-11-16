@@ -1229,15 +1229,10 @@
         },
         "modal": {
           "later": {
-            "title": "Warnung — Verifizierung nicht abgeschlossen",
-            "consequences": {
-              "visibility": "Reduzierte Sichtbarkeit in der Suche",
-              "features": "Eingeschränkte Funktionen (z.B. Auszahlung, bestimmte Übermittlungen)",
-              "badge": "\"Nicht verifiziert\"-Badge sichtbar im Profil"
-            },
-            "description": "Sie können Ihre Verifizierung später von Ihrem Dashboard aus vervollständigen. Für bessere Sichtbarkeit und Kundenvertrauen empfehlen wir, die Verifizierung jetzt abzuschließen.",
-            "continueBtn": "Verifizierung fortsetzen",
-            "laterBtn": "Verstanden, ich mache es später"
+            "title": "Später vervollständigen",
+            "description": "Sie können Ihre Identitätsverifizierung von Ihrem Dashboard aus vervollständigen.",
+            "cancelBtn": "Abbrechen",
+            "continueBtn": "Weiter"
           },
           "success": {
             "title": "Verifizierung erfolgreich eingereicht!",

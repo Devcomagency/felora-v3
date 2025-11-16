@@ -1126,15 +1126,10 @@
         },
         "modal": {
           "later": {
-            "title": "Kujdes — verifikimi i pakompletuar",
-            "consequences": {
-              "visibility": "Dukshmëri e ulët në kërkim",
-              "features": "Funksione të kufizuara (p.sh: tërheqje, disa dërgime)",
-              "badge": "Insigna \"I paverifikuar\" e dukshme në profil"
-            },
-            "description": "Mund ta kompletoni verifikimin tuaj më vonë nga paneli juaj. Për dukshmëri më të mirë dhe besim të klientit, rekomandojmë të finalizoni verifikimin tani.",
-            "continueBtn": "Vazhdoni verifikimin",
-            "laterBtn": "E kuptova, do ta bëj më vonë"
+            "title": "Kompletoni më vonë",
+            "description": "Mund ta kompletoni verifikimin e identitetit tuaj nga paneli juaj.",
+            "cancelBtn": "Anulo",
+            "continueBtn": "Vazhdo"
           },
           "success": {
             "title": "Verifikimi u dërgua me sukses!",

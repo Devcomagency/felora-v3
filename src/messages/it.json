@@ -1229,15 +1229,10 @@
         },
         "modal": {
           "later": {
-            "title": "Attenzione — verifica non completata",
-            "consequences": {
-              "visibility": "Visibilità ridotta nella ricerca",
-              "features": "Funzionalità limitate (es: prelievo, alcuni invii)",
-              "badge": "Badge \"Non verificato\" visibile sul profilo"
-            },
-            "description": "Potrai completare la tua verifica più tardi dalla tua dashboard. Per una migliore visibilità e fiducia dei clienti, raccomandiamo di finalizzare la verifica ora.",
-            "continueBtn": "Continua verifica",
-            "laterBtn": "Capito, lo farò più tardi"
+            "title": "Completa più tardi",
+            "description": "Potrai completare la tua verifica d'identità dalla tua dashboard.",
+            "cancelBtn": "Annulla",
+            "continueBtn": "Continua"
           },
           "success": {
             "title": "Verifica inviata con successo!",

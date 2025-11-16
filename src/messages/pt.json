@@ -1126,15 +1126,10 @@
         },
         "modal": {
           "later": {
-            "title": "Atenção — verificação não concluída",
-            "consequences": {
-              "visibility": "Visibilidade reduzida na pesquisa",
-              "features": "Recursos limitados (ex: saque, certos envios)",
-              "badge": "Badge \"Não verificado\" visível no perfil"
-            },
-            "description": "Você poderá concluir sua verificação mais tarde no seu painel. Para melhor visibilidade e confiança do cliente, recomendamos finalizar a verificação agora.",
-            "continueBtn": "Continuar verificação",
-            "laterBtn": "Entendido, farei mais tarde"
+            "title": "Completar mais tarde",
+            "description": "Você poderá completar sua verificação de identidade no seu painel.",
+            "cancelBtn": "Cancelar",
+            "continueBtn": "Continuar"
           },
           "success": {
             "title": "Verificação enviada com sucesso!",

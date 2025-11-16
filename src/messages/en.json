@@ -1277,15 +1277,10 @@
         },
         "modal": {
           "later": {
-            "title": "Warning — verification not completed",
-            "consequences": {
-              "visibility": "Reduced visibility in search",
-              "features": "Limited features (e.g., withdrawal, certain submissions)",
-              "badge": "\"Unverified\" badge visible on profile"
-            },
-            "description": "You can complete your verification later from your dashboard. For better visibility and client trust, we recommend finalizing verification now.",
-            "continueBtn": "Continue verification",
-            "laterBtn": "Understood, I'll do it later"
+            "title": "Complete later",
+            "description": "You can complete your identity verification from your dashboard.",
+            "cancelBtn": "Cancel",
+            "continueBtn": "Continue"
           },
           "success": {
             "title": "Verification submitted successfully!",
