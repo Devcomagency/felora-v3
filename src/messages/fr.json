@@ -1182,6 +1182,127 @@
           "applied": "Code appliqué",
           "codeApplied": "Code {code} appliqué"
         }
+      },
+      "kyc": {
+        "errors": {
+          "missingDocs": "Documents manquants : {missing}",
+          "missingUserId": "ID utilisateur manquant - veuillez recharger la page",
+          "filesTooLarge": "Fichiers trop volumineux (max 25MB pour vidéo, 10MB pour images)",
+          "serverError": "Erreur serveur {status}",
+          "submitFailed": "Échec de l'envoi - veuillez réessayer"
+        },
+        "header": {
+          "title": "Vérification d'identité",
+          "subtitle": "Dernière étape pour activer votre compte"
+        },
+        "required": {
+          "title": "Documents requis :",
+          "idFront": "Photo recto de votre pièce d'identité",
+          "idBack": "Photo verso de votre pièce d'identité",
+          "selfie": "Selfie avec papier \"FELORA\"",
+          "video": "Courte vidéo de présentation"
+        },
+        "tips": {
+          "title": "💡 Conseils généraux :",
+          "naturalLight": "Utilisez la lumière naturelle (évitez contre-jour)",
+          "avoidReflections": "Évitez les reflets sur les documents",
+          "readable": "Toutes les informations doivent être lisibles",
+          "formats": "Formats acceptés : JPG, PNG, PDF, MP4, MOV"
+        },
+        "upload": {
+          "idFront": {
+            "label": "Pièce d'identité — recto",
+            "req1": "Photo nette et lisible",
+            "req2": "Toutes les informations visibles",
+            "req3": "Document valide (non expiré)",
+            "tip1": "Posez le document à plat",
+            "tip2": "Cadrez bien tous les bords"
+          },
+          "idBack": {
+            "label": "Pièce d'identité — verso",
+            "req1": "Photo nette et lisible",
+            "req2": "Verso complet visible",
+            "req3": "Pas de reflets",
+            "tip1": "Vérifiez la netteté avant envoi",
+            "tip2": "Gardez un fond neutre"
+          },
+          "selfie": {
+            "label": "Selfie avec papier \"FELORA\"",
+            "req1": "Votre visage clairement visible",
+            "req2": "Papier avec \"FELORA\" + date du jour écrit à la main",
+            "req3": "Photo en couleur, non retouchée",
+            "tip1": "Tenez le papier à côté de votre visage",
+            "tip2": "Assurez-vous que tout est lisible"
+          },
+          "video": {
+            "label": "Vidéo courte visage",
+            "header": "Vidéo de présentation (max 30s, max 25MB)",
+            "description": "Présentez-vous en disant votre nom complet. Filmez en mode portrait avec une bonne luminosité. Gardez la vidéo courte pour rester sous 25MB.",
+            "selectLabel": "Sélectionner votre vidéo",
+            "required": "Requis",
+            "req1": "Durée maximum 30 secondes",
+            "req2": "Votre visage bien visible",
+            "req3": "Dites votre nom complet",
+            "tip1": "Filmez en mode portrait (vertical)",
+            "tip2": "Assurez-vous d'avoir une bonne luminosité",
+            "tip3": "Parlez clairement et regardez la caméra"
+          }
+        },
+        "status": {
+          "missingDocs": "{count} document(s) manquant(s)",
+          "allReady": "Tous les documents sont prêts",
+          "allProvided": "Tous les documents sont fournis"
+        },
+        "actions": {
+          "completeLater": "Compléter plus tard",
+          "validateVerification": "Valider la vérification",
+          "submitting": "Envoi..."
+        },
+        "checklist": {
+          "title": "Checklist des documents",
+          "items": {
+            "idFront": "Pièce d'identité — recto",
+            "idBack": "Pièce d'identité — verso",
+            "selfie": "Selfie avec papier \"FELORA\"",
+            "video": "Vidéo de présentation"
+          },
+          "status": {
+            "provided": "Document fourni",
+            "pending": "En attente",
+            "missingCount": "{count} document(s) manquant(s)"
+          },
+          "badge": {
+            "readyForValidation": "Prêt pour validation",
+            "incomplete": "Documents incomplets"
+          }
+        },
+        "modal": {
+          "later": {
+            "title": "Attention — vérification non complétée",
+            "consequences": {
+              "visibility": "Visibilité réduite dans la recherche",
+              "features": "Fonctionnalités limitées (ex: retrait, certains envois)",
+              "badge": "Badge \"Non vérifié\" visible sur le profil"
+            },
+            "description": "Vous pourrez terminer votre vérification plus tard depuis votre tableau de bord. Pour une meilleure visibilité et la confiance des clients, nous recommandons de finaliser la vérification maintenant.",
+            "continueBtn": "Continuer la vérification",
+            "laterBtn": "Compris, je ferai plus tard"
+          },
+          "success": {
+            "title": "Vérification envoyée avec succès !",
+            "congratulations": "Félicitations !",
+            "docsSubmitted": "Vos documents ont été transmis à notre équipe.",
+            "canComplete": "Vous pouvez maintenant compléter toutes les informations dans votre espace personnel.",
+            "nextSteps": {
+              "title": "📋 Prochaines étapes :",
+              "completeProfile": "Complétez votre profil dans le dashboard",
+              "addPhotos": "Ajoutez vos photos et informations",
+              "verificationTime": "La vérification se fait sous 48h ouvrées",
+              "badgeAuto": "Votre badge apparaîtra automatiquement une fois validé"
+            },
+            "goToDashboard": "Aller au Dashboard"
+          }
+        }
       }
     },
     "escort": {

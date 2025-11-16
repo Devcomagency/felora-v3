@@ -1133,6 +1133,127 @@
           "filesLarge": "Dateien zu groß. Bitte komprimieren Sie Ihre Bilder/Videos (max. 3MB pro Datei).",
           "submission": "Übermittlungsfehler"
         }
+      },
+      "kyc": {
+        "errors": {
+          "missingDocs": "Fehlende Dokumente: {missing}",
+          "missingUserId": "Benutzer-ID fehlt - bitte laden Sie die Seite neu",
+          "filesTooLarge": "Dateien zu groß (max 25MB für Video, 10MB für Bilder)",
+          "serverError": "Serverfehler {status}",
+          "submitFailed": "Übermittlung fehlgeschlagen - bitte versuchen Sie es erneut"
+        },
+        "header": {
+          "title": "Identitätsverifizierung",
+          "subtitle": "Letzter Schritt zur Aktivierung Ihres Kontos"
+        },
+        "required": {
+          "title": "Erforderliche Dokumente:",
+          "idFront": "Foto Ihrer Ausweisdokuments (Vorderseite)",
+          "idBack": "Foto Ihrer Ausweisdokuments (Rückseite)",
+          "selfie": "Selfie mit \"FELORA\"-Papier",
+          "video": "Kurzes Präsentationsvideo"
+        },
+        "tips": {
+          "title": "💡 Allgemeine Tipps:",
+          "naturalLight": "Verwenden Sie natürliches Licht (vermeiden Sie Gegenlicht)",
+          "avoidReflections": "Vermeiden Sie Reflexionen auf Dokumenten",
+          "readable": "Alle Informationen müssen lesbar sein",
+          "formats": "Akzeptierte Formate: JPG, PNG, PDF, MP4, MOV"
+        },
+        "upload": {
+          "idFront": {
+            "label": "Ausweis — Vorderseite",
+            "req1": "Klares und lesbares Foto",
+            "req2": "Alle Informationen sichtbar",
+            "req3": "Gültiges Dokument (nicht abgelaufen)",
+            "tip1": "Legen Sie das Dokument flach hin",
+            "tip2": "Rahmen Sie alle Kanten richtig ein"
+          },
+          "idBack": {
+            "label": "Ausweis — Rückseite",
+            "req1": "Klares und lesbares Foto",
+            "req2": "Vollständige Rückseite sichtbar",
+            "req3": "Keine Reflexionen",
+            "tip1": "Überprüfen Sie die Schärfe vor dem Senden",
+            "tip2": "Verwenden Sie einen neutralen Hintergrund"
+          },
+          "selfie": {
+            "label": "Selfie mit \"FELORA\"-Papier",
+            "req1": "Ihr Gesicht deutlich sichtbar",
+            "req2": "Papier mit \"FELORA\" + heutigem Datum handgeschrieben",
+            "req3": "Farbfoto, unbearbeitet",
+            "tip1": "Halten Sie das Papier neben Ihr Gesicht",
+            "tip2": "Stellen Sie sicher, dass alles lesbar ist"
+          },
+          "video": {
+            "label": "Kurzes Gesichtsvideo",
+            "header": "Präsentationsvideo (max 30s, max 25MB)",
+            "description": "Stellen Sie sich vor, indem Sie Ihren vollständigen Namen sagen. Filmen Sie im Hochformat mit guter Beleuchtung. Halten Sie das Video kurz, um unter 25MB zu bleiben.",
+            "selectLabel": "Wählen Sie Ihr Video",
+            "required": "Erforderlich",
+            "req1": "Maximale Dauer 30 Sekunden",
+            "req2": "Ihr Gesicht deutlich sichtbar",
+            "req3": "Sagen Sie Ihren vollständigen Namen",
+            "tip1": "Filmen Sie im Hochformat (vertikal)",
+            "tip2": "Stellen Sie gute Beleuchtung sicher",
+            "tip3": "Sprechen Sie deutlich und schauen Sie in die Kamera"
+          }
+        },
+        "status": {
+          "missingDocs": "{count} fehlendes/fehlende Dokument(e)",
+          "allReady": "Alle Dokumente sind bereit",
+          "allProvided": "Alle Dokumente bereitgestellt"
+        },
+        "actions": {
+          "completeLater": "Später vervollständigen",
+          "validateVerification": "Verifizierung bestätigen",
+          "submitting": "Wird gesendet..."
+        },
+        "checklist": {
+          "title": "Dokument-Checkliste",
+          "items": {
+            "idFront": "Ausweis — Vorderseite",
+            "idBack": "Ausweis — Rückseite",
+            "selfie": "Selfie mit \"FELORA\"-Papier",
+            "video": "Präsentationsvideo"
+          },
+          "status": {
+            "provided": "Dokument bereitgestellt",
+            "pending": "Ausstehend",
+            "missingCount": "{count} fehlendes/fehlende Dokument(e)"
+          },
+          "badge": {
+            "readyForValidation": "Bereit zur Validierung",
+            "incomplete": "Unvollständige Dokumente"
+          }
+        },
+        "modal": {
+          "later": {
+            "title": "Warnung — Verifizierung nicht abgeschlossen",
+            "consequences": {
+              "visibility": "Reduzierte Sichtbarkeit in der Suche",
+              "features": "Eingeschränkte Funktionen (z.B. Auszahlung, bestimmte Übermittlungen)",
+              "badge": "\"Nicht verifiziert\"-Badge sichtbar im Profil"
+            },
+            "description": "Sie können Ihre Verifizierung später von Ihrem Dashboard aus vervollständigen. Für bessere Sichtbarkeit und Kundenvertrauen empfehlen wir, die Verifizierung jetzt abzuschließen.",
+            "continueBtn": "Verifizierung fortsetzen",
+            "laterBtn": "Verstanden, ich mache es später"
+          },
+          "success": {
+            "title": "Verifizierung erfolgreich eingereicht!",
+            "congratulations": "Herzlichen Glückwunsch!",
+            "docsSubmitted": "Ihre Dokumente wurden an unser Team gesendet.",
+            "canComplete": "Sie können jetzt alle Informationen in Ihrem persönlichen Bereich vervollständigen.",
+            "nextSteps": {
+              "title": "📋 Nächste Schritte:",
+              "completeProfile": "Vervollständigen Sie Ihr Profil im Dashboard",
+              "addPhotos": "Fügen Sie Ihre Fotos und Informationen hinzu",
+              "verificationTime": "Die Verifizierung erfolgt innerhalb von 48 Werktagen",
+              "badgeAuto": "Ihr Badge erscheint automatisch nach der Validierung"
+            },
+            "goToDashboard": "Zum Dashboard gehen"
+          }
+        }
       }
     }
   },

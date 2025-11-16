@@ -1030,6 +1030,127 @@
           "filesLarge": "Skedarët shumë të mëdhenj. Ju lutemi kompresoni imazhet/videot tuaja (max 3MB secili).",
           "submission": "Gabim në dërgim"
         }
+      },
+      "kyc": {
+        "errors": {
+          "missingDocs": "Dokumente që mungojnë: {missing}",
+          "missingUserId": "ID e përdoruesit mungon - ju lutemi ringarkoni faqen",
+          "filesTooLarge": "Skedarët shumë të mëdhenj (max 25MB për video, 10MB për imazhe)",
+          "serverError": "Gabim i serverit {status}",
+          "submitFailed": "Dërgimi dështoi - ju lutemi provoni përsëri"
+        },
+        "header": {
+          "title": "Verifikimi i identitetit",
+          "subtitle": "Hapi i fundit për të aktivizuar llogarinë tuaj"
+        },
+        "required": {
+          "title": "Dokumentet e kërkuara:",
+          "idFront": "Fotoja e pjesës së përparme të letërnjoftimit",
+          "idBack": "Fotoja e pjesës së pasme të letërnjoftimit",
+          "selfie": "Selfie me letrën \"FELORA\"",
+          "video": "Video e shkurtër prezantuese"
+        },
+        "tips": {
+          "title": "💡 Këshilla të përgjithshme:",
+          "naturalLight": "Përdorni dritë natyrale (shmangni kundërdritën)",
+          "avoidReflections": "Shmangni pasqyrimet në dokumente",
+          "readable": "Të gjitha informacionet duhet të jenë të lexueshme",
+          "formats": "Formate të pranuara: JPG, PNG, PDF, MP4, MOV"
+        },
+        "upload": {
+          "idFront": {
+            "label": "Letërnjoftim — përpara",
+            "req1": "Foto e qartë dhe e lexueshme",
+            "req2": "Të gjitha informacionet e dukshme",
+            "req3": "Dokument i vlefshëm (jo i skaduar)",
+            "tip1": "Vendosni dokumentin në sipërfaqe të sheshtë",
+            "tip2": "Kornizoni të gjitha anët siç duhet"
+          },
+          "idBack": {
+            "label": "Letërnjoftim — prapa",
+            "req1": "Foto e qartë dhe e lexueshme",
+            "req2": "Pjesa e pasme plotësisht e dukshme",
+            "req3": "Pa pasqyrime",
+            "tip1": "Kontrolloni qartësinë para se të dërgoni",
+            "tip2": "Mbani një sfond neutral"
+          },
+          "selfie": {
+            "label": "Selfie me letrën \"FELORA\"",
+            "req1": "Fytyra juaj qartësisht e dukshme",
+            "req2": "Letër me \"FELORA\" + data e sotme e shkruar me dorë",
+            "req3": "Foto me ngjyra, e paedituar",
+            "tip1": "Mbajeni letrën pranë fytyrës suaj",
+            "tip2": "Sigurohuni që gjithçka është e lexueshme"
+          },
+          "video": {
+            "label": "Video e shkurtër e fytyrës",
+            "header": "Video prezantuese (max 30s, max 25MB)",
+            "description": "Prezantohuni duke thënë emrin tuaj të plotë. Filmoni në modalitetin portret me ndriçim të mirë. Mbajeni videon të shkurtër për të qëndruar nën 25MB.",
+            "selectLabel": "Zgjidhni videon tuaj",
+            "required": "E detyrueshme",
+            "req1": "Kohëzgjatja maksimale 30 sekonda",
+            "req2": "Fytyra juaj qartësisht e dukshme",
+            "req3": "Thuani emrin tuaj të plotë",
+            "tip1": "Filmoni në modalitetin portret (vertikal)",
+            "tip2": "Sigurohuni që të keni ndriçim të mirë",
+            "tip3": "Flisni qartë dhe shikoni kamerën"
+          }
+        },
+        "status": {
+          "missingDocs": "{count} dokument(e) që mungon(jnë)",
+          "allReady": "Të gjitha dokumentet janë gati",
+          "allProvided": "Të gjitha dokumentet e dhëna"
+        },
+        "actions": {
+          "completeLater": "Plotëso më vonë",
+          "validateVerification": "Valido verifikimin",
+          "submitting": "Duke dërguar..."
+        },
+        "checklist": {
+          "title": "Lista e kontrollit të dokumenteve",
+          "items": {
+            "idFront": "Letërnjoftim — përpara",
+            "idBack": "Letërnjoftim — prapa",
+            "selfie": "Selfie me letrën \"FELORA\"",
+            "video": "Video prezantuese"
+          },
+          "status": {
+            "provided": "Dokumenti i dhënë",
+            "pending": "Në pritje",
+            "missingCount": "{count} dokument(e) që mungon(jnë)"
+          },
+          "badge": {
+            "readyForValidation": "Gati për validim",
+            "incomplete": "Dokumente të pakompletuara"
+          }
+        },
+        "modal": {
+          "later": {
+            "title": "Kujdes — verifikimi i pakompletuar",
+            "consequences": {
+              "visibility": "Dukshmëri e ulët në kërkim",
+              "features": "Funksione të kufizuara (p.sh: tërheqje, disa dërgime)",
+              "badge": "Insigna \"I paverifikuar\" e dukshme në profil"
+            },
+            "description": "Mund ta kompletoni verifikimin tuaj më vonë nga paneli juaj. Për dukshmëri më të mirë dhe besim të klientit, rekomandojmë të finalizoni verifikimin tani.",
+            "continueBtn": "Vazhdoni verifikimin",
+            "laterBtn": "E kuptova, do ta bëj më vonë"
+          },
+          "success": {
+            "title": "Verifikimi u dërgua me sukses!",
+            "congratulations": "Urime!",
+            "docsSubmitted": "Dokumentet tuaja u dërguan tek ekipi ynë.",
+            "canComplete": "Tani mund të kompletoni të gjitha informacionet në hapësirën tuaj personale.",
+            "nextSteps": {
+              "title": "📋 Hapat e ardhshëm:",
+              "completeProfile": "Kompletoni profilin tuaj në panel",
+              "addPhotos": "Shtoni fotot dhe informacionet tuaja",
+              "verificationTime": "Verifikimi bëhet brenda 48 orëve pune",
+              "badgeAuto": "Insigna juaj do të shfaqet automatikisht pasi të validohet"
+            },
+            "goToDashboard": "Shko te Paneli"
+          }
+        }
       }
     }
   },

@@ -1,9 +1,11 @@
 "use client"
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import UploadDrop from '@/components/kyc-v2/UploadDrop'
 import { CheckCircle, BadgeCheck, ShieldCheck, AlertCircle } from 'lucide-react'
 
 export default function Step3KYC({ userId, role='ESCORT', onSubmitted }:{ userId:string; role:'ESCORT'|'CLUB'|'CLIENT'; onSubmitted:(ok:boolean)=>void }){
+  const t = useTranslations('signup.kyc')
   console.log('Step3KYC received userId:', userId, 'role:', role)
   const [docs, setDocs] = useState<{[k:string]: string}>({})
   const [busy, setBusy] = useState(false)
@@ -20,14 +22,14 @@ export default function Step3KYC({ userId, role='ESCORT', onSubmitted }:{ userId
     setBusy(true); setError(null)
     try {
       if (!isComplete) {
-        setError(`Pièces manquantes: ${missing.join(', ')}`)
+        setError(t('errors.missingDocs', { missing: missing.join(', ') }))
         setBusy(false)
         return
       }
-      
+
       if (!userId || userId === '') {
         console.error('No userId provided to Step3KYC')
-        setError('ID utilisateur manquant - veuillez recharger la page')
+        setError(t('errors.missingUserId'))
         setBusy(false)
         return
       }
@@ -71,16 +73,16 @@ export default function Step3KYC({ userId, role='ESCORT', onSubmitted }:{ userId
         
         // Message d'erreur spécifique pour 413
         if (r.status === 413) {
-          throw new Error('Fichiers trop volumineux. Veuillez compresser vos images/vidéos (max 3MB chacun).')
+          throw new Error(t('errors.filesTooLarge'))
         }
-        
-        throw new Error(d?.error || `Erreur ${r.status}`)
+
+        throw new Error(d?.error || t('errors.serverError', { status: r.status }))
       }
-      
+
       setShowSuccess(true)
-    } catch (e:any) { 
+    } catch (e:any) {
       console.error('KYC submit error:', e)
-      setError(e.message || 'Erreur lors de la soumission')
+      setError(e.message || t('errors.submitFailed'))
       // Ne pas appeler onSubmitted(false) pour éviter la redirection vers login
     } finally { 
       setBusy(false) 
@@ -97,43 +99,43 @@ export default function Step3KYC({ userId, role='ESCORT', onSubmitted }:{ userId
           </div>
           <div className="flex-1">
             <div className="flex items-center gap-2">
-              <h3 className="text-white font-semibold text-lg">Vérification d'identité</h3>
+              <h3 className="text-white font-semibold text-lg">{t('header.title')}</h3>
               <ShieldCheck size={20} className="text-green-400" />
             </div>
-            <p className="text-white/70 text-sm">Dernière étape pour activer votre compte</p>
+            <p className="text-white/70 text-sm">{t('header.subtitle')}</p>
           </div>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <h4 className="text-white/90 font-medium mb-2 text-sm">Documents requis :</h4>
+            <h4 className="text-white/90 font-medium mb-2 text-sm">{t('required.title')}</h4>
             <ul className="space-y-1 text-white/80 text-sm">
               <li className="flex items-center gap-2">
                 <CheckCircle size={14} className="text-green-400" />
-                Photo recto de votre pièce d'identité
+                {t('required.idFront')}
               </li>
               <li className="flex items-center gap-2">
                 <CheckCircle size={14} className="text-green-400" />
-                Photo verso de votre pièce d'identité
+                {t('required.idBack')}
               </li>
               <li className="flex items-center gap-2">
                 <CheckCircle size={14} className="text-green-400" />
-                Selfie avec papier "FELORA"
+                {t('required.selfie')}
               </li>
               <li className="flex items-center gap-2">
                 <CheckCircle size={14} className="text-green-400" />
-                Vidéo de présentation (30s max)
+                {t('required.video')}
               </li>
             </ul>
           </div>
-          
+
           <div className="bg-black/20 rounded-lg p-3">
-            <h4 className="text-white/90 font-medium mb-2 text-sm">💡 Conseils généraux :</h4>
+            <h4 className="text-white/90 font-medium mb-2 text-sm">{t('tips.title')}</h4>
             <ul className="space-y-1 text-white/70 text-xs">
-              <li>• Utilisez une lumière naturelle</li>
-              <li>• Évitez les reflets et ombres</li>
-              <li>• Assurez-vous que tout est lisible</li>
-              <li>• Formats : JPG/PNG (photos), MP4/WEBM (vidéo)</li>
+              <li>• {t('tips.naturalLight')}</li>
+              <li>• {t('tips.avoidReflections')}</li>
+              <li>• {t('tips.readable')}</li>
+              <li>• {t('tips.formats')}</li>
             </ul>
           </div>
         </div>
@@ -141,53 +143,53 @@ export default function Step3KYC({ userId, role='ESCORT', onSubmitted }:{ userId
 
       {/* Uploads documentaires */}
       <div className="grid sm:grid-cols-2 gap-4">
-        <UploadDrop 
-          label="Pièce d'identité — recto" 
-          accept="image/*" 
+        <UploadDrop
+          label={t('upload.idFront.label')}
+          accept="image/*"
           onUploaded={url=>setDocs(s=>({ ...s, docFrontUrl: url }))}
           exampleImage="/examples/id-front.jpg"
           requirements={[
-            "Photo nette et lisible",
-            "Toutes les informations visibles",
-            "Pas de reflets ou d'ombres"
+            t('upload.idFront.req1'),
+            t('upload.idFront.req2'),
+            t('upload.idFront.req3')
           ]}
           tips={[
-            "Placez le document sur une surface plane",
-            "Évitez les reflets en utilisant une lumière naturelle"
+            t('upload.idFront.tip1'),
+            t('upload.idFront.tip2')
           ]}
           isRequired={true}
         />
-        
-        <UploadDrop 
-          label="Pièce d'identité — verso" 
-          accept="image/*" 
+
+        <UploadDrop
+          label={t('upload.idBack.label')}
+          accept="image/*"
           onUploaded={url=>setDocs(s=>({ ...s, docBackUrl: url }))}
           exampleImage="/examples/id-back.jpg"
           requirements={[
-            "Photo nette et lisible",
-            "Code-barres visible",
-            "Pas de reflets ou d'ombres"
+            t('upload.idBack.req1'),
+            t('upload.idBack.req2'),
+            t('upload.idBack.req3')
           ]}
           tips={[
-            "Vérifiez que le code-barres est visible",
-            "Évitez les plis ou déformations"
+            t('upload.idBack.tip1'),
+            t('upload.idBack.tip2')
           ]}
           isRequired={true}
         />
-        
-        <UploadDrop 
-          label="Selfie avec 'FELORA'" 
-          accept="image/*" 
+
+        <UploadDrop
+          label={t('upload.selfie.label')}
+          accept="image/*"
           onUploaded={url=>setDocs(s=>({ ...s, selfieSignUrl: url }))}
           exampleImage="/examples/selfie-felora.jpg"
           requirements={[
-            "Votre visage bien visible",
-            "Papier avec 'FELORA' lisible",
-            "Bonne luminosité"
+            t('upload.selfie.req1'),
+            t('upload.selfie.req2'),
+            t('upload.selfie.req3')
           ]}
           tips={[
-            "Tenez le papier près de votre visage",
-            "Assurez-vous que le texte 'FELORA' est lisible"
+            t('upload.selfie.tip1'),
+            t('upload.selfie.tip2')
           ]}
           isRequired={true}
         />
@@ -196,26 +198,26 @@ export default function Step3KYC({ userId, role='ESCORT', onSubmitted }:{ userId
       {/* Upload vidéo de vérification */}
       <div className="glass-card p-4 rounded-xl border border-white/10">
         <div className="flex items-center justify-between mb-3">
-          <p className="text-white/80 text-sm font-medium">Vidéo de présentation (max 30s, max 25MB)</p>
-          <span className="text-xs bg-red-500/20 text-red-400 px-2 py-1 rounded">Requis</span>
+          <p className="text-white/80 text-sm font-medium">{t('upload.video.header')}</p>
+          <span className="text-xs bg-red-500/20 text-red-400 px-2 py-1 rounded">{t('upload.video.required')}</span>
         </div>
-        <p className="text-white/60 text-xs mb-4">Présentez-vous en disant votre nom complet. Filmez en mode portrait avec une bonne luminosité. Gardez la vidéo courte pour rester sous 25MB.</p>
-        
-        <UploadDrop 
-          label="Sélectionner votre vidéo" 
-          accept="video/mp4,video/webm,video/quicktime,video/mov" 
+        <p className="text-white/60 text-xs mb-4">{t('upload.video.description')}</p>
+
+        <UploadDrop
+          label={t('upload.video.selectLabel')}
+          accept="video/mp4,video/webm,video/quicktime,video/mov"
           maxMb={25}
           onUploaded={url=>setDocs(s=>({ ...s, livenessVideoUrl: url }))}
           exampleImage="/examples/video-presentation.jpg"
           requirements={[
-            "Durée maximum 30 secondes",
-            "Votre visage bien visible",
-            "Dites votre nom complet"
+            t('upload.video.req1'),
+            t('upload.video.req2'),
+            t('upload.video.req3')
           ]}
           tips={[
-            "Filmez en mode portrait (vertical)",
-            "Assurez-vous d'avoir une bonne luminosité",
-            "Parlez clairement et regardez la caméra"
+            t('upload.video.tip1'),
+            t('upload.video.tip2'),
+            t('upload.video.tip3')
           ]}
           isRequired={true}
         />
@@ -231,28 +233,28 @@ export default function Step3KYC({ userId, role='ESCORT', onSubmitted }:{ userId
               <div className="flex items-center gap-2">
                 <AlertCircle size={16} className="text-orange-400" />
                 <span className="text-white/80 text-sm">
-                  {missing.length} document{missing.length > 1 ? 's' : ''} manquant{missing.length > 1 ? 's' : ''}
+                  {t('status.missingDocs', { count: missing.length })}
                 </span>
               </div>
             ) : (
               <div className="flex items-center gap-2">
                 <BadgeCheck size={16} className="text-green-400" />
                 <span className="text-green-400 text-sm font-medium">
-                  Tous les documents sont prêts
+                  {t('status.allReady')}
                 </span>
               </div>
             )}
           </div>
-          
+
           <div className="flex items-center gap-3">
-            <button 
-              onClick={() => setShowLater(true)} 
+            <button
+              onClick={() => setShowLater(true)}
               disabled={busy}
               className="px-4 py-2 text-white/60 hover:text-white/80 transition-colors disabled:opacity-50 text-sm"
             >
-              Compléter plus tard
+              {t('actions.completeLater')}
             </button>
-            
+
             <button
               onClick={submit}
               disabled={busy || !isComplete}
@@ -261,12 +263,12 @@ export default function Step3KYC({ userId, role='ESCORT', onSubmitted }:{ userId
               {busy ? (
                 <>
                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Envoi...
+                  {t('actions.submitting')}
                 </>
               ) : (
                 <>
                   <ShieldCheck size={16} />
-                  Valider la vérification
+                  {t('actions.validateVerification')}
                 </>
               )}
             </button>
@@ -278,20 +280,20 @@ export default function Step3KYC({ userId, role='ESCORT', onSubmitted }:{ userId
       <div className="glass-card p-4 rounded-xl border border-white/10 mt-4">
         <h4 className="text-white/90 font-medium mb-3 text-sm flex items-center gap-2">
           <CheckCircle size={16} className="text-green-400" />
-          Checklist des documents
+          {t('checklist.title')}
         </h4>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {(
             [
-              ['docFrontUrl','Pièce d\'identité — recto', '📄'],
-              ['docBackUrl','Pièce d\'identité — verso', '📄'],
-              ['selfieSignUrl','Selfie avec papier "FELORA"', '🤳'],
-              ['livenessVideoUrl','Vidéo de présentation', '🎥'],
+              ['docFrontUrl', t('checklist.items.idFront'), '📄'],
+              ['docBackUrl', t('checklist.items.idBack'), '📄'],
+              ['selfieSignUrl', t('checklist.items.selfie'), '🤳'],
+              ['livenessVideoUrl', t('checklist.items.video'), '🎥'],
             ] as Array<[keyof typeof docs, string, string]>
           ).map(([key, label, emoji]) => (
             <div key={String(key)} className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${
-              docs[key] 
-                ? 'bg-green-500/10 border border-green-500/20' 
+              docs[key]
+                ? 'bg-green-500/10 border border-green-500/20'
                 : 'bg-white/5 border border-white/10'
             }`}>
               <div className="flex items-center gap-2">
@@ -307,34 +309,34 @@ export default function Step3KYC({ userId, role='ESCORT', onSubmitted }:{ userId
                   {label}
                 </p>
                 <p className={`text-xs ${docs[key] ? 'text-green-300' : 'text-white/50'}`}>
-                  {docs[key] ? 'Document fourni' : 'En attente'}
+                  {docs[key] ? t('checklist.status.provided') : t('checklist.status.pending')}
                 </p>
               </div>
             </div>
           ))}
         </div>
-        
+
         {/* Badges de statut */}
         <div className="mt-4 pt-4 border-t border-white/10">
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex items-center gap-2">
               <div className={`w-3 h-3 rounded-full ${isComplete ? 'bg-green-400' : 'bg-orange-400'}`} />
               <span className="text-sm text-white/80">
-                {isComplete ? 'Tous les documents sont fournis' : `${missing.length} document(s) manquant(s)`}
+                {isComplete ? t('checklist.status.allProvided') : t('checklist.status.missingCount', { count: missing.length })}
               </span>
             </div>
-            
+
             {isComplete && (
               <div className="flex items-center gap-2 px-3 py-1 bg-green-500/20 border border-green-500/30 rounded-full">
                 <ShieldCheck size={14} className="text-green-400" />
-                <span className="text-xs font-medium text-green-400">Prêt pour validation</span>
+                <span className="text-xs font-medium text-green-400">{t('checklist.badge.readyForValidation')}</span>
               </div>
             )}
-            
+
             {!isComplete && (
               <div className="flex items-center gap-2 px-3 py-1 bg-orange-500/20 border border-orange-500/30 rounded-full">
                 <AlertCircle size={14} className="text-orange-400" />
-                <span className="text-xs font-medium text-orange-400">Documents incomplets</span>
+                <span className="text-xs font-medium text-orange-400">{t('checklist.badge.incomplete')}</span>
               </div>
             )}
           </div>
@@ -346,16 +348,16 @@ export default function Step3KYC({ userId, role='ESCORT', onSubmitted }:{ userId
         <div className="fixed inset-0 z-[10000] flex items-center justify-center">
           <div className="absolute inset-0 bg-black/60" onClick={()=>setShowLater(false)} />
           <div className="relative w-[min(92vw,32rem)] rounded-xl border border-white/10 bg-gray-900/95 backdrop-blur p-5 text-white">
-            <h4 className="text-lg font-semibold mb-2">Attention — vérification non complétée</h4>
+            <h4 className="text-lg font-semibold mb-2">{t('modal.later.title')}</h4>
             <ul className="list-disc list-inside text-white/80 text-sm space-y-1 mb-3">
-              <li>Visibilité réduite dans la recherche</li>
-              <li>Fonctionnalités limitées (ex: retrait, certains envois)</li>
-              <li>Badge “Non vérifié” visible sur le profil</li>
+              <li>{t('modal.later.consequences.visibility')}</li>
+              <li>{t('modal.later.consequences.features')}</li>
+              <li>{t('modal.later.consequences.badge')}</li>
             </ul>
-            <p className="text-white/60 text-sm mb-4">Vous pourrez terminer votre vérification plus tard depuis votre tableau de bord. Pour une meilleure visibilité et la confiance des clients, nous recommandons de finaliser la vérification maintenant.</p>
+            <p className="text-white/60 text-sm mb-4">{t('modal.later.description')}</p>
             <div className="flex items-center justify-end gap-2">
-              <button onClick={()=>setShowLater(false)} className="px-3 py-2 rounded-lg bg-white/10 hover:bg-white/15">Continuer la vérification</button>
-              <button onClick={()=>{ setShowLater(false); onSubmitted(false) }} className="px-3 py-2 rounded-lg bg-gradient-to-r from-pink-500 to-purple-600">Compris, je ferai plus tard</button>
+              <button onClick={()=>setShowLater(false)} className="px-3 py-2 rounded-lg bg-white/10 hover:bg-white/15">{t('modal.later.continueBtn')}</button>
+              <button onClick={()=>{ setShowLater(false); onSubmitted(false) }} className="px-3 py-2 rounded-lg bg-gradient-to-r from-pink-500 to-purple-600">{t('modal.later.laterBtn')}</button>
             </div>
           </div>
         </div>
@@ -370,17 +372,17 @@ export default function Step3KYC({ userId, role='ESCORT', onSubmitted }:{ userId
               <div className="w-16 h-16 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto mb-4">
                 <span className="text-2xl">✅</span>
               </div>
-              <h3 className="text-xl font-bold mb-3 text-emerald-400">Vérification envoyée avec succès !</h3>
+              <h3 className="text-xl font-bold mb-3 text-emerald-400">{t('modal.success.title')}</h3>
               <div className="space-y-2 text-sm text-white/80 mb-6">
-                <p><strong>Félicitations !</strong> Vos documents ont été transmis à notre équipe.</p>
-                <p>Vous pouvez maintenant <strong>compléter toutes les informations</strong> dans votre espace personnel.</p>
+                <p><strong>{t('modal.success.congratulations')}</strong> {t('modal.success.docsSubmitted')}</p>
+                <p>{t('modal.success.canComplete')}</p>
                 <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-3 mt-3">
-                  <p className="font-semibold text-emerald-300">📋 Prochaines étapes :</p>
+                  <p className="font-semibold text-emerald-300">{t('modal.success.nextSteps.title')}</p>
                   <ul className="list-disc list-inside text-xs space-y-1 mt-2">
-                    <li>Complétez votre profil dans le dashboard</li>
-                    <li>Ajoutez vos photos et informations</li>
-                    <li>La vérification se fait sous <strong>48h ouvrées</strong></li>
-                    <li>Votre badge apparaîtra automatiquement une fois validé</li>
+                    <li>{t('modal.success.nextSteps.completeProfile')}</li>
+                    <li>{t('modal.success.nextSteps.addPhotos')}</li>
+                    <li>{t('modal.success.nextSteps.verificationTime')}</li>
+                    <li>{t('modal.success.nextSteps.badgeAuto')}</li>
                   </ul>
                 </div>
               </div>
@@ -393,7 +395,7 @@ export default function Step3KYC({ userId, role='ESCORT', onSubmitted }:{ userId
                 }}
                 className="w-full px-6 py-3 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold hover:from-emerald-600 hover:to-teal-700 transition-all"
               >
-                Aller au Dashboard
+                {t('modal.success.goToDashboard')}
               </button>
             </div>
           </div>
