@@ -411,7 +411,8 @@
     },
     "common": {
       "profile": "Профиль"
-    }
+    },
+    "video": "Видео"
   },
   "messages": {
     "title": "Сообщения",
