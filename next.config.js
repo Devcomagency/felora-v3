@@ -24,24 +24,28 @@ const nextConfig = {
     '@aws-sdk/s3-request-presigner',
     'sharp',
     'canvas',
+    // Client-only libs qui ne doivent JAMAIS être dans le bundle serveur
+    'hls.js',        // 3.3MB - Video player (client-only)
+    // Note: framer-motion ne peut pas être ici car conflit avec optimizePackageImports
   ],
 
-  // Optimisation: exclure les fichiers inutiles du bundle
+  // Optimisation: exclure les fichiers inutiles du bundle (déplacé hors de experimental)
+  outputFileTracingExcludes: {
+    '*': [
+      'node_modules/@swc/core-linux-x64-gnu',
+      'node_modules/@swc/core-linux-x64-musl',
+      'node_modules/@swc/core-darwin-x64',
+      'node_modules/@swc/core-darwin-arm64',
+      'node_modules/@esbuild/linux-x64',
+      'node_modules/@esbuild/darwin-x64',
+      'node_modules/@esbuild/darwin-arm64',
+      'node_modules/next/dist/compiled/@edge-runtime/primitives/**/*',
+      'node_modules/webpack/**/*',
+      'node_modules/@sentry/profiling-node/**/*',
+    ],
+  },
+
   experimental: {
-    outputFileTracingExcludes: {
-      '*': [
-        'node_modules/@swc/core-linux-x64-gnu',
-        'node_modules/@swc/core-linux-x64-musl',
-        'node_modules/@swc/core-darwin-x64',
-        'node_modules/@swc/core-darwin-arm64',
-        'node_modules/@esbuild/linux-x64',
-        'node_modules/@esbuild/darwin-x64',
-        'node_modules/@esbuild/darwin-arm64',
-        'node_modules/next/dist/compiled/@edge-runtime/primitives/**/*',
-        'node_modules/webpack/**/*',
-        'node_modules/@sentry/profiling-node/**/*',
-      ],
-    },
     // Optimiser les imports barrel (framer-motion, lucide-react)
     optimizePackageImports: ['lucide-react', 'framer-motion', '@radix-ui/react-dialog'],
   },
