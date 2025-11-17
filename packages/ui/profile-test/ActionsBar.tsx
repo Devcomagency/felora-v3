@@ -243,8 +243,8 @@ export default function ActionsBar({
           const cleanPhone = phoneNumber.replace(/\D/g, '');
 
           // Messages pré-remplis
-          const whatsappMessage = t('contact.whatsappMessage', { name: profileName });
-          const smsMessage = t('contact.smsMessage', { name: profileName });
+          const whatsappMessage = t('phoneContact.whatsappMessage', { name: profileName });
+          const smsMessage = t('phoneContact.smsMessage', { name: profileName });
 
           // Liens directs
           const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(whatsappMessage)}`;
