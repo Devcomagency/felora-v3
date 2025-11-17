@@ -651,56 +651,56 @@
         "step3": "Your verification will be processed within 48 hours"
       },
       "clubs": {
-        "title": "Mes Clubs",
-        "loading": "Chargement...",
+        "title": "My Clubs",
+        "loading": "Loading...",
         "tabs": {
           "invitations": "Invitations",
-          "myClubs": "Mes clubs"
+          "myClubs": "My clubs"
         },
         "invitations": {
-          "received": "Invitation reçue le",
-          "expires": "Expire le",
-          "accept": "Accepter",
-          "decline": "Refuser",
-          "noInvitations": "Aucune invitation en attente",
-          "noInvitationsDescription": "Les clubs peuvent vous inviter à apparaître sur leur profil",
-          "history": "Historique",
-          "accepted": "✓ Acceptée",
-          "declined": "✗ Refusée",
-          "expired": "⏱ Expirée"
+          "received": "Invitation received on",
+          "expires": "Expires on",
+          "accept": "Accept",
+          "decline": "Decline",
+          "noInvitations": "No pending invitations",
+          "noInvitationsDescription": "Clubs can invite you to appear on their profile",
+          "history": "History",
+          "accepted": "✓ Accepted",
+          "declined": "✗ Declined",
+          "expired": "⏱ Expired"
         },
         "myClubs": {
-          "viewProfile": "Voir profil",
-          "leaveClub": "Quitter le club",
-          "leaveConfirm": "Voulez-vous vraiment quitter {clubName} ?",
-          "noClubs": "Vous n'êtes affiliée à aucun club",
-          "noClubsDescription": "Acceptez une invitation pour apparaître sur le profil d'un club"
+          "viewProfile": "View profile",
+          "leaveClub": "Leave club",
+          "leaveConfirm": "Do you really want to leave {clubName}?",
+          "noClubs": "You are not affiliated with any club",
+          "noClubsDescription": "Accept an invitation to appear on a club's profile"
         }
       },
       "tabs": {
         "basic": {
-          "label": "Informations de base",
-          "description": "Profil général (obligatoire)"
+          "label": "Basic Information",
+          "description": "General profile (required)"
         },
         "appearance": {
-          "label": "Apparence physique",
-          "description": "Caractéristiques physiques"
+          "label": "Physical Appearance",
+          "description": "Physical characteristics"
         },
         "services": {
-          "label": "Clientèle & Services",
-          "description": "Groupes + tags"
+          "label": "Clientele & Services",
+          "description": "Groups + tags"
         },
         "pricing": {
-          "label": "Tarifs & Paiements",
-          "description": "Prix et horaires"
+          "label": "Rates & Payments",
+          "description": "Prices and schedules"
         },
         "agenda": {
           "label": "Agenda",
-          "description": "Disponibilités & absences"
+          "description": "Availability & absences"
         },
         "clubs": {
-          "label": "Mes Clubs",
-          "description": "Clubs partenaires & invitations"
+          "label": "My Clubs",
+          "description": "Partner clubs & invitations"
         }
       },
       "completion": {
@@ -746,10 +746,10 @@
         },
         "age": "Age",
         "ageGroups": {
-          "18-25": "18-25 ans",
-          "26-30": "26-30 ans",
-          "31-40": "31-40 ans",
-          "40plus": "40+ ans"
+          "18-25": "18-25 years",
+          "26-30": "26-30 years",
+          "31-40": "31-40 years",
+          "40plus": "40+ years"
         },
         "years": "years",
         "certifyAge": "Certify my age",
@@ -758,114 +758,114 @@
         "languages": "Spoken Languages",
         "languagesHelp": "Rate your proficiency for each language (1 = Beginner, 5 = Fluent)",
         "location": {
-          "title": "Localisation",
-          "required": "Requis",
+          "title": "Location",
+          "required": "Required",
           "canton": "Canton",
-          "city": "Ville",
-          "cityPlaceholder": "ex: Genève",
-          "fullAddress": "Adresse complète",
-          "addressPlaceholder": "Tapez votre adresse suisse...",
+          "city": "City",
+          "cityPlaceholder": "e.g.: Geneva",
+          "fullAddress": "Full address",
+          "addressPlaceholder": "Type your Swiss address...",
           "privacy": {
-            "precise": "Précise",
-            "approximate": "Approximative (±150m)"
+            "precise": "Precise",
+            "approximate": "Approximate (±150m)"
           }
         },
         "phone": {
-          "title": "Contact téléphonique",
-          "number": "Numéro de téléphone",
+          "title": "Phone Contact",
+          "number": "Phone Number",
           "numberPlaceholder": "+41 79 123 45 67",
-          "visibility": "Visibilité du numéro",
-          "visible": "📞 Numéro visible (affiché + boutons WhatsApp/SMS/Appel)",
-          "hidden": "📞 Numéro caché (boutons WhatsApp/SMS/Appel uniquement)",
-          "none": "🔒 Messagerie privée uniquement"
+          "visibility": "Number Visibility",
+          "visible": "📞 Visible number (displayed + WhatsApp/SMS/Call buttons)",
+          "hidden": "📞 Hidden number (WhatsApp/SMS/Call buttons only)",
+          "none": "🔒 Private messaging only"
         },
         "geoBlocking": {
-          "title": "Blocage géographique",
-          "optional": "Optionnel",
-          "description": "Bloquez l'accès à votre profil depuis certains pays",
-          "blockedCount": "{count} pays bloqué",
-          "blockedCountPlural": "{count} pays bloqués"
+          "title": "Geo Blocking",
+          "optional": "Optional",
+          "description": "Block access to your profile from certain countries",
+          "blockedCount": "{count} blocked country",
+          "blockedCountPlural": "{count} blocked countries"
         }
       },
       "appearance": {
-        "title": "Apparence physique",
-        "height": "Taille (cm)",
+        "title": "Physical Appearance",
+        "height": "Height (cm)",
         "heightOver": "> 200 cm",
-        "bodyType": "Silhouette",
+        "bodyType": "Body Type",
         "bodyTypes": {
-          "select": "Sélectionner",
-          "mince": "Mince",
-          "sportive": "Sportive",
-          "pulpeuse": "Pulpeuse",
-          "ronde": "Ronde"
+          "select": "Select",
+          "mince": "Slim",
+          "sportive": "Athletic",
+          "pulpeuse": "Curvy",
+          "ronde": "Plus-size"
         },
-        "breastSize": "Tour de poitrine",
+        "breastSize": "Bust Size",
         "breastSizes": {
-          "select": "Sélectionner"
+          "select": "Select"
         },
-        "hairColor": "Cheveux — Couleur",
+        "hairColor": "Hair — Color",
         "hairColors": {
-          "select": "Sélectionner",
-          "brun": "Brun",
-          "blond": "Blond",
-          "chatain": "Châtain",
-          "gris": "Gris",
-          "roux": "Roux",
-          "autre": "Autre"
+          "select": "Select",
+          "brun": "Brown",
+          "blond": "Blonde",
+          "chatain": "Chestnut",
+          "gris": "Gray",
+          "roux": "Red",
+          "autre": "Other"
         },
-        "breastType": "Poitrine",
+        "breastType": "Breast Type",
         "breastTypes": {
-          "naturelle": "Naturelle",
-          "siliconee": "Siliconée"
+          "naturelle": "Natural",
+          "siliconee": "Enhanced"
         },
-        "eyeColor": "Couleur des yeux",
+        "eyeColor": "Eye Color",
         "eyeColors": {
-          "select": "Sélectionner",
-          "bleu": "Bleu",
-          "vert": "Vert",
-          "marron": "Marron",
-          "noisette": "Noisette",
-          "gris": "Gris"
+          "select": "Select",
+          "bleu": "Blue",
+          "vert": "Green",
+          "marron": "Brown",
+          "noisette": "Hazel",
+          "gris": "Gray"
         },
-        "ethnicity": "Origine",
+        "ethnicity": "Ethnicity",
         "ethnicities": {
-          "select": "Sélectionner",
-          "europeenne": "Européenne",
-          "africaine": "Africaine",
-          "asiatique": "Asiatique",
-          "latine": "Latine",
-          "metisse": "Métisse",
-          "autre": "Autre"
+          "select": "Select",
+          "europeenne": "European",
+          "africaine": "African",
+          "asiatique": "Asian",
+          "latine": "Latina",
+          "metisse": "Mixed",
+          "autre": "Other"
         },
-        "tattoosPiercings": "Tatouages / Piercings",
-        "tattoos": "Tatouages",
+        "tattoosPiercings": "Tattoos / Piercings",
+        "tattoos": "Tattoos",
         "piercings": "Piercings",
-        "pubicHair": "Pilosité",
+        "pubicHair": "Pubic Hair",
         "pubicHairTypes": {
-          "naturel": "Naturel",
-          "rase": "Rasé",
-          "partiel": "Partiel"
+          "naturel": "Natural",
+          "rase": "Shaved",
+          "partiel": "Partial"
         },
-        "smoker": "Fumeur/Fumeuse"
+        "smoker": "Smoker"
       },
       "services": {
-        "title": "Clientèle & Services",
-        "description": "Sélectionnez ce que vous proposez. Utilisez la recherche pour filtrer.",
-        "clientele": "Clientèle acceptée",
+        "title": "Clientele & Services",
+        "description": "Select what you offer. Use search to filter.",
+        "clientele": "Accepted Clientele",
         "clienteleTypes": {
           "couples": "Couples",
-          "women": "Femmes",
-          "handicapped": "Personnes handicapées",
+          "women": "Women",
+          "handicapped": "People with disabilities",
           "seniors": "Seniors"
         },
-        "serviceMode": "Mode de service",
-        "incall": "Je reçois",
-        "outcall": "Je me déplace"
+        "serviceMode": "Service Mode",
+        "incall": "I receive",
+        "outcall": "I travel"
       },
       "pricing": {
-        "title": "Tarifs et disponibilités",
-        "startingFrom": "À partir de",
-        "detailedRates": "Tarifs détaillés (optionnel)",
+        "title": "Rates and Availability",
+        "startingFrom": "Starting from",
+        "detailedRates": "Detailed rates (optional)",
         "durations": {
           "15min": "15 minutes",
           "30min": "30 minutes",
@@ -884,25 +884,37 @@
         "customNote": "Les durées personnalisées sont visibles sur votre profil et dans les recherches.",
         "warningNote": "⚠️ Sans tarifs, votre profil n'apparaîtra pas dans les recherches par prix.",
         "availability": "Disponibilité : Configurez votre agenda dans l'onglet",
-        "agendaTab": "Agenda"
+        "agendaTab": "Agenda",
+        "duration": "Duration",
+        "price": "Price (CHF)",
+        "addRate": "+ Add rate",
+        "website": "Website (optional)",
+        "websitePlaceholder": "https://yoursite.com",
+        "acceptedPayments": "Accepted Payments",
+        "paymentMethods": {
+          "cash": "Cash",
+          "card": "Credit Card",
+          "crypto": "Cryptocurrency",
+          "twint": "TWINT"
+        }
       },
       "agenda": {
-        "title": "Agenda",
+        "title": "Agenda & Availability",
         "weeklySchedule": "Heures de présence (hebdo)",
         "days": {
-          "Lundi": "Lundi",
-          "Mardi": "Mardi",
-          "Mercredi": "Mercredi",
-          "Jeudi": "Jeudi",
-          "Vendredi": "Vendredi",
-          "Samedi": "Samedi",
-          "Dimanche": "Dimanche"
+          "Lundi": "Monday",
+          "Mardi": "Tuesday",
+          "Mercredi": "Wednesday",
+          "Jeudi": "Thursday",
+          "Vendredi": "Friday",
+          "Samedi": "Saturday",
+          "Dimanche": "Sunday"
         },
         "open": "✅ Ouvert",
         "closed": "❌ Fermé",
         "opening": "Ouverture",
         "closing": "Fermeture",
-        "pause": "Mettre mon compte en pause",
+        "pause": "Pause my account",
         "pauseStart": "Début de pause",
         "pauseReturn": "Retour",
         "absences": "Jours d'absence exceptionnels",
@@ -910,18 +922,25 @@
         "noAbsences": "Aucune absence planifiée",
         "autoSave": "Les changements sont enregistrés automatiquement.",
         "templates": {
-          "weekdays": "Semaine",
-          "weekend": "Week-end only",
-          "applied": "Template \"{template}\" appliqué",
+          "weekdays": "Weekdays",
+          "weekend": "Weekend",
+          "applied": "{template} template applied",
           "allDay": "24/7"
-        }
+        },
+        "pauseDescription": "Your profile will be temporarily hidden",
+        "available": "Available",
+        "notAvailable": "Not available",
+        "from": "From",
+        "to": "To"
       },
       "save": {
-        "saving": "Enregistrement...",
+        "saving": "Saving...",
         "saved": "Modifications enregistrées",
-        "error": "Erreur lors de la sauvegarde",
+        "error": "Error saving profile",
         "retry": "Retry {count}/{max}...",
-        "retryFailed": "{error} (échec après {max} tentatives)"
+        "retryFailed": "{error} (échec après {max} tentatives)",
+        "success": "Profile saved successfully",
+        "button": "Save changes"
       }
     }
   },
