@@ -328,3 +328,4 @@ function Component() {
 - [Google Translate API](https://cloud.google.com/translate)
 - [DeepL API](https://www.deepl.com/pro-api)
 
+

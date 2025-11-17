@@ -327,3 +327,4 @@ const handleLanguageChange = (langCode: string) => {
 3. **SEO** : Les URLs avec locale améliorent le SEO
 4. **RTL** : Tester l'arabe sur mobile et desktop
 
+

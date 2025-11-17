@@ -555,3 +555,4 @@ export default function StaticNavBar() {
 - [Documentation next-intl](https://next-intl-docs.vercel.app/)
 - [Exemples GitHub](https://github.com/amannn/next-intl/tree/main/examples)
 
+

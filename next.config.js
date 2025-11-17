@@ -57,6 +57,10 @@ const nextConfig = {
       'node_modules/next/dist/compiled/@edge-runtime/primitives/**/*',
       'node_modules/webpack/**/*',
       'node_modules/@sentry/profiling-node/**/*',
+      // Dossiers locaux volumineux qui ne doivent jamais être packagés
+      'uploads/**/*',
+      'tmp/**/*',
+      'public/uploads/**/*',
     ],
   },
 

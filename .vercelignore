@@ -22,3 +22,7 @@ capacitor.config.ts
 
 # Scripts
 scripts/cleanup-keep-user.js
+
+# Stockage local (à ne jamais uploader sur Vercel)
+uploads/
+tmp/

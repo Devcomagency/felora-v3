@@ -67,9 +67,10 @@ Thumbs.db
 *.tmp
 *.temp
 
-# Uploads
+# Uploads & fichiers temporaires (ne jamais versionner)
 uploads/
 public/uploads/
+tmp/
 
 # Ignore parent directories content
 ../felora-v2/

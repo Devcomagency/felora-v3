@@ -130,3 +130,4 @@ Si vous voulez vraiment `react-i18next`, il faudra :
 - ❌ Perdre des fonctionnalités App Router
 - ❌ Plus de maintenance
 
+

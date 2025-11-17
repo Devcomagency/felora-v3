@@ -6,10 +6,10 @@
   "functions": {
     "src/app/api/**": {
       "maxDuration": 30,
-      "excludeFiles": "{node_modules/**,public/**,.next/cache/**,docs/**,tests/**,android/**,ios/**}"
+      "excludeFiles": "{node_modules/**,public/**,.next/cache/**,docs/**,tests/**,android/**,ios/**,uploads/**,tmp/**}"
     },
     "src/app/**": {
-      "excludeFiles": "{node_modules/**,public/**,.next/cache/**,docs/**,tests/**,android/**,ios/**}"
+      "excludeFiles": "{node_modules/**,public/**,.next/cache/**,docs/**,tests/**,android/**,ios/**,uploads/**,tmp/**}"
     }
   },
   "regions": ["fra1"]
