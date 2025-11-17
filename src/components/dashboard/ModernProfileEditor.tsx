@@ -969,7 +969,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
               </label>
             </div>
             <div>
-              <div className="text-sm text-white/90 font-medium mb-2">Heures de présence (hebdo)</div>
+              <div className="text-sm text-white/90 font-medium mb-2">{t('agenda.weeklySchedule')}</div>
               <div className="space-y-2">
                 {Object.entries(weekly).map(([day, slot]) => (
                   <div key={day} className="flex items-center gap-2">
@@ -2003,49 +2003,49 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                     onChange={(e) => updateProfileData('age', parseInt(e.target.value))}
                     className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600/50 rounded-xl text-white focus:border-purple-500 focus:outline-none"
                   >
-                    <option value="">Sélectionner</option>
-                    <optgroup label="18-25 ans">
+                    <option value="">{t('basic.selectCategory')}</option>
+                    <optgroup label={t('basic.ageGroups.18-25')}>
                       {Array.from({length: 8}, (_, i) => 18 + i).map(age => (
-                        <option key={age} value={age}>{age} ans</option>
+                        <option key={age} value={age}>{age} {t('basic.years')}</option>
                       ))}
                     </optgroup>
-                    <optgroup label="26-30 ans">
+                    <optgroup label={t('basic.ageGroups.26-30')}>
                       {Array.from({length: 5}, (_, i) => 26 + i).map(age => (
-                        <option key={age} value={age}>{age} ans</option>
+                        <option key={age} value={age}>{age} {t('basic.years')}</option>
                       ))}
                     </optgroup>
-                    <optgroup label="31-40 ans">
+                    <optgroup label={t('basic.ageGroups.31-40')}>
                       {Array.from({length: 10}, (_, i) => 31 + i).map(age => (
-                        <option key={age} value={age}>{age} ans</option>
+                        <option key={age} value={age}>{age} {t('basic.years')}</option>
                       ))}
                     </optgroup>
-                    <optgroup label="40+ ans">
+                    <optgroup label={t('basic.ageGroups.40plus')}>
                       {Array.from({length: 20}, (_, i) => 41 + i).map(age => (
-                        <option key={age} value={age}>{age} ans</option>
+                        <option key={age} value={age}>{age} {t('basic.years')}</option>
                       ))}
                     </optgroup>
                   </select>
                   <div className="mt-2 text-xs">
-                    <a href="/profile-test-signup/escort?step=3" className="text-purple-300 hover:text-purple-200 inline-flex items-center gap-1"><BadgeCheck size={14}/> Certifier mon âge</a>
+                    <a href="/profile-test-signup/escort?step=3" className="text-purple-300 hover:text-purple-200 inline-flex items-center gap-1"><BadgeCheck size={14}/> {t('basic.certifyAge')}</a>
                   </div>
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Description *</label>
+                <label className="block text-sm font-medium text-gray-300 mb-2">{t('basic.description')} *</label>
                 {/* 🆕 Rich Text Editor avec formatage */}
                 <SimpleRichTextEditor
                   value={profileData.description || ''}
                   onChange={(value) => updateProfileData('description', value)}
-                  placeholder="Décrivez-vous de manière attractive et professionnelle..."
+                  placeholder={t('basic.descriptionPlaceholder')}
                   minLength={200}
                   rows={6}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">Langues parlées</label>
-                <div className="text-xs text-gray-400 mb-3">Évaluez votre niveau de maîtrise pour chaque langue (1 = Débutant, 5 = Courant)</div>
+                <label className="block text-sm font-medium text-gray-300 mb-1">{t('basic.languages')}</label>
+                <div className="text-xs text-gray-400 mb-3">{t('basic.languagesHelp')}</div>
                 <div className="bg-gray-700/20 rounded-xl p-4 space-y-3 sm:space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     {['Français', 'Anglais', 'Allemand', 'Italien', 'Espagnol', 'Russe', 'Arabe', 'Chinois'].map((lang) => (
@@ -2066,8 +2066,8 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
               <div className="p-6 bg-gray-800/40 rounded-xl border border-gray-700/50">
                 <div className="flex items-center gap-2 mb-6">
                   <MapPin className="text-purple-400" size={20} />
-                  <h4 className="text-lg font-semibold text-white">Localisation</h4>
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-red-500/20 text-red-300 border border-red-500/30">Requis</span>
+                  <h4 className="text-lg font-semibold text-white">{t('basic.location.title')}</h4>
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-red-500/20 text-red-300 border border-red-500/30">{t('basic.location.required')}</span>
                 </div>
 
                 {/* Grille compacte */}
@@ -2075,7 +2075,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                   {/* Canton */}
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Canton <span className="text-red-400">*</span>
+                      {t('basic.location.canton')} <span className="text-red-400">*</span>
                     </label>
                     <select
                       value={profileData.canton || ''}
@@ -2089,7 +2089,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                       }}
                       className={`w-full px-4 py-3 bg-gray-700/50 border rounded-xl text-white focus:border-purple-500 focus:outline-none ${!profileData.canton ? 'border-red-500/50' : 'border-gray-600/50'}`}
                     >
-                      <option value="">Sélectionner</option>
+                      <option value="">{t('basic.selectCategory')}</option>
                       <option value="GE">Genève</option>
                       <option value="VD">Vaud</option>
                       <option value="VS">Valais</option>
@@ -2102,7 +2102,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                   {/* Ville */}
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Ville <span className="text-red-400">*</span>
+                      {t('basic.location.city')} <span className="text-red-400">*</span>
                     </label>
                     <input
                       list="city-list"
@@ -2116,7 +2116,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                           if (code) updateProfileData('canton', code)
                         }
                       }}
-                      placeholder="ex: Genève"
+                      placeholder={t('basic.location.cityPlaceholder')}
                       className={`w-full px-4 py-3 bg-gray-700/50 border rounded-xl text-white focus:border-purple-500 focus:outline-none ${!profileData.city ? 'border-red-500/50' : 'border-gray-600/50'}`}
                     />
                     <datalist id="city-list">
@@ -2133,7 +2133,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                 {/* Adresse complète */}
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Adresse complète <span className="text-red-400">*</span>
+                    {t('basic.location.fullAddress')} <span className="text-red-400">*</span>
                   </label>
                   <PremiumAddressAutocomplete
                     value={profileData.address || ''}
@@ -2148,7 +2148,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                         updateProfileData('coordinates', coordinates)
                       }
                     }}
-                    placeholder="Tapez votre adresse suisse..."
+                    placeholder={t('basic.location.addressPlaceholder')}
                     cantonCode={profileData.canton || undefined}
                     cantonName={profileData.canton ? CANTON_MAP[profileData.canton] : undefined}
                     city={profileData.city || undefined}
@@ -2191,7 +2191,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                             onChange={(e) => updateProfileData('addressPrivacy', e.target.value as 'precise' | 'approximate')}
                             className="text-purple-500"
                           />
-                          <span className="text-sm text-white">Précise</span>
+                          <span className="text-sm text-white">{t('basic.location.privacy.precise')}</span>
                         </label>
                         <label className="flex items-center gap-2 flex-1 cursor-pointer">
                           <input
@@ -2202,7 +2202,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                             onChange={(e) => updateProfileData('addressPrivacy', e.target.value as 'precise' | 'approximate')}
                             className="text-purple-500"
                           />
-                          <span className="text-sm text-white">Approximative (±150m)</span>
+                          <span className="text-sm text-white">{t('basic.location.privacy.approximate')}</span>
                         </label>
                       </div>
                     </div>
@@ -2212,20 +2212,20 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
 
               {/* Contact téléphonique */}
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-3">Contact téléphonique</label>
+                <label className="block text-sm font-medium text-gray-300 mb-3">{t('basic.phone.title')}</label>
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-xs text-gray-400 mb-1">Numéro de téléphone</label>
+                    <label className="block text-xs text-gray-400 mb-1">{t('basic.phone.number')}</label>
                     <input
                       type="tel"
                       value={profileData.phone || ''}
                       onChange={(e) => updateProfileData('phone', e.target.value)}
-                      placeholder="+41 79 123 45 67"
+                      placeholder={t('basic.phone.numberPlaceholder')}
                       className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white text-sm focus:border-purple-500 focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs text-gray-400 mb-2">Visibilité du numéro</label>
+                    <label className="block text-xs text-gray-400 mb-2">{t('basic.phone.visibility')}</label>
                     <div className="space-y-2">
                       <label className="flex items-center space-x-2">
                         <input
@@ -2236,7 +2236,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                           onChange={(e) => updateProfileData('phoneVisibility', e.target.value)}
                           className="w-4 h-4 text-purple-500 bg-gray-700 border-gray-600 focus:ring-purple-500"
                         />
-                        <span className="text-sm text-gray-300">📞 Numéro visible (affiché + boutons WhatsApp/SMS/Appel)</span>
+                        <span className="text-sm text-gray-300">{t('basic.phone.visible')}</span>
                       </label>
                       <label className="flex items-center space-x-2">
                         <input
@@ -2247,7 +2247,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                           onChange={(e) => updateProfileData('phoneVisibility', e.target.value)}
                           className="w-4 h-4 text-purple-500 bg-gray-700 border-gray-600 focus:ring-purple-500"
                         />
-                        <span className="text-sm text-gray-300">📞 Numéro caché (boutons WhatsApp/SMS/Appel uniquement)</span>
+                        <span className="text-sm text-gray-300">{t('basic.phone.hidden')}</span>
                       </label>
                       <label className="flex items-center space-x-2">
                         <input
@@ -2258,7 +2258,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                           onChange={(e) => updateProfileData('phoneVisibility', e.target.value)}
                           className="w-4 h-4 text-purple-500 bg-gray-700 border-gray-600 focus:ring-purple-500"
                         />
-                        <span className="text-sm text-gray-300">🔒 Messagerie privée uniquement</span>
+                        <span className="text-sm text-gray-300">{t('basic.phone.none')}</span>
                       </label>
                     </div>
                   </div>
@@ -2269,12 +2269,12 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
               <div className="p-6 bg-gray-800/40 rounded-xl border border-gray-700/50">
                 <div className="flex items-center gap-2 mb-6">
                   <ShieldCheck className="text-red-400" size={20} />
-                  <h4 className="text-lg font-semibold text-white">Blocage géographique</h4>
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-gray-600/30 text-gray-400 border border-gray-600/30">Optionnel</span>
+                  <h4 className="text-lg font-semibold text-white">{t('basic.geoBlocking.title')}</h4>
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-gray-600/30 text-gray-400 border border-gray-600/30">{t('basic.geoBlocking.optional')}</span>
                 </div>
 
                 <div className="space-y-4">
-                  <p className="text-sm text-gray-400">Bloquez l'accès à votre profil depuis certains pays</p>
+                  <p className="text-sm text-gray-400">{t('basic.geoBlocking.description')}</p>
 
                   {/* Sélection pays */}
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
@@ -2323,7 +2323,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
 
                   {blockedCountries.size > 0 && (
                     <div className="text-xs text-red-300 bg-red-500/10 px-3 py-2 rounded-lg border border-red-500/20">
-                      {blockedCountries.size} pays bloqué{blockedCountries.size > 1 ? 's' : ''}
+                      {t(blockedCountries.size > 1 ? 'basic.geoBlocking.blockedCountPlural' : 'basic.geoBlocking.blockedCount', { count: blockedCountries.size })}
                     </div>
                   )}
                 </div>
@@ -2334,22 +2334,22 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
 
         {activeTab === 'appearance' && (
           <div>
-            <h3 className="text-xl font-bold text-white mb-6">Apparence physique</h3>
+            <h3 className="text-xl font-bold text-white mb-6">{t('appearance.title')}</h3>
             <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Taille (cm)</label>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">{t('appearance.height')}</label>
                   <div className="flex items-center gap-3">
                     <input type="range" min={140} max={200} step={1} value={profileData.height || 165} onChange={(e)=> updateProfileData('height', parseInt(e.target.value))} className="w-full"/>
                     <div className="w-16 text-right text-white/90">{profileData.height || 165} cm</div>
                   </div>
                   <label className="mt-2 inline-flex items-center gap-2 text-sm text-gray-300">
                     <input type="checkbox" className="rounded" onChange={(e)=> e.target.checked ? updateProfileData('height', 201) : undefined }/>
-                    {'> 200 cm'}
+                    {t('appearance.heightOver')}
                   </label>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Silhouette</label>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">{t('appearance.bodyType')}</label>
                   <select
                     value={profileData.bodyType || ''}
                     onChange={(e) => updateProfileData('bodyType', e.target.value)}
@@ -2366,13 +2366,13 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Tour de poitrine</label>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">{t('appearance.breastSize')}</label>
                   <select
                     value={profileData.breastSize || ''}
                     onChange={(e) => updateProfileData('breastSize', e.target.value)}
                     className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600/50 rounded-xl text-white focus:border-purple-500 focus:outline-none"
                   >
-                    <option value="">Sélectionner</option>
+                    <option value="">{t('appearance.breastSizes.select')}</option>
                     <option value="A">A</option>
                     <option value="B">B</option>
                     <option value="C">C</option>
@@ -2382,7 +2382,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Cheveux — Couleur</label>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">{t('appearance.hairColor')}</label>
                   <select
                     value={profileData.hairColor || ''}
                     onChange={(e) => updateProfileData('hairColor', e.target.value)}
@@ -2409,7 +2409,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
 
               <div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Couleur des yeux</label>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">{t('appearance.eyeColor')}</label>
                   <select
                     value={profileData.eyeColor || ''}
                     onChange={(e) => updateProfileData('eyeColor', e.target.value)}
@@ -2427,7 +2427,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Origine</label>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">{t('appearance.ethnicity')}</label>
                   <select
                     value={profileData.ethnicity || ''}
                     onChange={(e) => updateProfileData('ethnicity', e.target.value)}
@@ -2453,7 +2453,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Tatouages / Piercings</label>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">{t('appearance.tattoosPiercings')}</label>
                   <div className="flex flex-wrap gap-6 items-center">
                     <label className="flex items-center space-x-2">
                       <input
@@ -2463,7 +2463,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                         className="w-4 h-4 text-purple-500 bg-gray-700 border-gray-600 rounded focus:ring-purple-500"
                       />
                       <span className="text-sm text-gray-300">
-                        Tatouages {profileData.tattoos ? '(Oui)' : ''}
+                        {t('appearance.tattoos')} {profileData.tattoos ? '(Oui)' : ''}
                       </span>
                     </label>
                     <label className="flex items-center space-x-2">
@@ -2474,7 +2474,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                         className="w-4 h-4 text-purple-500 bg-gray-700 border-gray-600 rounded focus:ring-purple-500"
                       />
                       <span className="text-sm text-gray-300">
-                        Piercings {profileData.piercings ? '(Oui)' : ''}
+                        {t('appearance.piercings')} {profileData.piercings ? '(Oui)' : ''}
                       </span>
                     </label>
                     <div className="h-6 w-px bg-white/10" />
@@ -2496,11 +2496,11 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
 
         {activeTab === 'services' && (
           <div>
-            <h3 className="text-xl font-bold text-white mb-2">Clientèle & Services</h3>
-            <div className="text-sm text-white/80 mb-4">Sélectionnez ce que vous proposez. Utilisez la recherche pour filtrer.</div>
+            <h3 className="text-xl font-bold text-white mb-2">{t('services.title')}</h3>
+            <div className="text-sm text-white/80 mb-4">{t('services.description')}</div>
             <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Clientèle acceptée</label>
+                <label className="block text-sm font-medium text-gray-300 mb-2">{t('services.clientele')}</label>
                 <div className="grid grid-cols-1 gap-3">
                   {[
                     { key:'acceptsCouples', label: t('services.clienteleTypes.couples') },
@@ -2516,7 +2516,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Mode de service</label>
+                <label className="block text-sm font-medium text-gray-300 mb-2">{t('services.serviceMode')}</label>
                 <div className="grid grid-cols-1 gap-3">
                   <label className="flex items-center gap-2">
                     <input
@@ -2574,17 +2574,17 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
 
         {activeTab === 'pricing' && (
           <div>
-            <h3 className="text-xl font-bold text-white mb-6">Tarifs et disponibilités</h3>
+            <h3 className="text-xl font-bold text-white mb-6">{t('pricing.title')}</h3>
             <div className="space-y-6">
               {/* À partir de */}
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">À partir de :</label>
+                <label className="block text-sm font-medium text-gray-300 mb-2">{t('pricing.startingFrom')} :</label>
                 <select
                   value={profileData.prices?.oneHour || ''}
                   onChange={(e) => updateNestedProfileData('prices', 'oneHour', parseInt(e.target.value))}
                   className="w-full md:w-60 px-3 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white text-sm focus:border-purple-500 focus:outline-none"
                 >
-                  <option value="">Sélectionner</option>
+                  <option value="">{t('basic.selectCategory')}</option>
                   {[100,150,200,250,300,350,400,450,500].map(v => (
                     <option key={v} value={v}>{v} CHF</option>
                   ))}
@@ -2593,7 +2593,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
 
               {/* Tarifs détaillés */}
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-3">Tarifs détaillés (optionnel)</label>
+                <label className="block text-sm font-medium text-gray-300 mb-3">{t('pricing.detailedRates')}</label>
                 <div className="space-y-4">
                   {/* 15 minutes */}
                   <div className="flex items-center gap-4">
@@ -2795,14 +2795,14 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                 </div>
                 <div className="mt-4 text-xs text-gray-500 flex items-start gap-2">
                   <span className="text-purple-400">💡</span>
-                  <span>Cochez les tarifs que vous souhaitez proposer. Seuls les tarifs cochés s'afficheront dans votre profil public.</span>
+                  <span>{t('pricing.tip')}</span>
                 </div>
               </div>
 
               {/* 🆕 Tarifs personnalisés */}
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <label className="block text-sm font-medium text-gray-300">Durées personnalisées</label>
+                  <label className="block text-sm font-medium text-gray-300">{t('pricing.customDurations')}</label>
                   <button
                     type="button"
                     onClick={() => {
@@ -2817,7 +2817,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                     className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all bg-purple-500/20 hover:bg-purple-500/30 text-purple-200 border border-purple-500/30"
                   >
                     <Zap className="w-3 h-3" />
-                    Ajouter durée personnalisée
+                    {t('pricing.addCustom')}
                   </button>
                 </div>
 
@@ -2827,7 +2827,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                       <div key={customPrice.id} className="flex items-center gap-3 p-3 bg-gray-700/30 rounded-lg border border-gray-600/50">
                         <input
                           type="text"
-                          placeholder="Ex: 90 minutes, 3 heures, Week-end..."
+                          placeholder={t('pricing.customDurationPlaceholder')}
                           value={customPrice.label}
                           onChange={(e) => {
                             setCustomPrices(prev => prev.map(cp =>
@@ -2838,7 +2838,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                         />
                         <input
                           type="number"
-                          placeholder="Prix CHF"
+                          placeholder={t('pricing.priceCHF')}
                           value={customPrice.price || ''}
                           onChange={(e) => {
                             setCustomPrices(prev => prev.map(cp =>
@@ -2853,7 +2853,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                             setCustomPrices(prev => prev.filter(cp => cp.id !== customPrice.id))
                           }}
                           className="p-2 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
-                          title="Supprimer"
+                          title={t('pricing.delete')}
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -2870,7 +2870,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
 
                 <div className="mt-3 text-xs text-orange-300 flex items-start gap-2">
                   <span>⚠️</span>
-                  <span>Note : Les tarifs personnalisés seront bientôt sauvegardés automatiquement. Fonctionnalité en cours de développement.</span>
+                  <span>{t('pricing.customNote')}</span>
                 </div>
               </div>
 
@@ -3142,7 +3142,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
             <div className="text-xs sm:text-sm text-white/70 border-t border-white/10 pt-3 sm:pt-4">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
-                <span>Les changements sont enregistrés automatiquement</span>
+                <span>{t('agenda.autoSave')}</span>
               </div>
               {autoSaveMsg && <div className="text-emerald-300 mt-1">{autoSaveMsg}</div>}
             </div>
