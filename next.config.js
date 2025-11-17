@@ -16,6 +16,10 @@ const nextConfig = {
   // Fix pour le warning des lockfiles multiples
   outputFileTracingRoot: __dirname,
 
+  // CRITICAL: Output standalone pour réduire drastiquement la taille du bundle
+  // Recommandé par Vercel pour les projets qui dépassent 250MB
+  output: 'standalone',
+
   // Next.js 15+: paquets externes côté serveur (optimisation bundle size)
   serverExternalPackages: [
     '@prisma/client',
