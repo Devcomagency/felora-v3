@@ -962,7 +962,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
     return (
       <div className="space-y-6">
         <div className="bg-gray-800/30 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6">
-          <h3 className="text-xl font-bold text-white mb-4">Agenda</h3>
+          <h3 className="text-xl font-bold text-white mb-4">{t('agenda.title')}</h3>
           <div className="space-y-6">
             <div>
               <label className="inline-flex items-center gap-2 text-sm text-white/90">
@@ -1026,10 +1026,10 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
   const requiredChecks = useMemo(() => {
     const checks: Array<{ key: string; label: string; ok: boolean; targetTab: string }> = []
     const mediasOk = mandatoryMedia.filter(m => !!m.preview).length === 1
-    checks.push({ key: 'medias', label: 'Photo de profil', ok: mediasOk, targetTab: 'basic' })
-    checks.push({ key: 'stageName', label: 'Pseudo', ok: !!profileData.stageName, targetTab: 'basic' })
-    checks.push({ key: 'age', label: 'Âge', ok: profileData.age !== undefined && profileData.age > 0, targetTab: 'basic' })
-    checks.push({ key: 'description', label: 'Description (≥ 200 car.)', ok: (profileData.description||'').trim().length >= 200, targetTab: 'basic' })
+    checks.push({ key: 'medias', label: t('requiredChecks.profilePhoto'), ok: mediasOk, targetTab: 'basic' })
+    checks.push({ key: 'stageName', label: t('requiredChecks.stageName'), ok: !!profileData.stageName, targetTab: 'basic' })
+    checks.push({ key: 'age', label: t('requiredChecks.age'), ok: profileData.age !== undefined && profileData.age > 0, targetTab: 'basic' })
+    checks.push({ key: 'description', label: t('requiredChecks.description'), ok: (profileData.description||'').trim().length >= 200, targetTab: 'basic' })
     return checks
   }, [mandatoryMedia, profileData.stageName, profileData.age, profileData.description])
 
@@ -1051,7 +1051,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
 
   // Autosave (700ms debounce)
   const scheduleToJson = () => {
-    const mapDays = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche']
+    const mapDays = [t('agenda.days.Lundi'),t('agenda.days.Mardi'),t('agenda.days.Mercredi'),t('agenda.days.Jeudi'),t('agenda.days.Vendredi'),t('agenda.days.Samedi'),t('agenda.days.Dimanche')]
     const packed = mapDays.map((d, idx) => ({ weekday: idx, ...weekly[d as keyof typeof weekly] }))
     const result = { weekly: packed, pause: pauseEnabled ? { start: pauseStart, end: pauseEnd } : null, absences }
     logger.log('🔄 [AGENDA DEBUG] Conversion schedule vers JSON:', result)
@@ -1106,18 +1106,18 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
         return doSave(payload, silent, retryCount + 1)
       }
 
-      if (!res.ok || !data?.success) throw new Error(data?.message || data?.error || 'Échec de la sauvegarde')
-      if (!silent) setSaveMsg({ type: 'success', text: data.message || 'Modifications enregistrées' })
+      if (!res.ok || !data?.success) throw new Error(data?.message || data?.error || t('save.error'))
+      if (!silent) setSaveMsg({ type: 'success', text: data.message || t('save.saved') })
       if (!silent) setTimeout(() => setSaveMsg(null), 3000)
       if (silent) {
-        setAutoSaveMsg('Disponibilité mise à jour ✓')
+        setAutoSaveMsg(t('save.saved') + ' ✓')
         setTimeout(() => setAutoSaveMsg(null), 1200)
       }
       return true
     } catch (err: any) {
-      const errorMsg = err?.message || 'Erreur lors de la sauvegarde'
+      const errorMsg = err?.message || t('save.error')
       if (retryCount >= maxRetries) {
-        if (!silent) setSaveMsg({ type: 'error', text: `${errorMsg} (échec après ${maxRetries} tentatives)` })
+        if (!silent) setSaveMsg({ type: 'error', text: t('save.retryFailed', { error: errorMsg, max: maxRetries }) })
       } else if (!silent) {
         setSaveMsg({ type: 'error', text: errorMsg })
       }
@@ -1545,7 +1545,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
   // Listen to top header actions (event bus)
   useEffect(() => {
     const onSave = () => { manualSave() }
-    const onCancel = () => { setProfileData(savedSnapshotRef.current); setSaveMsg({ type: 'success', text: 'Modifications annulées' }); setTimeout(()=> setSaveMsg(null), 2000) }
+    const onCancel = () => { setProfileData(savedSnapshotRef.current); setSaveMsg({ type: 'success', text: t('common.cancel') }); setTimeout(()=> setSaveMsg(null), 2000) }
     const onAgenda = () => { setActiveTab('agenda') }
     const onPause = () => { setPauseOpen(true) }
     window.addEventListener('profile:save' as any, onSave)
@@ -2048,7 +2048,16 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                 <div className="text-xs text-gray-400 mb-3">{t('basic.languagesHelp')}</div>
                 <div className="bg-gray-700/20 rounded-xl p-4 space-y-3 sm:space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                    {['Français', 'Anglais', 'Allemand', 'Italien', 'Espagnol', 'Russe', 'Arabe', 'Chinois'].map((lang) => (
+                    {[
+                      t('club.profile.services.languages.french'),
+                      t('club.profile.services.languages.english'),
+                      t('club.profile.services.languages.german'),
+                      t('club.profile.services.languages.italian'),
+                      t('club.profile.services.languages.spanish'),
+                      t('club.profile.services.languages.russian'),
+                      t('club.profile.services.languages.arabic'),
+                      t('club.profile.services.languages.chinese')
+                    ].map((lang) => (
                       <StarRating
                         key={lang}
                         language={lang}
@@ -2090,12 +2099,12 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                       className={`w-full px-4 py-3 bg-gray-700/50 border rounded-xl text-white focus:border-purple-500 focus:outline-none ${!profileData.canton ? 'border-red-500/50' : 'border-gray-600/50'}`}
                     >
                       <option value="">{t('basic.selectCategory')}</option>
-                      <option value="GE">Genève</option>
-                      <option value="VD">Vaud</option>
-                      <option value="VS">Valais</option>
-                      <option value="ZH">Zurich</option>
-                      <option value="BE">Berne</option>
-                      <option value="BS">Bâle</option>
+                      <option value="GE">{CANTON_MAP['GE']}</option>
+                      <option value="VD">{CANTON_MAP['VD']}</option>
+                      <option value="VS">{CANTON_MAP['VS']}</option>
+                      <option value="ZH">{CANTON_MAP['ZH']}</option>
+                      <option value="BE">{CANTON_MAP['BE']}</option>
+                      <option value="BS">{CANTON_MAP['BS']}</option>
                     </select>
                   </div>
 
@@ -2864,7 +2873,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
 
                 {customPrices.length === 0 && (
                   <div className="text-xs text-gray-500 italic">
-                    Aucune durée personnalisée. Cliquez sur "+ Ajouter" pour en créer.
+                    {t('pricing.customNote')}
                   </div>
                 )}
 
@@ -2875,8 +2884,8 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
               </div>
 
               <div className="mt-3 text-xs text-white/80">
-                Besoin d'ajuster vos disponibilités ?
-                <button onClick={()=> setActiveTab('agenda')} className="ml-2 text-purple-300 hover:text-purple-200 underline">Ouvrir l'onglet Agenda</button>
+                {t('pricing.availability')}
+                <button onClick={()=> setActiveTab('agenda')} className="ml-2 text-purple-300 hover:text-purple-200 underline">{t('pricing.agendaTab')}</button>
               </div>
             </div>
           </div>
@@ -2890,7 +2899,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
       {/* Agenda Tab - Mobile First Responsive */}
       {activeTab === 'agenda' && (
         <div className="bg-gray-800/30 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-3 sm:p-6">
-          <h3 className="text-lg sm:text-xl font-bold text-white mb-3 sm:mb-4">Agenda</h3>
+          <h3 className="text-lg sm:text-xl font-bold text-white mb-3 sm:mb-4">{t('agenda.title')}</h3>
           <div className="space-y-4 sm:space-y-6">
 
             {/* Horaires hebdomadaires */}
@@ -3131,7 +3140,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                 ))}
                   {absences.length === 0 && (
                     <div className="text-center py-4 text-white/50 text-sm">
-                      Aucune absence programmée
+                      {t('agenda.noAbsences')}
               </div>
                   )}
             </div>
