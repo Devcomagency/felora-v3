@@ -30,6 +30,17 @@ const nextConfig = {
     'canvas',
     // Client-only libs qui ne doivent JAMAIS être dans le bundle serveur
     'hls.js',        // 3.3MB - Video player (client-only)
+    '@ffmpeg/ffmpeg', // ÉNORME - Video processing (client-only)
+    '@ffmpeg/util',
+    '@mux/mux-node',  // Video streaming (optionnel serveur)
+    '@livepeer/react', // Video player React (client-only)
+    '@capacitor/core', // Mobile (jamais utilisé serveur)
+    '@capacitor/android',
+    '@capacitor/ios',
+    '@capacitor/cli',
+    '@capacitor/haptics',
+    '@capacitor-community/camera-preview',
+    'next-sanity',    // CMS (si utilisé, optionnel)
     // Note: framer-motion ne peut pas être ici car conflit avec optimizePackageImports
   ],
 
