@@ -398,7 +398,63 @@ export default function StaticNavBar() {
                       <span className="text-sm font-medium">{tCommon('language') || 'Langue'}</span>
                       <span className="text-xs">{currentLang?.flag}</span>
                     </div>
+                    <motion.svg
+                      animate={{ rotate: showLanguageSelector ? 180 : 0 }}
+                      transition={{ duration: 0.2 }}
+                      width="16"
+                      height="16"
+                      viewBox="0 0 16 16"
+                      fill="none"
+                      className="text-white/50"
+                    >
+                      <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </motion.svg>
                   </motion.button>
+
+                  {/* Sous-menu langues intégré - Déroulant dans le menu */}
+                  <AnimatePresence>
+                    {showLanguageSelector && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="pl-9 pr-2 py-1 max-h-64 overflow-y-auto custom-scrollbar">
+                          {languages.map((lang) => (
+                            <motion.button
+                              key={lang.code}
+                              whileHover={{ backgroundColor: "rgba(255, 255, 255, 0.04)" }}
+                              whileTap={{ scale: 0.98 }}
+                              onClick={() => handleLanguageChange(lang.code)}
+                              className={`
+                                w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left transition-colors
+                                ${locale === lang.code
+                                  ? 'text-pink-300 bg-pink-500/10 border border-pink-500/20'
+                                  : 'text-white/80 hover:text-white'
+                                }
+                              `}
+                              dir={lang.rtl ? 'rtl' : 'ltr'}
+                            >
+                              <span className="text-base">{lang.flag}</span>
+                              <div className="flex flex-col flex-1 min-w-0">
+                                <span className="text-xs font-medium truncate">{lang.native}</span>
+                                {lang.native !== lang.label && (
+                                  <span className="text-[10px] text-white/40 truncate">{lang.label}</span>
+                                )}
+                              </div>
+                              {locale === lang.code && (
+                                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="text-pink-400 flex-shrink-0">
+                                  <path d="M13.5 4.5L6 12L2.5 8.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                </svg>
+                              )}
+                            </motion.button>
+                          ))}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
 
                   {(() => {
                     const isClubContext = (user?.role === 'CLUB') || nextPathname?.startsWith('/club')
@@ -522,43 +578,6 @@ export default function StaticNavBar() {
                 </div>
               </div>
             </div>
-
-            {/* Sous-menu langues - 9 langues disponibles */}
-            <AnimatePresence>
-              {showLanguageSelector && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                  transition={{ duration: 0.15 }}
-                  className="mt-2 bg-white/[0.02] backdrop-blur-2xl border border-white/[0.08] rounded-xl shadow-xl shadow-black/20 overflow-hidden max-h-[400px] overflow-y-auto"
-                >
-                  {languages.map((lang) => (
-                    <motion.button
-                      key={lang.code}
-                      whileHover={{ backgroundColor: "rgba(255, 255, 255, 0.04)" }}
-                      onClick={() => handleLanguageChange(lang.code)}
-                      className={`
-                        w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors
-                        ${locale === lang.code
-                          ? 'text-pink-300 bg-pink-500/10'
-                          : 'text-white/80 hover:text-white'
-                        }
-                      `}
-                      dir={lang.rtl ? 'rtl' : 'ltr'}
-                    >
-                      <span className="text-lg">{lang.flag}</span>
-                      <div className="flex flex-col">
-                        <span className="text-sm font-medium">{lang.native}</span>
-                        {lang.native !== lang.label && (
-                          <span className="text-xs text-white/50">{lang.label}</span>
-                        )}
-                      </div>
-                    </motion.button>
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
           </motion.div>
         )}
       </AnimatePresence>
