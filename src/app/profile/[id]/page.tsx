@@ -732,6 +732,8 @@ export default function EscortProfilePage() {
           return (
             <>
               <ProfileHeader
+                profileId={profile.id}
+                descriptionLang="fr"
                 name={profile.name}
                 city={profile.city}
                 avatar={finalAvatar}

@@ -5,9 +5,12 @@ import { Star, MapPin, BadgeCheck, Crown } from 'lucide-react'
 import { normalizeScheduleData } from '@/lib/availability-calculator'
 import { validateMediaUrl } from '@/lib/media/enhanced-cdn'
 import { useTranslations } from 'next-intl'
+import { useTranslatedText } from '@/hooks/useTranslatedText'
 
 interface ProfileHeaderProps {
   name: string
+  profileId?: string // ID du profil pour le cache de traduction
+  descriptionLang?: string // Langue de la description (par défaut 'fr')
   handle?: string
   city?: string
   age?: number
@@ -54,6 +57,8 @@ interface ProfileHeaderProps {
 
 export default function ProfileHeader({
   name,
+  profileId,
+  descriptionLang = 'fr',
   handle,
   city,
   age,
@@ -78,6 +83,15 @@ export default function ProfileHeader({
   website,
 }: ProfileHeaderProps) {
   const t = useTranslations('profileHeader')
+
+  // Traduction automatique de la description
+  const { translatedText: translatedDescription, isTranslating } = useTranslatedText({
+    entityId: profileId || 'unknown',
+    entityType: 'profile_bio',
+    text: description || '',
+    sourceLang: descriptionLang,
+    enabled: !!description && !!profileId
+  })
   // Animation des viewers retirée
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false)
   const [showFullDescription, setShowFullDescription] = useState(false)
@@ -297,7 +311,7 @@ export default function ProfileHeader({
           {description && (
             <div className={`mt-1 ${coverPhoto ? '' : 'text-center max-w-2xl mx-auto'}`}>
               <p
-                className="text-sm text-white/85 leading-relaxed"
+                className={`text-sm text-white/85 leading-relaxed ${isTranslating ? 'opacity-70' : ''}`}
                 style={{
                   display: '-webkit-box',
                   WebkitLineClamp: showFullDescription ? 'unset' : 5,
@@ -305,9 +319,9 @@ export default function ProfileHeader({
                   overflow: showFullDescription ? 'visible' : 'hidden'
                 }}
               >
-                {description}
+                {translatedDescription || description}
               </p>
-              {description.length > 200 && (
+              {(translatedDescription || description).length > 200 && (
                 <button
                   onClick={(e) => {
                     e.preventDefault()

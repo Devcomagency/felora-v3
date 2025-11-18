@@ -1110,3 +1110,32 @@ enum ReportReason {
   OTHER                  // Autre
 }
 
+
+// ============================================
+// TRADUCTIONS AUTOMATIQUES (LibreTranslate)
+// ============================================
+
+model Translation {
+  id             String   @id @default(cuid())
+  // Identifiant de l'entité à traduire (profileId, messageId, etc.)
+  entityId       String
+  // Type d'entité (profile_bio, profile_description, chat_message, etc.)
+  entityType     String
+  // Langue source (détectée ou spécifiée)
+  sourceLang     String
+  // Texte original
+  sourceText     String   @db.Text
+  // Langue cible
+  targetLang     String
+  // Texte traduit
+  translatedText String   @db.Text
+  // Date de création de la traduction
+  createdAt      DateTime @default(now())
+  // Date de dernière utilisation (pour nettoyer les vieilles traductions)
+  lastUsedAt     DateTime @default(now())
+
+  @@unique([entityId, entityType, sourceLang, targetLang])
+  @@index([entityId, entityType])
+  @@index([createdAt])
+  @@map("translations")
+}
