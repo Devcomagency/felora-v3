@@ -119,7 +119,7 @@ export default function ActionsBar({
         </button>
 
         {/* Bouton Cadeau - Style register page avec gradient rose */}
-        {showGift && (
+        {showGift && onGift && (
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
@@ -176,7 +176,7 @@ export default function ActionsBar({
           </button>
         )}
 
-        {showMessage && (
+        {showMessage && onMessage && (
           <button
             onClick={handleMessage}
             className="py-2.5 px-4 text-white rounded-xl font-semibold text-sm transition-all duration-500 border flex items-center justify-center gap-2 flex-1"
