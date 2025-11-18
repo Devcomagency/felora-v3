@@ -1754,5 +1754,29 @@
       "requirements": "Requisiti",
       "tips": "Suggerimenti"
     }
+  },
+  "reportModal": {
+    "title": "Segnala",
+    "close": "Chiudi",
+    "reasonLabel": "Motivo della segnalazione",
+    "reasonRequired": "*",
+    "descriptionLabel": "Descrizione (facoltativo)",
+    "descriptionPlaceholder": "Fornisci maggiori dettagli sul problema...",
+    "charactersCount": "{count}/500 caratteri",
+    "emailLabel": "La tua email (facoltativo)",
+    "emailPlaceholder": "tua@email.com",
+    "emailHelp": "Così possiamo contattarti se necessario",
+    "cancel": "Annulla",
+    "submit": "Segnala",
+    "submitting": "Invio...",
+    "success": {
+      "title": "Segnalazione inviata",
+      "message": "Grazie per la tua segnalazione. Il nostro team la esaminerà il prima possibile."
+    },
+    "errors": {
+      "selectReason": "Seleziona un motivo",
+      "submitError": "Errore nell'invio della segnalazione",
+      "connectionError": "Errore di connessione"
+    }
   }
 }

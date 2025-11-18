@@ -1754,5 +1754,29 @@
       "requirements": "Anforderungen",
       "tips": "Tipps"
     }
+  },
+  "reportModal": {
+    "title": "Melden",
+    "close": "Schließen",
+    "reasonLabel": "Grund der Meldung",
+    "reasonRequired": "*",
+    "descriptionLabel": "Beschreibung (optional)",
+    "descriptionPlaceholder": "Geben Sie weitere Details zum Problem an...",
+    "charactersCount": "{count}/500 Zeichen",
+    "emailLabel": "Ihre E-Mail (optional)",
+    "emailPlaceholder": "ihre@email.com",
+    "emailHelp": "Damit wir Sie bei Bedarf kontaktieren können",
+    "cancel": "Abbrechen",
+    "submit": "Melden",
+    "submitting": "Wird gesendet...",
+    "success": {
+      "title": "Meldung gesendet",
+      "message": "Vielen Dank für Ihre Meldung. Unser Team wird sie so schnell wie möglich prüfen."
+    },
+    "errors": {
+      "selectReason": "Bitte wählen Sie einen Grund",
+      "submitError": "Fehler beim Senden der Meldung",
+      "connectionError": "Verbindungsfehler"
+    }
   }
 }

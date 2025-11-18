@@ -1759,5 +1759,29 @@
       "requirements": "Requirements",
       "tips": "Tips"
     }
+  },
+  "reportModal": {
+    "title": "Report",
+    "close": "Close",
+    "reasonLabel": "Reason for report",
+    "reasonRequired": "*",
+    "descriptionLabel": "Description (optional)",
+    "descriptionPlaceholder": "Give more details about the issue...",
+    "charactersCount": "{count}/500 characters",
+    "emailLabel": "Your email (optional)",
+    "emailPlaceholder": "your@email.com",
+    "emailHelp": "So we can contact you if necessary",
+    "cancel": "Cancel",
+    "submit": "Report",
+    "submitting": "Sending...",
+    "success": {
+      "title": "Report sent",
+      "message": "Thank you for your report. Our team will review it as soon as possible."
+    },
+    "errors": {
+      "selectReason": "Please select a reason",
+      "submitError": "Error sending report",
+      "connectionError": "Connection error"
+    }
   }
 }

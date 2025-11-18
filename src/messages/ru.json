@@ -1754,5 +1754,29 @@
       "requirements": "Требования",
       "tips": "Советы"
     }
+  },
+  "reportModal": {
+    "title": "Пожаловаться",
+    "close": "Закрыть",
+    "reasonLabel": "Причина жалобы",
+    "reasonRequired": "*",
+    "descriptionLabel": "Описание (необязательно)",
+    "descriptionPlaceholder": "Предоставьте больше деталей о проблеме...",
+    "charactersCount": "{count}/500 символов",
+    "emailLabel": "Ваш email (необязательно)",
+    "emailPlaceholder": "ваш@email.com",
+    "emailHelp": "Чтобы мы могли связаться с вами при необходимости",
+    "cancel": "Отмена",
+    "submit": "Отправить",
+    "submitting": "Отправка...",
+    "success": {
+      "title": "Жалоба отправлена",
+      "message": "Спасибо за вашу жалобу. Наша команда рассмотрит её как можно скорее."
+    },
+    "errors": {
+      "selectReason": "Пожалуйста, выберите причину",
+      "submitError": "Ошибка отправки жалобы",
+      "connectionError": "Ошибка соединения"
+    }
   }
 }

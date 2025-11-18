@@ -1754,5 +1754,29 @@
       "requirements": "Kërkesat",
       "tips": "Këshilla"
     }
+  },
+  "reportModal": {
+    "title": "Raporto",
+    "close": "Mbyll",
+    "reasonLabel": "Arsyeja e raportimit",
+    "reasonRequired": "*",
+    "descriptionLabel": "Përshkrimi (opsional)",
+    "descriptionPlaceholder": "Jepni më shumë detaje për problemin...",
+    "charactersCount": "{count}/500 karaktere",
+    "emailLabel": "Email-i juaj (opsional)",
+    "emailPlaceholder": "juaj@email.com",
+    "emailHelp": "Që të mund t'ju kontaktojmë nëse është e nevojshme",
+    "cancel": "Anulo",
+    "submit": "Raporto",
+    "submitting": "Duke dërguar...",
+    "success": {
+      "title": "Raporti u dërgua",
+      "message": "Faleminderit për raportin tuaj. Ekipi ynë do ta shqyrtojë sa më shpejt të jetë e mundur."
+    },
+    "errors": {
+      "selectReason": "Ju lutemi zgjidhni një arsye",
+      "submitError": "Gabim në dërgimin e raportit",
+      "connectionError": "Gabim në lidhje"
+    }
   }
 }

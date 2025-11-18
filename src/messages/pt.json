@@ -1754,5 +1754,29 @@
       "requirements": "Requisitos",
       "tips": "Dicas"
     }
+  },
+  "reportModal": {
+    "title": "Reportar",
+    "close": "Fechar",
+    "reasonLabel": "Motivo do reporte",
+    "reasonRequired": "*",
+    "descriptionLabel": "Descrição (opcional)",
+    "descriptionPlaceholder": "Dê mais detalhes sobre o problema...",
+    "charactersCount": "{count}/500 caracteres",
+    "emailLabel": "Seu email (opcional)",
+    "emailPlaceholder": "seu@email.com",
+    "emailHelp": "Para que possamos contatá-lo se necessário",
+    "cancel": "Cancelar",
+    "submit": "Reportar",
+    "submitting": "Enviando...",
+    "success": {
+      "title": "Reporte enviado",
+      "message": "Obrigado pelo seu reporte. Nossa equipe irá revisá-lo o mais breve possível."
+    },
+    "errors": {
+      "selectReason": "Por favor selecione um motivo",
+      "submitError": "Erro ao enviar o reporte",
+      "connectionError": "Erro de conexão"
+    }
   }
 }

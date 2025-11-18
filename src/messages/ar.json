@@ -1754,5 +1754,29 @@
       "requirements": "المتطلبات",
       "tips": "نصائح"
     }
+  },
+  "reportModal": {
+    "title": "إبلاغ",
+    "close": "إغلاق",
+    "reasonLabel": "سبب الإبلاغ",
+    "reasonRequired": "*",
+    "descriptionLabel": "الوصف (اختياري)",
+    "descriptionPlaceholder": "قدم المزيد من التفاصيل حول المشكلة...",
+    "charactersCount": "{count}/500 حرف",
+    "emailLabel": "بريدك الإلكتروني (اختياري)",
+    "emailPlaceholder": "بريدك@email.com",
+    "emailHelp": "حتى نتمكن من الاتصال بك إذا لزم الأمر",
+    "cancel": "إلغاء",
+    "submit": "إبلاغ",
+    "submitting": "جاري الإرسال...",
+    "success": {
+      "title": "تم إرسال الإبلاغ",
+      "message": "شكرًا لك على إبلاغك. سيقوم فريقنا بمراجعته في أقرب وقت ممكن."
+    },
+    "errors": {
+      "selectReason": "يرجى اختيار سبب",
+      "submitError": "خطأ في إرسال الإبلاغ",
+      "connectionError": "خطأ في الاتصال"
+    }
   }
 }
