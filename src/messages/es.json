@@ -408,7 +408,8 @@
       "removedFromSaved": "Perfil eliminado de guardados",
       "linkCopied": "Enlace copiado al portapapeles",
       "shareText": "Descubre el perfil de {name} en Felora",
-      "loginToAddFavorites": "Inicia sesión para añadir favoritos"
+      "loginToAddFavorites": "Inicia sesión para añadir favoritos",
+      "cannotMessageYourself": "No puedes enviarte un mensaje a ti mismo"
     },
     "common": {
       "profile": "Perfil"

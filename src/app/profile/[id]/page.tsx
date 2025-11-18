@@ -421,12 +421,18 @@ export default function EscortProfilePage() {
   }, [resolvedId])
 
   const handleMessage = useCallback((profileId: string) => {
+    // Vérifier si l'utilisateur essaie de s'envoyer un message à lui-même
+    if (session?.user?.id && (session.user.id === profileId || session.user.id === profile?.userId)) {
+      toast.error(t('actions.cannotMessageYourself'))
+      return
+    }
+
     try {
       router.push(`/messages?to=${encodeURIComponent(profileId)}`)
     } catch {
       router.push('/messages')
     }
-  }, [router])
+  }, [router, session?.user?.id, profile?.userId, t])
 
   const handleShare = useCallback(() => {
     if (navigator.share) {
@@ -756,12 +762,12 @@ export default function EscortProfilePage() {
                 isLiked={isLiked}
                 isSaved={isSaved}
                 onFollow={handleFollow}
-                onMessage={handleMessage}
-                onGift={() => setShowGiftPicker(true)}
+                onMessage={!isOwner ? handleMessage : undefined}
+                onGift={!isOwner ? () => setShowGiftPicker(true) : undefined}
                 onLike={handleLike}
                 onSave={handleSave}
                 onShare={handleShare}
-                onReport={handleReport}
+                onReport={!isOwner ? handleReport : undefined}
                 onShowDetails={handleShowDetails}
                 isFavorite={isFavorite}
                 onFavoriteToggle={() => handleFavoriteToggle()}

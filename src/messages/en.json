@@ -408,7 +408,8 @@
       "removedFromSaved": "Profile removed from saved",
       "linkCopied": "Link copied to clipboard",
       "shareText": "Discover {name}'s profile on Felora",
-      "loginToAddFavorites": "Log in to add favorites"
+      "loginToAddFavorites": "Log in to add favorites",
+      "cannotMessageYourself": "You cannot send a message to yourself"
     },
     "common": {
       "profile": "Profile"

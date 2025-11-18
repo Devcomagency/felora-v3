@@ -409,7 +409,8 @@
       "removedFromSaved": "Profil retiré des sauvegardes",
       "linkCopied": "Lien copié dans le presse-papiers",
       "shareText": "Découvrez le profil de {name} sur Felora",
-      "loginToAddFavorites": "Connectez-vous pour ajouter des favoris"
+      "loginToAddFavorites": "Connectez-vous pour ajouter des favoris",
+      "cannotMessageYourself": "Vous ne pouvez pas vous envoyer de message à vous-même"
     },
     "common": {
       "profile": "Profil"

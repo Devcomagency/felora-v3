@@ -408,7 +408,8 @@
       "removedFromSaved": "Profili u hoq nga të ruajturit",
       "linkCopied": "Lidhja u kopjua në kujtesë",
       "shareText": "Zbulo profilin e {name} në Felora",
-      "loginToAddFavorites": "Hyni për të shtuar të preferuara"
+      "loginToAddFavorites": "Hyni për të shtuar të preferuara",
+      "cannotMessageYourself": "Nuk mund të dërgoni një mesazh vetes"
     },
     "common": {
       "profile": "Profili"

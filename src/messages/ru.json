@@ -408,7 +408,8 @@
       "removedFromSaved": "Профиль удалён из сохранённых",
       "linkCopied": "Ссылка скопирована в буфер обмена",
       "shareText": "Откройте профиль {name} на Felora",
-      "loginToAddFavorites": "Войдите, чтобы добавить в избранное"
+      "loginToAddFavorites": "Войдите, чтобы добавить в избранное",
+      "cannotMessageYourself": "Вы не можете отправить сообщение самому себе"
     },
     "common": {
       "profile": "Профиль"

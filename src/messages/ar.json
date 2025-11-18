@@ -408,7 +408,8 @@
       "removedFromSaved": "تمت إزالة الملف الشخصي من المحفوظات",
       "linkCopied": "تم نسخ الرابط إلى الحافظة",
       "shareText": "اكتشف ملف {name} الشخصي على Felora",
-      "loginToAddFavorites": "سجل الدخول لإضافة مفضلات"
+      "loginToAddFavorites": "سجل الدخول لإضافة مفضلات",
+      "cannotMessageYourself": "لا يمكنك إرسال رسالة إلى نفسك"
     },
     "common": {
       "profile": "الملف الشخصي"

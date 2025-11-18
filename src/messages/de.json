@@ -408,7 +408,8 @@
       "removedFromSaved": "Profil aus Gespeicherten entfernt",
       "linkCopied": "Link in Zwischenablage kopiert",
       "shareText": "Entdecken Sie das Profil von {name} auf Felora",
-      "loginToAddFavorites": "Melden Sie sich an, um Favoriten hinzuzufügen"
+      "loginToAddFavorites": "Melden Sie sich an, um Favoriten hinzuzufügen",
+      "cannotMessageYourself": "Sie können sich nicht selbst eine Nachricht senden"
     },
     "common": {
       "profile": "Profil"
