@@ -169,7 +169,7 @@ const StarRating = ({
 
 // Composant pour l'onglet Mes Clubs
 function MyClubsTab() {
-  const t = useTranslations('dashboardEscort.profil.clubs')
+  const t = useTranslations('dashboardEscort.profil')
   const [invitations, setInvitations] = useState<any[]>([])
   const [clubs, setClubs] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -2049,14 +2049,14 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                 <div className="bg-gray-700/20 rounded-xl p-4 space-y-3 sm:space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     {[
-                      t('club.profile.services.languages.french'),
-                      t('club.profile.services.languages.english'),
-                      t('club.profile.services.languages.german'),
-                      t('club.profile.services.languages.italian'),
-                      t('club.profile.services.languages.spanish'),
-                      t('club.profile.services.languages.russian'),
-                      t('club.profile.services.languages.arabic'),
-                      t('club.profile.services.languages.chinese')
+                      'Français',
+                      'English',
+                      'Deutsch',
+                      'Italiano',
+                      'Español',
+                      'Русский',
+                      'العربية',
+                      '中文'
                     ].map((lang) => (
                       <StarRating
                         key={lang}
@@ -2552,14 +2552,14 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
 
             <div className="space-y-4">
               {[
-                { name: 'Classiques', items: ['Rapport', 'French kiss', 'GFE', 'PSE', 'Lingerie', 'Duo/Trio', 'Jeux de rôles', 'Costumes'] },
-                { name: 'Oral', items: ['Fellation protégée', 'Fellation nature', 'Gorge profonde', 'Éjac en bouche', 'Éjac sur le corps', 'Éjac sur le visage'] },
-                { name: 'Anal', items: ['Sodomie (donne)', 'Sodomie (reçoit)', 'Doigté anal'] },
-                { name: 'BDSM & Fétiches', items: ['Domination soft', 'Fessées', 'Donjon SM', 'Fétichisme pieds'] },
-                { name: 'Massages', items: ['Tantrique', 'Érotique', 'Corps à corps', 'Nuru', 'Prostate', 'Lingam', 'Yoni', '4 mains', 'Suédois', 'Huiles'] },
+                { nameKey: 'classics', items: ['Rapport', 'French kiss', 'GFE', 'PSE', 'Lingerie', 'Duo/Trio', 'Jeux de rôles', 'Costumes'] },
+                { nameKey: 'oral', items: ['Fellation protégée', 'Fellation nature', 'Gorge profonde', 'Éjac en bouche', 'Éjac sur le corps', 'Éjac sur le visage'] },
+                { nameKey: 'anal', items: ['Sodomie (donne)', 'Sodomie (reçoit)', 'Doigté anal'] },
+                { nameKey: 'bdsm', items: ['Domination soft', 'Fessées', 'Donjon SM', 'Fétichisme pieds'] },
+                { nameKey: 'massages', items: ['Tantrique', 'Érotique', 'Corps à corps', 'Nuru', 'Prostate', 'Lingam', 'Yoni', '4 mains', 'Suédois', 'Huiles'] },
               ].map(group => (
-                <div key={group.name}>
-                  <div className="text-sm text-white/90 font-medium mb-2">{group.name}</div>
+                <div key={group.nameKey}>
+                  <div className="text-sm text-white/90 font-medium mb-2">{t(`services.categories.${group.nameKey}`)}</div>
                   <div className="flex flex-wrap gap-2">
                     {group.items.map(it => {
                       const key = `srv:${it}`
@@ -2570,7 +2570,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                           if (arr.has(key)) arr.delete(key); else arr.add(key)
                           updateProfileData('specialties', Array.from(arr))
                         }} className={`text-xs px-2.5 py-1 rounded-full border ${selected ? 'bg-purple-500/20 text-purple-200 border-purple-500/30' : 'bg-white/5 text-white/80 border-white/10 hover:bg-white/10'}`}>
-                          {it}
+                          {t(`services.items.${it}`)}
                         </button>
                       )
                     })}
@@ -3094,13 +3094,13 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
               <div className="bg-gray-700/20 rounded-xl p-3 sm:p-4">
                 <div className="flex items-center justify-between mb-3 sm:mb-4">
                   <h4 className="text-sm sm:text-base text-white/90 font-medium flex items-center gap-2">
-                    🚫 Absences exceptionnelles
+                    🚫 {t('agenda.absences')}
                   </h4>
-                  <button 
-                    onClick={()=> setAbsences(prev => [...prev, { id: Math.random().toString(36).slice(2), start: new Date().toISOString().slice(0,10), end: new Date().toISOString().slice(0,10) }])} 
+                  <button
+                    onClick={()=> setAbsences(prev => [...prev, { id: Math.random().toString(36).slice(2), start: new Date().toISOString().slice(0,10), end: new Date().toISOString().slice(0,10) }])}
                     className="px-3 py-2 rounded-lg border text-sm font-medium transition-colors bg-purple-500/20 hover:bg-purple-500/30 text-purple-200 border-purple-500/30"
                   >
-                    + Ajouter
+                    {t('agenda.addAbsence')}
                   </button>
                 </div>
                 

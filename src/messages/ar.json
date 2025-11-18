@@ -24,7 +24,8 @@
     "legal": "قانوني",
     "privacy": "الخصوصية",
     "terms": "الشروط",
-    "cookies": "الكوكيز"
+    "cookies": "الكوكيز",
+    "charCount": "{current} / {min} حرف كحد أدنى"
   },
   "search": {
     "title": "بحث",
@@ -635,289 +636,343 @@
   },
   "dashboardEscort": {
     "profil": {
-      "pageTitle": "Mon Profil",
-      "pageDescription": "Gérez vos informations publiques et votre présentation",
+      "pageTitle": "ملفي الشخصي",
+      "pageDescription": "إدارة معلوماتك العامة والعرض التقديمي",
       "kycSuccess": {
-        "title": "🎉 Félicitations ! KYC soumis avec succès",
-        "description": "Votre vérification d'identité a été transmise. Il est maintenant temps de finaliser votre profil !",
-        "nextStepsTitle": "📋 Prochaines étapes recommandées :",
-        "step1": "Ajoutez vos photos et descriptions",
-        "step2": "Configurez vos tarifs et services",
-        "step3": "Votre vérification sera traitée sous 48h"
+        "title": "🎉 تهانينا! تم إرسال KYC بنجاح",
+        "description": "تم إرسال التحقق من هويتك. حان الوقت الآن لإكمال ملفك الشخصي!",
+        "nextStepsTitle": "📋 الخطوات التالية الموصى بها:",
+        "step1": "أضف صورك ووصفك",
+        "step2": "قم بتكوين الأسعار والخدمات الخاصة بك",
+        "step3": "سيتم معالجة التحقق الخاص بك خلال 48 ساعة"
       },
       "clubs": {
-        "title": "Mes Clubs",
-        "loading": "Chargement...",
+        "title": "نواديي",
+        "loading": "جاري التحميل...",
         "tabs": {
-          "invitations": "Invitations",
-          "myClubs": "Mes clubs"
+          "invitations": "الدعوات",
+          "myClubs": "نواديي"
         },
         "invitations": {
-          "received": "Invitation reçue le",
-          "expires": "Expire le",
-          "accept": "Accepter",
-          "decline": "Refuser",
-          "noInvitations": "Aucune invitation en attente",
-          "noInvitationsDescription": "Les clubs peuvent vous inviter à apparaître sur leur profil",
-          "history": "Historique",
-          "accepted": "✓ Acceptée",
-          "declined": "✗ Refusée",
-          "expired": "⏱ Expirée"
+          "received": "تم استلام الدعوة في",
+          "expires": "تنتهي في",
+          "accept": "قبول",
+          "decline": "رفض",
+          "noInvitations": "لا توجد دعوات معلقة",
+          "noInvitationsDescription": "يمكن للنوادي دعوتك للظهور في ملفهم الشخصي",
+          "history": "السجل",
+          "accepted": "✓ تم القبول",
+          "declined": "✗ تم الرفض",
+          "expired": "⏱ منتهية الصلاحية"
         },
         "myClubs": {
-          "viewProfile": "Voir profil",
-          "leaveClub": "Quitter le club",
-          "leaveConfirm": "Voulez-vous vraiment quitter {clubName} ?",
-          "noClubs": "Vous n'êtes affiliée à aucun club",
-          "noClubsDescription": "Acceptez une invitation pour apparaître sur le profil d'un club"
+          "viewProfile": "عرض الملف الشخصي",
+          "leaveClub": "مغادرة النادي",
+          "leaveConfirm": "هل تريد حقًا مغادرة {clubName}؟",
+          "noClubs": "أنت لست منتميًا لأي نادٍ",
+          "noClubsDescription": "اقبل دعوة للظهور في ملف نادٍ"
         }
       },
       "tabs": {
         "basic": {
-          "label": "Informations de base",
-          "description": "Profil général (obligatoire)"
+          "label": "المعلومات الأساسية",
+          "description": "الملف الشخصي العام (إلزامي)"
         },
         "appearance": {
-          "label": "Apparence physique",
-          "description": "Caractéristiques physiques"
+          "label": "المظهر الجسدي",
+          "description": "الخصائص الجسدية"
         },
         "services": {
-          "label": "Clientèle & Services",
-          "description": "Groupes + tags"
+          "label": "العملاء والخدمات",
+          "description": "المجموعات + العلامات"
         },
         "pricing": {
-          "label": "Tarifs & Paiements",
-          "description": "Prix et horaires"
+          "label": "الأسعار والمدفوعات",
+          "description": "الأسعار والجداول"
         },
         "agenda": {
-          "label": "Agenda",
-          "description": "Disponibilités & absences"
+          "label": "الجدول",
+          "description": "التوفر والغياب"
         },
         "clubs": {
-          "label": "Mes Clubs",
-          "description": "Clubs partenaires & invitations"
+          "label": "نواديي",
+          "description": "النوادي الشريكة والدعوات"
         }
       },
       "completion": {
-        "title": "Complétude du profil",
-        "verified": "Vérifié",
-        "verifying": "En vérification",
-        "certify": "Certifier",
-        "requiredActions": "Actions requises"
+        "title": "اكتمال الملف الشخصي",
+        "verified": "تم التحقق",
+        "verifying": "قيد التحقق",
+        "certify": "شهادة",
+        "requiredActions": "الإجراءات المطلوبة"
       },
       "requiredChecks": {
-        "profilePhoto": "Photo de profil",
-        "stageName": "Pseudo",
-        "age": "Âge",
-        "description": "Description (≥ 200 car.)"
+        "profilePhoto": "صورة الملف الشخصي",
+        "stageName": "الاسم المستعار",
+        "age": "العمر",
+        "description": "الوصف (≥ 200 حرف)"
       },
       "basic": {
-        "profilePhoto": "Photo de profil",
-        "profilePhotoRequired": "⚠️ 1 photo de profil obligatoire",
-        "mandatory": "OBLIGATOIRE",
-        "remove": "Retirer",
-        "ok": "OK",
-        "notePhotoOnly": "Obligatoire - Photo uniquement",
-        "dropOrClick": "Déposez ou cliquez pour ajouter",
-        "photoOnly": "Photo uniquement (max 500MB)",
-        "photoOrVideo": "Photo ou vidéo (max 500MB)",
-        "uploadProgress": "Upload en cours...",
-        "preparing": "Préparation…",
-        "mediaUploaded": "Média uploadé ✅",
-        "uploadFailed": "Échec de l'upload",
-        "profileRequired": "Créez d'abord votre profil (enregistrez vos infos), puis réessayez.",
-        "compressionFailed": "Compression vidéo échouée: {error}",
-        "fileTooLarge": "Fichier trop volumineux (limite 500MB).",
-        "title": "Informations de base",
-        "stageName": "Pseudo",
-        "category": "Catégorie",
-        "selectCategory": "Sélectionner",
+        "profilePhoto": "صورة الملف الشخصي",
+        "profilePhotoRequired": "⚠️ صورة ملف شخصي واحدة إلزامية",
+        "mandatory": "إلزامي",
+        "remove": "إزالة",
+        "ok": "موافق",
+        "notePhotoOnly": "إلزامي - صورة فقط",
+        "dropOrClick": "اسحب أو انقر للإضافة",
+        "photoOnly": "صورة فقط (بحد أقصى 500 ميجابايت)",
+        "photoOrVideo": "صورة أو فيديو (بحد أقصى 500 ميجابايت)",
+        "uploadProgress": "جاري التحميل...",
+        "preparing": "جاري التحضير…",
+        "mediaUploaded": "تم تحميل الوسائط ✅",
+        "uploadFailed": "فشل التحميل",
+        "profileRequired": "أنشئ ملفك الشخصي أولاً (احفظ معلوماتك)، ثم حاول مرة أخرى.",
+        "compressionFailed": "فشل ضغط الفيديو: {error}",
+        "fileTooLarge": "الملف كبير جدًا (الحد الأقصى 500 ميجابايت).",
+        "title": "المعلومات الأساسية",
+        "stageName": "الاسم المستعار",
+        "category": "الفئة",
+        "selectCategory": "اختر",
         "categories": {
-          "escort": "👠 Escort",
-          "masseuse": "💆 Masseuse érotique",
-          "dominatrice": "🔗 Dominatrice BDSM",
-          "transsexuelle": "🌸 Transsexuelle",
-          "other": "💼 Autre"
+          "escort": "👠 مرافقة",
+          "masseuse": "💆 مدلكة مثيرة",
+          "dominatrice": "🔗 سيدة BDSM",
+          "transsexuelle": "🌸 متحولة جنسياً",
+          "other": "💼 أخرى"
         },
-        "age": "Âge",
+        "age": "العمر",
         "ageGroups": {
-          "18-25": "18-25 ans",
-          "26-30": "26-30 ans",
-          "31-40": "31-40 ans",
-          "40plus": "40+ ans"
+          "18-25": "18-25 سنة",
+          "26-30": "26-30 سنة",
+          "31-40": "31-40 سنة",
+          "40plus": "40+ سنة"
         },
-        "years": "ans",
-        "certifyAge": "Certifier mon âge",
-        "description": "Description",
-        "descriptionPlaceholder": "Décrivez-vous de manière attractive et professionnelle...",
-        "languages": "Langues parlées",
-        "languagesHelp": "Évaluez votre niveau de maîtrise pour chaque langue (1 = Débutant, 5 = Courant)",
+        "years": "سنة",
+        "certifyAge": "التحقق من عمري",
+        "description": "الوصف",
+        "descriptionPlaceholder": "صف نفسك بطريقة جذابة ومهنية...",
+        "languages": "اللغات المحكية",
+        "languagesHelp": "قيّم مستوى إتقانك لكل لغة (1 = مبتدئ، 5 = طليق)",
         "location": {
-          "title": "Localisation",
-          "required": "Requis",
-          "canton": "Canton",
-          "city": "Ville",
-          "cityPlaceholder": "ex: Genève",
-          "fullAddress": "Adresse complète",
-          "addressPlaceholder": "Tapez votre adresse suisse...",
+          "title": "الموقع",
+          "required": "مطلوب",
+          "canton": "الكانتون",
+          "city": "المدينة",
+          "cityPlaceholder": "مثال: جنيف",
+          "fullAddress": "العنوان الكامل",
+          "addressPlaceholder": "اكتب عنوانك السويسري...",
           "privacy": {
-            "precise": "Précise",
-            "approximate": "Approximative (±150m)"
+            "precise": "دقيق",
+            "approximate": "تقريبي (±150 م)"
           }
         },
         "phone": {
-          "title": "Contact téléphonique",
-          "number": "Numéro de téléphone",
+          "title": "جهة اتصال الهاتف",
+          "number": "رقم الهاتف",
           "numberPlaceholder": "+41 79 123 45 67",
-          "visibility": "Visibilité du numéro",
-          "visible": "📞 Numéro visible (affiché + boutons WhatsApp/SMS/Appel)",
-          "hidden": "📞 Numéro caché (boutons WhatsApp/SMS/Appel uniquement)",
-          "none": "🔒 Messagerie privée uniquement"
+          "visibility": "رؤية الرقم",
+          "visible": "📞 رقم مرئي (معروض + أزرار WhatsApp/SMS/مكالمة)",
+          "hidden": "📞 رقم مخفي (أزرار WhatsApp/SMS/مكالمة فقط)",
+          "none": "🔒 رسائل خاصة فقط"
         },
         "geoBlocking": {
-          "title": "Blocage géographique",
-          "optional": "Optionnel",
-          "description": "Bloquez l'accès à votre profil depuis certains pays",
-          "blockedCount": "{count} pays bloqué",
-          "blockedCountPlural": "{count} pays bloqués"
+          "title": "الحظر الجغرافي",
+          "optional": "اختياري",
+          "description": "حظر الوصول إلى ملفك الشخصي من بعض البلدان",
+          "blockedCount": "{count} بلد محظور",
+          "blockedCountPlural": "{count} بلدان محظورة"
         }
       },
       "appearance": {
-        "title": "Apparence physique",
-        "height": "Taille (cm)",
-        "heightOver": "> 200 cm",
-        "bodyType": "Silhouette",
+        "title": "المظهر الجسدي",
+        "height": "الطول (سم)",
+        "heightOver": "> 200 سم",
+        "bodyType": "الجسم",
         "bodyTypes": {
-          "select": "Sélectionner",
-          "mince": "Mince",
-          "sportive": "Sportive",
-          "pulpeuse": "Pulpeuse",
-          "ronde": "Ronde"
+          "select": "اختر",
+          "mince": "نحيفة",
+          "sportive": "رياضية",
+          "pulpeuse": "ممتلئة",
+          "ronde": "مستديرة"
         },
-        "breastSize": "Tour de poitrine",
+        "breastSize": "حجم الصدر",
         "breastSizes": {
-          "select": "Sélectionner"
+          "select": "اختر"
         },
-        "hairColor": "Cheveux — Couleur",
+        "hairColor": "الشعر — اللون",
         "hairColors": {
-          "select": "Sélectionner",
-          "brun": "Brun",
-          "blond": "Blond",
-          "chatain": "Châtain",
-          "gris": "Gris",
-          "roux": "Roux",
-          "autre": "Autre"
+          "select": "اختر",
+          "brun": "بني",
+          "blond": "أشقر",
+          "chatain": "بني فاتح",
+          "gris": "رمادي",
+          "roux": "أحمر",
+          "autre": "أخرى"
         },
-        "breastType": "Poitrine",
+        "breastType": "الصدر",
         "breastTypes": {
-          "naturelle": "Naturelle",
-          "siliconee": "Siliconée"
+          "naturelle": "طبيعي",
+          "siliconee": "سيليكون"
         },
-        "eyeColor": "Couleur des yeux",
+        "eyeColor": "لون العيون",
         "eyeColors": {
-          "select": "Sélectionner",
-          "bleu": "Bleu",
-          "vert": "Vert",
-          "marron": "Marron",
-          "noisette": "Noisette",
-          "gris": "Gris"
+          "select": "اختر",
+          "bleu": "أزرق",
+          "vert": "أخضر",
+          "marron": "بني",
+          "noisette": "بندقي",
+          "gris": "رمادي"
         },
-        "ethnicity": "Origine",
+        "ethnicity": "الأصل",
         "ethnicities": {
-          "select": "Sélectionner",
-          "europeenne": "Européenne",
-          "africaine": "Africaine",
-          "asiatique": "Asiatique",
-          "latine": "Latine",
-          "metisse": "Métisse",
-          "autre": "Autre"
+          "select": "اختر",
+          "europeenne": "أوروبية",
+          "africaine": "أفريقية",
+          "asiatique": "آسيوية",
+          "latine": "لاتينية",
+          "metisse": "مختلطة",
+          "autre": "أخرى"
         },
-        "tattoosPiercings": "Tatouages / Piercings",
-        "tattoos": "Tatouages",
-        "piercings": "Piercings",
-        "pubicHair": "Pilosité",
+        "tattoosPiercings": "الوشم / الثقب",
+        "tattoos": "الوشم",
+        "piercings": "الثقب",
+        "pubicHair": "إزالة الشعر",
         "pubicHairTypes": {
-          "naturel": "Naturel",
-          "rase": "Rasé",
-          "partiel": "Partiel"
+          "naturel": "طبيعي",
+          "rase": "حلق",
+          "partiel": "جزئي"
         },
-        "smoker": "Fumeur/Fumeuse"
+        "smoker": "مدخنة"
       },
       "services": {
-        "title": "Clientèle & Services",
-        "description": "Sélectionnez ce que vous proposez. Utilisez la recherche pour filtrer.",
-        "clientele": "Clientèle acceptée",
+        "title": "العملاء والخدمات",
+        "description": "حدد ما تقدمه. استخدم البحث للتصفية.",
+        "clientele": "العملاء المقبولون",
         "clienteleTypes": {
-          "couples": "Couples",
-          "women": "Femmes",
-          "handicapped": "Personnes handicapées",
-          "seniors": "Seniors"
+          "couples": "أزواج",
+          "women": "نساء",
+          "handicapped": "الأشخاص ذوو الإعاقة",
+          "seniors": "كبار السن"
         },
-        "serviceMode": "Mode de service",
-        "incall": "Je reçois",
-        "outcall": "Je me déplace"
+        "serviceMode": "نمط الخدمة",
+        "incall": "أستقبل",
+        "outcall": "أتنقل",
+        "categories": {
+          "classics": "كلاسيكي",
+          "oral": "فموي",
+          "anal": "شرجي",
+          "bdsm": "BDSM والفتيشية",
+          "massages": "تدليك"
+        },
+        "items": {
+          "Rapport": "علاقة جنسية",
+          "French kiss": "قبلة فرنسية",
+          "GFE": "GFE",
+          "PSE": "PSE",
+          "Lingerie": "ملابس داخلية",
+          "Duo/Trio": "ثنائي/ثلاثي",
+          "Jeux de rôles": "لعب الأدوار",
+          "Costumes": "أزياء",
+          "Fellation protégée": "فموي محمي",
+          "Fellation nature": "فموي غير محمي",
+          "Gorge profonde": "حلق عميق",
+          "Éjac en bouche": "قذف في الفم",
+          "Éjac sur le corps": "قذف على الجسم",
+          "Éjac sur le visage": "قذف على الوجه",
+          "Sodomie (donne)": "شرجي (نشط)",
+          "Sodomie (reçoit)": "شرجي (سلبي)",
+          "Doigté anal": "إصبع شرجي",
+          "Domination soft": "هيمنة ناعمة",
+          "Fessées": "صفع",
+          "Donjon SM": "زنزانة SM",
+          "Fétichisme pieds": "فتيشية القدم",
+          "Tantrique": "تانترا",
+          "Érotique": "مثير",
+          "Corps à corps": "جسم لجسم",
+          "Nuru": "نورو",
+          "Prostate": "البروستاتا",
+          "Lingam": "لينغام",
+          "Yoni": "يوني",
+          "4 mains": "4 أيدي",
+          "Suédois": "سويدي",
+          "Huiles": "زيوت"
+        }
       },
       "pricing": {
-        "title": "Tarifs et disponibilités",
-        "startingFrom": "À partir de",
-        "detailedRates": "Tarifs détaillés (optionnel)",
+        "title": "الأسعار والتوفر",
+        "startingFrom": "ابتداءً من",
+        "detailedRates": "أسعار مفصلة (اختياري)",
         "durations": {
-          "15min": "15 minutes",
-          "30min": "30 minutes",
-          "1hour": "1 heure",
-          "2hours": "2 heures",
-          "halfDay": "Demi-journée",
-          "fullDay": "Journée complète",
-          "overnight": "Nuit complète"
+          "15min": "15 دقيقة",
+          "30min": "30 دقيقة",
+          "1hour": "ساعة واحدة",
+          "2hours": "ساعتان",
+          "halfDay": "نصف يوم",
+          "fullDay": "يوم كامل",
+          "overnight": "ليلة كاملة"
         },
-        "tip": "💡 Astuce : Les tarifs aident les clients à vous trouver facilement et augmentent votre visibilité.",
-        "customDurations": "Durées personnalisées",
-        "addCustom": "+ Ajouter",
-        "customDurationPlaceholder": "Ex: 90 minutes, 3 heures, Week-end...",
-        "priceCHF": "Prix CHF",
-        "delete": "Supprimer",
-        "customNote": "Les durées personnalisées sont visibles sur votre profil et dans les recherches.",
-        "warningNote": "⚠️ Sans tarifs, votre profil n'apparaîtra pas dans les recherches par prix.",
-        "availability": "Disponibilité : Configurez votre agenda dans l'onglet",
-        "agendaTab": "Agenda"
+        "tip": "💡 نصيحة: تساعد الأسعار العملاء في العثور عليك بسهولة وتزيد من ظهورك.",
+        "customDurations": "مدد مخصصة",
+        "addCustom": "+ إضافة",
+        "customDurationPlaceholder": "مثال: 90 دقيقة، 3 ساعات، عطلة نهاية الأسبوع...",
+        "priceCHF": "السعر CHF",
+        "delete": "حذف",
+        "customNote": "المدد المخصصة مرئية في ملفك الشخصي وفي عمليات البحث.",
+        "warningNote": "⚠️ بدون أسعار، لن يظهر ملفك الشخصي في عمليات البحث حسب السعر.",
+        "availability": "التوفر: قم بتكوين جدولك في علامة التبويب",
+        "agendaTab": "الجدول"
       },
       "agenda": {
-        "title": "Agenda",
-        "weeklySchedule": "Heures de présence (hebdo)",
+        "title": "الجدول",
+        "weeklySchedule": "ساعات الحضور (أسبوعي)",
         "days": {
-          "Lundi": "Lundi",
-          "Mardi": "Mardi",
-          "Mercredi": "Mercredi",
-          "Jeudi": "Jeudi",
-          "Vendredi": "Vendredi",
-          "Samedi": "Samedi",
-          "Dimanche": "Dimanche"
+          "Lundi": "الإثنين",
+          "Mardi": "الثلاثاء",
+          "Mercredi": "الأربعاء",
+          "Jeudi": "الخميس",
+          "Vendredi": "الجمعة",
+          "Samedi": "السبت",
+          "Dimanche": "الأحد"
         },
-        "open": "✅ Ouvert",
-        "closed": "❌ Fermé",
-        "opening": "Ouverture",
-        "closing": "Fermeture",
-        "pause": "Mettre mon compte en pause",
-        "pauseStart": "Début de pause",
-        "pauseReturn": "Retour",
-        "absences": "Jours d'absence exceptionnels",
-        "addAbsence": "Ajouter une absence",
-        "noAbsences": "Aucune absence planifiée",
-        "autoSave": "Les changements sont enregistrés automatiquement.",
+        "open": "✅ مفتوح",
+        "closed": "❌ مغلق",
+        "opening": "الفتح",
+        "closing": "الإغلاق",
+        "pause": "إيقاف حسابي مؤقتًا",
+        "pauseStart": "بداية الإيقاف",
+        "pauseReturn": "العودة",
+        "absences": "أيام الغياب الاستثنائية",
+        "addAbsence": "إضافة غياب",
+        "noAbsences": "لا توجد غيابات مخططة",
+        "autoSave": "يتم حفظ التغييرات تلقائيًا.",
         "templates": {
-          "weekdays": "Semaine",
-          "weekend": "Week-end only",
-          "applied": "Template \"{template}\" appliqué",
+          "weekdays": "أسبوع",
+          "weekend": "عطلة نهاية الأسبوع فقط",
+          "applied": "تم تطبيق القالب \"{template}\"",
           "allDay": "24/7"
         }
       },
       "save": {
-        "saving": "Enregistrement...",
-        "saved": "Modifications enregistrées",
-        "error": "Erreur lors de la sauvegarde",
-        "retry": "Retry {count}/{max}...",
-        "retryFailed": "{error} (échec après {max} tentatives)"
+        "saving": "جاري الحفظ...",
+        "saved": "تم حفظ التغييرات",
+        "error": "خطأ في الحفظ",
+        "retry": "إعادة المحاولة {count}/{max}...",
+        "retryFailed": "{error} (فشل بعد {max} محاولات)"
       }
+    },
+    "header": {
+      "status": {
+        "active": "نشط",
+        "verified": "تم التحقق",
+        "paused": "متوقف مؤقتًا",
+        "inactive": "غير نشط"
+      },
+      "loading": "جاري التحميل…"
+    },
+    "actions": {
+      "viewProfile": "عرض ملفي الشخصي",
+      "pauseAccount": "إيقاف مؤقت",
+      "activateAccount": "تفعيل حسابي"
     }
   },
   "clubProfile": {

@@ -556,3 +556,4 @@ export default function StaticNavBar() {
 - [Exemples GitHub](https://github.com/amannn/next-intl/tree/main/examples)
 
 
+

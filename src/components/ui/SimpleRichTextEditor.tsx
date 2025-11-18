@@ -6,6 +6,7 @@
 
 import { useState, useRef } from 'react'
 import { Bold, Italic, List, ListOrdered } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 interface SimpleRichTextEditorProps {
   value: string
@@ -22,6 +23,7 @@ export default function SimpleRichTextEditor({
   minLength = 0,
   rows = 6
 }: SimpleRichTextEditorProps) {
+  const t = useTranslations('common')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   const wrapSelection = (before: string, after: string) => {
@@ -123,7 +125,7 @@ export default function SimpleRichTextEditor({
 
       {/* Character count */}
       <div className={`text-xs ${isValid ? 'text-emerald-300' : 'text-gray-400'}`}>
-        {charCount} / {minLength} caractères minimum
+        {t('charCount', { current: charCount, min: minLength })}
       </div>
     </div>
   )

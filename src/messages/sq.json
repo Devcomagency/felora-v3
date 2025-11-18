@@ -24,7 +24,8 @@
     "legal": "Ligjore",
     "privacy": "Privatësia",
     "terms": "Kushtet",
-    "cookies": "Cookies"
+    "cookies": "Cookies",
+    "charCount": "{current} / {min} karaktere minimum"
   },
   "search": {
     "title": "Kërkim",
@@ -635,289 +636,343 @@
   },
   "dashboardEscort": {
     "profil": {
-      "pageTitle": "Mon Profil",
-      "pageDescription": "Gérez vos informations publiques et votre présentation",
+      "pageTitle": "Profili Im",
+      "pageDescription": "Menaxhoni informacionin tuaj publik dhe prezantimin",
       "kycSuccess": {
-        "title": "🎉 Félicitations ! KYC soumis avec succès",
-        "description": "Votre vérification d'identité a été transmise. Il est maintenant temps de finaliser votre profil !",
-        "nextStepsTitle": "📋 Prochaines étapes recommandées :",
-        "step1": "Ajoutez vos photos et descriptions",
-        "step2": "Configurez vos tarifs et services",
-        "step3": "Votre vérification sera traitée sous 48h"
+        "title": "🎉 Urime! KYC u dërgua me sukses",
+        "description": "Verifikimi i identitetit tuaj u dërgua. Tani është koha për të përfunduar profilin tuaj!",
+        "nextStepsTitle": "📋 Hapat e rekomanduar të ardhshëm:",
+        "step1": "Shto fotot dhe përshkrimet tuaja",
+        "step2": "Konfiguroni tarifat dhe shërbimet tuaja",
+        "step3": "Verifikimi juaj do të përpunohet brenda 48 orësh"
       },
       "clubs": {
-        "title": "Mes Clubs",
-        "loading": "Chargement...",
+        "title": "Klubet e Mia",
+        "loading": "Duke u ngarkuar...",
         "tabs": {
-          "invitations": "Invitations",
-          "myClubs": "Mes clubs"
+          "invitations": "Ftesat",
+          "myClubs": "Klubet e mia"
         },
         "invitations": {
-          "received": "Invitation reçue le",
-          "expires": "Expire le",
-          "accept": "Accepter",
-          "decline": "Refuser",
-          "noInvitations": "Aucune invitation en attente",
-          "noInvitationsDescription": "Les clubs peuvent vous inviter à apparaître sur leur profil",
-          "history": "Historique",
-          "accepted": "✓ Acceptée",
-          "declined": "✗ Refusée",
-          "expired": "⏱ Expirée"
+          "received": "Ftesa u mor më",
+          "expires": "Skadon më",
+          "accept": "Prano",
+          "decline": "Refuzo",
+          "noInvitations": "Nuk ka ftesa në pritje",
+          "noInvitationsDescription": "Klubet mund t'ju ftojnë të shfaqeni në profilin e tyre",
+          "history": "Historia",
+          "accepted": "✓ Pranuar",
+          "declined": "✗ Refuzuar",
+          "expired": "⏱ Skaduar"
         },
         "myClubs": {
-          "viewProfile": "Voir profil",
-          "leaveClub": "Quitter le club",
-          "leaveConfirm": "Voulez-vous vraiment quitter {clubName} ?",
-          "noClubs": "Vous n'êtes affiliée à aucun club",
-          "noClubsDescription": "Acceptez une invitation pour apparaître sur le profil d'un club"
+          "viewProfile": "Shiko profilin",
+          "leaveClub": "Largohu nga klubi",
+          "leaveConfirm": "Dëshironi me të vërtetë të largoheni nga {clubName}?",
+          "noClubs": "Nuk jeni të lidhur me asnjë klub",
+          "noClubsDescription": "Pranoni një ftesë për të shfaqur në profilin e një klubi"
         }
       },
       "tabs": {
         "basic": {
-          "label": "Informations de base",
-          "description": "Profil général (obligatoire)"
+          "label": "Informacionet Bazë",
+          "description": "Profil i përgjithshëm (i detyrueshëm)"
         },
         "appearance": {
-          "label": "Apparence physique",
-          "description": "Caractéristiques physiques"
+          "label": "Pamja Fizike",
+          "description": "Karakteristikat fizike"
         },
         "services": {
-          "label": "Clientèle & Services",
-          "description": "Groupes + tags"
+          "label": "Klientela dhe Shërbimet",
+          "description": "Grupet + etiketat"
         },
         "pricing": {
-          "label": "Tarifs & Paiements",
-          "description": "Prix et horaires"
+          "label": "Tarifat dhe Pagesat",
+          "description": "Çmimet dhe oraret"
         },
         "agenda": {
-          "label": "Agenda",
-          "description": "Disponibilités & absences"
+          "label": "Agjenda",
+          "description": "Disponueshmëria dhe mungesat"
         },
         "clubs": {
-          "label": "Mes Clubs",
-          "description": "Clubs partenaires & invitations"
+          "label": "Klubet e Mia",
+          "description": "Klubet partnere dhe ftesat"
         }
       },
       "completion": {
-        "title": "Complétude du profil",
-        "verified": "Vérifié",
-        "verifying": "En vérification",
-        "certify": "Certifier",
-        "requiredActions": "Actions requises"
+        "title": "Plotësimi i profilit",
+        "verified": "Verifikuar",
+        "verifying": "Në verifikim",
+        "certify": "Certifiko",
+        "requiredActions": "Veprimet e kërkuara"
       },
       "requiredChecks": {
-        "profilePhoto": "Photo de profil",
-        "stageName": "Pseudo",
-        "age": "Âge",
-        "description": "Description (≥ 200 car.)"
+        "profilePhoto": "Foto e profilit",
+        "stageName": "Pseudonim",
+        "age": "Mosha",
+        "description": "Përshkrimi (≥ 200 karaktere)"
       },
       "basic": {
-        "profilePhoto": "Photo de profil",
-        "profilePhotoRequired": "⚠️ 1 photo de profil obligatoire",
-        "mandatory": "OBLIGATOIRE",
-        "remove": "Retirer",
+        "profilePhoto": "Foto e profilit",
+        "profilePhotoRequired": "⚠️ 1 foto profili e detyrueshme",
+        "mandatory": "E DETYRUESHME",
+        "remove": "Hiq",
         "ok": "OK",
-        "notePhotoOnly": "Obligatoire - Photo uniquement",
-        "dropOrClick": "Déposez ou cliquez pour ajouter",
-        "photoOnly": "Photo uniquement (max 500MB)",
-        "photoOrVideo": "Photo ou vidéo (max 500MB)",
-        "uploadProgress": "Upload en cours...",
-        "preparing": "Préparation…",
-        "mediaUploaded": "Média uploadé ✅",
-        "uploadFailed": "Échec de l'upload",
-        "profileRequired": "Créez d'abord votre profil (enregistrez vos infos), puis réessayez.",
-        "compressionFailed": "Compression vidéo échouée: {error}",
-        "fileTooLarge": "Fichier trop volumineux (limite 500MB).",
-        "title": "Informations de base",
-        "stageName": "Pseudo",
-        "category": "Catégorie",
-        "selectCategory": "Sélectionner",
+        "notePhotoOnly": "E detyrueshme - Vetëm foto",
+        "dropOrClick": "Hidhni ose klikoni për të shtuar",
+        "photoOnly": "Vetëm foto (maks 500MB)",
+        "photoOrVideo": "Foto ose video (maks 500MB)",
+        "uploadProgress": "Duke u ngarkuar...",
+        "preparing": "Duke u përgatitur…",
+        "mediaUploaded": "Media u ngarkua ✅",
+        "uploadFailed": "Ngarkimi dështoi",
+        "profileRequired": "Krijoni fillimisht profilin tuaj (ruani informacionin tuaj), pastaj provoni përsëri.",
+        "compressionFailed": "Kompresimi i videos dështoi: {error}",
+        "fileTooLarge": "Skedari shumë i madh (limit 500MB).",
+        "title": "Informacionet Bazë",
+        "stageName": "Pseudonim",
+        "category": "Kategoria",
+        "selectCategory": "Zgjidh",
         "categories": {
-          "escort": "👠 Escort",
-          "masseuse": "💆 Masseuse érotique",
+          "escort": "👠 Shoqëruese",
+          "masseuse": "💆 Masazhiste Erotike",
           "dominatrice": "🔗 Dominatrice BDSM",
-          "transsexuelle": "🌸 Transsexuelle",
-          "other": "💼 Autre"
+          "transsexuelle": "🌸 Transeksuale",
+          "other": "💼 Tjetër"
         },
-        "age": "Âge",
+        "age": "Mosha",
         "ageGroups": {
-          "18-25": "18-25 ans",
-          "26-30": "26-30 ans",
-          "31-40": "31-40 ans",
-          "40plus": "40+ ans"
+          "18-25": "18-25 vjeç",
+          "26-30": "26-30 vjeç",
+          "31-40": "31-40 vjeç",
+          "40plus": "40+ vjeç"
         },
-        "years": "ans",
-        "certifyAge": "Certifier mon âge",
-        "description": "Description",
-        "descriptionPlaceholder": "Décrivez-vous de manière attractive et professionnelle...",
-        "languages": "Langues parlées",
-        "languagesHelp": "Évaluez votre niveau de maîtrise pour chaque langue (1 = Débutant, 5 = Courant)",
+        "years": "vjeç",
+        "certifyAge": "Certifikoni moshën time",
+        "description": "Përshkrimi",
+        "descriptionPlaceholder": "Përshkruani veten në mënyrë tërheqëse dhe profesionale...",
+        "languages": "Gjuhët e folura",
+        "languagesHelp": "Vlerësoni nivelin tuaj të aftësisë për çdo gjuhë (1 = Fillestar, 5 = Rrjedhshëm)",
         "location": {
-          "title": "Localisation",
-          "required": "Requis",
-          "canton": "Canton",
-          "city": "Ville",
-          "cityPlaceholder": "ex: Genève",
-          "fullAddress": "Adresse complète",
-          "addressPlaceholder": "Tapez votre adresse suisse...",
+          "title": "Vendndodhja",
+          "required": "E kërkuar",
+          "canton": "Kantoni",
+          "city": "Qyteti",
+          "cityPlaceholder": "p.sh: Gjenevë",
+          "fullAddress": "Adresa e plotë",
+          "addressPlaceholder": "Shkruani adresën tuaj zvicerane...",
           "privacy": {
-            "precise": "Précise",
-            "approximate": "Approximative (±150m)"
+            "precise": "E saktë",
+            "approximate": "Përafërt (±150m)"
           }
         },
         "phone": {
-          "title": "Contact téléphonique",
-          "number": "Numéro de téléphone",
+          "title": "Kontakti telefonik",
+          "number": "Numri i telefonit",
           "numberPlaceholder": "+41 79 123 45 67",
-          "visibility": "Visibilité du numéro",
-          "visible": "📞 Numéro visible (affiché + boutons WhatsApp/SMS/Appel)",
-          "hidden": "📞 Numéro caché (boutons WhatsApp/SMS/Appel uniquement)",
-          "none": "🔒 Messagerie privée uniquement"
+          "visibility": "Dukshmëria e numrit",
+          "visible": "📞 Numër i dukshëm (i shfaqur + butonat WhatsApp/SMS/Thirrje)",
+          "hidden": "📞 Numër i fshehur (vetëm butonat WhatsApp/SMS/Thirrje)",
+          "none": "🔒 Vetëm mesazhe private"
         },
         "geoBlocking": {
-          "title": "Blocage géographique",
-          "optional": "Optionnel",
-          "description": "Bloquez l'accès à votre profil depuis certains pays",
-          "blockedCount": "{count} pays bloqué",
-          "blockedCountPlural": "{count} pays bloqués"
+          "title": "Bllokimi gjeografik",
+          "optional": "Opsionale",
+          "description": "Bllokoni qasjen në profilin tuaj nga disa vende",
+          "blockedCount": "{count} vend i bllokuar",
+          "blockedCountPlural": "{count} vende të bllokoura"
         }
       },
       "appearance": {
-        "title": "Apparence physique",
-        "height": "Taille (cm)",
+        "title": "Pamja Fizike",
+        "height": "Gjatësia (cm)",
         "heightOver": "> 200 cm",
-        "bodyType": "Silhouette",
+        "bodyType": "Silueta",
         "bodyTypes": {
-          "select": "Sélectionner",
-          "mince": "Mince",
+          "select": "Zgjidh",
+          "mince": "E hollë",
           "sportive": "Sportive",
-          "pulpeuse": "Pulpeuse",
-          "ronde": "Ronde"
+          "pulpeuse": "E plotë",
+          "ronde": "E rrumbullakët"
         },
-        "breastSize": "Tour de poitrine",
+        "breastSize": "Madhësia e gjoksit",
         "breastSizes": {
-          "select": "Sélectionner"
+          "select": "Zgjidh"
         },
-        "hairColor": "Cheveux — Couleur",
+        "hairColor": "Flokët — Ngjyra",
         "hairColors": {
-          "select": "Sélectionner",
-          "brun": "Brun",
-          "blond": "Blond",
-          "chatain": "Châtain",
-          "gris": "Gris",
-          "roux": "Roux",
-          "autre": "Autre"
+          "select": "Zgjidh",
+          "brun": "Kafe",
+          "blond": "Blonde",
+          "chatain": "Kafe e çelët",
+          "gris": "Gri",
+          "roux": "E kuqe",
+          "autre": "Tjetër"
         },
-        "breastType": "Poitrine",
+        "breastType": "Gjoksi",
         "breastTypes": {
-          "naturelle": "Naturelle",
-          "siliconee": "Siliconée"
+          "naturelle": "Natyrale",
+          "siliconee": "Silikoni"
         },
-        "eyeColor": "Couleur des yeux",
+        "eyeColor": "Ngjyra e syve",
         "eyeColors": {
-          "select": "Sélectionner",
-          "bleu": "Bleu",
-          "vert": "Vert",
-          "marron": "Marron",
-          "noisette": "Noisette",
-          "gris": "Gris"
+          "select": "Zgjidh",
+          "bleu": "Blu",
+          "vert": "Jeshile",
+          "marron": "Kafe",
+          "noisette": "Lajthi",
+          "gris": "Gri"
         },
-        "ethnicity": "Origine",
+        "ethnicity": "Origjina",
         "ethnicities": {
-          "select": "Sélectionner",
-          "europeenne": "Européenne",
-          "africaine": "Africaine",
-          "asiatique": "Asiatique",
+          "select": "Zgjidh",
+          "europeenne": "Evropiane",
+          "africaine": "Afrikane",
+          "asiatique": "Aziatike",
           "latine": "Latine",
-          "metisse": "Métisse",
-          "autre": "Autre"
+          "metisse": "E përzier",
+          "autre": "Tjetër"
         },
-        "tattoosPiercings": "Tatouages / Piercings",
-        "tattoos": "Tatouages",
+        "tattoosPiercings": "Tatuazhe / Piercings",
+        "tattoos": "Tatuazhe",
         "piercings": "Piercings",
-        "pubicHair": "Pilosité",
+        "pubicHair": "Qimja e trupit",
         "pubicHairTypes": {
-          "naturel": "Naturel",
-          "rase": "Rasé",
-          "partiel": "Partiel"
+          "naturel": "Natyrale",
+          "rase": "E rruar",
+          "partiel": "Pjesërish"
         },
-        "smoker": "Fumeur/Fumeuse"
+        "smoker": "Duhanpirëse"
       },
       "services": {
-        "title": "Clientèle & Services",
-        "description": "Sélectionnez ce que vous proposez. Utilisez la recherche pour filtrer.",
-        "clientele": "Clientèle acceptée",
+        "title": "Klientela dhe Shërbimet",
+        "description": "Zgjidhni çfarë ofroni. Përdorni kërkimin për të filtruar.",
+        "clientele": "Klientela e pranuar",
         "clienteleTypes": {
-          "couples": "Couples",
-          "women": "Femmes",
-          "handicapped": "Personnes handicapées",
-          "seniors": "Seniors"
+          "couples": "Çiftet",
+          "women": "Gra",
+          "handicapped": "Persona me aftësi të kufizuara",
+          "seniors": "Të moshuar"
         },
-        "serviceMode": "Mode de service",
-        "incall": "Je reçois",
-        "outcall": "Je me déplace"
+        "serviceMode": "Modaliteti i shërbimit",
+        "incall": "Pranoj",
+        "outcall": "Zhvendosem",
+        "categories": {
+          "classics": "Klasik",
+          "oral": "Oral",
+          "anal": "Anal",
+          "bdsm": "BDSM dhe Fetishe",
+          "massages": "Masazhe"
+        },
+        "items": {
+          "Rapport": "Marrëdhënie seksuale",
+          "French kiss": "Puthje franceze",
+          "GFE": "GFE",
+          "PSE": "PSE",
+          "Lingerie": "Lingerie",
+          "Duo/Trio": "Duo/Trio",
+          "Jeux de rôles": "Lojëra roli",
+          "Costumes": "Kostume",
+          "Fellation protégée": "Oral i mbrojtur",
+          "Fellation nature": "Oral i pambrojtur",
+          "Gorge profonde": "Grykë e thellë",
+          "Éjac en bouche": "Përfundim në gojë",
+          "Éjac sur le corps": "Përfundim në trup",
+          "Éjac sur le visage": "Përfundim në fytyrë",
+          "Sodomie (donne)": "Anal (aktiv)",
+          "Sodomie (reçoit)": "Anal (pasiv)",
+          "Doigté anal": "Gisht anal",
+          "Domination soft": "Dominim i butë",
+          "Fessées": "Shpullë",
+          "Donjon SM": "Burg SM",
+          "Fétichisme pieds": "Fetish këmbësh",
+          "Tantrique": "Tantrik",
+          "Érotique": "Erotik",
+          "Corps à corps": "Trup me trup",
+          "Nuru": "Nuru",
+          "Prostate": "Prostatë",
+          "Lingam": "Lingam",
+          "Yoni": "Yoni",
+          "4 mains": "4 duar",
+          "Suédois": "Suedez",
+          "Huiles": "Vaj"
+        }
       },
       "pricing": {
-        "title": "Tarifs et disponibilités",
-        "startingFrom": "À partir de",
-        "detailedRates": "Tarifs détaillés (optionnel)",
+        "title": "Tarifat dhe disponueshmëria",
+        "startingFrom": "Duke filluar nga",
+        "detailedRates": "Tarifa të detajuara (opsionale)",
         "durations": {
-          "15min": "15 minutes",
-          "30min": "30 minutes",
-          "1hour": "1 heure",
-          "2hours": "2 heures",
-          "halfDay": "Demi-journée",
-          "fullDay": "Journée complète",
-          "overnight": "Nuit complète"
+          "15min": "15 minuta",
+          "30min": "30 minuta",
+          "1hour": "1 orë",
+          "2hours": "2 orë",
+          "halfDay": "Gjysmë dite",
+          "fullDay": "Ditë e plotë",
+          "overnight": "Natë e plotë"
         },
-        "tip": "💡 Astuce : Les tarifs aident les clients à vous trouver facilement et augmentent votre visibilité.",
-        "customDurations": "Durées personnalisées",
-        "addCustom": "+ Ajouter",
-        "customDurationPlaceholder": "Ex: 90 minutes, 3 heures, Week-end...",
-        "priceCHF": "Prix CHF",
-        "delete": "Supprimer",
-        "customNote": "Les durées personnalisées sont visibles sur votre profil et dans les recherches.",
-        "warningNote": "⚠️ Sans tarifs, votre profil n'apparaîtra pas dans les recherches par prix.",
-        "availability": "Disponibilité : Configurez votre agenda dans l'onglet",
-        "agendaTab": "Agenda"
+        "tip": "💡 Këshillë: Tarifat ndihmojnë klientët t'ju gjejnë lehtë dhe rrisin dukshmërinë tuaj.",
+        "customDurations": "Kohëzgjatje të personalizuara",
+        "addCustom": "+ Shto",
+        "customDurationPlaceholder": "Shembull: 90 minuta, 3 orë, Fundjavë...",
+        "priceCHF": "Çmimi CHF",
+        "delete": "Fshi",
+        "customNote": "Kohëzgjatjet e personalizuara janë të dukshme në profilin tuaj dhe në kërkime.",
+        "warningNote": "⚠️ Pa tarifa, profili juaj nuk do të shfaqet në kërkim sipas çmimit.",
+        "availability": "Disponueshmëria: Konfiguroni agjendan tuaj në skedën",
+        "agendaTab": "Agjenda"
       },
       "agenda": {
-        "title": "Agenda",
-        "weeklySchedule": "Heures de présence (hebdo)",
+        "title": "Agjenda",
+        "weeklySchedule": "Orët e pranisë (javore)",
         "days": {
-          "Lundi": "Lundi",
-          "Mardi": "Mardi",
-          "Mercredi": "Mercredi",
-          "Jeudi": "Jeudi",
-          "Vendredi": "Vendredi",
-          "Samedi": "Samedi",
-          "Dimanche": "Dimanche"
+          "Lundi": "E hënë",
+          "Mardi": "E martë",
+          "Mercredi": "E mërkurë",
+          "Jeudi": "E enjte",
+          "Vendredi": "E premte",
+          "Samedi": "E shtunë",
+          "Dimanche": "E diel"
         },
-        "open": "✅ Ouvert",
-        "closed": "❌ Fermé",
-        "opening": "Ouverture",
-        "closing": "Fermeture",
-        "pause": "Mettre mon compte en pause",
-        "pauseStart": "Début de pause",
-        "pauseReturn": "Retour",
-        "absences": "Jours d'absence exceptionnels",
-        "addAbsence": "Ajouter une absence",
-        "noAbsences": "Aucune absence planifiée",
-        "autoSave": "Les changements sont enregistrés automatiquement.",
+        "open": "✅ Hapur",
+        "closed": "❌ Mbyllur",
+        "opening": "Hapja",
+        "closing": "Mbyllja",
+        "pause": "Ndalo llogarinë time",
+        "pauseStart": "Fillimi i pauzës",
+        "pauseReturn": "Kthimi",
+        "absences": "Ditë mungesash të jashtëzakonshme",
+        "addAbsence": "Shto mungesë",
+        "noAbsences": "Asnjë mungesë e planifikuar",
+        "autoSave": "Ndryshimet ruhen automatikisht.",
         "templates": {
-          "weekdays": "Semaine",
-          "weekend": "Week-end only",
-          "applied": "Template \"{template}\" appliqué",
+          "weekdays": "Javë",
+          "weekend": "Vetëm fundjavë",
+          "applied": "Shablloni \"{template}\" u aplikua",
           "allDay": "24/7"
         }
       },
       "save": {
-        "saving": "Enregistrement...",
-        "saved": "Modifications enregistrées",
-        "error": "Erreur lors de la sauvegarde",
-        "retry": "Retry {count}/{max}...",
-        "retryFailed": "{error} (échec après {max} tentatives)"
+        "saving": "Duke ruajtur...",
+        "saved": "Ndryshimet u ruajtën",
+        "error": "Gabim në ruajtje",
+        "retry": "Riprovo {count}/{max}...",
+        "retryFailed": "{error} (dështoi pas {max} tentativash)"
       }
+    },
+    "header": {
+      "status": {
+        "active": "Aktiv",
+        "verified": "Verifikuar",
+        "paused": "Në pauzë",
+        "inactive": "Joaktiv"
+      },
+      "loading": "Duke u ngarkuar…"
+    },
+    "actions": {
+      "viewProfile": "Shiko profilin tim",
+      "pauseAccount": "Ndalo",
+      "activateAccount": "Aktivizo llogarinë time"
     }
   },
   "clubProfile": {

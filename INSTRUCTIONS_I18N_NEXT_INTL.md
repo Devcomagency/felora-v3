@@ -328,3 +328,4 @@ const handleLanguageChange = (langCode: string) => {
 4. **RTL** : Tester l'arabe sur mobile et desktop
 
 
+

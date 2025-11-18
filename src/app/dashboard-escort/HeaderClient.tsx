@@ -3,11 +3,13 @@
 import { useEffect, useState } from 'react'
 import { Calendar, Loader2, ShieldCheck, BadgeCheck } from 'lucide-react'
 import * as Dialog from '@radix-ui/react-dialog'
+import { useTranslations } from 'next-intl'
 import UploadDrop from '@/components/kyc-v2/UploadDrop'
 
 type ProfileStatus = 'PENDING' | 'ACTIVE' | 'PAUSED' | 'VERIFIED'
 
 export default function HeaderClient() {
+  const t = useTranslations('dashboardEscort.header')
   const [loading, setLoading] = useState(true)
   const [status, setStatus] = useState<ProfileStatus>('PENDING')
   const [pct, setPct] = useState<number>(0)
@@ -55,10 +57,10 @@ export default function HeaderClient() {
     <div className="bg-black/70 backdrop-blur border border-white/10 rounded-xl px-4 py-3 text-sm">
       <div className="flex items-center gap-3">
         <div className={`px-2.5 py-1 rounded-lg text-xs font-medium border ${status === 'ACTIVE' || status === 'VERIFIED' ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30' : status === 'PAUSED' ? 'bg-yellow-500/15 text-yellow-300 border-yellow-500/30' : 'bg-gray-500/15 text-gray-300 border-gray-500/30'}`}>
-          {loading ? '…' : status === 'ACTIVE' ? 'Actif' : status === 'VERIFIED' ? 'Vérifié' : status === 'PAUSED' ? 'En pause' : 'Inactif'}
+          {loading ? '…' : status === 'ACTIVE' ? t('status.active') : status === 'VERIFIED' ? t('status.verified') : status === 'PAUSED' ? t('status.paused') : t('status.inactive')}
         </div>
         {loading && (
-          <div className="text-xs text-white/60 flex items-center"><Loader2 size={14} className="animate-spin mr-2"/> Chargement…</div>
+          <div className="text-xs text-white/60 flex items-center"><Loader2 size={14} className="animate-spin mr-2"/> {t('loading')}</div>
         )}
       </div>
     </div>

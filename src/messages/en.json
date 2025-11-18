@@ -24,7 +24,8 @@
     "legal": "Legal",
     "privacy": "Privacy",
     "terms": "Terms",
-    "cookies": "Cookies"
+    "cookies": "Cookies",
+    "charCount": "{current} / {min} characters minimum"
   },
   "search": {
     "title": "Search",
@@ -643,12 +644,12 @@
       "pageTitle": "My Profile",
       "pageDescription": "Manage your public information and presentation",
       "kycSuccess": {
-        "title": "🎉 Congratulations! KYC successfully submitted",
-        "description": "Your identity verification has been submitted. Now it's time to complete your profile!",
+        "title": "🎉 Congratulations! KYC submitted successfully",
+        "description": "Your identity verification has been submitted. It's now time to complete your profile!",
         "nextStepsTitle": "📋 Recommended next steps:",
         "step1": "Add your photos and descriptions",
         "step2": "Configure your rates and services",
-        "step3": "Your verification will be processed within 48 hours"
+        "step3": "Your verification will be processed within 48h"
       },
       "clubs": {
         "title": "My Clubs",
@@ -695,7 +696,7 @@
           "description": "Prices and schedules"
         },
         "agenda": {
-          "label": "Agenda",
+          "label": "Schedule",
           "description": "Availability & absences"
         },
         "clubs": {
@@ -704,20 +705,20 @@
         }
       },
       "completion": {
-        "title": "Profile Completion",
+        "title": "Profile completion",
         "verified": "Verified",
-        "verifying": "Verifying",
+        "verifying": "Under verification",
         "certify": "Certify",
-        "requiredActions": "Required Actions"
+        "requiredActions": "Required actions"
       },
       "requiredChecks": {
-        "profilePhoto": "Profile Photo",
-        "stageName": "Stage Name",
+        "profilePhoto": "Profile photo",
+        "stageName": "Stage name",
         "age": "Age",
         "description": "Description (≥ 200 chars)"
       },
       "basic": {
-        "profilePhoto": "Profile Photo",
+        "profilePhoto": "Profile photo",
         "profilePhotoRequired": "⚠️ 1 profile photo required",
         "mandatory": "MANDATORY",
         "remove": "Remove",
@@ -726,15 +727,15 @@
         "dropOrClick": "Drop or click to add",
         "photoOnly": "Photo only (max 500MB)",
         "photoOrVideo": "Photo or video (max 500MB)",
-        "uploadProgress": "Upload in progress...",
+        "uploadProgress": "Uploading...",
         "preparing": "Preparing…",
         "mediaUploaded": "Media uploaded ✅",
         "uploadFailed": "Upload failed",
-        "profileRequired": "First create your profile (save your info), then try again.",
+        "profileRequired": "Create your profile first (save your info), then try again.",
         "compressionFailed": "Video compression failed: {error}",
         "fileTooLarge": "File too large (500MB limit).",
         "title": "Basic Information",
-        "stageName": "Stage Name",
+        "stageName": "Stage name",
         "category": "Category",
         "selectCategory": "Select",
         "categories": {
@@ -754,15 +755,15 @@
         "years": "years",
         "certifyAge": "Certify my age",
         "description": "Description",
-        "descriptionPlaceholder": "Describe yourself in an attractive and professional way...",
-        "languages": "Spoken Languages",
-        "languagesHelp": "Rate your proficiency for each language (1 = Beginner, 5 = Fluent)",
+        "descriptionPlaceholder": "Describe yourself attractively and professionally...",
+        "languages": "Languages spoken",
+        "languagesHelp": "Rate your proficiency level for each language (1 = Beginner, 5 = Fluent)",
         "location": {
           "title": "Location",
           "required": "Required",
           "canton": "Canton",
           "city": "City",
-          "cityPlaceholder": "e.g.: Geneva",
+          "cityPlaceholder": "e.g: Geneva",
           "fullAddress": "Full address",
           "addressPlaceholder": "Type your Swiss address...",
           "privacy": {
@@ -771,16 +772,16 @@
           }
         },
         "phone": {
-          "title": "Phone Contact",
-          "number": "Phone Number",
+          "title": "Phone contact",
+          "number": "Phone number",
           "numberPlaceholder": "+41 79 123 45 67",
-          "visibility": "Number Visibility",
+          "visibility": "Number visibility",
           "visible": "📞 Visible number (displayed + WhatsApp/SMS/Call buttons)",
           "hidden": "📞 Hidden number (WhatsApp/SMS/Call buttons only)",
           "none": "🔒 Private messaging only"
         },
         "geoBlocking": {
-          "title": "Geo Blocking",
+          "title": "Geo-blocking",
           "optional": "Optional",
           "description": "Block access to your profile from certain countries",
           "blockedCount": "{count} blocked country",
@@ -791,15 +792,15 @@
         "title": "Physical Appearance",
         "height": "Height (cm)",
         "heightOver": "> 200 cm",
-        "bodyType": "Body Type",
+        "bodyType": "Body type",
         "bodyTypes": {
           "select": "Select",
           "mince": "Slim",
           "sportive": "Athletic",
           "pulpeuse": "Curvy",
-          "ronde": "Plus-size"
+          "ronde": "Round"
         },
-        "breastSize": "Bust Size",
+        "breastSize": "Bust size",
         "breastSizes": {
           "select": "Select"
         },
@@ -807,40 +808,40 @@
         "hairColors": {
           "select": "Select",
           "brun": "Brown",
-          "blond": "Blonde",
+          "blond": "Blond",
           "chatain": "Chestnut",
-          "gris": "Gray",
+          "gris": "Grey",
           "roux": "Red",
           "autre": "Other"
         },
-        "breastType": "Breast Type",
+        "breastType": "Breast",
         "breastTypes": {
           "naturelle": "Natural",
-          "siliconee": "Enhanced"
+          "siliconee": "Silicone"
         },
-        "eyeColor": "Eye Color",
+        "eyeColor": "Eye color",
         "eyeColors": {
           "select": "Select",
           "bleu": "Blue",
           "vert": "Green",
           "marron": "Brown",
           "noisette": "Hazel",
-          "gris": "Gray"
+          "gris": "Grey"
         },
-        "ethnicity": "Ethnicity",
+        "ethnicity": "Origin",
         "ethnicities": {
           "select": "Select",
           "europeenne": "European",
           "africaine": "African",
           "asiatique": "Asian",
-          "latine": "Latina",
+          "latine": "Latin",
           "metisse": "Mixed",
           "autre": "Other"
         },
         "tattoosPiercings": "Tattoos / Piercings",
         "tattoos": "Tattoos",
         "piercings": "Piercings",
-        "pubicHair": "Pubic Hair",
+        "pubicHair": "Body hair",
         "pubicHairTypes": {
           "naturel": "Natural",
           "rase": "Shaved",
@@ -851,56 +852,84 @@
       "services": {
         "title": "Clientele & Services",
         "description": "Select what you offer. Use search to filter.",
-        "clientele": "Accepted Clientele",
+        "clientele": "Accepted clientele",
         "clienteleTypes": {
           "couples": "Couples",
           "women": "Women",
-          "handicapped": "People with disabilities",
+          "handicapped": "Disabled persons",
           "seniors": "Seniors"
         },
-        "serviceMode": "Service Mode",
+        "serviceMode": "Service mode",
         "incall": "I receive",
-        "outcall": "I travel"
+        "outcall": "I travel",
+        "categories": {
+          "classics": "Classics",
+          "oral": "Oral",
+          "anal": "Anal",
+          "bdsm": "BDSM & Fetishes",
+          "massages": "Massages"
+        },
+        "items": {
+          "Rapport": "Intercourse",
+          "French kiss": "French kiss",
+          "GFE": "GFE",
+          "PSE": "PSE",
+          "Lingerie": "Lingerie",
+          "Duo/Trio": "Duo/Trio",
+          "Jeux de rôles": "Role play",
+          "Costumes": "Costumes",
+          "Fellation protégée": "Protected oral",
+          "Fellation nature": "Unprotected oral",
+          "Gorge profonde": "Deep throat",
+          "Éjac en bouche": "CIM",
+          "Éjac sur le corps": "COB",
+          "Éjac sur le visage": "COF",
+          "Sodomie (donne)": "Anal (gives)",
+          "Sodomie (reçoit)": "Anal (receives)",
+          "Doigté anal": "Anal fingering",
+          "Domination soft": "Soft domination",
+          "Fessées": "Spanking",
+          "Donjon SM": "SM dungeon",
+          "Fétichisme pieds": "Foot fetish",
+          "Tantrique": "Tantric",
+          "Érotique": "Erotic",
+          "Corps à corps": "Body to body",
+          "Nuru": "Nuru",
+          "Prostate": "Prostate",
+          "Lingam": "Lingam",
+          "Yoni": "Yoni",
+          "4 mains": "4 hands",
+          "Suédois": "Swedish",
+          "Huiles": "Oils"
+        }
       },
       "pricing": {
-        "title": "Rates and Availability",
+        "title": "Rates and availability",
         "startingFrom": "Starting from",
         "detailedRates": "Detailed rates (optional)",
         "durations": {
           "15min": "15 minutes",
           "30min": "30 minutes",
-          "1hour": "1 heure",
-          "2hours": "2 heures",
-          "halfDay": "Demi-journée",
-          "fullDay": "Journée complète",
-          "overnight": "Nuit complète"
+          "1hour": "1 hour",
+          "2hours": "2 hours",
+          "halfDay": "Half-day",
+          "fullDay": "Full day",
+          "overnight": "Overnight"
         },
-        "tip": "💡 Astuce : Les tarifs aident les clients à vous trouver facilement et augmentent votre visibilité.",
-        "customDurations": "Durées personnalisées",
-        "addCustom": "+ Ajouter",
-        "customDurationPlaceholder": "Ex: 90 minutes, 3 heures, Week-end...",
-        "priceCHF": "Prix CHF",
-        "delete": "Supprimer",
-        "customNote": "Les durées personnalisées sont visibles sur votre profil et dans les recherches.",
-        "warningNote": "⚠️ Sans tarifs, votre profil n'apparaîtra pas dans les recherches par prix.",
-        "availability": "Disponibilité : Configurez votre agenda dans l'onglet",
-        "agendaTab": "Agenda",
-        "duration": "Duration",
-        "price": "Price (CHF)",
-        "addRate": "+ Add rate",
-        "website": "Website (optional)",
-        "websitePlaceholder": "https://yoursite.com",
-        "acceptedPayments": "Accepted Payments",
-        "paymentMethods": {
-          "cash": "Cash",
-          "card": "Credit Card",
-          "crypto": "Cryptocurrency",
-          "twint": "TWINT"
-        }
+        "tip": "💡 Tip: Rates help clients find you easily and increase your visibility.",
+        "customDurations": "Custom durations",
+        "addCustom": "+ Add",
+        "customDurationPlaceholder": "E.g: 90 minutes, 3 hours, Weekend...",
+        "priceCHF": "Price CHF",
+        "delete": "Delete",
+        "customNote": "Custom durations are visible on your profile and in searches.",
+        "warningNote": "⚠️ Without rates, your profile will not appear in price searches.",
+        "availability": "Availability: Configure your schedule in the tab",
+        "agendaTab": "Schedule"
       },
       "agenda": {
-        "title": "Agenda & Availability",
-        "weeklySchedule": "Heures de présence (hebdo)",
+        "title": "Schedule",
+        "weeklySchedule": "Weekly presence hours",
         "days": {
           "Lundi": "Monday",
           "Mardi": "Tuesday",
@@ -910,38 +939,45 @@
           "Samedi": "Saturday",
           "Dimanche": "Sunday"
         },
-        "open": "✅ Ouvert",
-        "closed": "❌ Fermé",
-        "opening": "Ouverture",
-        "closing": "Fermeture",
+        "open": "✅ Open",
+        "closed": "❌ Closed",
+        "opening": "Opening",
+        "closing": "Closing",
         "pause": "Pause my account",
-        "pauseStart": "Début de pause",
-        "pauseReturn": "Retour",
-        "absences": "Jours d'absence exceptionnels",
-        "addAbsence": "Ajouter une absence",
-        "noAbsences": "Aucune absence planifiée",
-        "autoSave": "Les changements sont enregistrés automatiquement.",
+        "pauseStart": "Pause start",
+        "pauseReturn": "Return",
+        "absences": "Exceptional absence days",
+        "addAbsence": "Add absence",
+        "noAbsences": "No planned absences",
+        "autoSave": "Changes are saved automatically.",
         "templates": {
           "weekdays": "Weekdays",
-          "weekend": "Weekend",
-          "applied": "{template} template applied",
+          "weekend": "Weekend only",
+          "applied": "Template \"{template}\" applied",
           "allDay": "24/7"
-        },
-        "pauseDescription": "Your profile will be temporarily hidden",
-        "available": "Available",
-        "notAvailable": "Not available",
-        "from": "From",
-        "to": "To"
+        }
       },
       "save": {
         "saving": "Saving...",
-        "saved": "Modifications enregistrées",
-        "error": "Error saving profile",
+        "saved": "Changes saved",
+        "error": "Save error",
         "retry": "Retry {count}/{max}...",
-        "retryFailed": "{error} (échec après {max} tentatives)",
-        "success": "Profile saved successfully",
-        "button": "Save changes"
+        "retryFailed": "{error} (failed after {max} attempts)"
       }
+    },
+    "header": {
+      "status": {
+        "active": "Active",
+        "verified": "Verified",
+        "paused": "Paused",
+        "inactive": "Inactive"
+      },
+      "loading": "Loading…"
+    },
+    "actions": {
+      "viewProfile": "View my profile",
+      "pauseAccount": "Pause",
+      "activateAccount": "Activate my account"
     }
   },
   "clubProfile": {

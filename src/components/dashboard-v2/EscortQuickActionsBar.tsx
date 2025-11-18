@@ -3,8 +3,10 @@
 import React from 'react'
 import { useEscortDashboard } from '@/contexts/EscortDashboardContext'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 
 export default function EscortQuickActionsBar() {
+  const t = useTranslations('dashboardEscort.actions')
   const { status, loading, error, missingFields, activate, pause } = useEscortDashboard()
   const router = useRouter()
 
@@ -31,11 +33,11 @@ export default function EscortQuickActionsBar() {
       <div className="bg-black/60 backdrop-blur border border-white/10 rounded-xl px-4 py-2 text-sm flex items-center gap-2 flex-wrap justify-end">
         {(status === 'ACTIVE' || status === 'VERIFIED') ? (
           <>
-            <button onClick={() => router.push('/profile-test/escort/test')} className="px-3 py-1.5 rounded-lg border border-white/10 text-white/80 hover:bg-white/10">Voir mon profil</button>
-            <button disabled={loading} onClick={pause} className="px-3 py-1.5 rounded-lg border border-yellow-500/30 text-yellow-200 hover:bg-yellow-500/10">Mettre en pause</button>
+            <button onClick={() => router.push('/profile-test/escort/test')} className="px-3 py-1.5 rounded-lg border border-white/10 text-white/80 hover:bg-white/10">{t('viewProfile')}</button>
+            <button disabled={loading} onClick={pause} className="px-3 py-1.5 rounded-lg border border-yellow-500/30 text-yellow-200 hover:bg-yellow-500/10">{t('pauseAccount')}</button>
           </>
         ) : (
-          <button disabled={loading} onClick={activate} className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white">Activer mon compte</button>
+          <button disabled={loading} onClick={activate} className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white">{t('activateAccount')}</button>
         )}
       </div>
     </div>

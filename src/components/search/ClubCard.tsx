@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { MapPin, Clock, Star, Users } from 'lucide-react'
+import { MapPin, Clock } from 'lucide-react'
 import { Club } from '@/hooks/useClubs'
 import { useTranslations } from 'next-intl'
 
@@ -109,31 +109,13 @@ export default function ClubCard({ club, onClick }: ClubCardProps) {
             </div>
           </div>
 
-          {/* Stats et infos */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3 text-white/70 text-xs">
-              {club.stats.views > 0 && (
-                <div className="flex items-center gap-1">
-                  <Users size={12} />
-                  <span>{club.stats.views}</span>
-                </div>
-              )}
-              {club.stats.likes > 0 && (
-                <div className="flex items-center gap-1">
-                  <Star size={12} />
-                  <span>{club.stats.likes}</span>
-                </div>
-              )}
+          {/* Horaires */}
+          {club.openingHours && (
+            <div className="flex items-center gap-1 text-white/70 text-xs">
+              <Clock size={12} />
+              <span>{t('hours')}</span>
             </div>
-
-            {/* Horaires */}
-            {club.openingHours && (
-              <div className="flex items-center gap-1 text-white/70 text-xs">
-                <Clock size={12} />
-                <span>{t('hours')}</span>
-              </div>
-            )}
-          </div>
+          )}
         </div>
       </div>
 

@@ -24,7 +24,8 @@
     "legal": "Legal",
     "privacy": "Privacidade",
     "terms": "Termos",
-    "cookies": "Cookies"
+    "cookies": "Cookies",
+    "charCount": "{current} / {min} caracteres mínimo"
   },
   "search": {
     "title": "Pesquisa",
@@ -635,289 +636,343 @@
   },
   "dashboardEscort": {
     "profil": {
-      "pageTitle": "Mon Profil",
-      "pageDescription": "Gérez vos informations publiques et votre présentation",
+      "pageTitle": "Meu Perfil",
+      "pageDescription": "Gerencie suas informações públicas e apresentação",
       "kycSuccess": {
-        "title": "🎉 Félicitations ! KYC soumis avec succès",
-        "description": "Votre vérification d'identité a été transmise. Il est maintenant temps de finaliser votre profil !",
-        "nextStepsTitle": "📋 Prochaines étapes recommandées :",
-        "step1": "Ajoutez vos photos et descriptions",
-        "step2": "Configurez vos tarifs et services",
-        "step3": "Votre vérification sera traitée sous 48h"
+        "title": "🎉 Parabéns! KYC enviado com sucesso",
+        "description": "Sua verificação de identidade foi enviada. Agora é hora de completar seu perfil!",
+        "nextStepsTitle": "📋 Próximos passos recomendados:",
+        "step1": "Adicione suas fotos e descrições",
+        "step2": "Configure suas tarifas e serviços",
+        "step3": "Sua verificação será processada em 48h"
       },
       "clubs": {
-        "title": "Mes Clubs",
-        "loading": "Chargement...",
+        "title": "Meus Clubes",
+        "loading": "Carregando...",
         "tabs": {
-          "invitations": "Invitations",
-          "myClubs": "Mes clubs"
+          "invitations": "Convites",
+          "myClubs": "Meus clubes"
         },
         "invitations": {
-          "received": "Invitation reçue le",
-          "expires": "Expire le",
-          "accept": "Accepter",
-          "decline": "Refuser",
-          "noInvitations": "Aucune invitation en attente",
-          "noInvitationsDescription": "Les clubs peuvent vous inviter à apparaître sur leur profil",
-          "history": "Historique",
-          "accepted": "✓ Acceptée",
-          "declined": "✗ Refusée",
-          "expired": "⏱ Expirée"
+          "received": "Convite recebido em",
+          "expires": "Expira em",
+          "accept": "Aceitar",
+          "decline": "Recusar",
+          "noInvitations": "Nenhum convite pendente",
+          "noInvitationsDescription": "Os clubes podem convidá-lo a aparecer em seu perfil",
+          "history": "Histórico",
+          "accepted": "✓ Aceito",
+          "declined": "✗ Recusado",
+          "expired": "⏱ Expirado"
         },
         "myClubs": {
-          "viewProfile": "Voir profil",
-          "leaveClub": "Quitter le club",
-          "leaveConfirm": "Voulez-vous vraiment quitter {clubName} ?",
-          "noClubs": "Vous n'êtes affiliée à aucun club",
-          "noClubsDescription": "Acceptez une invitation pour apparaître sur le profil d'un club"
+          "viewProfile": "Ver perfil",
+          "leaveClub": "Sair do clube",
+          "leaveConfirm": "Você realmente quer sair de {clubName}?",
+          "noClubs": "Você não está afiliada a nenhum clube",
+          "noClubsDescription": "Aceite um convite para aparecer no perfil de um clube"
         }
       },
       "tabs": {
         "basic": {
-          "label": "Informations de base",
-          "description": "Profil général (obligatoire)"
+          "label": "Informações Básicas",
+          "description": "Perfil geral (obrigatório)"
         },
         "appearance": {
-          "label": "Apparence physique",
-          "description": "Caractéristiques physiques"
+          "label": "Aparência Física",
+          "description": "Características físicas"
         },
         "services": {
-          "label": "Clientèle & Services",
-          "description": "Groupes + tags"
+          "label": "Clientela e Serviços",
+          "description": "Grupos + tags"
         },
         "pricing": {
-          "label": "Tarifs & Paiements",
-          "description": "Prix et horaires"
+          "label": "Tarifas e Pagamentos",
+          "description": "Preços e horários"
         },
         "agenda": {
           "label": "Agenda",
-          "description": "Disponibilités & absences"
+          "description": "Disponibilidade e ausências"
         },
         "clubs": {
-          "label": "Mes Clubs",
-          "description": "Clubs partenaires & invitations"
+          "label": "Meus Clubes",
+          "description": "Clubes parceiros e convites"
         }
       },
       "completion": {
-        "title": "Complétude du profil",
-        "verified": "Vérifié",
-        "verifying": "En vérification",
-        "certify": "Certifier",
-        "requiredActions": "Actions requises"
+        "title": "Completude do perfil",
+        "verified": "Verificado",
+        "verifying": "Em verificação",
+        "certify": "Certificar",
+        "requiredActions": "Ações necessárias"
       },
       "requiredChecks": {
-        "profilePhoto": "Photo de profil",
-        "stageName": "Pseudo",
-        "age": "Âge",
-        "description": "Description (≥ 200 car.)"
+        "profilePhoto": "Foto de perfil",
+        "stageName": "Nome artístico",
+        "age": "Idade",
+        "description": "Descrição (≥ 200 car.)"
       },
       "basic": {
-        "profilePhoto": "Photo de profil",
-        "profilePhotoRequired": "⚠️ 1 photo de profil obligatoire",
-        "mandatory": "OBLIGATOIRE",
-        "remove": "Retirer",
+        "profilePhoto": "Foto de perfil",
+        "profilePhotoRequired": "⚠️ 1 foto de perfil obrigatória",
+        "mandatory": "OBRIGATÓRIO",
+        "remove": "Remover",
         "ok": "OK",
-        "notePhotoOnly": "Obligatoire - Photo uniquement",
-        "dropOrClick": "Déposez ou cliquez pour ajouter",
-        "photoOnly": "Photo uniquement (max 500MB)",
-        "photoOrVideo": "Photo ou vidéo (max 500MB)",
-        "uploadProgress": "Upload en cours...",
-        "preparing": "Préparation…",
-        "mediaUploaded": "Média uploadé ✅",
-        "uploadFailed": "Échec de l'upload",
-        "profileRequired": "Créez d'abord votre profil (enregistrez vos infos), puis réessayez.",
-        "compressionFailed": "Compression vidéo échouée: {error}",
-        "fileTooLarge": "Fichier trop volumineux (limite 500MB).",
-        "title": "Informations de base",
-        "stageName": "Pseudo",
-        "category": "Catégorie",
-        "selectCategory": "Sélectionner",
+        "notePhotoOnly": "Obrigatório - Somente foto",
+        "dropOrClick": "Arraste ou clique para adicionar",
+        "photoOnly": "Somente foto (máx 500MB)",
+        "photoOrVideo": "Foto ou vídeo (máx 500MB)",
+        "uploadProgress": "Enviando...",
+        "preparing": "Preparando…",
+        "mediaUploaded": "Mídia enviada ✅",
+        "uploadFailed": "Falha no envio",
+        "profileRequired": "Crie primeiro seu perfil (salve suas informações), depois tente novamente.",
+        "compressionFailed": "Compressão de vídeo falhou: {error}",
+        "fileTooLarge": "Arquivo muito grande (limite 500MB).",
+        "title": "Informações Básicas",
+        "stageName": "Nome artístico",
+        "category": "Categoria",
+        "selectCategory": "Selecionar",
         "categories": {
-          "escort": "👠 Escort",
-          "masseuse": "💆 Masseuse érotique",
-          "dominatrice": "🔗 Dominatrice BDSM",
-          "transsexuelle": "🌸 Transsexuelle",
-          "other": "💼 Autre"
+          "escort": "👠 Acompanhante",
+          "masseuse": "💆 Massagista Erótica",
+          "dominatrice": "🔗 Dominadora BDSM",
+          "transsexuelle": "🌸 Transexual",
+          "other": "💼 Outro"
         },
-        "age": "Âge",
+        "age": "Idade",
         "ageGroups": {
-          "18-25": "18-25 ans",
-          "26-30": "26-30 ans",
-          "31-40": "31-40 ans",
-          "40plus": "40+ ans"
+          "18-25": "18-25 anos",
+          "26-30": "26-30 anos",
+          "31-40": "31-40 anos",
+          "40plus": "40+ anos"
         },
-        "years": "ans",
-        "certifyAge": "Certifier mon âge",
-        "description": "Description",
-        "descriptionPlaceholder": "Décrivez-vous de manière attractive et professionnelle...",
-        "languages": "Langues parlées",
-        "languagesHelp": "Évaluez votre niveau de maîtrise pour chaque langue (1 = Débutant, 5 = Courant)",
+        "years": "anos",
+        "certifyAge": "Certificar minha idade",
+        "description": "Descrição",
+        "descriptionPlaceholder": "Descreva-se de forma atraente e profissional...",
+        "languages": "Idiomas falados",
+        "languagesHelp": "Avalie seu nível de proficiência para cada idioma (1 = Iniciante, 5 = Fluente)",
         "location": {
-          "title": "Localisation",
-          "required": "Requis",
-          "canton": "Canton",
-          "city": "Ville",
-          "cityPlaceholder": "ex: Genève",
-          "fullAddress": "Adresse complète",
-          "addressPlaceholder": "Tapez votre adresse suisse...",
+          "title": "Localização",
+          "required": "Necessário",
+          "canton": "Cantão",
+          "city": "Cidade",
+          "cityPlaceholder": "ex: Genebra",
+          "fullAddress": "Endereço completo",
+          "addressPlaceholder": "Digite seu endereço suíço...",
           "privacy": {
-            "precise": "Précise",
-            "approximate": "Approximative (±150m)"
+            "precise": "Preciso",
+            "approximate": "Aproximado (±150m)"
           }
         },
         "phone": {
-          "title": "Contact téléphonique",
-          "number": "Numéro de téléphone",
+          "title": "Contato telefônico",
+          "number": "Número de telefone",
           "numberPlaceholder": "+41 79 123 45 67",
-          "visibility": "Visibilité du numéro",
-          "visible": "📞 Numéro visible (affiché + boutons WhatsApp/SMS/Appel)",
-          "hidden": "📞 Numéro caché (boutons WhatsApp/SMS/Appel uniquement)",
-          "none": "🔒 Messagerie privée uniquement"
+          "visibility": "Visibilidade do número",
+          "visible": "📞 Número visível (exibido + botões WhatsApp/SMS/Chamada)",
+          "hidden": "📞 Número oculto (apenas botões WhatsApp/SMS/Chamada)",
+          "none": "🔒 Apenas mensagens privadas"
         },
         "geoBlocking": {
-          "title": "Blocage géographique",
-          "optional": "Optionnel",
-          "description": "Bloquez l'accès à votre profil depuis certains pays",
-          "blockedCount": "{count} pays bloqué",
-          "blockedCountPlural": "{count} pays bloqués"
+          "title": "Bloqueio geográfico",
+          "optional": "Opcional",
+          "description": "Bloqueie o acesso ao seu perfil de certos países",
+          "blockedCount": "{count} país bloqueado",
+          "blockedCountPlural": "{count} países bloqueados"
         }
       },
       "appearance": {
-        "title": "Apparence physique",
-        "height": "Taille (cm)",
+        "title": "Aparência Física",
+        "height": "Altura (cm)",
         "heightOver": "> 200 cm",
-        "bodyType": "Silhouette",
+        "bodyType": "Silhueta",
         "bodyTypes": {
-          "select": "Sélectionner",
-          "mince": "Mince",
-          "sportive": "Sportive",
-          "pulpeuse": "Pulpeuse",
-          "ronde": "Ronde"
+          "select": "Selecionar",
+          "mince": "Magra",
+          "sportive": "Atlética",
+          "pulpeuse": "Voluptuosa",
+          "ronde": "Rechonchuda"
         },
-        "breastSize": "Tour de poitrine",
+        "breastSize": "Tamanho do busto",
         "breastSizes": {
-          "select": "Sélectionner"
+          "select": "Selecionar"
         },
-        "hairColor": "Cheveux — Couleur",
+        "hairColor": "Cabelo — Cor",
         "hairColors": {
-          "select": "Sélectionner",
-          "brun": "Brun",
-          "blond": "Blond",
-          "chatain": "Châtain",
-          "gris": "Gris",
-          "roux": "Roux",
-          "autre": "Autre"
+          "select": "Selecionar",
+          "brun": "Castanho",
+          "blond": "Loiro",
+          "chatain": "Castanho claro",
+          "gris": "Cinza",
+          "roux": "Ruivo",
+          "autre": "Outro"
         },
-        "breastType": "Poitrine",
+        "breastType": "Seios",
         "breastTypes": {
-          "naturelle": "Naturelle",
-          "siliconee": "Siliconée"
+          "naturelle": "Natural",
+          "siliconee": "Silicone"
         },
-        "eyeColor": "Couleur des yeux",
+        "eyeColor": "Cor dos olhos",
         "eyeColors": {
-          "select": "Sélectionner",
-          "bleu": "Bleu",
-          "vert": "Vert",
-          "marron": "Marron",
-          "noisette": "Noisette",
-          "gris": "Gris"
+          "select": "Selecionar",
+          "bleu": "Azul",
+          "vert": "Verde",
+          "marron": "Marrom",
+          "noisette": "Avelã",
+          "gris": "Cinza"
         },
-        "ethnicity": "Origine",
+        "ethnicity": "Origem",
         "ethnicities": {
-          "select": "Sélectionner",
-          "europeenne": "Européenne",
-          "africaine": "Africaine",
-          "asiatique": "Asiatique",
-          "latine": "Latine",
-          "metisse": "Métisse",
-          "autre": "Autre"
+          "select": "Selecionar",
+          "europeenne": "Europeia",
+          "africaine": "Africana",
+          "asiatique": "Asiática",
+          "latine": "Latina",
+          "metisse": "Mestiça",
+          "autre": "Outro"
         },
-        "tattoosPiercings": "Tatouages / Piercings",
-        "tattoos": "Tatouages",
+        "tattoosPiercings": "Tatuagens / Piercings",
+        "tattoos": "Tatuagens",
         "piercings": "Piercings",
-        "pubicHair": "Pilosité",
+        "pubicHair": "Depilação",
         "pubicHairTypes": {
-          "naturel": "Naturel",
-          "rase": "Rasé",
-          "partiel": "Partiel"
+          "naturel": "Natural",
+          "rase": "Depilado",
+          "partiel": "Parcial"
         },
-        "smoker": "Fumeur/Fumeuse"
+        "smoker": "Fumante"
       },
       "services": {
-        "title": "Clientèle & Services",
-        "description": "Sélectionnez ce que vous proposez. Utilisez la recherche pour filtrer.",
-        "clientele": "Clientèle acceptée",
+        "title": "Clientela e Serviços",
+        "description": "Selecione o que você oferece. Use a pesquisa para filtrar.",
+        "clientele": "Clientela aceita",
         "clienteleTypes": {
-          "couples": "Couples",
-          "women": "Femmes",
-          "handicapped": "Personnes handicapées",
-          "seniors": "Seniors"
+          "couples": "Casais",
+          "women": "Mulheres",
+          "handicapped": "Pessoas com deficiência",
+          "seniors": "Idosos"
         },
-        "serviceMode": "Mode de service",
-        "incall": "Je reçois",
-        "outcall": "Je me déplace"
+        "serviceMode": "Modo de serviço",
+        "incall": "Recebo",
+        "outcall": "Me desloco",
+        "categories": {
+          "classics": "Clássicos",
+          "oral": "Oral",
+          "anal": "Anal",
+          "bdsm": "BDSM e Fetiches",
+          "massages": "Massagens"
+        },
+        "items": {
+          "Rapport": "Relação sexual",
+          "French kiss": "Beijo francês",
+          "GFE": "GFE",
+          "PSE": "PSE",
+          "Lingerie": "Lingerie",
+          "Duo/Trio": "Duo/Trio",
+          "Jeux de rôles": "Jogos de papéis",
+          "Costumes": "Fantasias",
+          "Fellation protégée": "Oral com proteção",
+          "Fellation nature": "Oral sem proteção",
+          "Gorge profonde": "Garganta profunda",
+          "Éjac en bouche": "Ejaculação na boca",
+          "Éjac sur le corps": "Ejaculação no corpo",
+          "Éjac sur le visage": "Ejaculação no rosto",
+          "Sodomie (donne)": "Anal (dá)",
+          "Sodomie (reçoit)": "Anal (recebe)",
+          "Doigté anal": "Digitação anal",
+          "Domination soft": "Dominação suave",
+          "Fessées": "Palmadas",
+          "Donjon SM": "Masmorra SM",
+          "Fétichisme pieds": "Fetiche de pés",
+          "Tantrique": "Tântrico",
+          "Érotique": "Erótico",
+          "Corps à corps": "Corpo a corpo",
+          "Nuru": "Nuru",
+          "Prostate": "Próstata",
+          "Lingam": "Lingam",
+          "Yoni": "Yoni",
+          "4 mains": "4 mãos",
+          "Suédois": "Sueco",
+          "Huiles": "Óleos"
+        }
       },
       "pricing": {
-        "title": "Tarifs et disponibilités",
-        "startingFrom": "À partir de",
-        "detailedRates": "Tarifs détaillés (optionnel)",
+        "title": "Tarifas e disponibilidade",
+        "startingFrom": "A partir de",
+        "detailedRates": "Tarifas detalhadas (opcional)",
         "durations": {
-          "15min": "15 minutes",
-          "30min": "30 minutes",
-          "1hour": "1 heure",
-          "2hours": "2 heures",
-          "halfDay": "Demi-journée",
-          "fullDay": "Journée complète",
-          "overnight": "Nuit complète"
+          "15min": "15 minutos",
+          "30min": "30 minutos",
+          "1hour": "1 hora",
+          "2hours": "2 horas",
+          "halfDay": "Meio dia",
+          "fullDay": "Dia inteiro",
+          "overnight": "Noite inteira"
         },
-        "tip": "💡 Astuce : Les tarifs aident les clients à vous trouver facilement et augmentent votre visibilité.",
-        "customDurations": "Durées personnalisées",
-        "addCustom": "+ Ajouter",
-        "customDurationPlaceholder": "Ex: 90 minutes, 3 heures, Week-end...",
-        "priceCHF": "Prix CHF",
-        "delete": "Supprimer",
-        "customNote": "Les durées personnalisées sont visibles sur votre profil et dans les recherches.",
-        "warningNote": "⚠️ Sans tarifs, votre profil n'apparaîtra pas dans les recherches par prix.",
-        "availability": "Disponibilité : Configurez votre agenda dans l'onglet",
+        "tip": "💡 Dica: As tarifas ajudam os clientes a encontrá-lo facilmente e aumentam sua visibilidade.",
+        "customDurations": "Durações personalizadas",
+        "addCustom": "+ Adicionar",
+        "customDurationPlaceholder": "Ex: 90 minutos, 3 horas, Fim de semana...",
+        "priceCHF": "Preço CHF",
+        "delete": "Excluir",
+        "customNote": "As durações personalizadas são visíveis em seu perfil e nas pesquisas.",
+        "warningNote": "⚠️ Sem tarifas, seu perfil não aparecerá nas pesquisas por preço.",
+        "availability": "Disponibilidade: Configure sua agenda na aba",
         "agendaTab": "Agenda"
       },
       "agenda": {
         "title": "Agenda",
-        "weeklySchedule": "Heures de présence (hebdo)",
+        "weeklySchedule": "Horário de presença semanal",
         "days": {
-          "Lundi": "Lundi",
-          "Mardi": "Mardi",
-          "Mercredi": "Mercredi",
-          "Jeudi": "Jeudi",
-          "Vendredi": "Vendredi",
-          "Samedi": "Samedi",
-          "Dimanche": "Dimanche"
+          "Lundi": "Segunda-feira",
+          "Mardi": "Terça-feira",
+          "Mercredi": "Quarta-feira",
+          "Jeudi": "Quinta-feira",
+          "Vendredi": "Sexta-feira",
+          "Samedi": "Sábado",
+          "Dimanche": "Domingo"
         },
-        "open": "✅ Ouvert",
-        "closed": "❌ Fermé",
-        "opening": "Ouverture",
-        "closing": "Fermeture",
-        "pause": "Mettre mon compte en pause",
-        "pauseStart": "Début de pause",
-        "pauseReturn": "Retour",
-        "absences": "Jours d'absence exceptionnels",
-        "addAbsence": "Ajouter une absence",
-        "noAbsences": "Aucune absence planifiée",
-        "autoSave": "Les changements sont enregistrés automatiquement.",
+        "open": "✅ Aberto",
+        "closed": "❌ Fechado",
+        "opening": "Abertura",
+        "closing": "Fechamento",
+        "pause": "Pausar minha conta",
+        "pauseStart": "Início da pausa",
+        "pauseReturn": "Retorno",
+        "absences": "Dias de ausência excepcionais",
+        "addAbsence": "Adicionar ausência",
+        "noAbsences": "Nenhuma ausência planejada",
+        "autoSave": "As alterações são salvas automaticamente.",
         "templates": {
-          "weekdays": "Semaine",
-          "weekend": "Week-end only",
-          "applied": "Template \"{template}\" appliqué",
+          "weekdays": "Semana",
+          "weekend": "Apenas fim de semana",
+          "applied": "Modelo \"{template}\" aplicado",
           "allDay": "24/7"
         }
       },
       "save": {
-        "saving": "Enregistrement...",
-        "saved": "Modifications enregistrées",
-        "error": "Erreur lors de la sauvegarde",
-        "retry": "Retry {count}/{max}...",
-        "retryFailed": "{error} (échec après {max} tentatives)"
+        "saving": "Salvando...",
+        "saved": "Alterações salvas",
+        "error": "Erro ao salvar",
+        "retry": "Tentativa {count}/{max}...",
+        "retryFailed": "{error} (falhou após {max} tentativas)"
       }
+    },
+    "header": {
+      "status": {
+        "active": "Ativo",
+        "verified": "Verificado",
+        "paused": "Pausado",
+        "inactive": "Inativo"
+      },
+      "loading": "Carregando…"
+    },
+    "actions": {
+      "viewProfile": "Ver meu perfil",
+      "pauseAccount": "Pausar",
+      "activateAccount": "Ativar minha conta"
     }
   },
   "clubProfile": {

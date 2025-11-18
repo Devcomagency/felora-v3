@@ -24,7 +24,8 @@
     "legal": "Légal",
     "privacy": "Confidentialité",
     "terms": "Conditions",
-    "cookies": "Cookies"
+    "cookies": "Cookies",
+    "charCount": "{current} / {min} caractères minimum"
   },
   "search": {
     "title": "Recherche",
@@ -860,7 +861,47 @@
         },
         "serviceMode": "Mode de service",
         "incall": "Je reçois",
-        "outcall": "Je me déplace"
+        "outcall": "Je me déplace",
+        "categories": {
+          "classics": "Classiques",
+          "oral": "Oral",
+          "anal": "Anal",
+          "bdsm": "BDSM & Fétiches",
+          "massages": "Massages"
+        },
+        "items": {
+          "Rapport": "Rapport",
+          "French kiss": "French kiss",
+          "GFE": "GFE",
+          "PSE": "PSE",
+          "Lingerie": "Lingerie",
+          "Duo/Trio": "Duo/Trio",
+          "Jeux de rôles": "Jeux de rôles",
+          "Costumes": "Costumes",
+          "Fellation protégée": "Fellation protégée",
+          "Fellation nature": "Fellation nature",
+          "Gorge profonde": "Gorge profonde",
+          "Éjac en bouche": "Éjac en bouche",
+          "Éjac sur le corps": "Éjac sur le corps",
+          "Éjac sur le visage": "Éjac sur le visage",
+          "Sodomie (donne)": "Sodomie (donne)",
+          "Sodomie (reçoit)": "Sodomie (reçoit)",
+          "Doigté anal": "Doigté anal",
+          "Domination soft": "Domination soft",
+          "Fessées": "Fessées",
+          "Donjon SM": "Donjon SM",
+          "Fétichisme pieds": "Fétichisme pieds",
+          "Tantrique": "Tantrique",
+          "Érotique": "Érotique",
+          "Corps à corps": "Corps à corps",
+          "Nuru": "Nuru",
+          "Prostate": "Prostate",
+          "Lingam": "Lingam",
+          "Yoni": "Yoni",
+          "4 mains": "4 mains",
+          "Suédois": "Suédois",
+          "Huiles": "Huiles"
+        }
       },
       "pricing": {
         "title": "Tarifs et disponibilités",
@@ -923,6 +964,20 @@
         "retry": "Retry {count}/{max}...",
         "retryFailed": "{error} (échec après {max} tentatives)"
       }
+    },
+    "header": {
+      "status": {
+        "active": "Actif",
+        "verified": "Vérifié",
+        "paused": "En pause",
+        "inactive": "Inactif"
+      },
+      "loading": "Chargement…"
+    },
+    "actions": {
+      "viewProfile": "Voir mon profil",
+      "pauseAccount": "Mettre en pause",
+      "activateAccount": "Activer mon compte"
     }
   },
   "clubProfile": {

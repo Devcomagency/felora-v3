@@ -251,3 +251,4 @@ router.replace(pathname, { locale: 'en' })
 Voir `GUIDE_I18N_COMPLET.md` pour plus de détails.
 
 
+
