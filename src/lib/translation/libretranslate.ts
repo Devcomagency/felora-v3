@@ -3,8 +3,9 @@
  * API gratuite et open source
  */
 
-// URL de l'API LibreTranslate (gratuite)
-const LIBRETRANSLATE_API = 'https://libretranslate.com/translate'
+// URL de l'API LibreTranslate - Instance allemande gratuite (pas de clé requise)
+// Alternative: https://translate.argosopentech.com/translate
+const LIBRETRANSLATE_API = 'https://libretranslate.de/translate'
 
 // Mapping des codes de langue next-intl vers LibreTranslate
 const LANG_MAP: Record<string, string> = {
@@ -121,7 +122,7 @@ export async function detectLanguage(text: string): Promise<string | null> {
   }
 
   try {
-    const response = await fetch('https://libretranslate.com/detect', {
+    const response = await fetch('https://libretranslate.de/detect', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
