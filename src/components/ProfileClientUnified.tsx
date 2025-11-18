@@ -40,6 +40,7 @@ interface ProfileClientUnifiedProps {
 export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifiedProps) {
   const t = useTranslations('profileModal')
   const tCategories = useTranslations('categories')
+  const tServices = useTranslations('dashboardEscort.profil.services.items')
   const { profile, loading, error } = usePublicProfile(profileId)
   const router = useRouter()
 
@@ -341,7 +342,7 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
                         >
                           <span className="w-2 h-2 bg-pink-400 rounded-full flex-shrink-0"></span>
                           <span className="text-pink-300 text-sm font-medium truncate">
-                            {service}
+                            {tServices(service) || service}
                           </span>
                         </div>
                       ))}

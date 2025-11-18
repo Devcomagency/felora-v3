@@ -1025,6 +1025,12 @@
       "generalPause": "استراحة عامة",
       "absences": "غيابات محددة",
       "noDetailedSchedule": "لا يوجد جدول مفصل مكون"
+    },
+    "category": {
+      "escort": "مرافقة",
+      "transsexuel": "متحول جنسيا",
+      "masseuse_erotique": "مدلكة مثيرة",
+      "dominatrice_bdsm": "مسيطرة BDSM"
     }
   },
   "actionsBar": {
@@ -1799,6 +1805,63 @@
       "SAFETY_CONCERN": "مخاوف أمنية",
       "TOS_VIOLATION": "انتهاك الشروط",
       "OTHER": "أخرى"
+    }
+  },
+  "reportPage": {
+    "missingParams": {
+      "title": "معلمات مفقودة",
+      "description": "غير قادر على معالجة البلاغ",
+      "back": "رجوع"
+    },
+    "success": {
+      "title": "تم إرسال البلاغ",
+      "description": "شكرًا، سيقوم فريقنا بمراجعة بلاغك."
+    },
+    "title": {
+      "media": "الإبلاغ عن وسائط",
+      "profile": "الإبلاغ عن ملف شخصي",
+      "message": "الإبلاغ عن رسالة"
+    },
+    "subtitle": "ساعدنا في الحفاظ على مجتمع آمن",
+    "back": "رجوع",
+    "reasonLabel": "سبب البلاغ *",
+    "detailsLabel": "تفاصيل إضافية (اختياري)",
+    "detailsPlaceholder": "أضف معلومات إضافية لمساعدتنا في فهم المشكلة...",
+    "importantNote": "ملاحظة مهمة",
+    "importantNoteDescription": "البلاغات المسيئة أو المتكررة قد تؤدي إلى تعليق حسابك. يرجى الإبلاغ فقط عن المحتوى الذي ينتهك بالفعل شروط الخدمة الخاصة بنا.",
+    "cancel": "إلغاء",
+    "submit": "إرسال البلاغ",
+    "submitting": "جارٍ الإرسال...",
+    "selectReason": "يرجى تحديد سبب",
+    "errorSubmitting": "خطأ في إرسال البلاغ",
+    "connectionError": "خطأ في الاتصال",
+    "loading": "جارٍ التحميل...",
+    "reasons": {
+      "media": {
+        "inappropriate": "محتوى غير لائق",
+        "nudity": "عري غير مصرح به",
+        "violence": "عنف أو مضايقة",
+        "illegal": "محتوى غير قانوني",
+        "spam": "بريد عشوائي أو إعلانات",
+        "copyright": "حقوق الطبع والنشر",
+        "fake": "ملف مزيف",
+        "other": "أخرى"
+      },
+      "profile": {
+        "fake": "ملف مزيف",
+        "inappropriate": "محتوى غير لائق",
+        "harassment": "مضايقة",
+        "impersonation": "انتحال هوية",
+        "spam": "بريد عشوائي",
+        "other": "أخرى"
+      },
+      "message": {
+        "harassment": "مضايقة",
+        "inappropriate": "محتوى غير لائق",
+        "spam": "بريد عشوائي",
+        "threats": "تهديدات",
+        "other": "أخرى"
+      }
     }
   }
 }

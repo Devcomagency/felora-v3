@@ -1025,6 +1025,12 @@
       "generalPause": "Pushim i përgjithshëm",
       "absences": "Mungesa specifike",
       "noDetailedSchedule": "Nuk ka orar të detajuar të konfiguruar"
+    },
+    "category": {
+      "escort": "Shoqëruese",
+      "transsexuel": "Transeksual",
+      "masseuse_erotique": "Masazhistë Erotike",
+      "dominatrice_bdsm": "Dominatricë BDSM"
     }
   },
   "actionsBar": {
@@ -1799,6 +1805,63 @@
       "SAFETY_CONCERN": "Shqetësim sigurie",
       "TOS_VIOLATION": "Shkelje e kushteve",
       "OTHER": "Tjetër"
+    }
+  },
+  "reportPage": {
+    "missingParams": {
+      "title": "Parametrat mungojnë",
+      "description": "Nuk mund të përpunohet raporti",
+      "back": "Kthehu"
+    },
+    "success": {
+      "title": "Raporti u dërgua",
+      "description": "Faleminderit, ekipi ynë do të shqyrtojë raportin tuaj."
+    },
+    "title": {
+      "media": "Raporto median",
+      "profile": "Raporto profilin",
+      "message": "Raporto mesazhin"
+    },
+    "subtitle": "Ndihmoni në ruajtjen e një komuniteti të sigurt",
+    "back": "Kthehu",
+    "reasonLabel": "Arsyeja e raportimit *",
+    "detailsLabel": "Detaje shtesë (opsionale)",
+    "detailsPlaceholder": "Shtoni informacion shtesë për të na ndihmuar të kuptojmë problemin...",
+    "importantNote": "Shënim i rëndësishëm",
+    "importantNoteDescription": "Raportet abuzive ose të përsëritura mund të çojnë në pezullimin e llogarisë tuaj. Ju lutemi raportoni vetëm përmbajtje që realisht shkelin kushtet tona të shërbimit.",
+    "cancel": "Anulo",
+    "submit": "Dërgo raportin",
+    "submitting": "Duke dërguar...",
+    "selectReason": "Ju lutemi zgjidhni një arsye",
+    "errorSubmitting": "Gabim në dërgimin e raportit",
+    "connectionError": "Gabim në lidhje",
+    "loading": "Duke u ngarkuar...",
+    "reasons": {
+      "media": {
+        "inappropriate": "Përmbajtje e papërshtatshme",
+        "nudity": "Lakuriqësi e paautorizuar",
+        "violence": "Dhunë ose ngacmim",
+        "illegal": "Përmbajtje ilegale",
+        "spam": "Spam ose reklamë",
+        "copyright": "Të drejtat e autorit",
+        "fake": "Profil i rremë",
+        "other": "Tjetër"
+      },
+      "profile": {
+        "fake": "Profil i rremë",
+        "inappropriate": "Përmbajtje e papërshtatshme",
+        "harassment": "Ngacmim",
+        "impersonation": "Personifikim",
+        "spam": "Spam",
+        "other": "Tjetër"
+      },
+      "message": {
+        "harassment": "Ngacmim",
+        "inappropriate": "Përmbajtje e papërshtatshme",
+        "spam": "Spam",
+        "threats": "Kërcënime",
+        "other": "Tjetër"
+      }
     }
   }
 }

@@ -1025,6 +1025,12 @@
       "generalPause": "Pausa generale",
       "absences": "Assenze specifiche",
       "noDetailedSchedule": "Nessun planning dettagliato configurato"
+    },
+    "category": {
+      "escort": "Escort",
+      "transsexuel": "Transessuale",
+      "masseuse_erotique": "Massaggiatrice Erotica",
+      "dominatrice_bdsm": "Dominatrice BDSM"
     }
   },
   "actionsBar": {
@@ -1799,6 +1805,63 @@
       "SAFETY_CONCERN": "Problema di sicurezza",
       "TOS_VIOLATION": "Violazione dei termini",
       "OTHER": "Altro"
+    }
+  },
+  "reportPage": {
+    "missingParams": {
+      "title": "Parametri mancanti",
+      "description": "Impossibile elaborare la segnalazione",
+      "back": "Indietro"
+    },
+    "success": {
+      "title": "Segnalazione inviata",
+      "description": "Grazie, il nostro team esaminerà la tua segnalazione."
+    },
+    "title": {
+      "media": "Segnala media",
+      "profile": "Segnala profilo",
+      "message": "Segnala messaggio"
+    },
+    "subtitle": "Aiutaci a mantenere una comunità sicura",
+    "back": "Indietro",
+    "reasonLabel": "Motivo della segnalazione *",
+    "detailsLabel": "Dettagli aggiuntivi (opzionale)",
+    "detailsPlaceholder": "Aggiungi informazioni aggiuntive per aiutarci a comprendere il problema...",
+    "importantNote": "Nota importante",
+    "importantNoteDescription": "Le segnalazioni abusive o ripetute possono comportare la sospensione del tuo account. Segnala solo contenuti che violano realmente i nostri termini di servizio.",
+    "cancel": "Annulla",
+    "submit": "Invia segnalazione",
+    "submitting": "Invio...",
+    "selectReason": "Seleziona un motivo",
+    "errorSubmitting": "Errore nell'invio della segnalazione",
+    "connectionError": "Errore di connessione",
+    "loading": "Caricamento...",
+    "reasons": {
+      "media": {
+        "inappropriate": "Contenuto inappropriato",
+        "nudity": "Nudità non autorizzata",
+        "violence": "Violenza o molestie",
+        "illegal": "Contenuto illegale",
+        "spam": "Spam o pubblicità",
+        "copyright": "Diritti d'autore",
+        "fake": "Profilo falso",
+        "other": "Altro"
+      },
+      "profile": {
+        "fake": "Profilo falso",
+        "inappropriate": "Contenuto inappropriato",
+        "harassment": "Molestie",
+        "impersonation": "Furto d'identità",
+        "spam": "Spam",
+        "other": "Altro"
+      },
+      "message": {
+        "harassment": "Molestie",
+        "inappropriate": "Contenuto inappropriato",
+        "spam": "Spam",
+        "threats": "Minacce",
+        "other": "Altro"
+      }
     }
   }
 }

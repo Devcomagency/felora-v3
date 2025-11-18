@@ -254,10 +254,7 @@ export default function ProfileHeader({
             <div className="flex justify-center items-center gap-2 mb-1">
               {category && (
                 <span className="inline-flex items-center px-4 py-1.5 bg-gradient-to-r from-pink-500/20 to-purple-500/20 text-pink-300 rounded-full text-xs font-medium border border-pink-500/30 uppercase tracking-wide">
-                  {category === 'transsexuel' ? 'Transsexuel' :
-                   category === 'masseuse_erotique' ? 'Masseuse Érotique' :
-                   category === 'dominatrice_bdsm' ? 'Dominatrice BDSM' :
-                   category === 'escort' ? 'Escort' : category}
+                  {t(`category.${category}`) || category}
                 </span>
               )}
               {verified && (

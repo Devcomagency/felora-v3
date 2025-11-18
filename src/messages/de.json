@@ -1025,6 +1025,12 @@
       "generalPause": "Allgemeine Pause",
       "absences": "Spezifische Abwesenheiten",
       "noDetailedSchedule": "Kein detaillierter Zeitplan konfiguriert"
+    },
+    "category": {
+      "escort": "Escort",
+      "transsexuel": "Transsexuell",
+      "masseuse_erotique": "Erotische Masseurin",
+      "dominatrice_bdsm": "BDSM Domina"
     }
   },
   "actionsBar": {
@@ -1799,6 +1805,63 @@
       "SAFETY_CONCERN": "Sicherheitsbedenken",
       "TOS_VIOLATION": "Verstoß gegen AGB",
       "OTHER": "Andere"
+    }
+  },
+  "reportPage": {
+    "missingParams": {
+      "title": "Fehlende Parameter",
+      "description": "Meldung kann nicht verarbeitet werden",
+      "back": "Zurück"
+    },
+    "success": {
+      "title": "Meldung gesendet",
+      "description": "Danke, unser Team wird Ihre Meldung prüfen."
+    },
+    "title": {
+      "media": "Medien melden",
+      "profile": "Profil melden",
+      "message": "Nachricht melden"
+    },
+    "subtitle": "Helfen Sie uns, eine sichere Community zu erhalten",
+    "back": "Zurück",
+    "reasonLabel": "Grund der Meldung *",
+    "detailsLabel": "Zusätzliche Details (optional)",
+    "detailsPlaceholder": "Fügen Sie zusätzliche Informationen hinzu, um uns das Problem zu erklären...",
+    "importantNote": "Wichtiger Hinweis",
+    "importantNoteDescription": "Missbräuchliche oder wiederholte Meldungen können zur Sperrung Ihres Kontos führen. Bitte melden Sie nur Inhalte, die wirklich gegen unsere Nutzungsbedingungen verstoßen.",
+    "cancel": "Abbrechen",
+    "submit": "Meldung senden",
+    "submitting": "Wird gesendet...",
+    "selectReason": "Bitte wählen Sie einen Grund",
+    "errorSubmitting": "Fehler beim Senden der Meldung",
+    "connectionError": "Verbindungsfehler",
+    "loading": "Laden...",
+    "reasons": {
+      "media": {
+        "inappropriate": "Unangemessener Inhalt",
+        "nudity": "Unerlaubte Nacktheit",
+        "violence": "Gewalt oder Belästigung",
+        "illegal": "Illegaler Inhalt",
+        "spam": "Spam oder Werbung",
+        "copyright": "Urheberrecht",
+        "fake": "Falsches Profil",
+        "other": "Andere"
+      },
+      "profile": {
+        "fake": "Falsches Profil",
+        "inappropriate": "Unangemessener Inhalt",
+        "harassment": "Belästigung",
+        "impersonation": "Identitätsdiebstahl",
+        "spam": "Spam",
+        "other": "Andere"
+      },
+      "message": {
+        "harassment": "Belästigung",
+        "inappropriate": "Unangemessener Inhalt",
+        "spam": "Spam",
+        "threats": "Drohungen",
+        "other": "Andere"
+      }
     }
   }
 }

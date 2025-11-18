@@ -1030,6 +1030,12 @@
       "generalPause": "Pause générale",
       "absences": "Absences spécifiques",
       "noDetailedSchedule": "Aucun planning détaillé configuré"
+    },
+    "category": {
+      "escort": "Escort",
+      "transsexuel": "Transsexuel",
+      "masseuse_erotique": "Masseuse Érotique",
+      "dominatrice_bdsm": "Dominatrice BDSM"
     }
   },
   "actionsBar": {
@@ -1821,6 +1827,63 @@
     "help": {
       "requirements": "Exigences",
       "tips": "Conseils"
+    }
+  },
+  "reportPage": {
+    "missingParams": {
+      "title": "Paramètres manquants",
+      "description": "Impossible de traiter le signalement",
+      "back": "Retour"
+    },
+    "success": {
+      "title": "Signalement envoyé",
+      "description": "Merci, notre équipe va examiner votre signalement."
+    },
+    "title": {
+      "media": "Signaler un média",
+      "profile": "Signaler un profil",
+      "message": "Signaler un message"
+    },
+    "subtitle": "Aidez-nous à maintenir une communauté sûre",
+    "back": "Retour",
+    "reasonLabel": "Raison du signalement *",
+    "detailsLabel": "Détails supplémentaires (optionnel)",
+    "detailsPlaceholder": "Ajoutez des informations supplémentaires pour nous aider à comprendre le problème...",
+    "importantNote": "Note importante",
+    "importantNoteDescription": "Les signalements abusifs ou répétés peuvent entraîner la suspension de votre compte. Veuillez signaler uniquement du contenu qui viole réellement nos conditions d'utilisation.",
+    "cancel": "Annuler",
+    "submit": "Envoyer le signalement",
+    "submitting": "Envoi...",
+    "selectReason": "Veuillez sélectionner une raison",
+    "errorSubmitting": "Erreur lors du signalement",
+    "connectionError": "Erreur de connexion",
+    "loading": "Chargement...",
+    "reasons": {
+      "media": {
+        "inappropriate": "Contenu inapproprié",
+        "nudity": "Nudité non autorisée",
+        "violence": "Violence ou harcèlement",
+        "illegal": "Contenu illégal",
+        "spam": "Spam ou publicité",
+        "copyright": "Droits d'auteur",
+        "fake": "Faux profil",
+        "other": "Autre"
+      },
+      "profile": {
+        "fake": "Faux profil",
+        "inappropriate": "Contenu inapproprié",
+        "harassment": "Harcèlement",
+        "impersonation": "Usurpation d'identité",
+        "spam": "Spam",
+        "other": "Autre"
+      },
+      "message": {
+        "harassment": "Harcèlement",
+        "inappropriate": "Contenu inapproprié",
+        "spam": "Spam",
+        "threats": "Menaces",
+        "other": "Autre"
+      }
     }
   }
 }

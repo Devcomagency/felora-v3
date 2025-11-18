@@ -3,8 +3,10 @@
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useState, Suspense } from 'react'
 import { AlertTriangle, ChevronLeft } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 function ReportForm() {
+  const t = useTranslations('reportPage')
   const searchParams = useSearchParams()
   const router = useRouter()
   const type = searchParams.get('type') // 'media', 'profile', 'message'
@@ -15,39 +17,18 @@ function ReportForm() {
   const [submitting, setSubmitting] = useState(false)
   const [success, setSuccess] = useState(false)
 
-  const reportReasons = {
-    media: [
-      'Contenu inapproprié',
-      'Nudité non autorisée',
-      'Violence ou harcèlement',
-      'Contenu illégal',
-      'Spam ou publicité',
-      'Droits d\'auteur',
-      'Faux profil',
-      'Autre'
-    ],
-    profile: [
-      'Faux profil',
-      'Contenu inapproprié',
-      'Harcèlement',
-      'Usurpation d\'identité',
-      'Spam',
-      'Autre'
-    ],
-    message: [
-      'Harcèlement',
-      'Contenu inapproprié',
-      'Spam',
-      'Menaces',
-      'Autre'
-    ]
+  // Mapping des clés de traduction par type
+  const reportReasonKeys = {
+    media: ['inappropriate', 'nudity', 'violence', 'illegal', 'spam', 'copyright', 'fake', 'other'],
+    profile: ['fake', 'inappropriate', 'harassment', 'impersonation', 'spam', 'other'],
+    message: ['harassment', 'inappropriate', 'spam', 'threats', 'other']
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     if (!reason) {
-      alert('Veuillez sélectionner une raison')
+      alert(t('selectReason'))
       return
     }
 
@@ -73,11 +54,11 @@ function ReportForm() {
           router.back()
         }, 2000)
       } else {
-        alert('Erreur lors du signalement')
+        alert(t('errorSubmitting'))
       }
     } catch (error) {
       console.error('Error submitting report:', error)
-      alert('Erreur de connexion')
+      alert(t('connectionError'))
     } finally {
       setSubmitting(false)
     }
@@ -88,13 +69,13 @@ function ReportForm() {
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center p-4">
         <div className="text-center">
           <AlertTriangle size={48} className="mx-auto mb-4 text-red-500" />
-          <h1 className="text-xl font-bold text-white mb-2">Paramètres manquants</h1>
-          <p className="text-gray-400 mb-4">Impossible de traiter le signalement</p>
+          <h1 className="text-xl font-bold text-white mb-2">{t('missingParams.title')}</h1>
+          <p className="text-gray-400 mb-4">{t('missingParams.description')}</p>
           <button
             onClick={() => router.back()}
             className="px-6 py-3 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition-colors"
           >
-            Retour
+            {t('missingParams.back')}
           </button>
         </div>
       </div>
@@ -110,14 +91,14 @@ function ReportForm() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h1 className="text-xl font-bold text-white mb-2">Signalement envoyé</h1>
-          <p className="text-gray-400">Merci, notre équipe va examiner votre signalement.</p>
+          <h1 className="text-xl font-bold text-white mb-2">{t('success.title')}</h1>
+          <p className="text-gray-400">{t('success.description')}</p>
         </div>
       </div>
     )
   }
 
-  const currentReasons = reportReasons[type as keyof typeof reportReasons] || reportReasons.media
+  const currentReasonKeys = reportReasonKeys[type as keyof typeof reportReasonKeys] || reportReasonKeys.media
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black">
@@ -129,7 +110,7 @@ function ReportForm() {
             className="flex items-center gap-2 text-gray-400 hover:text-white mb-4 transition-colors"
           >
             <ChevronLeft size={20} />
-            Retour
+            {t('back')}
           </button>
 
           <div className="flex items-center gap-3 mb-2">
@@ -137,8 +118,10 @@ function ReportForm() {
               <AlertTriangle size={24} className="text-red-500" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-white">Signaler un {type === 'media' ? 'média' : type === 'profile' ? 'profil' : 'message'}</h1>
-              <p className="text-gray-400 text-sm">Aidez-nous à maintenir une communauté sûre</p>
+              <h1 className="text-2xl font-bold text-white">
+                {type === 'media' ? t('title.media') : type === 'profile' ? t('title.profile') : t('title.message')}
+              </h1>
+              <p className="text-gray-400 text-sm">{t('subtitle')}</p>
             </div>
           </div>
         </div>
@@ -149,42 +132,45 @@ function ReportForm() {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-3">
-                  Raison du signalement *
+                  {t('reasonLabel')}
                 </label>
                 <div className="space-y-2">
-                  {currentReasons.map((r) => (
-                    <label
-                      key={r}
-                      className={`flex items-center gap-3 p-4 rounded-lg border cursor-pointer transition-all ${
-                        reason === r
-                          ? 'bg-red-500/20 border-red-500/50'
-                          : 'bg-white/5 border-white/10 hover:border-white/20'
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="reason"
-                        value={r}
-                        checked={reason === r}
-                        onChange={(e) => setReason(e.target.value)}
-                        className="w-4 h-4"
-                      />
-                      <span className="text-white">{r}</span>
-                    </label>
-                  ))}
+                  {currentReasonKeys.map((key) => {
+                    const reasonText = t(`reasons.${type}.${key}`)
+                    return (
+                      <label
+                        key={key}
+                        className={`flex items-center gap-3 p-4 rounded-lg border cursor-pointer transition-all ${
+                          reason === reasonText
+                            ? 'bg-red-500/20 border-red-500/50'
+                            : 'bg-white/5 border-white/10 hover:border-white/20'
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="reason"
+                          value={reasonText}
+                          checked={reason === reasonText}
+                          onChange={(e) => setReason(e.target.value)}
+                          className="w-4 h-4"
+                        />
+                        <span className="text-white">{reasonText}</span>
+                      </label>
+                    )
+                  })}
                 </div>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Détails supplémentaires (optionnel)
+                  {t('detailsLabel')}
                 </label>
                 <textarea
                   value={details}
                   onChange={(e) => setDetails(e.target.value)}
                   className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white resize-none focus:outline-none focus:border-red-500"
                   rows={4}
-                  placeholder="Ajoutez des informations supplémentaires pour nous aider à comprendre le problème..."
+                  placeholder={t('detailsPlaceholder')}
                 />
               </div>
             </div>
@@ -195,10 +181,9 @@ function ReportForm() {
             <div className="flex gap-3">
               <AlertTriangle size={20} className="text-yellow-500 flex-shrink-0 mt-0.5" />
               <div className="text-sm text-yellow-200">
-                <p className="font-medium mb-1">Note importante</p>
+                <p className="font-medium mb-1">{t('importantNote')}</p>
                 <p className="text-yellow-200/80">
-                  Les signalements abusifs ou répétés peuvent entraîner la suspension de votre compte.
-                  Veuillez signaler uniquement du contenu qui viole réellement nos conditions d'utilisation.
+                  {t('importantNoteDescription')}
                 </p>
               </div>
             </div>
@@ -212,14 +197,14 @@ function ReportForm() {
               className="flex-1 px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-lg font-medium transition-colors"
               disabled={submitting}
             >
-              Annuler
+              {t('cancel')}
             </button>
             <button
               type="submit"
               disabled={!reason || submitting}
               className="flex-1 px-6 py-3 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {submitting ? 'Envoi...' : 'Envoyer le signalement'}
+              {submitting ? t('submitting') : t('submit')}
             </button>
           </div>
         </form>
@@ -229,10 +214,12 @@ function ReportForm() {
 }
 
 export default function ReportPage() {
+  const t = useTranslations('reportPage')
+
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center">
-        <div className="text-white">Chargement...</div>
+        <div className="text-white">{t('loading')}</div>
       </div>
     }>
       <ReportForm />

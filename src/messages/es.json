@@ -1025,6 +1025,12 @@
       "generalPause": "Pausa general",
       "absences": "Ausencias específicas",
       "noDetailedSchedule": "Sin horario detallado configurado"
+    },
+    "category": {
+      "escort": "Escort",
+      "transsexuel": "Transexual",
+      "masseuse_erotique": "Masajista Erótica",
+      "dominatrice_bdsm": "Dominatriz BDSM"
     }
   },
   "actionsBar": {
@@ -1799,6 +1805,63 @@
       "SAFETY_CONCERN": "Problema de seguridad",
       "TOS_VIOLATION": "Violación de términos",
       "OTHER": "Otro"
+    }
+  },
+  "reportPage": {
+    "missingParams": {
+      "title": "Parámetros faltantes",
+      "description": "No se puede procesar el reporte",
+      "back": "Volver"
+    },
+    "success": {
+      "title": "Reporte enviado",
+      "description": "Gracias, nuestro equipo revisará su reporte."
+    },
+    "title": {
+      "media": "Reportar medio",
+      "profile": "Reportar perfil",
+      "message": "Reportar mensaje"
+    },
+    "subtitle": "Ayúdanos a mantener una comunidad segura",
+    "back": "Volver",
+    "reasonLabel": "Razón del reporte *",
+    "detailsLabel": "Detalles adicionales (opcional)",
+    "detailsPlaceholder": "Agregue información adicional para ayudarnos a entender el problema...",
+    "importantNote": "Nota importante",
+    "importantNoteDescription": "Los reportes abusivos o repetidos pueden resultar en la suspensión de su cuenta. Por favor, reporte solo contenido que realmente viole nuestros términos de servicio.",
+    "cancel": "Cancelar",
+    "submit": "Enviar reporte",
+    "submitting": "Enviando...",
+    "selectReason": "Por favor seleccione una razón",
+    "errorSubmitting": "Error al enviar el reporte",
+    "connectionError": "Error de conexión",
+    "loading": "Cargando...",
+    "reasons": {
+      "media": {
+        "inappropriate": "Contenido inapropiado",
+        "nudity": "Desnudez no autorizada",
+        "violence": "Violencia o acoso",
+        "illegal": "Contenido ilegal",
+        "spam": "Spam o publicidad",
+        "copyright": "Derechos de autor",
+        "fake": "Perfil falso",
+        "other": "Otro"
+      },
+      "profile": {
+        "fake": "Perfil falso",
+        "inappropriate": "Contenido inapropiado",
+        "harassment": "Acoso",
+        "impersonation": "Suplantación de identidad",
+        "spam": "Spam",
+        "other": "Otro"
+      },
+      "message": {
+        "harassment": "Acoso",
+        "inappropriate": "Contenido inapropiado",
+        "spam": "Spam",
+        "threats": "Amenazas",
+        "other": "Otro"
+      }
     }
   }
 }

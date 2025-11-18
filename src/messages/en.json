@@ -1030,6 +1030,12 @@
       "generalPause": "General break",
       "absences": "Specific absences",
       "noDetailedSchedule": "No detailed schedule configured"
+    },
+    "category": {
+      "escort": "Escort",
+      "transsexuel": "Transsexual",
+      "masseuse_erotique": "Erotic Masseuse",
+      "dominatrice_bdsm": "BDSM Dominatrix"
     }
   },
   "actionsBar": {
@@ -1804,6 +1810,63 @@
       "SAFETY_CONCERN": "Safety concern",
       "TOS_VIOLATION": "Terms of Service violation",
       "OTHER": "Other"
+    }
+  },
+  "reportPage": {
+    "missingParams": {
+      "title": "Missing Parameters",
+      "description": "Unable to process the report",
+      "back": "Back"
+    },
+    "success": {
+      "title": "Report Sent",
+      "description": "Thank you, our team will review your report."
+    },
+    "title": {
+      "media": "Report Media",
+      "profile": "Report Profile",
+      "message": "Report Message"
+    },
+    "subtitle": "Help us maintain a safe community",
+    "back": "Back",
+    "reasonLabel": "Reason for report *",
+    "detailsLabel": "Additional details (optional)",
+    "detailsPlaceholder": "Add additional information to help us understand the issue...",
+    "importantNote": "Important Note",
+    "importantNoteDescription": "Abusive or repeated reports may result in account suspension. Please only report content that truly violates our terms of service.",
+    "cancel": "Cancel",
+    "submit": "Submit Report",
+    "submitting": "Sending...",
+    "selectReason": "Please select a reason",
+    "errorSubmitting": "Error submitting report",
+    "connectionError": "Connection error",
+    "loading": "Loading...",
+    "reasons": {
+      "media": {
+        "inappropriate": "Inappropriate Content",
+        "nudity": "Unauthorized Nudity",
+        "violence": "Violence or Harassment",
+        "illegal": "Illegal Content",
+        "spam": "Spam or Advertising",
+        "copyright": "Copyright",
+        "fake": "Fake Profile",
+        "other": "Other"
+      },
+      "profile": {
+        "fake": "Fake Profile",
+        "inappropriate": "Inappropriate Content",
+        "harassment": "Harassment",
+        "impersonation": "Impersonation",
+        "spam": "Spam",
+        "other": "Other"
+      },
+      "message": {
+        "harassment": "Harassment",
+        "inappropriate": "Inappropriate Content",
+        "spam": "Spam",
+        "threats": "Threats",
+        "other": "Other"
+      }
     }
   }
 }
