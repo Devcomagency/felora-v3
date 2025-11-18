@@ -48,14 +48,26 @@ export function useTranslatedText({
   const [fromCache, setFromCache] = useState(false)
 
   useEffect(() => {
+    // Debug logs
+    console.log('[useTranslatedText] Hook called:', {
+      entityId,
+      entityType,
+      sourceLang,
+      targetLang: locale,
+      textLength: text?.length || 0,
+      enabled
+    })
+
     // Si traduction désactivée, retourner le texte original
     if (!enabled) {
+      console.log('[useTranslatedText] Translation disabled')
       setTranslatedText(text)
       return
     }
 
     // Si même langue ou texte vide, pas besoin de traduire
     if (sourceLang === locale || !text || text.trim().length === 0) {
+      console.log('[useTranslatedText] No translation needed:', { sourceLang, locale, hasText: !!text })
       setTranslatedText(text)
       setIsTranslating(false)
       setFromCache(false)
@@ -65,6 +77,7 @@ export function useTranslatedText({
     let cancelled = false
 
     const translateText = async () => {
+      console.log('[useTranslatedText] Starting translation...', { entityId, entityType, sourceLang, targetLang: locale })
       setIsTranslating(true)
       setError(null)
 
@@ -92,6 +105,7 @@ export function useTranslatedText({
         if (cancelled) return
 
         if (data.success && data.translatedText) {
+          console.log('[useTranslatedText] Translation successful!', { fromCache: data.fromCache, textLength: data.translatedText.length })
           setTranslatedText(data.translatedText)
           setFromCache(data.fromCache || false)
           setError(null)
