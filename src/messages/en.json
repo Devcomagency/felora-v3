@@ -1782,6 +1782,28 @@
       "selectReason": "Please select a reason",
       "submitError": "Error sending report",
       "connectionError": "Connection error"
+    },
+    "reasons": {
+      "FAKE_PROFILE": "Fake profile",
+      "FAKE_PHOTOS": "Fake photos",
+      "SCAM": "Scam",
+      "IMPERSONATION": "Impersonation",
+      "MISLEADING_INFO": "Misleading information",
+      "UNDERAGE": "Underage",
+      "HARASSMENT": "Harassment",
+      "SPAM": "Spam",
+      "INAPPROPRIATE_CONTENT": "Inappropriate content",
+      "THREATS": "Threats",
+      "HATE_SPEECH": "Hate speech",
+      "INAPPROPRIATE_MEDIA": "Inappropriate media",
+      "COPYRIGHT": "Copyright violation",
+      "EXPLICIT_CONTENT": "Unauthorized explicit content",
+      "NO_SHOW": "No-show",
+      "PAYMENT_ISSUE": "Payment issue",
+      "UNPROFESSIONAL": "Unprofessional behavior",
+      "SAFETY_CONCERN": "Safety concern",
+      "TOS_VIOLATION": "Terms of Service violation",
+      "OTHER": "Other"
     }
   }
 }

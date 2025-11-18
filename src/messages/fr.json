@@ -1750,6 +1750,28 @@
       "selectReason": "Veuillez sélectionner une raison",
       "submitError": "Erreur lors de l'envoi du signalement",
       "connectionError": "Erreur de connexion"
+    },
+    "reasons": {
+      "FAKE_PROFILE": "Faux profil",
+      "FAKE_PHOTOS": "Fausses photos",
+      "SCAM": "Arnaque",
+      "IMPERSONATION": "Usurpation d'identité",
+      "MISLEADING_INFO": "Informations trompeuses",
+      "UNDERAGE": "Mineur",
+      "HARASSMENT": "Harcèlement",
+      "SPAM": "Spam",
+      "INAPPROPRIATE_CONTENT": "Contenu inapproprié",
+      "THREATS": "Menaces",
+      "HATE_SPEECH": "Discours haineux",
+      "INAPPROPRIATE_MEDIA": "Média inapproprié",
+      "COPYRIGHT": "Violation de droits d'auteur",
+      "EXPLICIT_CONTENT": "Contenu explicite non autorisé",
+      "NO_SHOW": "Rendez-vous manqué",
+      "PAYMENT_ISSUE": "Problème de paiement",
+      "UNPROFESSIONAL": "Comportement non professionnel",
+      "SAFETY_CONCERN": "Problème de sécurité",
+      "TOS_VIOLATION": "Violation des CGU",
+      "OTHER": "Autre"
     }
   },
   "schedule": {

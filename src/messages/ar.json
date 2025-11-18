@@ -1777,6 +1777,28 @@
       "selectReason": "يرجى اختيار سبب",
       "submitError": "خطأ في إرسال الإبلاغ",
       "connectionError": "خطأ في الاتصال"
+    },
+    "reasons": {
+      "FAKE_PROFILE": "ملف شخصي مزيف",
+      "FAKE_PHOTOS": "صور مزيفة",
+      "SCAM": "احتيال",
+      "IMPERSONATION": "انتحال شخصية",
+      "MISLEADING_INFO": "معلومات مضللة",
+      "UNDERAGE": "قاصر",
+      "HARASSMENT": "مضايقة",
+      "SPAM": "بريد عشوائي",
+      "INAPPROPRIATE_CONTENT": "محتوى غير لائق",
+      "THREATS": "تهديدات",
+      "HATE_SPEECH": "خطاب كراهية",
+      "INAPPROPRIATE_MEDIA": "وسائط غير لائقة",
+      "COPYRIGHT": "انتهاك حقوق النشر",
+      "EXPLICIT_CONTENT": "محتوى صريح غير مصرح به",
+      "NO_SHOW": "عدم الحضور",
+      "PAYMENT_ISSUE": "مشكلة في الدفع",
+      "UNPROFESSIONAL": "سلوك غير مهني",
+      "SAFETY_CONCERN": "مخاوف أمنية",
+      "TOS_VIOLATION": "انتهاك الشروط",
+      "OTHER": "أخرى"
     }
   }
 }

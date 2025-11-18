@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { X, AlertTriangle, Flag } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import { REPORT_REASONS_BY_TYPE, REPORT_REASON_LABELS, type ReportType, type ReportReason } from '@/types/reports'
+import { REPORT_REASONS_BY_TYPE, type ReportType, type ReportReason } from '@/types/reports'
 
 interface ReportModalProps {
   isOpen: boolean
@@ -148,7 +148,7 @@ export default function ReportModal({
                     className="w-4 h-4 text-red-500 focus:ring-red-500"
                   />
                   <span className={`text-sm ${reason === r ? 'text-white font-medium' : 'text-gray-400'}`}>
-                    {REPORT_REASON_LABELS[r]}
+                    {t(`reasons.${r}`)}
                   </span>
                 </label>
               ))}

@@ -1777,6 +1777,28 @@
       "selectReason": "Ju lutemi zgjidhni një arsye",
       "submitError": "Gabim në dërgimin e raportit",
       "connectionError": "Gabim në lidhje"
+    },
+    "reasons": {
+      "FAKE_PROFILE": "Profil i rremë",
+      "FAKE_PHOTOS": "Foto të rreme",
+      "SCAM": "Mashtrim",
+      "IMPERSONATION": "Personifikim",
+      "MISLEADING_INFO": "Informacion mashtrues",
+      "UNDERAGE": "I mitur",
+      "HARASSMENT": "Ngacmim",
+      "SPAM": "Spam",
+      "INAPPROPRIATE_CONTENT": "Përmbajtje e papërshtatshme",
+      "THREATS": "Kërcënime",
+      "HATE_SPEECH": "Fjalim urrejtjeje",
+      "INAPPROPRIATE_MEDIA": "Media e papërshtatshme",
+      "COPYRIGHT": "Shkelje e të drejtave të autorit",
+      "EXPLICIT_CONTENT": "Përmbajtje eksplicite e paautorizuar",
+      "NO_SHOW": "Mosparaqitje",
+      "PAYMENT_ISSUE": "Problem pagese",
+      "UNPROFESSIONAL": "Sjellje joprofesionale",
+      "SAFETY_CONCERN": "Shqetësim sigurie",
+      "TOS_VIOLATION": "Shkelje e kushteve",
+      "OTHER": "Tjetër"
     }
   }
 }

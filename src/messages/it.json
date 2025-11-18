@@ -1777,6 +1777,28 @@
       "selectReason": "Seleziona un motivo",
       "submitError": "Errore nell'invio della segnalazione",
       "connectionError": "Errore di connessione"
+    },
+    "reasons": {
+      "FAKE_PROFILE": "Profilo falso",
+      "FAKE_PHOTOS": "Foto false",
+      "SCAM": "Truffa",
+      "IMPERSONATION": "Furto d'identità",
+      "MISLEADING_INFO": "Informazioni fuorvianti",
+      "UNDERAGE": "Minorenne",
+      "HARASSMENT": "Molestie",
+      "SPAM": "Spam",
+      "INAPPROPRIATE_CONTENT": "Contenuto inappropriato",
+      "THREATS": "Minacce",
+      "HATE_SPEECH": "Discorso d'odio",
+      "INAPPROPRIATE_MEDIA": "Media inappropriato",
+      "COPYRIGHT": "Violazione del copyright",
+      "EXPLICIT_CONTENT": "Contenuto esplicito non autorizzato",
+      "NO_SHOW": "Mancata presentazione",
+      "PAYMENT_ISSUE": "Problema di pagamento",
+      "UNPROFESSIONAL": "Comportamento non professionale",
+      "SAFETY_CONCERN": "Problema di sicurezza",
+      "TOS_VIOLATION": "Violazione dei termini",
+      "OTHER": "Altro"
     }
   }
 }
