@@ -1,13 +1,10 @@
 /**
- * Service de traduction utilisant LibreTranslate
- * API gratuite et open source
+ * Service de traduction utilisant MyMemory Translation API
+ * Gratuit: 1000 requêtes/jour sans clé, 10000/jour avec email
+ * Plus fiable et stable que LibreTranslate
  */
 
-// URL de l'API LibreTranslate - Instance allemande gratuite (pas de clé requise)
-// Alternative: https://translate.argosopentech.com/translate
-const LIBRETRANSLATE_API = 'https://libretranslate.de/translate'
-
-// Mapping des codes de langue next-intl vers LibreTranslate
+// Mapping des codes de langue
 const LANG_MAP: Record<string, string> = {
   fr: 'fr',
   en: 'en',
@@ -61,24 +58,22 @@ export async function translateText(
   const targetCode = LANG_MAP[targetLang] || targetLang
 
   try {
-    const response = await fetch(LIBRETRANSLATE_API, {
-      method: 'POST',
+    // MyMemory API - GET request avec paramètres dans l'URL
+    const url = new URL('https://api.mymemory.translated.net/get')
+    url.searchParams.append('q', text)
+    url.searchParams.append('langpair', `${sourceCode}|${targetCode}`)
+    url.searchParams.append('de', 'contact@felora.ch') // Pour 10000 req/jour au lieu de 1000
+
+    const response = await fetch(url.toString(), {
+      method: 'GET',
       headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        q: text,
-        source: sourceCode,
-        target: targetCode,
-        format: 'text'
-      })
+        'Accept': 'application/json',
+      }
     })
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}))
-      console.error('[LibreTranslate] API error:', {
-        status: response.status,
-        error: errorData
+      console.error('[MyMemory] API error:', {
+        status: response.status
       })
 
       return {
@@ -89,8 +84,9 @@ export async function translateText(
 
     const data = await response.json()
 
-    if (!data.translatedText) {
-      console.error('[LibreTranslate] No translated text in response:', data)
+    // MyMemory retourne: { responseData: { translatedText: "..." }, responseStatus: 200 }
+    if (data.responseStatus !== 200 || !data.responseData?.translatedText) {
+      console.error('[MyMemory] No translated text in response:', data)
       return {
         success: false,
         error: 'No translation returned'
@@ -99,11 +95,11 @@ export async function translateText(
 
     return {
       success: true,
-      translatedText: data.translatedText,
+      translatedText: data.responseData.translatedText,
       fromCache: false
     }
   } catch (error) {
-    console.error('[LibreTranslate] Translation error:', error)
+    console.error('[MyMemory] Translation error:', error)
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error'
@@ -117,35 +113,7 @@ export async function translateText(
  * @returns Code de langue détecté ou null en cas d'erreur
  */
 export async function detectLanguage(text: string): Promise<string | null> {
-  if (!text || text.trim().length === 0) {
-    return null
-  }
-
-  try {
-    const response = await fetch('https://libretranslate.de/detect', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        q: text
-      })
-    })
-
-    if (!response.ok) {
-      return null
-    }
-
-    const data = await response.json()
-
-    // L'API retourne un tableau de langues détectées avec leur confiance
-    if (Array.isArray(data) && data.length > 0) {
-      return data[0].language
-    }
-
-    return null
-  } catch (error) {
-    console.error('[LibreTranslate] Language detection error:', error)
-    return null
-  }
+  // MyMemory ne supporte pas la détection de langue
+  // On pourrait utiliser une autre API pour ça si besoin
+  return null
 }
