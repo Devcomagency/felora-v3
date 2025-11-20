@@ -83,12 +83,14 @@ export default function GlassPopup({ escort, onClose, onViewProfile }: GlassPopu
         }}
         className="relative"
       >
-        {/* Bouton fermer */}
+        {/* Bouton fermer - Zone cliquable élargie */}
         <button
           onClick={onClose}
-          className="absolute -top-2 -right-2 w-8 h-8 bg-black/80 border border-white/20 rounded-full flex items-center justify-center text-white hover:bg-black/90 transition-colors z-10"
+          className="absolute -top-2 -right-2 w-14 h-14 bg-transparent rounded-full flex items-center justify-center text-white transition-colors z-10 p-0"
         >
-          <X size={16} />
+          <span className="w-8 h-8 bg-black/80 border border-white/20 rounded-full flex items-center justify-center hover:bg-black/90 transition-colors">
+            <X size={16} />
+          </span>
         </button>
 
         {/* Carousel de photos - Style identique à l'ancienne version */}

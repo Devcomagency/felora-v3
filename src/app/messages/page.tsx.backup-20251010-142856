@@ -3,9 +3,9 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import ConversationList from '../../components/chat/ConversationList'
 import E2EEThread from '../../components/chat/E2EEThread'
-import { MessageCircle, ArrowLeft, Paperclip, Image as ImageIcon, Smile, Send, MoreVertical, Mic, Clock } from 'lucide-react'
+import { MessageCircle, ArrowLeft, Paperclip, Image as ImageIcon, Smile, Send, MoreVertical, Mic } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
-import type { Conversation } from '../../types/chat'
+import type { Conversation, Message } from '../../types/chat'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import EmojiPicker from '../../components/chat/EmojiPicker'
@@ -18,18 +18,14 @@ import { MESSAGING_CONSTANTS, MEDIA_CONSTANTS } from '@/constants/messaging'
 import { compressImageIfNeeded } from '@/utils/imageCompression'
 import { useNetworkError } from '@/hooks/useNetworkError'
 import NetworkErrorBanner from '@/components/NetworkErrorBanner'
-import ReportModal from '@/components/ReportModal'
-import { useTranslations } from 'next-intl'
 
 // Old messages page (V3 original)
 function OldMessagesPage() {
-  const t = useTranslations('messages')
-
   return (
     <div className="min-h-screen bg-black text-white flex items-center justify-center">
       <div className="text-center">
-        <h1 className="text-2xl font-bold mb-4">{t('oldVersion')}</h1>
-        <p className="text-gray-400">{t('oldVersionDescription')}</p>
+        <h1 className="text-2xl font-bold mb-4">Messages (Version Originale)</h1>
+        <p className="text-gray-400">Cette page utilise l'ancienne interface V3</p>
       </div>
     </div>
   )
@@ -37,24 +33,21 @@ function OldMessagesPage() {
 
 // New messages page (V2 design)
 function NewMessagesPage() {
-  const t = useTranslations('messages')
   const { data: session, status } = useSession()
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [activeConversation, setActiveConversation] = useState<Conversation | null>(null)
+  const [, setMessages] = useState<Message[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [showHeaderMenu, setShowHeaderMenu] = useState(false)
   const [showReportModal, setShowReportModal] = useState(false)
   const [showEphemeralMenu, setShowEphemeralMenu] = useState(false)
+  const [reportReason, setReportReason] = useState('Spam')
+  const [reportDetails, setReportDetails] = useState('')
+  const [reportSubmitting, setReportSubmitting] = useState(false)
   const [ephemeralMode, setEphemeralMode] = useState(false)
   const [ephemeralDuration, setEphemeralDuration] = useState(86400) // 24h par défaut
-  const [isMobile, setIsMobile] = useState(() => {
-    // Initialiser correctement dès le départ
-    if (typeof window === 'undefined') return false
-    return window.innerWidth < 1024
-  })
   const router = useRouter()
   const { success: toastSuccess, error: toastError } = useNotification()
-  
   const { error: networkError, isRetrying, retryCount, handleError, clearError, retry } = useNetworkError()
   const headerTitle = useMemo(() => {
     if (activeConversation && activeConversation.participants?.length) {
@@ -62,14 +55,14 @@ function NewMessagesPage() {
       const currentUserId = session?.user?.id || ''
       // Trouver l'autre participant (pas l'utilisateur courant)
       const other = parts.find(p => p?.id !== currentUserId) || parts[0]
-      return other?.name || t('conversation')
+      return other?.name || 'Conversation'
     }
-    return t('title')
-  }, [activeConversation, session?.user?.id, t])
+    return 'Messages'
+  }, [activeConversation, session?.user?.id])
   const headerSubtitle = useMemo(() => {
-    if (activeConversation) return t('encryptedConversation')
-    return t('yourConversations')
-  }, [activeConversation, t])
+    if (activeConversation) return 'Conversation chiffrée'
+    return 'Vos conversations'
+  }, [activeConversation])
   const otherParticipant = useMemo(() => {
     if (activeConversation && Array.isArray((activeConversation as any).participants)) {
       const parts = (activeConversation as any).participants
@@ -81,7 +74,6 @@ function NewMessagesPage() {
     return null
   }, [activeConversation, session?.user?.id])
   const [headerSearch, setHeaderSearch] = useState('')
-  const [debouncedSearch, setDebouncedSearch] = useState('')
   const [isBlocked, setIsBlocked] = useState(false)
   const [pendingConvToOpen, setPendingConvToOpen] = useState<string | null>(null)
   const [pendingUserToMessage, setPendingUserToMessage] = useState<string | null>(null)
@@ -91,14 +83,6 @@ function NewMessagesPage() {
   useEffect(() => {
     conversationsRef.current = conversations
   }, [conversations])
-
-  // Détecter si mobile (pour ne monter qu'UNE SEULE instance d'E2EEThread)
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 1024)
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
-  }, [])
 
   // Read deep link (?conv=... ou ?to=...) to auto-open a conversation when list is loaded
   useEffect(() => {
@@ -128,19 +112,8 @@ function NewMessagesPage() {
 
   // Handle creating conversation with intro message when ?to= is provided
   const createConversationWithIntro = useCallback(async () => {
-    console.log('[CREATE CONV] Checking conditions:', {
-      pendingUserToMessage,
-      userId: session?.user?.id,
-      conversationsLoaded: conversations.length
-    })
-
-    if (!pendingUserToMessage || !session?.user?.id) {
-      console.log('[CREATE CONV] Aborting - missing requirements')
-      return
-    }
-
-    console.log('[CREATE CONV] Starting conversation creation...')
-
+    if (!pendingUserToMessage || !session?.user?.id || isLoading) return
+    
     try {
       // Vérifier si une conversation existe déjà avec cet utilisateur
       const existingConv = conversationsRef.current.find(conv =>
@@ -157,10 +130,10 @@ function NewMessagesPage() {
       const profileRes = await fetch(`/api/escort/profile/${encodeURIComponent(pendingUserToMessage)}`, {
         credentials: 'include'
       })
-      let profileName = t('thisProfile')
+      let profileName = 'ce profil'
       if (profileRes.ok) {
         const profileData = await profileRes.json()
-        profileName = profileData?.stageName || profileData?.name || t('thisProfile')
+        profileName = profileData?.stageName || profileData?.name || 'ce profil'
       }
 
       try {
@@ -173,7 +146,7 @@ function NewMessagesPage() {
           credentials: 'include',
           body: JSON.stringify({
             participantId: pendingUserToMessage,
-            introMessage: t('introMessage', { name: profileName })
+            introMessage: `Bonjour ${profileName}, ton profil m'a beaucoup plu ! 😊`
           })
         })
 
@@ -200,10 +173,10 @@ function NewMessagesPage() {
           return [conversation, ...prev]
         })
 
-        toastSuccess(t('conversationCreated'))
+        toastSuccess('Conversation créée avec succès !')
       } catch (error) {
         console.error('Erreur lors de la création de la conversation:', error)
-
+        
         // Fallback : Créer une conversation simulée si l'API échoue
         const simulatedConversation: Conversation = {
           id: `temp-${Date.now()}`,
@@ -211,7 +184,7 @@ function NewMessagesPage() {
           participants: [
             {
               id: session.user.id,
-              name: session.user.name || t('you'),
+              name: session.user.name || 'Vous',
               role: 'client',
               isPremium: false,
               isVerified: false,
@@ -231,7 +204,7 @@ function NewMessagesPage() {
             conversationId: `temp-${Date.now()}`,
             senderId: session.user.id,
             type: 'text',
-            content: t('introMessage', { name: profileName }),
+            content: `Bonjour ${profileName}, ton profil m'a beaucoup plu ! 😊`,
             status: 'sent',
             createdAt: new Date(),
             updatedAt: new Date()
@@ -256,45 +229,21 @@ function NewMessagesPage() {
           return [simulatedConversation, ...prev]
         })
 
-        toastSuccess(t('conversationCreated'))
+        toastSuccess('Conversation créée avec succès !')
       }
     } catch (error) {
       console.error('Erreur lors de la création de la conversation:', error)
-      toastError(t('conversationCreationError'))
+      toastError('Erreur lors de la création de la conversation')
     } finally {
       setPendingUserToMessage(null)
     }
-  }, [pendingUserToMessage, session?.user?.id, toastSuccess, toastError, t])
+  }, [pendingUserToMessage, session?.user?.id, isLoading, toastSuccess, toastError])
 
   useEffect(() => {
-    if (pendingUserToMessage && session?.user?.id) {
+    if (pendingUserToMessage && session?.user?.id && !isLoading) {
       createConversationWithIntro()
     }
-  }, [createConversationWithIntro, pendingUserToMessage, session?.user?.id])
-
-  // Debounce pour la recherche
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(headerSearch)
-    }, 300)
-    return () => clearTimeout(timer)
-  }, [headerSearch])
-
-  // Navigation au clavier
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Échap : Fermer les modaux
-      if (e.key === 'Escape') {
-        if (showHeaderMenu) setShowHeaderMenu(false)
-        if (showReportModal) setShowReportModal(false)
-        if (showEphemeralMenu) setShowEphemeralMenu(false)
-        if (activeConversation) setActiveConversation(null)
-      }
-    }
-
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [showHeaderMenu, showReportModal, showEphemeralMenu, activeConversation])
+  }, [createConversationWithIntro])
 
   // Load E2EE conversations for current user (handle unauthenticated)
   const loadConversations = useCallback(async () => {
@@ -321,12 +270,12 @@ function NewMessagesPage() {
     } catch (error) {
       console.error('Erreur lors du chargement des conversations:', error)
       handleError(error as Error, loadConversations)
-      toastError(t('loadConversationsError'))
+      toastError('Impossible de charger les conversations')
       setConversations([])
-    } finally {
-      setIsLoading(false)
+    } finally { 
+      setIsLoading(false) 
     }
-  }, [toastError, handleError, clearError, t])
+  }, [toastError, handleError, clearError])
 
   useEffect(() => {
     if (status === 'loading') { setIsLoading(true); return }
@@ -338,36 +287,12 @@ function NewMessagesPage() {
   // Load messages for active conversation
   const handleSelectConversation = async (conversation: Conversation) => {
     setActiveConversation(conversation)
-    
-    // Charger les paramètres éphémères de la conversation
-    const ephemeralModeValue = (conversation as any).ephemeralMode || false
-    const ephemeralDurationValue = (conversation as any).ephemeralDuration || 86400
-    setEphemeralMode(ephemeralModeValue)
-    setEphemeralDuration(ephemeralDurationValue)
   }
 
   // Update local last-seen timestamp when opening a conversation
   useEffect(() => {
-    if (activeConversation?.id && session?.user?.id) {
+    if (activeConversation?.id) {
       try { localStorage.setItem(`felora-e2ee-last-seen-${activeConversation.id}`, String(Date.now())) } catch {}
-      
-      // Marquer les messages comme lus
-      ;(async () => {
-        try {
-          await fetch('/api/e2ee/messages/mark-read', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify({
-              conversationId: activeConversation.id,
-              userId: session.user.id
-            })
-          })
-        } catch (error) {
-          console.error('Erreur marquage lecture:', error)
-        }
-      })()
-      
       ;(async () => {
         try {
           const res = await fetch('/api/e2ee/conversations/read', {
@@ -376,21 +301,6 @@ function NewMessagesPage() {
             credentials: 'include',
             body: JSON.stringify({ conversationId: activeConversation.id })
           })
-
-          // 🆕 Marquer les notifications MESSAGE_RECEIVED comme lues pour cette conversation
-          try {
-            console.log('[MESSAGES] Marquage notifications pour conversation:', activeConversation.id)
-            const notifRes = await fetch('/api/notifications/mark-conversation-read', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              credentials: 'include',
-              body: JSON.stringify({ conversationId: activeConversation.id })
-            })
-            const notifData = await notifRes.json()
-            console.log('[MESSAGES] Réponse marquage notifications:', notifData)
-          } catch (notifError) {
-            console.error('Erreur marquage notifications:', notifError)
-          }
           if (!res.ok) {
             console.warn('Erreur lors de la marque comme lu:', res.status)
           }
@@ -427,15 +337,15 @@ function NewMessagesPage() {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-white mb-4">{t('limitedAccess')}</h1>
+          <h1 className="text-2xl font-bold text-white mb-4">Accès limité</h1>
           <p className="text-gray-400 mb-6">
-            {t('limitedAccessDescription')}
+            Seuls les clients et les escortes peuvent utiliser la messagerie.
           </p>
           <button
             onClick={() => router.push('/')}
             className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg font-medium hover:from-purple-600 hover:to-pink-600 transition-all"
           >
-            {t('backToHome')}
+            Retour à l'accueil
           </button>
         </div>
       </div>
@@ -447,15 +357,15 @@ function NewMessagesPage() {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-white mb-4">{t('loginRequired')}</h1>
+          <h1 className="text-2xl font-bold text-white mb-4">Connexion requise</h1>
           <p className="text-gray-400 mb-6">
-            {t('loginRequiredDescription')}
+            Vous devez être connecté pour utiliser la messagerie.
           </p>
           <button
             onClick={() => router.push('/login')}
             className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg font-medium hover:from-purple-600 hover:to-pink-600 transition-all"
           >
-            {t('login')}
+            Se connecter
           </button>
         </div>
       </div>
@@ -467,15 +377,14 @@ function NewMessagesPage() {
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-white">{t('loadingChat')}</p>
+          <p className="text-white">Chargement du chat...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <>
-      <div className="min-h-screen flex flex-col bg-black text-white">
+    <div className="min-h-screen flex flex-col bg-black text-white">
       {/* Network Error Banner */}
       {networkError && (
         <NetworkErrorBanner
@@ -500,8 +409,8 @@ function NewMessagesPage() {
                 }
               }}
               className="p-3 text-white hover:bg-white/20 rounded-xl transition-all duration-200 hover:scale-105"
-              aria-label={t('backToPreviousPage')}
-              title={t('back')}
+              aria-label="Revenir à la page précédente"
+              title="Retour"
             >
               <ArrowLeft size={20} />
             </button>
@@ -509,13 +418,7 @@ function NewMessagesPage() {
               <h1 className="text-xl font-bold text-white flex items-center gap-2">
                 {headerTitle}
                 {isBlocked && (
-                  <span className="px-2 py-1 text-xs rounded-full bg-red-500/20 text-red-300 border border-red-500/30">{t('blocked')}</span>
-                )}
-                {ephemeralMode && activeConversation && (
-                  <span className="px-2 py-1 text-xs rounded-md bg-orange-500/10 text-orange-300 border border-orange-500/20 flex items-center gap-1">
-                    <Clock size={11} />
-                    <span>{ephemeralDuration / 3600}h</span>
-                  </span>
+                  <span className="px-2 py-1 text-xs rounded-full bg-red-500/20 text-red-300">Bloqué</span>
                 )}
               </h1>
               <p className="text-gray-400 text-sm">{headerSubtitle}</p>
@@ -529,8 +432,8 @@ function NewMessagesPage() {
                 className="p-3 text-white hover:bg-white/20 rounded-xl transition-all duration-200 hover:scale-105"
                 aria-haspopup="menu"
                 aria-expanded={showHeaderMenu}
-                aria-label={t('conversationOptions')}
-                title={t('options')}
+                aria-label="Options de conversation"
+                title="Options"
               >
                 <MoreVertical size={20} />
               </button>
@@ -543,9 +446,9 @@ function NewMessagesPage() {
                   >
                     <span>🔥</span>
                     <div className="flex-1">
-                      <div>{t('ephemeralMessages')}</div>
+                      <div>Messages éphémères</div>
                       <div className="text-xs text-gray-400">
-                        {ephemeralMode ? t('ephemeralEnabled', { hours: ephemeralDuration / 3600 }) : t('ephemeralDisabled')}
+                        {ephemeralMode ? `Activé (${ephemeralDuration / 3600}h)` : 'Désactivé'}
                       </div>
                     </div>
                   </button>
@@ -553,7 +456,7 @@ function NewMessagesPage() {
                     role="menuitem"
                     className="w-full text-left px-4 py-3 text-sm text-white/90 hover:bg-white/10"
                     onClick={() => { setShowHeaderMenu(false); setShowReportModal(true) }}
-                  >{t('report')}</button>
+                  >Signaler</button>
                   <button
                     role="menuitem"
                     className="w-full text-left px-4 py-3 text-sm text-white/90 hover:bg-white/10"
@@ -565,43 +468,43 @@ function NewMessagesPage() {
                           if (!res.ok) throw new Error('toggle_failed')
                           const d = await res.json()
                           setIsBlocked(!!d?.blocked)
-                          toastSuccess(d?.blocked ? t('userBlocked') : t('userUnblocked'))
+                          toastSuccess(d?.blocked ? 'Utilisateur bloqué' : 'Utilisateur débloqué')
                         }
                       } catch {
-                        toastError(t('actionImpossible'))
+                        toastError('Action impossible')
                       }
                     }}
-                  >{isBlocked ? t('unblock') : t('block')}</button>
+                  >{isBlocked ? 'Débloquer' : 'Bloquer'}</button>
                   <button
                     role="menuitem"
                     className="w-full text-left px-4 py-3 text-sm text-red-400 hover:bg-red-500/10 border-t border-white/5"
                     onClick={async () => {
                       setShowHeaderMenu(false)
                       if (!activeConversation?.id) return
-
-                      if (!confirm(t('deleteConversationConfirm'))) {
+                      
+                      if (!confirm('Êtes-vous sûr de vouloir supprimer cette conversation ? Cette action est irréversible.')) {
                         return
                       }
-
+                      
                       try {
-                        const res = await fetch('/api/e2ee/conversations/remove', {
+                        const res = await fetch('/api/e2ee/conversations/delete', {
                           method: 'POST',
                           headers: { 'Content-Type': 'application/json' },
                           credentials: 'include',
                           body: JSON.stringify({ conversationId: activeConversation.id })
                         })
-
+                        
                         if (!res.ok) throw new Error('delete_failed')
-
-                        toastSuccess(t('conversationDeleted'))
+                        
+                        toastSuccess('Conversation supprimée')
                         setActiveConversation(null)
                         // Recharger la liste des conversations
                         loadConversations()
                       } catch {
-                        toastError(t('deleteConversationError'))
+                        toastError('Impossible de supprimer la conversation')
                       }
                     }}
-                  >{t('deleteConversation')}</button>
+                  >Supprimer la conversation</button>
                 </div>
               )}
             </div>
@@ -612,9 +515,9 @@ function NewMessagesPage() {
           <div className="max-w-7xl mx-auto mt-4">
             <div className="relative">
               <input
-                aria-label={t('searchConversation')}
+                aria-label="Rechercher une conversation"
                 type="text"
-                placeholder={t('searchConversationPlaceholder')}
+                placeholder="Rechercher une conversation..."
                 value={headerSearch}
                 onChange={(e) => setHeaderSearch(e.target.value)}
                 className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:border-pink-500 focus:outline-none transition-colors"
@@ -630,34 +533,32 @@ function NewMessagesPage() {
           <div className="h-full min-h-0 rounded-xl sm:rounded-2xl bg-white/5 border border-white/10">
             <>
               {/* Desktop: Split View */}
-              {!isMobile && <div className="flex h-full min-h-0">
-                  <div className="w-1/3 border-r border-gray-700/50">
-                    <ConversationList
-                      conversations={conversations}
-                      activeConversation={activeConversation}
-                      onSelectConversation={handleSelectConversation}
-                      searchQuery={debouncedSearch}
-                      loading={isLoading}
-                      currentUserId={session?.user?.id}
-                    />
-                  </div>
-                  <div className="flex-1 min-h-0 flex flex-col">
-                    {activeConversation ? (
-                      <>
+              <div className="hidden lg:flex h-full min-h-0">
+                <div className="w-1/3 border-r border-gray-700/50">
+                  <ConversationList
+                    conversations={conversations}
+                    activeConversation={activeConversation}
+                    onSelectConversation={handleSelectConversation}
+                    searchQuery={headerSearch}
+                    loading={isLoading}
+                    currentUserId={session?.user?.id}
+                  />
+                </div>
+                <div className="flex-1 min-h-0 flex flex-col">
+                  {activeConversation ? (
+                    <>
                       <div className="flex-1 min-h-0 overflow-hidden">
                         <E2EEThread
-                          key={`desktop-thread-${activeConversation.id}`}
                           conversationId={activeConversation.id}
                           userId={session?.user?.id || ''}
                           partnerId={(activeConversation.participants.find((p:any)=> p.id!== (session?.user?.id||''))|| activeConversation.participants[0])?.id}
-                          partnerName={(activeConversation.participants.find((p:any)=> p.id!== (session?.user?.id||''))|| activeConversation.participants[0])?.name}
                         />
                       </div>
                       {/* Composeur intégré pour desktop */}
                       <div className="border-t border-gray-700/50 p-3">
                         {isBlocked ? (
                           <div className="text-center text-xs text-gray-400 py-2">
-                            {t('blockedUserMessage')}
+                            Vous avez bloqué cet utilisateur. Débloquez pour envoyer des messages.
                           </div>
                         ) : (
                           <PageComposer active={!isBlocked} />
@@ -669,7 +570,7 @@ function NewMessagesPage() {
                       <MessageCircle size={48} className="mb-4 opacity-50" />
                       {!session?.user ? (
                         <div className="text-center">
-                          <h3
+                          <h3 
                             className="text-lg font-medium mb-2 text-white"
                             style={{
                               background: 'linear-gradient(135deg, var(--felora-aurora) 0%, var(--felora-plasma) 100%)',
@@ -678,22 +579,22 @@ function NewMessagesPage() {
                               backgroundClip: 'text'
                             }}
                           >
-                            {t('loginToMessage')}
+                            Connectez‑vous pour messager
                           </h3>
-                          <a
-                            href="/login"
+                          <a 
+                            href="/login" 
                             className="inline-block mt-2 px-6 py-3 rounded-lg text-white font-semibold transition-all hover:scale-105"
                             style={{
                               background: 'linear-gradient(135deg, var(--felora-aurora) 0%, var(--felora-plasma) 100%)',
                               boxShadow: '0 4px 15px rgba(255, 107, 157, 0.3)'
                             }}
                           >
-                            {t('login')}
+                            Se connecter
                           </a>
                         </div>
                       ) : (
                         <>
-                          <h3
+                          <h3 
                             className="text-lg font-medium mb-2"
                             style={{
                               background: 'linear-gradient(135deg, var(--felora-aurora) 0%, var(--felora-plasma) 100%)',
@@ -702,35 +603,33 @@ function NewMessagesPage() {
                               backgroundClip: 'text'
                             }}
                           >
-                            {t('selectConversation')}
+                            Sélectionnez une conversation
                           </h3>
                           <p className="text-sm text-center max-w-md" style={{ color: 'var(--felora-silver-60)' }}>
-                            {t('selectConversationDescription')}
+                            Choisissez une conversation pour commencer à échanger.
                           </p>
                         </>
                       )}
                     </div>
                   )}
                 </div>
-              </div>}
+              </div>
               {/* Mobile: Single View */}
-              {isMobile && <div className="h-full min-h-0">
-                  {activeConversation ? (
-                    <div className="h-full min-h-0">
-                      <E2EEThread
-                        key={`mobile-thread-${activeConversation.id}`}
-                        conversationId={activeConversation.id}
-                        userId={session?.user?.id || ''}
-                        partnerId={(activeConversation.participants.find((p:any)=> p.id!== (session?.user?.id||''))|| activeConversation.participants[0])?.id}
-                        partnerName={(activeConversation.participants.find((p:any)=> p.id!== (session?.user?.id||''))|| activeConversation.participants[0])?.name}
-                      />
-                    </div>
+              <div className="lg:hidden h-full min-h-0">
+                {activeConversation ? (
+                  <div className="h-full min-h-0">
+                    <E2EEThread
+                      conversationId={activeConversation.id}
+                      userId={session?.user?.id || ''}
+                      partnerId={(activeConversation.participants.find((p:any)=> p.id!== (session?.user?.id||''))|| activeConversation.participants[0])?.id}
+                    />
+                  </div>
                 ) : (
                   <div className="h-full flex flex-col">
                     {!session?.user ? (
                       <div className="h-full flex flex-col items-center justify-center p-4 text-white/70">
                         <p className="mb-3" style={{ color: 'var(--felora-silver-70)' }}>
-                          {t('loginToViewConversations')}
+                          Connectez‑vous pour voir vos conversations.
                         </p>
                         <a
                           href="/login"
@@ -740,7 +639,7 @@ function NewMessagesPage() {
                             boxShadow: '0 4px 15px rgba(255, 107, 157, 0.3)'
                           }}
                         >
-                          {t('login')}
+                          Se connecter
                         </a>
                       </div>
                     ) : (
@@ -748,14 +647,14 @@ function NewMessagesPage() {
                         conversations={conversations}
                         activeConversation={activeConversation}
                         onSelectConversation={handleSelectConversation}
-                        searchQuery={debouncedSearch}
+                        searchQuery={headerSearch}
                         loading={isLoading}
                         currentUserId={session?.user?.id}
                       />
                     )}
                   </div>
                 )}
-              </div>}
+              </div>
             </>
           </div>
         </div>
@@ -775,7 +674,7 @@ function NewMessagesPage() {
             <div className="max-w-7xl mx-auto px-2 sm:px-4 pt-2">
               {isBlocked && (
                 <div className="mb-2 text-center text-xs" style={{ color: 'var(--felora-silver-70)' }}>
-                  {t('blockedUserMessage')}
+                  Vous avez bloqué cet utilisateur. Débloquez pour envoyer des messages.
                 </div>
               )}
               <PageComposer active={!isBlocked} />
@@ -783,26 +682,84 @@ function NewMessagesPage() {
           </div>
         </BodyPortal>
       )}
-      </div>
+        {/* Report modal avec style V2 */}
+        <BodyPortal>
+          {(showReportModal && otherParticipant) ? (
+            <div className="fixed inset-0 z-[10000] flex items-center justify-center">
+              <div className="absolute inset-0 bg-black/60" onClick={() => setShowReportModal(false)} />
+              <div 
+                className="relative w-[min(92vw,32rem)] rounded-xl border p-4 text-white"
+                style={{
+                  background: 'rgba(15, 15, 25, 0.95)',
+                  backdropFilter: 'blur(20px)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)'
+                }}
+              >
+                <h3 
+                  className="text-lg font-semibold mb-2"
+                  style={{
+                    background: 'linear-gradient(135deg, var(--felora-aurora) 0%, var(--felora-plasma) 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text'
+                  }}
+                >
+                  Signaler {otherParticipant.name}
+                </h3>
+              <label className="block text-sm text-white/80 mb-1">Raison</label>
+              <select value={reportReason} onChange={e => setReportReason(e.target.value)} className="w-full mb-3 bg-gray-800/60 border border-gray-700/60 rounded-lg px-3 py-2">
+                <option>Spam</option>
+                <option>Harcèlement</option>
+                <option>Arnaque</option>
+                <option>Contenu inapproprié</option>
+                <option>Autre</option>
+              </select>
+              <label className="block text-sm text-white/80 mb-1">Détails (optionnel)</label>
+              <textarea value={reportDetails} onChange={e => setReportDetails(e.target.value)} rows={4} className="w-full bg-gray-800/60 border border-gray-700/60 rounded-lg px-3 py-2 mb-4 resize-none" placeholder="Expliquez brièvement le problème..." />
+              <div className="flex justify-end gap-2">
+                <button 
+                  onClick={() => setShowReportModal(false)} 
+                  className="px-4 py-2 rounded-lg transition-colors"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    color: 'var(--felora-silver)'
+                  }}
+                >
+                  Annuler
+                </button>
+                <button 
+                  disabled={reportSubmitting} 
+                  onClick={async () => {
+                    if (!otherParticipant?.id) return
+                    try {
+                      const res = await fetch('/api/chat/report', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ targetUserId: otherParticipant.id, conversationId: activeConversation?.id, reason: reportReason, details: reportDetails }) })
+                      if (!res.ok) throw new Error('report_failed')
+                      setShowReportModal(false)
+                      setReportDetails('')
+                      toastSuccess('Signalement envoyé')
+                    } finally {
+                      setReportSubmitting(false)
+                    }
+                  }} 
+                  className="px-4 py-2 rounded-lg text-white font-semibold transition-all hover:scale-105 disabled:opacity-50"
+                  style={{
+                    background: 'linear-gradient(135deg, var(--felora-aurora) 0%, var(--felora-plasma) 100%)',
+                    boxShadow: '0 4px 15px rgba(255, 107, 157, 0.3)'
+                  }}
+                >
+                  {reportSubmitting ? 'Envoi...' : 'Envoyer'}
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : null}
 
-      {/* Report modal avec ReportModal unifié */}
-      {otherParticipant && (
-        <ReportModal
-          isOpen={showReportModal}
-          onClose={() => setShowReportModal(false)}
-          reportType="MESSAGE"
-          targetType="conversation"
-          targetId={activeConversation?.id || ''}
-          targetName={otherParticipant.name}
-        />
-      )}
-
-      {/* Modale Mode Éphémère */}
-      <BodyPortal>
+        {/* Modale Mode Éphémère */}
         {showEphemeralMenu && activeConversation && (
           <div className="fixed inset-0 z-[10000] flex items-center justify-center">
             <div className="absolute inset-0 bg-black/60" onClick={() => setShowEphemeralMenu(false)} />
-            <div
+            <div 
               className="relative w-[min(92vw,28rem)] rounded-xl border p-6 text-white"
               style={{
                 background: 'rgba(15, 15, 25, 0.95)',
@@ -811,7 +768,7 @@ function NewMessagesPage() {
                 boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)'
               }}
             >
-              <h3
+              <h3 
                 className="text-xl font-semibold mb-4 flex items-center gap-2"
                 style={{
                   background: 'linear-gradient(135deg, var(--felora-aurora) 0%, var(--felora-plasma) 100%)',
@@ -820,62 +777,62 @@ function NewMessagesPage() {
                   backgroundClip: 'text'
                 }}
               >
-                <span>🔥</span> {t('ephemeralMessages')}
+                <span>🔥</span> Messages éphémères
               </h3>
               <p className="text-sm text-gray-400 mb-6">
-                {t('ephemeralMessagesDescription')}
+                Les messages disparaîtront automatiquement après la durée choisie
               </p>
-
+              
               <div className="space-y-3 mb-6">
                 <button
                   onClick={() => { setEphemeralMode(false); setEphemeralDuration(0) }}
                   className={`w-full text-left px-4 py-3 rounded-lg transition-all ${!ephemeralMode ? 'bg-white/10 border-2 border-pink-500' : 'bg-white/5 border border-white/10'}`}
                 >
-                  <div className="font-medium">{t('ephemeralDisabledOption')}</div>
-                  <div className="text-xs text-gray-400">{t('ephemeralDisabledDescription')}</div>
+                  <div className="font-medium">Désactivé</div>
+                  <div className="text-xs text-gray-400">Les messages restent indéfiniment</div>
                 </button>
-
+                
                 <button
                   onClick={() => { setEphemeralMode(true); setEphemeralDuration(43200) }}
                   className={`w-full text-left px-4 py-3 rounded-lg transition-all ${ephemeralMode && ephemeralDuration === 43200 ? 'bg-white/10 border-2 border-pink-500' : 'bg-white/5 border border-white/10'}`}
                 >
-                  <div className="font-medium">{t('ephemeral12Hours')}</div>
-                  <div className="text-xs text-gray-400">{t('ephemeral12HoursDescription')}</div>
+                  <div className="font-medium">12 heures</div>
+                  <div className="text-xs text-gray-400">Les messages disparaissent après 12h</div>
                 </button>
-
+                
                 <button
                   onClick={() => { setEphemeralMode(true); setEphemeralDuration(86400) }}
                   className={`w-full text-left px-4 py-3 rounded-lg transition-all ${ephemeralMode && ephemeralDuration === 86400 ? 'bg-white/10 border-2 border-pink-500' : 'bg-white/5 border border-white/10'}`}
                 >
-                  <div className="font-medium">{t('ephemeral24Hours')}</div>
-                  <div className="text-xs text-gray-400">{t('ephemeral24HoursDescription')}</div>
+                  <div className="font-medium">24 heures</div>
+                  <div className="text-xs text-gray-400">Les messages disparaissent après 24h</div>
                 </button>
-
+                
                 <button
                   onClick={() => { setEphemeralMode(true); setEphemeralDuration(172800) }}
                   className={`w-full text-left px-4 py-3 rounded-lg transition-all ${ephemeralMode && ephemeralDuration === 172800 ? 'bg-white/10 border-2 border-pink-500' : 'bg-white/5 border border-white/10'}`}
                 >
-                  <div className="font-medium">{t('ephemeral48Hours')}</div>
-                  <div className="text-xs text-gray-400">{t('ephemeral48HoursDescription')}</div>
+                  <div className="font-medium">48 heures</div>
+                  <div className="text-xs text-gray-400">Les messages disparaissent après 2 jours</div>
                 </button>
-
+                
                 <button
                   onClick={() => { setEphemeralMode(true); setEphemeralDuration(604800) }}
                   className={`w-full text-left px-4 py-3 rounded-lg transition-all ${ephemeralMode && ephemeralDuration === 604800 ? 'bg-white/10 border-2 border-pink-500' : 'bg-white/5 border border-white/10'}`}
                 >
-                  <div className="font-medium">{t('ephemeral7Days')}</div>
-                  <div className="text-xs text-gray-400">{t('ephemeral7DaysDescription')}</div>
+                  <div className="font-medium">7 jours</div>
+                  <div className="text-xs text-gray-400">Les messages disparaissent après 1 semaine</div>
                 </button>
               </div>
-
+              
               <div className="flex justify-end gap-3">
-                <button
-                  onClick={() => setShowEphemeralMenu(false)}
+                <button 
+                  onClick={() => setShowEphemeralMenu(false)} 
                   className="px-6 py-2 rounded-lg transition-colors bg-white/10 text-white/90 hover:bg-white/20"
                 >
-                  {t('cancel')}
+                  Annuler
                 </button>
-                <button
+                <button 
                   onClick={async () => {
                     try {
                       const res = await fetch('/api/e2ee/conversations/update-ephemeral', {
@@ -888,42 +845,30 @@ function NewMessagesPage() {
                           ephemeralDuration
                         })
                       })
-
+                      
                       if (!res.ok) throw new Error('update_failed')
-
-                      // Animation de succès avant de fermer
-                      const btn = document.activeElement as HTMLButtonElement
-                      if (btn) {
-                        btn.textContent = t('saved')
-                        btn.style.background = 'linear-gradient(to right, #10b981, #059669)'
-                        setTimeout(() => {
-                          setShowEphemeralMenu(false)
-                          toastSuccess(ephemeralMode ? t('ephemeralModeActivated', { hours: ephemeralDuration / 3600 }) : t('ephemeralModeDeactivated'))
-                        }, 500)
-                      } else {
-                        setShowEphemeralMenu(false)
-                        toastSuccess(ephemeralMode ? t('ephemeralModeActivated', { hours: ephemeralDuration / 3600 }) : t('ephemeralModeDeactivated'))
-                      }
+                      
+                      setShowEphemeralMenu(false)
+                      toastSuccess(ephemeralMode ? `Mode éphémère activé (${ephemeralDuration / 3600}h)` : 'Mode éphémère désactivé')
                     } catch {
-                      toastError(t('settingsUpdateError'))
+                      toastError('Impossible de modifier les paramètres')
                     }
                   }}
                   className="px-6 py-2 rounded-lg transition-all bg-gradient-to-r from-pink-500 to-purple-500 text-white hover:scale-105"
                 >
-                  {t('apply')}
+                  Appliquer
                 </button>
               </div>
             </div>
           </div>
         )}
       </BodyPortal>
-    </>
+    </div>
   )
 }
 
 // Lightweight page-level composer that proxies to ChatWindow via window.__feloraChatSend
 function PageComposer({ active }: { active: boolean }) {
-  const t = useTranslations('messages')
   const [text, setText] = useState('')
   const [showEmoji, setShowEmoji] = useState(false)
   const [previewFile, setPreviewFile] = useState<File | null>(null)
@@ -954,18 +899,18 @@ function PageComposer({ active }: { active: boolean }) {
   const handleFileSelect = async (file: File) => {
     // Vérifier la taille du fichier
     if (file.size > MESSAGING_CONSTANTS.MAX_FILE_SIZE) {
-      alert(t('fileTooLarge', { maxSize: MESSAGING_CONSTANTS.MAX_FILE_SIZE / (1024 * 1024) }))
+      alert(`Fichier trop volumineux. Taille maximale: ${MESSAGING_CONSTANTS.MAX_FILE_SIZE / (1024 * 1024)}MB`)
       return
     }
 
     // Vérifier le type de fichier
-    const isSupported =
+    const isSupported = 
       MEDIA_CONSTANTS.SUPPORTED_IMAGE_TYPES.includes(file.type as any) ||
       MEDIA_CONSTANTS.SUPPORTED_VIDEO_TYPES.includes(file.type as any) ||
       MEDIA_CONSTANTS.SUPPORTED_AUDIO_TYPES.includes(file.type as any)
 
     if (!isSupported) {
-      alert(t('unsupportedFileType'))
+      alert('Type de fichier non supporté')
       return
     }
 
@@ -984,25 +929,25 @@ function PageComposer({ active }: { active: boolean }) {
   }
   return (
     <div className="relative w-full">
-      <div className="flex items-start gap-2 w-full">
+      <div className="flex items-center gap-2">
         {/* Input optimisé pour footer mobile */}
-        <div className={`flex items-end gap-1 sm:gap-2 flex-1 min-w-0 rounded-lg sm:rounded-xl bg-white/10 px-2 sm:px-3 py-2 ${!active ? 'opacity-50' : ''}`}>
+        <div className={`flex items-end gap-1 sm:gap-2 flex-1 rounded-lg sm:rounded-xl bg-white/10 px-3 sm:px-4 py-2 sm:py-3 ${!active ? 'opacity-50' : ''}`}>
           <textarea
             value={text}
             onChange={e => setText(e.target.value)}
-            placeholder={active ? t('writeMessage') : t('selectConversation')}
+            placeholder={active ? 'Écrire un message…' : 'Sélectionnez une conversation'}
             disabled={!active}
             rows={1}
-            className="flex-1 min-w-0 bg-transparent border-0 outline-none text-white placeholder-gray-400 resize-none text-sm sm:text-base"
-            style={{
-              minHeight: '32px',
-              maxHeight: '96px'
+            className="flex-1 bg-transparent border-0 outline-none text-white placeholder-gray-400 resize-none text-sm sm:text-base"
+            style={{ 
+              minHeight: '36px', 
+              maxHeight: '120px' 
             }}
             onInput={(e) => {
               const t = e.currentTarget
               t.style.height = 'auto'
-              t.style.height = Math.min(t.scrollHeight, 96) + 'px'
-
+              t.style.height = Math.min(t.scrollHeight, 120) + 'px'
+              
               // Déclencher l'indicateur de frappe
               // @ts-ignore
               if (typeof window !== 'undefined' && window.__feloraChatStartTyping) {
@@ -1017,56 +962,56 @@ function PageComposer({ active }: { active: boolean }) {
               }
             }}
           />
-
-          {/* Boutons d'action optimisés pour footer - Moins d'espace */}
-          <div className="flex items-center gap-0.5 sm:gap-1 flex-shrink-0">
+          
+          {/* Boutons d'action optimisés pour footer */}
+          <div className="flex items-center gap-1">
             <button
               onClick={() => setShowEmoji(v => !v)}
-              className="p-1.5 sm:p-2 text-white/70 hover:text-white hover:bg-white/20 rounded-lg transition-all duration-200"
-              aria-label={t('emoji')}
+              className="p-2 text-white/70 hover:text-white hover:bg-white/20 rounded-lg transition-all duration-200"
+              aria-label="Emoji"
               disabled={!active}
             >
-              <Smile size={16} className="sm:w-[18px] sm:h-[18px]" />
+              <Smile size={18} />
             </button>
             <button
               onClick={() => setShowVoiceRecorder(true)}
-              className="p-1.5 sm:p-2 text-white/70 hover:text-white hover:bg-white/20 rounded-lg transition-all duration-200"
-              aria-label={t('voiceMessage')}
+              className="p-2 text-white/70 hover:text-white hover:bg-white/20 rounded-lg transition-all duration-200"
+              aria-label="Message vocal"
               disabled={!active}
             >
-              <Mic size={16} className="sm:w-[18px] sm:h-[18px]" />
+              <Mic size={18} />
             </button>
             <button
               onClick={() => mediaInputRef.current?.click()}
-              className="p-1.5 sm:p-2 text-white/70 hover:text-white hover:bg-white/20 rounded-lg transition-all duration-200"
-              aria-label={t('imageVideo')}
+              className="p-2 text-white/70 hover:text-white hover:bg-white/20 rounded-lg transition-all duration-200"
+              aria-label="Image/Vidéo"
               disabled={!active}
             >
-              <ImageIcon size={16} className="sm:w-[18px] sm:h-[18px]" />
+              <ImageIcon size={18} />
             </button>
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="p-1.5 sm:p-2 text-white/70 hover:text-white hover:bg-white/20 rounded-lg transition-all duration-200"
-              aria-label={t('attachment')}
+              className="p-2 text-white/70 hover:text-white hover:bg-white/20 rounded-lg transition-all duration-200"
+              aria-label="Pièce jointe"
               disabled={!active}
             >
-              <Paperclip size={16} className="sm:w-[18px] sm:h-[18px]" />
+              <Paperclip size={18} />
             </button>
           </div>
         </div>
 
-        {/* Bouton d'envoi optimisé - Plus compact sur mobile */}
+        {/* Bouton d'envoi optimisé */}
         <button
           onClick={() => onSend()}
           disabled={!active || !text.trim()}
-          className={`p-2.5 sm:p-3 rounded-lg sm:rounded-xl transition-all duration-200 flex-shrink-0 ${
-            (!active || !text.trim())
-              ? 'bg-white/10 text-white/40 cursor-not-allowed'
+          className={`p-3 rounded-xl transition-all duration-200 flex-shrink-0 ${
+            (!active || !text.trim()) 
+              ? 'bg-white/10 text-white/40 cursor-not-allowed' 
               : 'bg-pink-500 text-white hover:bg-pink-600 hover:scale-105'
           }`}
-          aria-label={t('send')}
+          aria-label="Envoyer"
         >
-          <Send size={16} className="sm:w-[18px] sm:h-[18px]" />
+          <Send size={18} />
         </button>
       </div>
 

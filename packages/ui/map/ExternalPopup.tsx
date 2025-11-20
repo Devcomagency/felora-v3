@@ -160,17 +160,17 @@ export default function ExternalPopup({ escort, onClose }: ExternalPopupProps) {
             padding: '24px'
           }}>
             
-            {/* Bouton fermer */}
+            {/* Bouton fermer - Zone cliquable élargie */}
             <button
               onClick={onClose}
               style={{
                 position: 'absolute',
-                top: '16px',
-                right: '16px',
+                top: '4px',
+                right: '4px',
                 zIndex: 10,
-                width: '32px',
-                height: '32px',
-                backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                width: '56px',
+                height: '56px',
+                backgroundColor: 'transparent',
                 borderRadius: '50%',
                 display: 'flex',
                 alignItems: 'center',
@@ -178,18 +178,35 @@ export default function ExternalPopup({ escort, onClose }: ExternalPopupProps) {
                 color: 'rgba(255, 255, 255, 0.8)',
                 border: 'none',
                 cursor: 'pointer',
+                transition: 'all 0.2s',
+                padding: '0'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = 'white'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = 'rgba(255, 255, 255, 0.8)'
+              }}
+            >
+              <span style={{
+                width: '32px',
+                height: '32px',
+                backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
                 transition: 'all 0.2s'
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.7)'
-                e.currentTarget.style.color = 'white'
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.5)'
-                e.currentTarget.style.color = 'rgba(255, 255, 255, 0.8)'
               }}
-            >
-              <X size={16} />
+              >
+                <X size={16} />
+              </span>
             </button>
 
             {loadingDetails ? (
