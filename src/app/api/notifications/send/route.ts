@@ -151,6 +151,27 @@ export async function POST(request: NextRequest) {
       timestamp: new Date().toISOString()
     })
 
+    // 📡 Broadcaster la notification en temps réel via SSE
+    try {
+      const { broadcastNotification } = await import('../sse/route')
+      const broadcasted = broadcastNotification(targetUser.id, {
+        id: notification.id,
+        type: notification.type,
+        title: notification.title,
+        message: notification.message,
+        link: notification.link,
+        read: false,
+        createdAt: notification.createdAt.toISOString()
+      })
+
+      if (broadcasted) {
+        console.log('[NOTIFICATIONS] ✅ SSE broadcast envoyé en temps réel')
+      }
+    } catch (error) {
+      // Fallback silencieux si SSE n'est pas disponible (polling prendra le relais)
+      console.log('[NOTIFICATIONS] ℹ️ SSE non disponible, l\'utilisateur recevra via polling')
+    }
+
     // TODO: Envoyer aussi un email si configuré
     // if (targetUser.emailNotifications) {
     //   await sendEmail(targetUser.email, title, message)

@@ -185,26 +185,123 @@ export function useNotifications(options?: {
 }
 
 /**
- * Hook pour écouter les événements SSE de notifications
- * À brancher plus tard quand le SSE sera en place
+ * Hook pour écouter les événements SSE de notifications temps réel
+ * Revalide automatiquement SWR quand une nouvelle notification arrive
+ *
+ * @param options.enabled - Active/désactive SSE (défaut: true)
  */
 export function useNotificationSSE(options?: { enabled?: boolean }) {
   const { refresh } = useNotifications({ enabled: false })
+  const { data: session } = useSession()
   const eventSourceRef = useRef<EventSource | null>(null)
   const enabled = options?.enabled ?? true
+  const isAuthenticated = session?.user?.id
 
   useEffect(() => {
-    if (!enabled) return
-
-    // TODO: Implémenter la connexion SSE
-    // const eventSource = new EventSource('/api/notifications/sse')
-    // eventSource.addEventListener('notification', () => {
-    //   refresh()
-    // })
-    // eventSourceRef.current = eventSource
-
-    return () => {
+    // Désactiver si non authentifié ou pas enabled
+    if (!enabled || !isAuthenticated) {
       eventSourceRef.current?.close()
+      eventSourceRef.current = null
+      return
     }
-  }, [enabled, refresh])
+
+    console.log('[SSE] 🔌 Connexion au stream notifications...')
+
+    // Créer la connexion EventSource
+    const eventSource = new EventSource('/api/notifications/sse', {
+      withCredentials: true
+    })
+
+    // Événement: connexion établie
+    eventSource.addEventListener('open', () => {
+      console.log('[SSE] ✅ Connexion établie')
+    })
+
+    // Événement: message de connexion
+    eventSource.addEventListener('message', (e) => {
+      try {
+        const data = JSON.parse(e.data)
+        if (data.type === 'connected') {
+          console.log('[SSE] 📡 Stream actif depuis:', data.timestamp)
+        }
+      } catch (error) {
+        console.error('[SSE] Erreur parse message:', error)
+      }
+    })
+
+    // Événement: nouvelle notification reçue
+    eventSource.addEventListener('notification', (e) => {
+      try {
+        const notification = JSON.parse(e.data)
+        console.log('[SSE] 🔔 Nouvelle notification reçue:', notification.title)
+
+        // Revalider SWR pour mettre à jour l'UI immédiatement
+        refresh()
+
+        // Optionnel : Afficher une notification navigateur
+        if ('Notification' in window && Notification.permission === 'granted') {
+          new Notification(notification.title, {
+            body: notification.message,
+            icon: '/logo-principal.png',
+            tag: notification.id
+          })
+        }
+      } catch (error) {
+        console.error('[SSE] Erreur traitement notification:', error)
+      }
+    })
+
+    // Événement: erreur de connexion
+    eventSource.addEventListener('error', (e) => {
+      console.error('[SSE] ❌ Erreur connexion:', e)
+
+      // Fermer et cleanup (EventSource reconnecte automatiquement)
+      if (eventSource.readyState === EventSource.CLOSED) {
+        console.log('[SSE] 🔌 Connexion fermée, reconnexion automatique...')
+      }
+    })
+
+    eventSourceRef.current = eventSource
+
+    // Cleanup à la fin
+    return () => {
+      console.log('[SSE] 🔌 Fermeture connexion')
+      eventSource.close()
+      eventSourceRef.current = null
+    }
+  }, [enabled, isAuthenticated, refresh])
+
+  return {
+    isConnected: eventSourceRef.current?.readyState === EventSource.OPEN
+  }
+}
+
+/**
+ * Hook combiné : SWR + SSE
+ * Utilise le polling SWR comme fallback et SSE pour les updates temps réel
+ *
+ * Usage:
+ * ```typescript
+ * const { notifications, unreadCount, markAsRead, isSSEConnected } = useNotificationsWithSSE()
+ * // Reçoit les notifications instantanément via SSE
+ * // Fallback sur polling si SSE échoue
+ * ```
+ */
+export function useNotificationsWithSSE(options?: {
+  refreshInterval?: number
+  channel?: 'system' | 'messages'
+}) {
+  // Hook SWR normal (avec polling comme fallback)
+  const notificationsData = useNotifications({
+    refreshInterval: options?.refreshInterval ?? 60000, // Réduire à 60s car SSE gère le temps réel
+    channel: options?.channel
+  })
+
+  // Activer SSE
+  const { isConnected } = useNotificationSSE({ enabled: true })
+
+  return {
+    ...notificationsData,
+    isSSEConnected: isConnected
+  }
 }
