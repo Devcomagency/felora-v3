@@ -1864,5 +1864,21 @@
         "other": "Tjetër"
       }
     }
+  },
+  "legal": {
+    "backHome": "Kthehu në faqen kryesore",
+    "version": "Versioni: nëntor 2025",
+    "terms": {
+      "title": "Termat dhe Kushtet",
+      "metadata": "Termat dhe kushtet e përdorimit të platformës Felora"
+    },
+    "privacy": {
+      "title": "Politika e Privatësisë",
+      "metadata": "Politika e privatësisë dhe mbrojtjes së të dhënave të Felora"
+    },
+    "cookies": {
+      "title": "Politika e Cookie-ve",
+      "metadata": "Politika e përdorimit të cookie-ve të Felora"
+    }
   }
 }

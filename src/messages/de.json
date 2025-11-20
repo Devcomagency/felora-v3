@@ -1864,5 +1864,21 @@
         "other": "Andere"
       }
     }
+  },
+  "legal": {
+    "backHome": "Zurück zur Startseite",
+    "version": "Version: November 2025",
+    "terms": {
+      "title": "Allgemeine Geschäftsbedingungen",
+      "metadata": "Allgemeine Geschäftsbedingungen der Felora-Plattform"
+    },
+    "privacy": {
+      "title": "Datenschutzerklärung",
+      "metadata": "Datenschutzerklärung und Datenschutz von Felora"
+    },
+    "cookies": {
+      "title": "Cookie-Richtlinie",
+      "metadata": "Cookie-Nutzungsrichtlinie von Felora"
+    }
   }
 }

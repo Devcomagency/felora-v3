@@ -1886,5 +1886,21 @@
         "other": "Autre"
       }
     }
+  },
+  "legal": {
+    "backHome": "Retour à l'accueil",
+    "version": "Version : novembre 2025",
+    "terms": {
+      "title": "Conditions Générales d'Utilisation",
+      "metadata": "Conditions générales d'utilisation de la plateforme Felora"
+    },
+    "privacy": {
+      "title": "Déclaration de Protection des Données",
+      "metadata": "Politique de confidentialité et protection des données de Felora"
+    },
+    "cookies": {
+      "title": "Politique de Cookies",
+      "metadata": "Politique d'utilisation des cookies de Felora"
+    }
   }
 }
