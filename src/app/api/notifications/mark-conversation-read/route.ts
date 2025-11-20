@@ -2,7 +2,13 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { Prisma } from '@prisma/client'
 
+/**
+ * POST /api/notifications/mark-conversation-read
+ * Marque toutes les notifications MESSAGE_RECEIVED d'une conversation comme lues
+ * Optimisé avec requête JSON directe sans charger les notifications en mémoire
+ */
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
@@ -23,41 +29,26 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    // Récupérer toutes les notifications MESSAGE_RECEIVED non lues de l'utilisateur
-    const notifications = await prisma.notification.findMany({
+    // 🚀 OPTIMISATION : Utiliser une requête JSON Prisma directe
+    // Au lieu de charger toutes les notifications en mémoire puis filtrer,
+    // on filtre directement en base de données avec path JSON
+    const result = await prisma.notification.updateMany({
       where: {
         userId: session.user.id,
         type: 'MESSAGE_RECEIVED',
-        read: false
+        read: false,
+        // Filtrer directement sur le JSON metadata.conversationId
+        metadata: {
+          path: ['conversationId'],
+          equals: conversationId
+        } as Prisma.JsonFilter
+      },
+      data: {
+        read: true
       }
     })
 
-    // Filtrer celles qui concernent cette conversation (via metadata JSON)
-    const notificationIds = notifications
-      .filter(notif => {
-        try {
-          if (!notif.metadata) return false
-          const metadata = JSON.parse(notif.metadata)
-          return metadata.conversationId === conversationId
-        } catch {
-          return false
-        }
-      })
-      .map(n => n.id)
-
-    console.log('[MARK NOTIF READ] Conversation:', conversationId, 'Notifications trouvées:', notificationIds.length)
-
-    // Marquer les notifications comme lues
-    if (notificationIds.length > 0) {
-      await prisma.notification.updateMany({
-        where: {
-          id: { in: notificationIds }
-        },
-        data: { read: true }
-      })
-    }
-
-    // 🆕 Mettre à jour E2EEConversationRead.lastReadAt pour faire disparaître le badge
+    // 🆕 Mettre à jour E2EEConversationRead.lastReadAt en parallèle
     await prisma.e2EEConversationRead.upsert({
       where: {
         conversationId_userId: {
@@ -75,15 +66,15 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    console.log('[MARK NOTIF READ] ✅ lastReadAt mis à jour pour:', session.user.id)
+    console.log('[MARK NOTIF READ] ✅ Conversation:', conversationId, 'Notifications marquées:', result.count, 'User:', session.user.id)
 
     return NextResponse.json({
       success: true,
       message: 'Notifications marquées comme lues',
-      count: notificationIds.length
+      count: result.count
     })
   } catch (error) {
-    console.error('Error marking conversation notifications as read:', error)
+    console.error('[ERROR] Error marking conversation notifications as read:', error)
     return NextResponse.json({
       success: false,
       error: 'Erreur lors de la mise à jour des notifications'

@@ -1,36 +1,57 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { Bell, X, ExternalLink } from 'lucide-react'
+import { Bell, X, ExternalLink, AlertCircle } from 'lucide-react'
 import { useSession } from 'next-auth/react'
+import { useNotifications, type Notification } from '@/hooks/useNotifications'
+import { useRouter } from 'next/navigation'
 
-interface Notification {
-  id: string
-  type: string
-  title: string
-  message: string
-  read: boolean
-  link?: string | null
-  createdAt: string
+/**
+ * Valide et sécurise un lien de notification
+ * Retourne le lien s'il est sûr, null sinon
+ */
+function validateNotificationLink(link: string | null | undefined): string | null {
+  if (!link) return null
+
+  try {
+    // Accepter les liens relatifs (même domaine)
+    if (link.startsWith('/')) {
+      return link
+    }
+
+    // Vérifier les liens absolus
+    const url = new URL(link)
+    const currentHost = typeof window !== 'undefined' ? window.location.hostname : ''
+
+    // N'accepter que les liens du même domaine ou localhost
+    const isAllowed =
+      url.hostname === currentHost ||
+      url.hostname === 'localhost' ||
+      url.hostname === '127.0.0.1' ||
+      url.hostname.endsWith('.felora.ch')
+
+    return isAllowed ? link : null
+  } catch {
+    // URL invalide
+    return null
+  }
 }
 
 export default function NotificationBell() {
   const { data: session } = useSession()
-  const [notifications, setNotifications] = useState<Notification[]>([])
-  const [unreadCount, setUnreadCount] = useState(0)
+  const router = useRouter()
   const [isOpen, setIsOpen] = useState(false)
-  const [loading, setLoading] = useState(false)
   const [selectedNotification, setSelectedNotification] = useState<Notification | null>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
-    if (session?.user) {
-      fetchNotifications()
-      // Rafraîchir toutes les 30 secondes
-      const interval = setInterval(fetchNotifications, 30000)
-      return () => clearInterval(interval)
-    }
-  }, [session])
+  // 🚀 Utiliser le hook unifié avec filtre "system" (exclut MESSAGE_RECEIVED)
+  const {
+    notifications,
+    unreadCount,
+    isLoading: loading,
+    markAsRead,
+    markAllAsRead
+  } = useNotifications()
 
   // Fermer le dropdown si on clique à l'extérieur
   useEffect(() => {
@@ -43,61 +64,47 @@ export default function NotificationBell() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  const fetchNotifications = async () => {
-    try {
-      const res = await fetch('/api/notifications')
-      const data = await res.json()
-      if (data.success) {
-        setNotifications(data.notifications)
-        setUnreadCount(data.unreadCount)
+  const handleNotificationClick = async (notif: Notification) => {
+    // Marquer comme lue (optimistic update via le hook)
+    if (!notif.read) {
+      try {
+        await markAsRead(notif.id)
+      } catch (error) {
+        console.error('Erreur marquage notification:', error)
       }
-    } catch (error) {
-      console.error('Erreur chargement notifications:', error)
+    }
+
+    // Si la notification a un lien, le valider puis rediriger
+    if (notif.link) {
+      const validLink = validateNotificationLink(notif.link)
+
+      if (validLink) {
+        // Utiliser router.push pour la navigation client-side
+        if (validLink.startsWith('/')) {
+          setIsOpen(false)
+          router.push(validLink)
+        } else {
+          // Lien externe sécurisé
+          window.location.href = validLink
+        }
+      } else {
+        // Lien non sécurisé : afficher la modal avec un avertissement
+        setSelectedNotification({
+          ...notif,
+          message: `${notif.message}\n\n⚠️ Le lien associé n'est pas sécurisé et a été bloqué.`
+        })
+      }
+    } else {
+      // Pas de lien : ouvrir la modal
+      setSelectedNotification(notif)
     }
   }
 
-  const markAsRead = async (notificationId: string) => {
+  const handleMarkAllAsRead = async () => {
     try {
-      const res = await fetch('/api/notifications', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ notificationId })
-      })
-      if (res.ok) {
-        fetchNotifications()
-      }
-    } catch (error) {
-      console.error('Erreur marquage notification:', error)
-    }
-  }
-
-  const markAllAsRead = async () => {
-    setLoading(true)
-    try {
-      const res = await fetch('/api/notifications', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ markAllAsRead: true })
-      })
-      if (res.ok) {
-        fetchNotifications()
-      }
+      await markAllAsRead()
     } catch (error) {
       console.error('Erreur marquage notifications:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleNotificationClick = (notif: Notification) => {
-    // Si la notification a un lien, rediriger directement
-    if (notif.link) {
-      if (!notif.read) markAsRead(notif.id)
-      window.location.href = notif.link
-    } else {
-      // Sinon, ouvrir la modal
-      setSelectedNotification(notif)
-      if (!notif.read) markAsRead(notif.id)
     }
   }
 
@@ -180,7 +187,7 @@ export default function NotificationBell() {
               <h3 className="text-lg font-bold text-white">Notifications</h3>
               {unreadCount > 0 && (
                 <button
-                  onClick={markAllAsRead}
+                  onClick={handleMarkAllAsRead}
                   disabled={loading}
                   className="text-xs sm:text-sm text-purple-400 hover:text-purple-300 disabled:opacity-50 whitespace-nowrap"
                 >

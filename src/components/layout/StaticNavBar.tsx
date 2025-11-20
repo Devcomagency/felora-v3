@@ -47,7 +47,6 @@ export default function StaticNavBar() {
   // États pour le menu burger - AVANT le return conditionnel
   const [showMenu, setShowMenu] = useState(false)
   const [showLanguageSelector, setShowLanguageSelector] = useState(false)
-  const [hasNotifications, setHasNotifications] = useState(false)
   const [unreadConversations, setUnreadConversations] = useState(0)
   const [showCameraOverlay, setShowCameraOverlay] = useState(false)
   const [cameraMode, setCameraMode] = useState<'photo' | 'video' | null>(null)
@@ -78,19 +77,8 @@ export default function StaticNavBar() {
     setShowMenu(false)
   }, [isAuthenticated, nextRouter, setShowMenu, tCommon])
 
-  // Simuler des notifications pour les utilisateurs connectés
-  useEffect(() => {
-    if (isAuthenticated) {
-      const checkNotifications = () => {
-        setHasNotifications(Math.random() > 0.7) // 30% de chance d'avoir des notifications
-      }
-
-      checkNotifications()
-      const interval = setInterval(checkNotifications, 30000) // Vérifier toutes les 30s
-
-      return () => clearInterval(interval)
-    }
-  }, [isAuthenticated])
+  // 🔥 SUPPRIMÉ : Badge de notification simulé avec Math.random()
+  // Maintenant géré par NotificationBell avec le hook unifié useNotifications
 
   // Unread badge for messages (naïf: conversations with updatedAt > last-seen from localStorage)
   useEffect(() => {
@@ -111,35 +99,39 @@ export default function StaticNavBar() {
     return () => { stopped = true; clearInterval(interval) }
   }, [isAuthenticated])
 
-  // Fermer le menu en cliquant à l'extérieur
+  // 🚀 OPTIMISÉ : Factoriser les listeners window (menu + langues)
   useEffect(() => {
-    if (showMenu) {
-      const handleClickOutside = (event: MouseEvent) => {
+    // Fermer le menu en cliquant à l'extérieur
+    const handleClickOutside = (event: MouseEvent) => {
+      if (showMenu) {
         const target = event.target as Element
         if (!target.closest('[data-menu]')) {
           setShowMenu(false)
         }
       }
-
-      document.addEventListener('click', handleClickOutside)
-      return () => document.removeEventListener('click', handleClickOutside)
     }
-  }, [showMenu])
 
-  // Contrôle global du menu via événements (pour bouton burger dans les pages)
-  useEffect(() => {
+    // Contrôle global du menu via événements
     const onOpen = () => setShowMenu(true)
     const onClose = () => setShowMenu(false)
     const onToggle = () => setShowMenu((v) => !v)
+
+    // Ajouter tous les listeners en une fois
+    if (showMenu) {
+      document.addEventListener('click', handleClickOutside)
+    }
     window.addEventListener('felora:menu:open', onOpen as any)
     window.addEventListener('felora:menu:close', onClose as any)
     window.addEventListener('felora:menu:toggle', onToggle as any)
+
+    // Cleanup
     return () => {
+      document.removeEventListener('click', handleClickOutside)
       window.removeEventListener('felora:menu:open', onOpen as any)
       window.removeEventListener('felora:menu:close', onClose as any)
       window.removeEventListener('felora:menu:toggle', onToggle as any)
     }
-  }, [])
+  }, [showMenu])
 
   // Ne pas afficher la navbar sur les pages admin - APRÈS tous les hooks
   if (isAdmin) {
@@ -293,11 +285,8 @@ export default function StaticNavBar() {
             className="w-4 h-0.5 bg-current rounded-full origin-center"
           />
         </div>
-        
-        {/* Badge de notification */}
-        {hasNotifications && (
-          <div className="absolute -top-1 -right-1 w-3 h-3 bg-[#FF6B9D] rounded-full border border-black" />
-        )}
+
+        {/* Badge de notification supprimé (géré par NotificationBell) */}
       </motion.button>
       )}
 

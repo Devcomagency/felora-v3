@@ -296,12 +296,13 @@ function NewMessagesPage() {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [showHeaderMenu, showReportModal, showEphemeralMenu, activeConversation])
 
-  // Load E2EE conversations for current user (handle unauthenticated)
-  const loadConversations = useCallback(async () => {
+  // 🚀 OPTIMISÉ : Load conversations avec AbortController
+  const loadConversations = useCallback(async (signal?: AbortSignal) => {
     try {
       setIsLoading(true)
       const res = await fetch('/api/e2ee/conversations/list', {
-        credentials: 'include'
+        credentials: 'include',
+        signal // Passer le signal pour pouvoir annuler
       })
       if (!res.ok) {
         throw new Error(`Erreur ${res.status}: ${res.statusText}`)
@@ -318,7 +319,12 @@ function NewMessagesPage() {
         console.warn('Format de données inattendu pour les conversations:', data)
         setConversations([])
       }
-    } catch (error) {
+    } catch (error: any) {
+      // Ignorer les erreurs d'annulation
+      if (error.name === 'AbortError') {
+        console.log('[MESSAGES] Chargement conversations annulé')
+        return
+      }
       console.error('Erreur lors du chargement des conversations:', error)
       handleError(error as Error, loadConversations)
       toastError(t('loadConversationsError'))
@@ -328,10 +334,17 @@ function NewMessagesPage() {
     }
   }, [toastError, handleError, clearError, t])
 
+  // 🚀 Charger les conversations avec support d'annulation
   useEffect(() => {
     if (status === 'loading') { setIsLoading(true); return }
     if (status === 'unauthenticated') { setIsLoading(false); return }
-    loadConversations()
+
+    const controller = new AbortController()
+    loadConversations(controller.signal)
+
+    return () => {
+      controller.abort()
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status])
 
@@ -346,60 +359,55 @@ function NewMessagesPage() {
     setEphemeralDuration(ephemeralDurationValue)
   }
 
-  // Update local last-seen timestamp when opening a conversation
+  // 🚀 OPTIMISÉ : Update local last-seen + marquer conversation ouverte (1 seule requête)
   useEffect(() => {
-    if (activeConversation?.id && session?.user?.id) {
-      try { localStorage.setItem(`felora-e2ee-last-seen-${activeConversation.id}`, String(Date.now())) } catch {}
-      
-      // Marquer les messages comme lus
-      ;(async () => {
-        try {
-          await fetch('/api/e2ee/messages/mark-read', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify({
-              conversationId: activeConversation.id,
-              userId: session.user.id
-            })
-          })
-        } catch (error) {
-          console.error('Erreur marquage lecture:', error)
-        }
-      })()
-      
-      ;(async () => {
-        try {
-          const res = await fetch('/api/e2ee/conversations/read', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify({ conversationId: activeConversation.id })
-          })
+    if (!activeConversation?.id || !session?.user?.id) return
 
-          // 🆕 Marquer les notifications MESSAGE_RECEIVED comme lues pour cette conversation
-          try {
-            console.log('[MESSAGES] Marquage notifications pour conversation:', activeConversation.id)
-            const notifRes = await fetch('/api/notifications/mark-conversation-read', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              credentials: 'include',
-              body: JSON.stringify({ conversationId: activeConversation.id })
-            })
-            const notifData = await notifRes.json()
-            console.log('[MESSAGES] Réponse marquage notifications:', notifData)
-          } catch (notifError) {
-            console.error('Erreur marquage notifications:', notifError)
-          }
-          if (!res.ok) {
-            console.warn('Erreur lors de la marque comme lu:', res.status)
-          }
-        } catch (error) {
-          console.error('Erreur lors de la marque comme lu:', error)
+    // Mettre à jour le timestamp local
+    try {
+      localStorage.setItem(
+        `felora-e2ee-last-seen-${activeConversation.id}`,
+        String(Date.now())
+      )
+    } catch {}
+
+    // 🚀 Utiliser l'endpoint transactionnel unifié qui fait tout en une fois :
+    // - Marque les messages comme lus
+    // - Met à jour E2EEConversationRead.lastReadAt
+    // - Marque les notifications MESSAGE_RECEIVED comme lues
+    const controller = new AbortController()
+
+    ;(async () => {
+      try {
+        const res = await fetch('/api/e2ee/conversations/mark-opened', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ conversationId: activeConversation.id }),
+          signal: controller.signal
+        })
+
+        if (!res.ok) {
+          console.warn('[MESSAGES] Erreur marquage conversation ouverte:', res.status)
+          return
         }
-      })()
+
+        const data = await res.json()
+        console.log('[MESSAGES] ✅ Conversation marquée ouverte:', data)
+      } catch (error: any) {
+        if (error.name === 'AbortError') {
+          console.log('[MESSAGES] Requête annulée (changement rapide de conversation)')
+        } else {
+          console.error('[MESSAGES] Erreur marquage conversation ouverte:', error)
+        }
+      }
+    })()
+
+    // Cleanup : annuler la requête si on change de conversation rapidement
+    return () => {
+      controller.abort()
     }
-  }, [activeConversation?.id])
+  }, [activeConversation?.id, session?.user?.id])
 
   // Fetch block status on participant change
   useEffect(() => {
