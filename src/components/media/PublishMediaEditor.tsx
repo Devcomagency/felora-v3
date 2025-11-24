@@ -56,8 +56,9 @@ export default function PublishMediaEditor({
     }
   }
 
-  // Pour les CLUB : seulement Public et Privé (pas de Premium ni Description)
+  // Pour les CLUB et ESCORT : seulement Public et Privé (pas de Premium ni Description)
   const isClub = userRole === 'CLUB' || userRole === 'SALON'
+  const isEscort = userRole === 'ESCORT'
 
   const visibilityOptions = [
     {
@@ -166,8 +167,8 @@ export default function PublishMediaEditor({
             </div>
           </button>
 
-          {/* Description - Caché pour les CLUB */}
-          {!isClub && (
+          {/* Description - Caché pour les CLUB et ESCORT */}
+          {!isClub && !isEscort && (
             <div
               className="rounded-2xl p-3"
               style={{

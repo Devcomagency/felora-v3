@@ -24,9 +24,10 @@ export default function ClubMediaManagerV2(){
       const res = await fetch('/api/clubs/media/my?page=1&pageSize=200', { cache:'no-store' })
       const d = await res.json()
       const all = Array.isArray(d?.items) ? d.items as MediaItem[] : []
+      // Afficher tous les médias publics SAUF l'avatar (pos 0)
       const onlyPublicBeyond = all
         .filter(m => (m.visibility || 'PUBLIC') === 'PUBLIC')
-        .filter(m => (m.pos ?? 999) >= 4) // afficher uniquement à partir de la position 4
+        .filter(m => (m.pos ?? 999) !== 0) // exclure uniquement l'avatar (pos 0)
       setItems(onlyPublicBeyond)
       setSelection(new Set())
     } finally { setLoading(false) }
@@ -41,8 +42,8 @@ export default function ClubMediaManagerV2(){
         const fd = new FormData()
         fd.append('file', file)
         fd.append('type', file.type.startsWith('video/') ? 'VIDEO' : 'IMAGE')
-        // Comme Escort V2: on injecte une position haute par défaut pour ne pas toucher aux slots 0..3
-        fd.append('position', '7')
+        // Position 1 = feed (comme escorts) - triés par createdAt DESC, les nouveaux en premier
+        fd.append('position', '1')
         const r = await fetch('/api/clubs/media/upload', { method:'POST', body: fd })
         if (!r.ok) throw new Error('upload_failed')
       } catch {}

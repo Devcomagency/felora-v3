@@ -741,11 +741,11 @@
         "category": "Catégorie",
         "selectCategory": "Sélectionner",
         "categories": {
-          "escort": "👠 Escort",
-          "masseuse": "💆 Masseuse érotique",
-          "dominatrice": "🔗 Dominatrice BDSM",
-          "transsexuelle": "🌸 Transsexuelle",
-          "other": "💼 Autre"
+          "escort": "Escort",
+          "masseuse": "Masseuse érotique",
+          "dominatrice": "Dominatrice BDSM",
+          "transsexuelle": "Transsexuelle",
+          "other": "Autre"
         },
         "age": "Âge",
         "ageGroups": {
@@ -1093,7 +1093,7 @@
       "watchVideo": "Lire la vidéo",
       "viewFullscreen": "Voir le média en plein écran"
     },
-    "private": "🔒"
+    "private": ""
   },
   "profileModal": {
     "close": "Fermer",
@@ -1103,9 +1103,9 @@
       "description": "Profil non trouvé"
     },
     "sections": {
-      "physical": "Profil physique",
+      "physical": "Physique",
       "services": "Services",
-      "servicesAndSpecialties": "Services & Spécialités",
+      "servicesAndSpecialties": "Services",
       "languages": "Langues parlées",
       "equipment": "Équipements",
       "rates": "Tarifs",

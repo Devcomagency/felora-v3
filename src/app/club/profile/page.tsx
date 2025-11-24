@@ -746,7 +746,7 @@ function ServicesPanel(){
         <h2 className="text-base sm:text-lg text-white font-semibold mb-3 sm:mb-4">{t('servicesEquipmentsTitle')}</h2>
 
         <div className="flex flex-wrap gap-1.5 sm:gap-2">
-          {[...DEFAULT_SERVICES, ...DEFAULT_EQUIPMENTS].map(item => {
+          {[...DEFAULT_SERVICES, ...DEFAULT_EQUIPMENTS].map((item, index) => {
             const isService = DEFAULT_SERVICES.includes(item)
             const isSelected = isService ? services.includes(item) : equipments.includes(item)
             const toggleFunction = isService ?
@@ -755,7 +755,7 @@ function ServicesPanel(){
 
             return (
               <button
-                key={item}
+                key={`${isService ? 'service' : 'equipment'}-${item}-${index}`}
                 onClick={toggleFunction}
                 className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm border transition-all duration-200 ${
                   isSelected
@@ -885,7 +885,7 @@ function ClubMediaGrid() {
     <div className="p-4 sm:p-6 rounded-xl sm:rounded-2xl bg-gray-900/60 border border-gray-800">
       <div className="flex items-center gap-2 mb-3 sm:mb-4">
         <h2 className="text-base sm:text-lg font-semibold text-white">{t('title')}</h2>
-        <span className="text-xs px-2 py-0.5 sm:py-1 rounded-full bg-red-500/20 text-red-300 border border-red-500/30">{t('info.required', { ns: 'club.profile' })}</span>
+        <span className="text-xs px-2 py-0.5 sm:py-1 rounded-full bg-red-500/20 text-red-300 border border-red-500/30">Requis</span>
       </div>
       <p className="text-sm sm:text-base text-white/70 mb-4 sm:mb-6">{t('subtitle')}</p>
 

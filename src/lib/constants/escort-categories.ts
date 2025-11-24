@@ -30,13 +30,13 @@ export const ESCORT_CATEGORY_DESCRIPTIONS: Record<EscortCategory, string> = {
   AUTRE: 'Autres services',
 }
 
-// Icônes/emojis pour chaque catégorie
+// Icônes/emojis pour chaque catégorie (désactivés)
 export const ESCORT_CATEGORY_ICONS: Record<EscortCategory, string> = {
-  ESCORT: '👠',
-  MASSEUSE: '💆',
-  DOMINATRICE: '🔗',
-  TRANSSEXUELLE: '🌸',
-  AUTRE: '💼',
+  ESCORT: '',
+  MASSEUSE: '',
+  DOMINATRICE: '',
+  TRANSSEXUELLE: '',
+  AUTRE: '',
 }
 
 // Label pour le rôle ESCORT (affiché comme "Indépendante")
@@ -60,7 +60,7 @@ export function getCategoryDescription(category: EscortCategory | string): strin
  * Obtenir l'icône d'une catégorie
  */
 export function getCategoryIcon(category: EscortCategory | string): string {
-  return ESCORT_CATEGORY_ICONS[category as EscortCategory] || '✨'
+  return ESCORT_CATEGORY_ICONS[category as EscortCategory] || ''
 }
 
 /**
@@ -69,7 +69,7 @@ export function getCategoryIcon(category: EscortCategory | string): string {
 export function getCategoryLabelWithIcon(category: EscortCategory | string): string {
   const icon = getCategoryIcon(category)
   const label = getCategoryLabel(category)
-  return `${icon} ${label}`
+  return icon ? `${icon} ${label}` : label
 }
 
 /**

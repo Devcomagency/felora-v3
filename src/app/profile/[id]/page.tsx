@@ -635,8 +635,8 @@ export default function EscortProfilePage() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      {/* Header style TikTok */}
-      <div className="fixed top-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-b border-white/5" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
+      {/* Header style TikTok - Transparent overlay sur la photo */}
+      <div className="fixed top-0 left-0 right-0 z-50" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center gap-2">
             <button
@@ -644,16 +644,16 @@ export default function EscortProfilePage() {
                 try { (window as any)?.umami?.track?.('nav_back', { from: 'profile_real' }) } catch {}
                 router.back()
               }}
-              className="w-10 h-10 flex items-center justify-center hover:bg-white/10 rounded-full transition-colors"
+              className="w-10 h-10 flex items-center justify-center bg-black/40 backdrop-blur-md hover:bg-black/60 rounded-full transition-colors shadow-lg"
               title={t('header.back')}
               aria-label={t('header.backAriaLabel')}
             >
-              <ArrowLeft size={24} className="text-white" />
+              <ArrowLeft size={24} className="text-white drop-shadow-lg" />
             </button>
           </div>
 
           <div className="text-center">
-            <h1 className="text-lg font-bold">{profile.name}</h1>
+            <h1 className="text-lg font-bold drop-shadow-lg">{profile.name}</h1>
           </div>
 
           {/* Placeholder to keep the title centered (align with left controls) */}
@@ -705,8 +705,8 @@ export default function EscortProfilePage() {
         </div>
       )}
 
-      {/* Contenu principal avec padding-top pour header fixe + safe-area (~72px) */}
-      <div className="pt-0" style={{ paddingTop: 'calc(72px + env(safe-area-inset-top, 0px))' }}>
+      {/* Contenu principal sans padding-top pour que la photo prenne tout l'écran */}
+      <div className="pt-0">
         {/* Séparation des médias : pos=0 = avatar, pos>=1 = galerie (triés par date DESC) */}
         {(() => {
           // Trouver l'avatar (média avec pos=0)

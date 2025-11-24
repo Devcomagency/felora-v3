@@ -187,7 +187,10 @@ export async function GET(
               ownerType: 'CLUB',
               ownerId: club.id
             },
-            orderBy: { pos: 'asc' }
+            orderBy: [
+              { pos: 'asc' },
+              { createdAt: 'desc' } // Plus récent en premier pour chaque position
+            ]
           })
         ])
 
@@ -246,10 +249,13 @@ export async function GET(
 
         // Vérifier si l'utilisateur connecté est le propriétaire du club
         const isOwner = userId === club.userId
+        console.log('🔑 [OWNERSHIP CHECK]', { userId, clubUserId: club.userId, isOwner })
 
         clubProfile = {
           id: club.handle,
           dbId: club.id, // ID de la base de données pour les API internes
+          userId: club.userId, // ID du propriétaire
+          isOwner, // Si l'utilisateur connecté est le propriétaire
           name: details?.name || club.companyName || 'Club',
           handle: club.handle,
           avatar: buildMediaUrl(profilePhoto?.url) || details?.avatarUrl || null,

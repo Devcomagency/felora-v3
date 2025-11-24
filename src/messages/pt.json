@@ -1100,9 +1100,9 @@
       "description": "Perfil não encontrado"
     },
     "sections": {
-      "physical": "Perfil físico",
+      "physical": "Físico",
       "services": "Serviços",
-      "servicesAndSpecialties": "Serviços e Especialidades",
+      "servicesAndSpecialties": "Serviços",
       "languages": "Idiomas falados",
       "equipment": "Equipamentos",
       "rates": "Tarifas",

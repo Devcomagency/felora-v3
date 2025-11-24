@@ -1102,9 +1102,9 @@
       "description": "Profile not found"
     },
     "sections": {
-      "physical": "Physical profile",
+      "physical": "Physical",
       "services": "Services",
-      "servicesAndSpecialties": "Services & Specialties",
+      "servicesAndSpecialties": "Services",
       "languages": "Languages spoken",
       "equipment": "Equipment",
       "rates": "Rates",

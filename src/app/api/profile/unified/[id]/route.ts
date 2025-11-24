@@ -697,11 +697,17 @@ function transformUpdateData(body: any): Record<string, any> {
     console.log('📦 [API UNIFIED POST] Ajout smoker:', body.physical.smoker)
   }
 
-  // Disponibilité
-  if (body.availability?.outcall !== undefined) data.outcall = body.availability.outcall
-  if (body.availability?.incall !== undefined) data.incall = body.availability.incall
+  // Disponibilité (accepter au niveau racine OU dans availability)
+  if (body.outcall !== undefined) data.outcall = body.outcall
+  else if (body.availability?.outcall !== undefined) data.outcall = body.availability.outcall
+
+  if (body.incall !== undefined) data.incall = body.incall
+  else if (body.availability?.incall !== undefined) data.incall = body.availability.incall
+
   if (body.availability?.availableNow !== undefined) data.availableNow = body.availability.availableNow
   if (body.availability?.weekendAvailable !== undefined) data.weekendAvailable = body.availability.weekendAvailable
+
+  console.log('✅ [API UNIFIED] incall/outcall saved:', { incall: data.incall, outcall: data.outcall })
 
   // Clientèle
   console.log('🔍 [API UNIFIED POST] Traitement des données clientèle:', {

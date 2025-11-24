@@ -14,7 +14,6 @@ export default function HorairesPanel(){
     samedi: { open: '18:00', close: '05:00', closed: false },
     dimanche: { open: '18:00', close: '05:00', closed: false },
   })
-  const [isOpen24_7, setIsOpen24_7] = useState(false)
   const [saving, startSaving] = useTransition()
   const [message, setMessage] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -28,7 +27,6 @@ export default function HorairesPanel(){
         const res = await fetch('/api/clubs/services/get')
         const data = await res.json()
         if (data.success && data.services) {
-          setIsOpen24_7(data.services.isOpen24_7 || false)
           if (data.services.openingHours) {
             const parsedSchedule = parseOpeningHours(data.services.openingHours)
             setSchedule(parsedSchedule)
@@ -75,7 +73,7 @@ export default function HorairesPanel(){
   const autoSave = useCallback(async () => {
     try {
       const openingHours = JSON.stringify(schedule)
-      const payload = { isOpen24_7, openingHours }
+      const payload = { openingHours }
       const res = await fetch('/api/clubs/services/update', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -87,7 +85,7 @@ export default function HorairesPanel(){
     } catch (e) {
       console.log('❌ Auto-save horaires échoué:', e)
     }
-  }, [schedule, isOpen24_7])
+  }, [schedule])
 
   // Auto-save avec debounce quand les données changent
   useEffect(() => {
@@ -103,7 +101,7 @@ export default function HorairesPanel(){
         clearTimeout(autoSaveTimeoutRef.current)
       }
     }
-  }, [schedule, isOpen24_7, loading, autoSave])
+  }, [schedule, loading, autoSave])
 
   const updateDaySchedule = (day: string, field: 'open' | 'close' | 'closed', value: string | boolean) => {
     setSchedule(prev => ({
@@ -131,7 +129,7 @@ export default function HorairesPanel(){
     startSaving(async () => {
       try {
         const openingHours = JSON.stringify(schedule)
-        const body = { isOpen24_7, openingHours }
+        const body = { openingHours }
         const r = await fetch('/api/clubs/services/update', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(body) })
         const d = await r.json()
         if (!r.ok || !d?.ok) throw new Error(d?.error || 'save_failed')
@@ -155,19 +153,7 @@ export default function HorairesPanel(){
     <div className="p-6 rounded-2xl bg-gray-900/60 border border-gray-800">
       <h2 className="text-white font-semibold mb-6">Horaires d'ouverture</h2>
 
-      <div className="mb-6 flex items-center gap-2">
-        <input
-          id="open247"
-          type="checkbox"
-          checked={isOpen24_7}
-          onChange={e => setIsOpen24_7(e.target.checked)}
-          className="rounded border-gray-600 bg-gray-800 text-purple-600 focus:ring-purple-500"
-        />
-        <label htmlFor="open247" className="text-sm text-gray-300">{t('open247')}</label>
-      </div>
-
-      {!isOpen24_7 && (
-        <div className="space-y-4">
+      <div className="space-y-4">
           {days.map(({ key, label }) => (
             <div key={key} className="p-3 sm:p-4 bg-gray-800/40 rounded-lg">
               <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
@@ -215,8 +201,7 @@ export default function HorairesPanel(){
               </div>
             </div>
           ))}
-        </div>
-      )}
+      </div>
 
       <div className="mt-6 flex items-center gap-3">
         <button

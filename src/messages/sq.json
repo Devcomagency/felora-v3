@@ -1100,9 +1100,9 @@
       "description": "Profili nuk u gjet"
     },
     "sections": {
-      "physical": "Profili fizik",
+      "physical": "Fizik",
       "services": "Shërbimet",
-      "servicesAndSpecialties": "Shërbimet & Specialitetet",
+      "servicesAndSpecialties": "Shërbimet",
       "languages": "Gjuhët e folura",
       "equipment": "Pajisjet",
       "rates": "Tarifat",

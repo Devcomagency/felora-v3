@@ -31,6 +31,8 @@ export async function POST(request: NextRequest) {
     const file = formData.get('file') as File
     const slot = formData.get('slot') as string
     const slotIndex = formData.get('slotIndex') as string
+    const positionParam = formData.get('position') as string
+    const typeParam = formData.get('type') as string
 
     if (!file) {
       return NextResponse.json(
@@ -39,18 +41,31 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Convertir slotIndex en nombre
-    const pos = parseInt(slotIndex, 10)
-    if (isNaN(pos) || pos < 0 || pos > 4) {
+    // Priorité à position (nouveau format feed) sinon slotIndex (ancien format slots fixes)
+    const posStr = positionParam || slotIndex
+    const pos = posStr ? parseInt(posStr, 10) : null
+
+    if (pos === null || isNaN(pos) || pos < 0) {
       return NextResponse.json(
-        { success: false, error: 'Position invalide (0-4 requis)' },
+        { success: false, error: 'Position manquante ou invalide (≥0 requis)' },
         { status: 400 }
       )
     }
 
-    // Déterminer le type média correctement à partir du slot
-    // video -> VIDEO, profile/photo -> IMAGE
-    const mediaType = slot === 'video' ? 'VIDEO' : 'IMAGE'
+    // Déterminer le type média
+    // 1. typeParam si fourni (nouveau format)
+    // 2. slot si fourni (ancien format)
+    // 3. type MIME du fichier
+    let mediaType: 'IMAGE' | 'VIDEO'
+    if (typeParam) {
+      mediaType = typeParam === 'VIDEO' ? 'VIDEO' : 'IMAGE'
+    } else if (slot === 'video') {
+      mediaType = 'VIDEO'
+    } else if (file.type.startsWith('video/')) {
+      mediaType = 'VIDEO'
+    } else {
+      mediaType = 'IMAGE'
+    }
 
     // Upload vers Cloudflare R2 (compatible Vercel)
     const bytes = await file.arrayBuffer()
@@ -83,30 +98,52 @@ export async function POST(request: NextRequest) {
     }
     const fileUrl = `${baseUrl}/${key}`
 
-    console.log(`✅ Upload R2 pour club ${club.id}: ${mediaType} slot ${pos}, fichier: ${file.name} -> ${fileUrl}`)
-
-    // Chercher s'il existe déjà un média pour cette position
-    const existingMedia = await prisma.media.findFirst({
-      where: {
-        ownerType: 'CLUB',
-        ownerId: club.id,
-        pos: pos
-      }
-    })
+    console.log(`✅ Upload R2 pour club ${club.id}: ${mediaType} position ${pos}, fichier: ${file.name} -> ${fileUrl}`)
 
     let media
-    if (existingMedia) {
-      // ✅ Mettre à jour le média existant + FORCER updatedAt pour le cache-buster
-      media = await prisma.media.update({
-        where: { id: existingMedia.id },
-        data: {
-          type: mediaType,
-          url: fileUrl,
-          updatedAt: new Date() // Forcer la mise à jour du timestamp
+
+    // ✅ LOGIQUE CLUB (comme Escort) :
+    // - Position 0 (avatar) : UPDATE si existe, sinon CREATE
+    // - Position 1 (feed) : TOUJOURS CREATE (nouveau média)
+    // - Autres positions : CREATE
+
+    if (pos === 0) {
+      // AVATAR (pos 0) : remplacer si existe
+      const existingMedia = await prisma.media.findFirst({
+        where: {
+          ownerType: 'CLUB',
+          ownerId: club.id,
+          pos: 0
         }
       })
+
+      if (existingMedia) {
+        // Mettre à jour l'avatar existant
+        media = await prisma.media.update({
+          where: { id: existingMedia.id },
+          data: {
+            type: mediaType,
+            url: fileUrl,
+            updatedAt: new Date()
+          }
+        })
+        console.log(`  ↻ Avatar (pos 0) remplacé`)
+      } else {
+        // Créer un nouvel avatar
+        media = await prisma.media.create({
+          data: {
+            ownerType: 'CLUB',
+            ownerId: club.id,
+            type: mediaType,
+            url: fileUrl,
+            pos: 0,
+            visibility: 'PUBLIC'
+          }
+        })
+        console.log(`  ✓ Nouvel avatar (pos 0) créé`)
+      }
     } else {
-      // Créer un nouveau média
+      // FEED (pos 1) ou autre : TOUJOURS créer un nouveau média
       media = await prisma.media.create({
         data: {
           ownerType: 'CLUB',
@@ -117,22 +154,18 @@ export async function POST(request: NextRequest) {
           visibility: 'PUBLIC'
         }
       })
+      console.log(`  ✓ Nouveau média position ${pos} créé (feed)`)
     }
 
-    // Mettre à jour aussi les champs avatarUrl/coverUrl dans ClubDetails
+    // Mettre à jour aussi le champ avatarUrl dans ClubDetails si c'est l'avatar
     if (pos === 0) {
       // Photo de profil
       await prisma.clubDetails.updateMany({
         where: { clubId: club.id },
         data: { avatarUrl: fileUrl }
       })
-    } else if (pos === 1) {
-      // Photo de couverture
-      await prisma.clubDetails.updateMany({
-        where: { clubId: club.id },
-        data: { coverUrl: fileUrl }
-      })
     }
+    // Note: Position 1 = feed maintenant, pas de cover spécifique
 
     // ✅ IMPORTANT : Mettre à jour updatedAt du club pour forcer le cache-buster
     await prisma.clubProfileV2.update({

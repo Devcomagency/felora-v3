@@ -1100,9 +1100,9 @@
       "description": "Профиль не найден"
     },
     "sections": {
-      "physical": "Физический профиль",
+      "physical": "Физический",
       "services": "Услуги",
-      "servicesAndSpecialties": "Услуги и Специальности",
+      "servicesAndSpecialties": "Услуги",
       "languages": "Разговорные языки",
       "equipment": "Оборудование",
       "rates": "Тарифы",

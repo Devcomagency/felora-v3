@@ -14,6 +14,7 @@ import SimpleRichTextEditor from '../ui/SimpleRichTextEditor'
 import { logger } from '@/utils/logger'
 import { uploadWithProgress } from '@/utils/uploadWithProgress'
 import { SWISS_CANTONS, SWISS_MAJOR_CITIES } from '@/constants/geography'
+import { AccountCert } from '@/app/dashboard-escort/HeaderClient'
 // import ModernMediaManager from './ModernMediaManager'
 
 const CANTON_MAP: Record<string, string> = {
@@ -1161,7 +1162,8 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
       if (profileData.phone !== undefined) payload.phone = profileData.phone
       if (profileData.incall !== undefined) payload.incall = !!profileData.incall
       if (profileData.outcall !== undefined) payload.outcall = !!profileData.outcall
-      if (profileData.coordinates) { 
+      logger.log('💾 [AUTOSAVE] incall/outcall:', { incall: profileData.incall, outcall: profileData.outcall, payloadIncall: payload.incall, payloadOutcall: payload.outcall })
+      if (profileData.coordinates) {
         payload.coordinates = profileData.coordinates
       }
       if (profileData.addressPrivacy) payload.addressPrivacy = profileData.addressPrivacy
@@ -1391,7 +1393,8 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
       if (profileData.phone !== undefined) payload.phone = profileData.phone
       if (profileData.incall !== undefined) payload.incall = !!profileData.incall
       if (profileData.outcall !== undefined) payload.outcall = !!profileData.outcall
-      if (profileData.coordinates) { 
+      logger.log('💾 [AUTOSAVE] incall/outcall:', { incall: profileData.incall, outcall: profileData.outcall, payloadIncall: payload.incall, payloadOutcall: payload.outcall })
+      if (profileData.coordinates) {
         payload.coordinates = profileData.coordinates
       }
       if (profileData.addressPrivacy) payload.addressPrivacy = profileData.addressPrivacy
@@ -1579,7 +1582,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
 
       {/* Carte de progression compacte */}
       <div className="w-full md:w-80 bg-neutral-800/50 rounded-xl p-4 border border-white/5 backdrop-blur-sm">
-        <div className="flex justify-between text-xs font-medium mb-2">
+        <div className="flex justify-between items-center text-xs font-medium mb-2">
           <span className="text-white">{t('completion.title')}</span>
           <span className="text-purple-400">{completionPct}%</span>
         </div>
@@ -1592,24 +1595,47 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
             }}
           />
         </div>
-        <div className="flex flex-wrap gap-2">
-          {requiredChecks.filter(c => !c.ok).length > 0 ? (
-            requiredChecks.filter(c => !c.ok).map(c => (
-              <button
-                key={c.key}
-                onClick={() => setActiveTab(c.targetTab)}
-                className="px-2 py-1 rounded bg-red-500/10 border border-red-500/20 text-[10px] text-red-400 flex items-center gap-1 hover:bg-red-500/20 transition-colors"
+        <div className="flex flex-wrap gap-2 items-center justify-between">
+          {/* Actions requises */}
+          <div className="flex flex-wrap gap-2">
+            {requiredChecks.filter(c => !c.ok).length > 0 ? (
+              requiredChecks.filter(c => !c.ok).map(c => (
+                <button
+                  key={c.key}
+                  onClick={() => setActiveTab(c.targetTab)}
+                  className="px-2 py-1 rounded bg-red-500/10 border border-red-500/20 text-[10px] text-red-400 flex items-center gap-1 hover:bg-red-500/20 transition-colors"
+                >
+                  <AlertTriangle className="w-3 h-3" />
+                  {c.label}
+                </button>
+              ))
+            ) : (
+              <span className="px-2 py-1 rounded bg-emerald-500/10 border border-emerald-500/20 text-[10px] text-emerald-400 flex items-center gap-1">
+                <CheckCircle2 className="w-3 h-3" />
+                {t('completion.complete')}
+              </span>
+            )}
+          </div>
+
+          {/* Badge de certification en bas à droite */}
+          <div className="ml-auto">
+            {kycStatus === 'APPROVED' ? (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium uppercase tracking-wide">
+                <BadgeCheck className="w-3 h-3" /> Vérifié
+              </span>
+            ) : kycStatus === 'PENDING' ? (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] rounded bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 font-medium uppercase tracking-wide">
+                <Loader2 className="w-3 h-3 animate-spin" /> En cours…
+              </span>
+            ) : (
+              <a
+                href="/profile-test-signup/escort?step=3"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] rounded bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 font-medium uppercase tracking-wide transition-colors"
               >
-                <AlertTriangle className="w-3 h-3" />
-                {c.label}
-              </button>
-            ))
-          ) : (
-            <span className="px-2 py-1 rounded bg-emerald-500/10 border border-emerald-500/20 text-[10px] text-emerald-400 flex items-center gap-1">
-              <CheckCircle2 className="w-3 h-3" />
-              {t('completion.complete')}
-            </span>
-          )}
+                <AlertTriangle className="w-3 h-3" /> Certifier
+              </a>
+            )}
+          </div>
         </div>
       </div>
 
@@ -2423,43 +2449,6 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                     <option value="metissee">{t('appearance.ethnicities.metisse')}</option>
                   </select>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">{t('appearance.tattoosPiercings')}</label>
-                  <div className="flex flex-wrap gap-6 items-center">
-                    <label className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        checked={profileData.tattoos || false}
-                        onChange={(e) => updateProfileData('tattoos', e.target.checked)}
-                        className="w-4 h-4 text-purple-500 bg-gray-700 border-gray-600 rounded focus:ring-purple-500"
-                      />
-                      <span className="text-sm text-gray-300">
-                        {t('appearance.tattoos')} {profileData.tattoos ? '(Oui)' : ''}
-                      </span>
-                    </label>
-                    <label className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        checked={profileData.piercings || false}
-                        onChange={(e) => updateProfileData('piercings', e.target.checked)}
-                        className="w-4 h-4 text-purple-500 bg-gray-700 border-gray-600 rounded focus:ring-purple-500"
-                      />
-                      <span className="text-sm text-gray-300">
-                        {t('appearance.piercings')} {profileData.piercings ? '(Oui)' : ''}
-                      </span>
-                    </label>
-                    <div className="h-6 w-px bg-white/10" />
-                    <label className="flex items-center gap-2 text-sm text-gray-300">
-                      {t('appearance.pubicHair')}:
-                      <select value={profileData.pubicHair||''} onChange={(e)=> updateProfileData('pubicHair', e.target.value as any)} className="px-2 py-1 bg-white/5 border border-white/10 rounded">
-                        <option value="">{t('appearance.eyeColors.select')}</option>
-                        <option value="naturel">{t('appearance.pubicHairTypes.naturel')}</option>
-                        <option value="rase">{t('appearance.pubicHairTypes.rase')}</option>
-                        <option value="partiel">{t('appearance.pubicHairTypes.partiel')}</option>
-                      </select>
-                    </label>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
@@ -2494,7 +2483,10 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                       type="checkbox"
                       className="w-4 h-4"
                       checked={profileData.incall || false}
-                      onChange={(e) => updateProfileData('incall', e.target.checked)}
+                      onChange={(e) => {
+                        logger.log('✅ [INCALL CHANGE]', e.target.checked)
+                        updateProfileData('incall', e.target.checked)
+                      }}
                     />
                     <span className="text-sm text-gray-300">{t('services.incall')}</span>
                   </label>
@@ -2503,7 +2495,10 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                       type="checkbox"
                       className="w-4 h-4"
                       checked={profileData.outcall || false}
-                      onChange={(e) => updateProfileData('outcall', e.target.checked)}
+                      onChange={(e) => {
+                        logger.log('✅ [OUTCALL CHANGE]', e.target.checked)
+                        updateProfileData('outcall', e.target.checked)
+                      }}
                     />
                     <span className="text-sm text-gray-300">{t('services.outcall')}</span>
                   </label>

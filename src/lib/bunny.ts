@@ -184,9 +184,14 @@ export async function getBunnyVideoStatus(videoId: string) {
     // URL directe HLS playlist (compatible avec <video> + HLS.js)
     // Utilise la Pull Zone CDN Stream: vz-cf0fe97d-915.b-cdn.net
     // Disponible dès que status >= 4 (Ready)
-    const hlsUrl = video.status >= 4
+    let hlsUrl = video.status >= 4
       ? `https://vz-cf0fe97d-915.b-cdn.net/${videoId}/playlist.m3u8`
       : null
+
+    // ✅ Signer l'URL HLS avec Token Authentication
+    if (hlsUrl) {
+      hlsUrl = signBunnyUrl(hlsUrl, 86400) // Token valide 24h
+    }
 
     // URL iframe embed (pour <iframe> seulement)
     const playbackUrl = video.status >= 4
@@ -195,9 +200,12 @@ export async function getBunnyVideoStatus(videoId: string) {
 
     // Thumbnail (utilise aussi la Pull Zone Stream)
     // Bunny génère toujours un thumbnail.jpg par défaut
-    const thumbnailUrl = video.thumbnailFileName
+    let thumbnailUrl = video.thumbnailFileName
       ? `https://vz-cf0fe97d-915.b-cdn.net/${videoId}/${video.thumbnailFileName}`
       : `https://vz-cf0fe97d-915.b-cdn.net/${videoId}/thumbnail.jpg` // Fallback sur thumbnail.jpg par défaut
+
+    // ✅ Signer l'URL thumbnail aussi
+    thumbnailUrl = signBunnyUrl(thumbnailUrl, 86400) // Token valide 24h
 
     return {
       status,

@@ -197,9 +197,12 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
       })
 
       hls.on(Hls.Events.ERROR, (event, data) => {
-        console.error(`❌ [HLS.js] Erreur pour ${item.id}:`, data)
         if (data.fatal) {
+          console.error(`❌ [HLS.js] FATAL error for ${item.id}:`, data.type, data.details)
           setVideoError(`Erreur HLS: ${data.type}`)
+        } else {
+          // Non-fatal errors are just warnings
+          console.warn(`⚠️ [HLS.js] Non-fatal error for ${item.id}:`, data.type, data.details)
         }
       })
 

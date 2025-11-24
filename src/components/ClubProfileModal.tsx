@@ -122,31 +122,16 @@ export function ClubProfileModal({ profileId, profileData, onClose }: ClubProfil
           {/* Header avec fermeture */}
           <div className="sticky top-0 z-10 bg-gradient-to-r from-gray-900/95 via-black/95 to-gray-900/95 backdrop-blur-lg border-b border-gray-800 px-6 py-4">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                {/* Avatar */}
-                <div className="relative">
-                  <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-pink-500 via-purple-500 to-blue-500 p-0.5">
-                    {profile.avatar ? (
-                      <img
-                        src={profile.avatar}
-                        alt={profile.name}
-                        className="w-full h-full rounded-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full rounded-full bg-gray-800 flex items-center justify-center text-2xl font-bold text-white">
-                        {profile.name.charAt(0)}
+              <div className="flex items-center gap-4 flex-1">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <h1 className="text-2xl font-bold text-white truncate">{profile.name}</h1>
+                    {profile.verified && (
+                      <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+                        <Star className="w-3 h-3 text-white fill-white" />
                       </div>
                     )}
                   </div>
-                  {profile.verified && (
-                    <div className="absolute bottom-1 right-1 w-4 h-4 bg-blue-500 rounded-full border-2 border-black flex items-center justify-center">
-                      <Star className="w-2.5 h-2.5 text-white fill-white" />
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex-1">
-                  <h1 className="text-2xl font-bold text-white truncate">{profile.name}</h1>
                   <div className="flex items-center gap-3 mt-1 text-sm text-gray-300">
                     {profile.city && (
                       <span className="flex items-center gap-1">

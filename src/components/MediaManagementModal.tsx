@@ -30,6 +30,7 @@ interface MediaManagementModalProps {
   mediaIndex: number
   onUpdateMedia: (mediaUrl: string, updates: Partial<MediaItem>) => Promise<void>
   onDeleteMedia: (mediaUrl: string, index: number) => Promise<void>
+  showPremiumOption?: boolean // Pour masquer l'option Premium (clubs n'ont pas de premium)
 }
 
 const VISIBILITY_OPTIONS = [
@@ -68,7 +69,8 @@ export default function MediaManagementModal({
   media,
   mediaIndex,
   onUpdateMedia,
-  onDeleteMedia
+  onDeleteMedia,
+  showPremiumOption = true
 }: MediaManagementModalProps) {
   const [selectedVisibility, setSelectedVisibility] = useState<MediaItem['visibility']>('PUBLIC')
   const [customPrice, setCustomPrice] = useState<string>('')
@@ -223,37 +225,39 @@ export default function MediaManagementModal({
           <div className="mb-4">
             <h3 className="text-white font-semibold mb-2 text-sm">Visibilité</h3>
             <div className="space-y-1">
-              {VISIBILITY_OPTIONS.map((option) => {
-                const Icon = option.icon
-                const isSelected = selectedVisibility === option.value
-                
-                return (
-                  <button
-                    key={option.value}
-                    onClick={() => setSelectedVisibility(option.value)}
-                    className={`w-full p-2 rounded-lg border transition-all ${
-                      isSelected
-                        ? `${option.bgColor} ${option.borderColor} border-2`
-                        : 'bg-white/5 border-white/10 hover:bg-white/10'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <Icon size={16} className={isSelected ? option.color : 'text-white/60'} />
-                      <div className="flex-1 text-left">
-                        <div className={`font-medium text-sm ${isSelected ? option.color : 'text-white'}`}>
-                          {option.label}
+              {VISIBILITY_OPTIONS
+                .filter(option => showPremiumOption || option.value !== 'PREMIUM')
+                .map((option) => {
+                  const Icon = option.icon
+                  const isSelected = selectedVisibility === option.value
+
+                  return (
+                    <button
+                      key={option.value}
+                      onClick={() => setSelectedVisibility(option.value)}
+                      className={`w-full p-2 rounded-lg border transition-all ${
+                        isSelected
+                          ? `${option.bgColor} ${option.borderColor} border-2`
+                          : 'bg-white/5 border-white/10 hover:bg-white/10'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <Icon size={16} className={isSelected ? option.color : 'text-white/60'} />
+                        <div className="flex-1 text-left">
+                          <div className={`font-medium text-sm ${isSelected ? option.color : 'text-white'}`}>
+                            {option.label}
+                          </div>
+                          <div className="text-xs text-white/60">
+                            {option.description}
+                          </div>
                         </div>
-                        <div className="text-xs text-white/60">
-                          {option.description}
-                        </div>
+                        {isSelected && (
+                          <Check size={14} className={option.color} />
+                        )}
                       </div>
-                      {isSelected && (
-                        <Check size={14} className={option.color} />
-                      )}
-                    </div>
-                  </button>
-                )
-              })}
+                    </button>
+                  )
+                })}
             </div>
           </div>
 

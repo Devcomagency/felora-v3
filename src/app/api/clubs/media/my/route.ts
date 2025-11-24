@@ -32,7 +32,10 @@ export async function GET(request: NextRequest) {
         ownerType: 'CLUB',
         ownerId: club.id
       },
-      orderBy: { pos: 'asc' }
+      orderBy: [
+        { pos: 'asc' },
+        { createdAt: 'desc' } // Plus récent en premier pour chaque position
+      ]
     })
 
     // Formater les médias pour correspondre au format attendu par le frontend

@@ -206,10 +206,12 @@ function MediaPlayer({ id, type, url, thumb, poster, index, isActive, profileId,
               loading="lazy"
               className={`w-full h-full object-cover ${isPrivate ? 'blur-xl brightness-30' : ''}`}
               onError={(e) => {
-                console.error('❌ Native img thumbnail failed to load:', { thumb, error: e })
+                console.warn('⚠️ Thumbnail loading issue:', thumb)
                 setError(true)
               }}
-              onLoad={() => console.log('✅ Native img thumbnail loaded successfully:', thumb)}
+              onLoad={() => {
+                // Thumbnail loaded successfully (silent)
+              }}
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900">
@@ -1039,6 +1041,7 @@ export default function MediaFeedWithGallery({
         mediaIndex={fullscreenIndex}
         onUpdateMedia={onUpdateMedia || (async () => {})}
         onDeleteMedia={onDeleteMedia || defaultDeleteMedia}
+        showPremiumOption={showPremiumTab}
       />
     </>
   )

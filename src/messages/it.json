@@ -1097,9 +1097,9 @@
       "description": "Profilo non trovato"
     },
     "sections": {
-      "physical": "Profilo fisico",
+      "physical": "Fisico",
       "services": "Servizi",
-      "servicesAndSpecialties": "Servizi e Specialità",
+      "servicesAndSpecialties": "Servizi",
       "languages": "Lingue parlate",
       "equipment": "Attrezzature",
       "rates": "Tariffe",

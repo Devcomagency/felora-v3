@@ -18,6 +18,8 @@ import { toast } from 'sonner'
 interface ClubProfile {
   id: string
   dbId?: string // ID de la base de données (pour les API internes)
+  userId?: string // ID du propriétaire du club
+  isOwner?: boolean // Si l'utilisateur connecté est le propriétaire
   name: string
   handle?: string
   avatar?: string
@@ -29,6 +31,7 @@ interface ClubProfile {
     url: string
     thumb?: string
     poster?: string
+    visibility?: 'PUBLIC' | 'PRIVATE'
   }>
   verified?: boolean
   premium?: boolean
@@ -509,12 +512,89 @@ export default function ClubProfileTestPage() {
                 profileId={profile.id}
                 profileName={profile.name}
                 userId={session?.user?.id || guestId}
-                viewerIsOwner={false} // For now, no club ownership
+                viewerIsOwner={profile.isOwner || false}
                 onLike={handleMediaLike}
                 onSave={handleMediaSave}
                 onReactionChange={handleReactionChange}
-                onUpdateMedia={async () => {}} // TODO: Implement for clubs
-                onDeleteMedia={async () => {}} // TODO: Implement for clubs
+                onUpdateMedia={async (mediaUrl: string, updates: any) => {
+                  // Update optimiste : mise à jour immédiate de l'état local
+                  const originalProfile = profile
+
+                  setProfile(prev => prev ? ({
+                    ...prev,
+                    media: prev.media.map(m =>
+                      m.url === mediaUrl ? { ...m, ...updates } : m
+                    )
+                  }) : null)
+
+                  try {
+                    // Requête API - Utiliser l'API club media update
+                    const response = await fetch(`/api/clubs/media/update`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      credentials: 'include',
+                      body: JSON.stringify({
+                        url: mediaUrl,
+                        visibility: updates.visibility // PUBLIC ou PRIVATE seulement
+                      })
+                    })
+
+                    if (!response.ok) {
+                      throw new Error(`HTTP ${response.status}`)
+                    }
+
+                    const result = await response.json()
+
+                    if (!result.success) {
+                      throw new Error(result.error || 'Erreur de mise à jour')
+                    }
+
+                    toast.success('Visibilité mise à jour')
+                  } catch (error: any) {
+                    // Si échec, rollback
+                    setProfile(originalProfile)
+                    toast.error(error.message || 'Erreur lors de la mise à jour')
+                    throw error
+                  }
+                }}
+                onDeleteMedia={async (mediaUrl: string, index: number) => {
+                  // Update optimiste : suppression immédiate de l'état local
+                  const originalProfile = profile
+
+                  setProfile(prev => prev ? ({
+                    ...prev,
+                    media: prev.media.filter(m => m.url !== mediaUrl)
+                  }) : null)
+
+                  try {
+                    // Requête API - Utiliser l'API club media delete
+                    const response = await fetch(`/api/clubs/media/delete`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      credentials: 'include',
+                      body: JSON.stringify({
+                        url: mediaUrl
+                      })
+                    })
+
+                    if (!response.ok) {
+                      throw new Error(`HTTP ${response.status}`)
+                    }
+
+                    const result = await response.json()
+
+                    if (!result.success) {
+                      throw new Error(result.error || 'Erreur de suppression')
+                    }
+
+                    toast.success('Média supprimé')
+                  } catch (error: any) {
+                    // Si échec, rollback
+                    setProfile(originalProfile)
+                    toast.error(error.message || 'Erreur lors de la suppression')
+                    throw error
+                  }
+                }}
                 showPremiumTab={false} // Clubs ont Public et Privé, mais pas Premium
               />
             </>

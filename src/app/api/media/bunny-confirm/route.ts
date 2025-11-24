@@ -135,35 +135,20 @@ export async function POST(request: NextRequest) {
     else if (visibility === 'private') visibilityEnum = 'PRIVATE'
 
     // Utiliser la position 1 pour les nouvelles publications (feed)
-    // pos 0 = avatar dashboard (SEUL protégé), pos >= 1 = feed
+    // pos 0 = avatar dashboard (SEUL protégé), pos 1 = feed (tous les médias)
+    // Tri par createdAt DESC dans pos 1 → les plus récents apparaissent en premier
     const finalPos = 1
 
     console.log('📍 Position utilisée pour vidéo Bunny:', {
       finalPos,
       ownerType,
       ownerId,
-      note: 'Nouvelle publication toujours en position 1 (en tête du feed)'
+      note: 'Position 1 pour feed, tri par createdAt DESC (pas de décalage)'
     })
 
-    // Décaler tous les médias existants >= à cette position
-    // SAUF pos 0 qui est l'avatar dashboard et ne doit JAMAIS être décalé
-    console.log('🔄 Décalage des médias existants à partir de la position', finalPos)
-
-    await prisma.media.updateMany({
-      where: {
-        ownerType: ownerType as any,
-        ownerId: ownerId,
-        pos: { gte: finalPos },
-        deletedAt: null,
-        // Ne JAMAIS décaler pos 0 (avatar)
-        NOT: { pos: 0 }
-      },
-      data: {
-        pos: { increment: 1 }
-      }
-    })
-
-    console.log('✅ Médias décalés (pos 0 préservé)')
+    // ❌ PAS de décalage des médias existants
+    // Tous les médias du feed ont pos=1 et sont triés par createdAt DESC
+    console.log('✅ Pas de décalage - tous les médias feed restent à pos 1, tri chronologique')
 
     // Vérifier si cette vidéo existe déjà (éviter doublons si retry)
     const existingMedia = await prisma.media.findFirst({

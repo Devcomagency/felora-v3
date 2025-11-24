@@ -1100,9 +1100,9 @@
       "description": "الملف الشخصي غير موجود"
     },
     "sections": {
-      "physical": "المظهر الجسدي",
+      "physical": "الجسدي",
       "services": "الخدمات",
-      "servicesAndSpecialties": "الخدمات والتخصصات",
+      "servicesAndSpecialties": "الخدمات",
       "languages": "اللغات المنطوقة",
       "equipment": "المعدات",
       "rates": "التعريفات",

@@ -111,7 +111,7 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
   }
 
   return (
-    <div className="fixed inset-0 bg-black z-50">
+    <div className="fixed inset-0 bg-black/95 backdrop-blur-sm z-50 overflow-hidden">
       {/* Background Effects */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-pink-900/10 via-black to-black" />
       <div className="absolute inset-0 bg-grid-white/[0.02]" />
@@ -120,16 +120,22 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
       <div className="absolute top-1/4 -left-48 w-96 h-96 bg-pink-500/10 rounded-full blur-3xl animate-pulse" />
       <div className="absolute bottom-1/4 -right-48 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse delay-700" />
 
-      <div className="relative flex min-h-full items-center justify-center p-4 z-10">
-        <div className="relative w-full max-w-4xl max-h-[90vh] overflow-hidden rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-2xl">
+      {/* Modal container - Full height sur mobile, centré sur desktop */}
+      <div className="relative h-full flex items-end sm:items-center justify-center z-10">
+        <div className="relative w-full sm:max-w-4xl h-[95vh] sm:h-auto sm:max-h-[85vh] rounded-t-3xl sm:rounded-3xl border border-white/10 bg-gradient-to-b from-black/90 via-black/95 to-black backdrop-blur-xl shadow-2xl overflow-hidden flex flex-col">
 
-          {/* Header avec fermeture */}
-          <div className="sticky top-0 z-10 bg-black/60 backdrop-blur-xl border-b border-white/10 px-6 py-4">
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex items-start gap-4 flex-1">
+          {/* Swipe indicator - mobile only */}
+          <div className="sm:hidden flex-shrink-0 pt-2 pb-1 flex justify-center" style={{ paddingTop: 'max(8px, env(safe-area-inset-top))' }}>
+            <div className="w-12 h-1 bg-white/20 rounded-full"></div>
+          </div>
+
+          {/* Header avec fermeture - Fixed on top */}
+          <div className="flex-shrink-0 bg-black/80 backdrop-blur-xl border-b border-white/10 px-4 sm:px-6 py-2 sm:py-4">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-start gap-3 flex-1 min-w-0">
                 {/* Photo de profil réelle avec effet rose */}
                 <div className="relative flex-shrink-0">
-                  <div className="w-20 h-20 rounded-2xl overflow-hidden shadow-[0_0_30px_rgba(236,72,153,0.4)] ring-3 ring-pink-500/50 bg-gradient-to-br from-pink-500/10 via-rose-500/10 to-fuchsia-500/10">
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden shadow-[0_0_30px_rgba(236,72,153,0.4)] ring-2 sm:ring-3 ring-pink-500/50 bg-gradient-to-br from-pink-500/10 via-rose-500/10 to-fuchsia-500/10">
                     {safeProfile.avatar ? (
                       <img
                         src={safeProfile.avatar}
@@ -157,19 +163,19 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
 
                 {/* Informations réorganisées */}
                 <div className="flex-1 min-w-0">
-                  <h1 className="text-2xl font-bold text-white mb-2 truncate">{safeProfile.stageName}</h1>
+                  <h1 className="text-lg sm:text-2xl font-bold text-white mb-1 sm:mb-2 truncate">{safeProfile.stageName}</h1>
 
                   {/* Ligne 1: Âge et Lieu */}
-                  <div className="flex items-center gap-3 mb-2 text-sm">
+                  <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2 text-xs sm:text-sm">
                     {safeProfile.age && (
                       <span className="text-white/80 font-medium">{safeProfile.age} ans</span>
                     )}
                     {safeProfile.city && (
                       <>
                         {safeProfile.age && <span className="text-white/40">•</span>}
-                        <span className="flex items-center gap-1.5 text-white/70">
-                          <MapPin className="w-3.5 h-3.5" />
-                          {safeProfile.city}{safeProfile.canton ? `, ${safeProfile.canton}` : ''}
+                        <span className="flex items-center gap-1 text-white/70 truncate">
+                          <MapPin className="w-3 h-3 flex-shrink-0" />
+                          <span className="truncate">{safeProfile.city}{safeProfile.canton ? `, ${safeProfile.canton}` : ''}</span>
                         </span>
                       </>
                     )}
@@ -178,7 +184,7 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
                   {/* Ligne 2: Catégorie (Transsexuel, etc.) */}
                   {safeProfile.category && (
                     <div className="inline-flex items-center gap-2">
-                      <span className="px-3 py-1.5 bg-gradient-to-r from-pink-500/20 to-purple-500/20 text-pink-300 rounded-full text-xs font-medium border border-pink-500/30">
+                      <span className="px-2 sm:px-3 py-1 sm:py-1.5 bg-gradient-to-r from-pink-500/20 to-purple-500/20 text-pink-300 rounded-full text-[10px] sm:text-xs font-medium border border-pink-500/30">
                         {tCategories(safeProfile.category) || safeProfile.category}
                       </span>
                     </div>
@@ -196,55 +202,58 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
             </div>
           </div>
 
-          {/* Contenu scrollable */}
-          <div className="overflow-y-auto max-h-[calc(90vh-100px)] pb-6">
-            <div className="p-6 space-y-6">
+          {/* Contenu scrollable - flex-1 pour prendre l'espace restant */}
+          <div className="flex-1 overflow-y-auto overscroll-contain">
+            <div className="px-4 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6" style={{ paddingBottom: 'max(120px, calc(80px + env(safe-area-inset-bottom)))' }}>
 
               {/* 1. Profil physique - En premier selon la demande */}
-              <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-5">
+              <div className="rounded-xl sm:rounded-2xl border border-white/10 bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl p-4 sm:p-5 shadow-lg">
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-4">{t("sections.physical")}</h3>
-                  <div className="grid grid-cols-2 gap-3">
+                  <h3 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4 flex items-center gap-2">
+                    <span className="w-1 h-5 bg-gradient-to-b from-pink-500 to-purple-500 rounded-full"></span>
+                    {t("sections.physical")}
+                  </h3>
+                  <div className="grid grid-cols-2 gap-2 sm:gap-3">
                     {safeProfile.physical.height && (
-                      <div className="p-3 bg-white/5 border border-white/10 rounded-xl hover:border-white/20 transition-colors">
-                        <div className="text-xs text-white/60 mb-1">{t("physical.height")}</div>
-                        <div className="text-white text-sm font-medium">{safeProfile.physical.height} cm</div>
+                      <div className="group p-2.5 sm:p-3 bg-gradient-to-br from-pink-500/10 to-purple-500/10 border border-pink-500/20 rounded-lg hover:border-pink-500/40 transition-all duration-300">
+                        <div className="text-[10px] sm:text-xs text-pink-300/70 mb-0.5 uppercase tracking-wide">{t("physical.height")}</div>
+                        <div className="text-white text-sm sm:text-base font-semibold">{safeProfile.physical.height} cm</div>
                       </div>
                     )}
                     {safeProfile.physical.bodyType && (
-                      <div className="p-3 bg-white/5 border border-white/10 rounded-xl hover:border-white/20 transition-colors">
-                        <div className="text-xs text-white/60 mb-1">{t("physical.bodyType")}</div>
-                        <div className="text-white text-sm font-medium">{safeProfile.physical.bodyType}</div>
+                      <div className="group p-2.5 sm:p-3 bg-gradient-to-br from-pink-500/10 to-purple-500/10 border border-pink-500/20 rounded-lg hover:border-pink-500/40 transition-all duration-300">
+                        <div className="text-[10px] sm:text-xs text-pink-300/70 mb-0.5 uppercase tracking-wide">{t("physical.bodyType")}</div>
+                        <div className="text-white text-sm sm:text-base font-semibold">{safeProfile.physical.bodyType}</div>
                       </div>
                     )}
                     {safeProfile.physical.hairColor && (
-                      <div className="p-3 bg-white/5 border border-white/10 rounded-xl hover:border-white/20 transition-colors">
-                        <div className="text-xs text-white/60 mb-1">{t("physical.hairColor")}</div>
-                        <div className="text-white text-sm font-medium">{safeProfile.physical.hairColor}</div>
+                      <div className="group p-2.5 sm:p-3 bg-gradient-to-br from-pink-500/10 to-purple-500/10 border border-pink-500/20 rounded-lg hover:border-pink-500/40 transition-all duration-300">
+                        <div className="text-[10px] sm:text-xs text-pink-300/70 mb-0.5 uppercase tracking-wide">{t("physical.hairColor")}</div>
+                        <div className="text-white text-sm sm:text-base font-semibold">{safeProfile.physical.hairColor}</div>
                       </div>
                     )}
                     {safeProfile.physical.eyeColor && (
-                      <div className="p-3 bg-white/5 border border-white/10 rounded-xl hover:border-white/20 transition-colors">
-                        <div className="text-xs text-white/60 mb-1">{t("physical.eyeColor")}</div>
-                        <div className="text-white text-sm font-medium">{safeProfile.physical.eyeColor}</div>
+                      <div className="group p-2.5 sm:p-3 bg-gradient-to-br from-pink-500/10 to-purple-500/10 border border-pink-500/20 rounded-lg hover:border-pink-500/40 transition-all duration-300">
+                        <div className="text-[10px] sm:text-xs text-pink-300/70 mb-0.5 uppercase tracking-wide">{t("physical.eyeColor")}</div>
+                        <div className="text-white text-sm sm:text-base font-semibold">{safeProfile.physical.eyeColor}</div>
                       </div>
                     )}
                     {safeProfile.physical.ethnicity && (
-                      <div className="p-3 bg-white/5 border border-white/10 rounded-xl hover:border-white/20 transition-colors">
-                        <div className="text-xs text-white/60 mb-1">{t("physical.ethnicity")}</div>
-                        <div className="text-white text-sm font-medium">{safeProfile.physical.ethnicity}</div>
+                      <div className="group p-2.5 sm:p-3 bg-gradient-to-br from-pink-500/10 to-purple-500/10 border border-pink-500/20 rounded-lg hover:border-pink-500/40 transition-all duration-300">
+                        <div className="text-[10px] sm:text-xs text-pink-300/70 mb-0.5 uppercase tracking-wide">{t("physical.ethnicity")}</div>
+                        <div className="text-white text-sm sm:text-base font-semibold">{safeProfile.physical.ethnicity}</div>
                       </div>
                     )}
                     {safeProfile.physical.bustSize && (
-                      <div className="p-3 bg-white/5 border border-white/10 rounded-xl hover:border-white/20 transition-colors">
-                        <div className="text-xs text-white/60 mb-1">{t("physical.bustSize")}</div>
-                        <div className="text-white text-sm font-medium">{safeProfile.physical.bustSize}</div>
+                      <div className="group p-2.5 sm:p-3 bg-gradient-to-br from-pink-500/10 to-purple-500/10 border border-pink-500/20 rounded-lg hover:border-pink-500/40 transition-all duration-300">
+                        <div className="text-[10px] sm:text-xs text-pink-300/70 mb-0.5 uppercase tracking-wide">{t("physical.bustSize")}</div>
+                        <div className="text-white text-sm sm:text-base font-semibold">{safeProfile.physical.bustSize}</div>
                       </div>
                     )}
                     {safeProfile.physical.breastType && (
-                      <div className="p-3 bg-white/5 border border-white/10 rounded-xl hover:border-white/20 transition-colors">
-                        <div className="text-xs text-white/60 mb-1">{t("physical.breastType")}</div>
-                        <div className="text-white text-sm font-medium">{safeProfile.physical.breastType}</div>
+                      <div className="group p-2.5 sm:p-3 bg-gradient-to-br from-pink-500/10 to-purple-500/10 border border-pink-500/20 rounded-lg hover:border-pink-500/40 transition-all duration-300">
+                        <div className="text-[10px] sm:text-xs text-pink-300/70 mb-0.5 uppercase tracking-wide">{t("physical.breastType")}</div>
+                        <div className="text-white text-sm sm:text-base font-semibold">{safeProfile.physical.breastType}</div>
                       </div>
                     )}
                     {safeProfile.physical.pubicHair && (
@@ -295,13 +304,13 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
 
                     return !isEquipment && !isLocation;
                   }).length > 0 && (
-                    <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl">
+                    <div className="rounded-xl sm:rounded-2xl border border-white/10 bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl shadow-lg">
                       <div className="p-4">
-                        <h3 className="text-md font-medium text-white/90 mb-3 flex items-center gap-2">
-                          <Heart className="w-4 h-4 text-purple-400" />
+                        <h3 className="text-base sm:text-lg font-semibold text-white mb-3 flex items-center gap-2">
+                          <span className="w-1 h-5 bg-gradient-to-b from-pink-500 to-purple-500 rounded-full"></span>
                           {t("sections.services")}
                         </h3>
-                        <div className="grid grid-cols-2 gap-2">
+                        <div className="grid grid-cols-2 gap-1.5">
                           {safeProfile.options.amenities.filter(amenity => {
                             const cleanAmenity = amenity.replace(/^(opt:|srv:)/, '').toLowerCase();
                             const equipmentKeywords = ['douche à deux', 'jacuzzi', 'sauna', 'climatisation', 'fumoir', 'parking', 'accès handicapé', 'ambiance musicale', 'bar', 'pole dance'];
@@ -314,9 +323,9 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
                           }).map((amenity, index) => (
                             <div
                               key={index}
-                              className="flex items-center gap-2 p-2 bg-purple-500/10 rounded-lg border border-purple-500/20"
+                              className="flex items-center gap-1.5 px-2 py-1.5 bg-purple-500/10 rounded-lg border border-purple-500/20 hover:border-purple-400/40 transition-all"
                             >
-                              <span className="w-2 h-2 bg-purple-400 rounded-full flex-shrink-0"></span>
+                              <span className="w-1.5 h-1.5 bg-purple-400 rounded-full flex-shrink-0"></span>
                               <span className="text-purple-300 text-xs font-medium truncate">
                                 {amenity.replace(/^(opt:|srv:)/, '')}
                               </span>
@@ -331,17 +340,17 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
 
               {/* 3. Services & Spécialités - En troisième selon la demande */}
               {(safeProfile.services && safeProfile.services.length > 0) && (
-                <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl">
-                  <div className="p-5">
-                    <h3 className="text-lg font-semibold text-white mb-4">{t("sections.servicesAndSpecialties")}</h3>
-                    <div className="grid grid-cols-2 gap-2">
+                <div className="rounded-xl sm:rounded-2xl border border-white/10 bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl shadow-lg">
+                  <div className="p-4 sm:p-5">
+                    <h3 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4 flex items-center gap-2"><span className="w-1 h-5 bg-gradient-to-b from-pink-500 to-purple-500 rounded-full"></span>{t("sections.servicesAndSpecialties")}</h3>
+                    <div className="grid grid-cols-2 gap-1.5">
                       {safeProfile.services.map((service, index) => (
                         <div
                           key={index}
-                          className="flex items-center gap-2 p-3 bg-gradient-to-r from-pink-500/10 to-purple-500/10 rounded-lg border border-pink-500/20 hover:border-pink-400/40 transition-all"
+                          className="flex items-center gap-1.5 px-2 py-1.5 bg-gradient-to-r from-pink-500/10 to-purple-500/10 rounded-lg border border-pink-500/20 hover:border-pink-400/40 transition-all"
                         >
-                          <span className="w-2 h-2 bg-pink-400 rounded-full flex-shrink-0"></span>
-                          <span className="text-pink-300 text-sm font-medium truncate">
+                          <span className="w-1.5 h-1.5 bg-pink-400 rounded-full flex-shrink-0"></span>
+                          <span className="text-pink-300 text-xs font-medium truncate">
                             {tServices(service) || service}
                           </span>
                         </div>
@@ -353,11 +362,13 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
 
               {/* 4. Langues - En quatrième selon la demande */}
               {safeProfile.languages && Object.keys(safeProfile.languages).length > 0 && (
-                <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl">
+                <div className="rounded-xl sm:rounded-2xl border border-white/10 bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl shadow-lg">
                   <div className="p-5">
-                    <h3 className="text-lg font-semibold text-white mb-4">{t("sections.languages")}</h3>
+                    <h3 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4 flex items-center gap-2"><span className="w-1 h-5 bg-gradient-to-b from-pink-500 to-purple-500 rounded-full"></span>{t("sections.languages")}</h3>
                     <div className="space-y-3">
-                      {Object.entries(safeProfile.languages).map(([language, rating]) => (
+                      {Object.entries(safeProfile.languages)
+                        .filter(([language]) => language.length > 2) // Filtrer les codes courts comme "FR", "EN", etc.
+                        .map(([language, rating]) => (
                         <div
                           key={language}
                           className="flex items-center justify-between p-3 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 rounded-lg border border-blue-500/20 hover:border-blue-400/40 transition-all"
@@ -381,7 +392,7 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
                     const equipmentKeywords = ['douche à deux', 'jacuzzi', 'sauna', 'climatisation', 'fumoir', 'parking', 'accès handicapé', 'ambiance musicale', 'bar', 'pole dance'];
                     return equipmentKeywords.some(keyword => cleanAmenity.includes(keyword));
                   }).length > 0 && (
-                    <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl">
+                    <div className="rounded-xl sm:rounded-2xl border border-white/10 bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl shadow-lg">
                       <div className="p-4">
                         <h3 className="text-md font-medium text-white/90 mb-3 flex items-center gap-2">
                           <Settings className="w-4 h-4 text-orange-400" />
@@ -411,7 +422,7 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
               )}
 
               {/* 6. Tarifs - En sixième selon la demande */}
-              <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl">
+              <div className="rounded-xl sm:rounded-2xl border border-white/10 bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl shadow-lg">
                 <div className="p-4">
                   <h3 className="text-md font-medium text-white/90 mb-3 flex items-center gap-2">
                     <CreditCard className="w-4 h-4 text-pink-400" />
@@ -420,97 +431,93 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
 
                   {/* Tarif principal compact */}
                   {(safeProfile.rates.baseRate || safeProfile.rates.oneHour) && (
-                    <div className="mb-3 p-3 bg-gradient-to-r from-pink-500/20 via-purple-500/20 to-blue-500/20 rounded-lg text-center border border-pink-500/30">
-                      <div className="text-lg font-bold text-white">
+                    <div className="mb-3 p-2 bg-gradient-to-r from-pink-500/20 via-purple-500/20 to-blue-500/20 rounded-lg text-center border border-pink-500/30">
+                      <div className="text-base font-bold text-white">
                         {safeProfile.rates.baseRate || safeProfile.rates.oneHour} {safeProfile.rates.currency}
                       </div>
-                      <div className="text-xs text-white/70">{t("rates.from")}</div>
+                      <div className="text-[10px] text-white/60">{t("rates.from")}</div>
                     </div>
                   )}
 
-                  {/* Grille des tarifs - Design compact */}
-                  <div className="grid grid-cols-3 lg:grid-cols-4 gap-2">
+                  {/* Grille des tarifs - Design compact et fin */}
+                  <div className="grid grid-cols-3 lg:grid-cols-4 gap-1.5">
                     {safeProfile.rates.fifteenMin && (
-                      <div className="p-2 bg-white/5 border border-white/10 rounded-xl text-center hover:border-white/20 transition-colors">
-                        <div className="text-sm font-medium text-white">
+                      <div className="p-1.5 bg-white/5 border border-white/10 rounded-lg text-center hover:border-pink-500/30 transition-colors">
+                        <div className="text-xs font-semibold text-white">
                           {safeProfile.rates.fifteenMin}
                         </div>
-                        <div className="text-xs text-white/60">{t("rates.fifteenMin")}</div>
+                        <div className="text-[9px] text-white/50">{t("rates.fifteenMin")}</div>
                       </div>
                     )}
                     {safeProfile.rates.thirtyMin && (
-                      <div className="p-2 bg-white/5 border border-white/10 rounded-xl text-center hover:border-white/20 transition-colors">
-                        <div className="text-sm font-medium text-white">
+                      <div className="p-1.5 bg-white/5 border border-white/10 rounded-lg text-center hover:border-pink-500/30 transition-colors">
+                        <div className="text-xs font-semibold text-white">
                           {safeProfile.rates.thirtyMin}
                         </div>
-                        <div className="text-xs text-white/60">{t("rates.thirtyMin")}</div>
+                        <div className="text-[9px] text-white/50">{t("rates.thirtyMin")}</div>
                       </div>
                     )}
                     {safeProfile.rates.oneHour && safeProfile.rates.baseRate && safeProfile.rates.oneHour !== safeProfile.rates.baseRate && (
-                      <div className="p-2 bg-white/5 border border-white/10 rounded-xl text-center hover:border-white/20 transition-colors">
-                        <div className="text-sm font-medium text-white">
+                      <div className="p-1.5 bg-white/5 border border-white/10 rounded-lg text-center hover:border-pink-500/30 transition-colors">
+                        <div className="text-xs font-semibold text-white">
                           {safeProfile.rates.oneHour}
                         </div>
-                        <div className="text-xs text-white/60">{t("rates.oneHour")}</div>
+                        <div className="text-[9px] text-white/50">{t("rates.oneHour")}</div>
                       </div>
                     )}
                     {safeProfile.rates.twoHours && (
-                      <div className="p-2 bg-white/5 border border-white/10 rounded-xl text-center hover:border-white/20 transition-colors">
-                        <div className="text-sm font-medium text-white">
+                      <div className="p-1.5 bg-white/5 border border-white/10 rounded-lg text-center hover:border-pink-500/30 transition-colors">
+                        <div className="text-xs font-semibold text-white">
                           {safeProfile.rates.twoHours}
                         </div>
-                        <div className="text-xs text-white/60">{t("rates.twoHours")}</div>
+                        <div className="text-[9px] text-white/50">{t("rates.twoHours")}</div>
                       </div>
                     )}
                     {safeProfile.rates.halfDay && (
-                      <div className="p-2 bg-white/5 border border-white/10 rounded-xl text-center hover:border-white/20 transition-colors">
-                        <div className="text-sm font-medium text-white">
+                      <div className="p-1.5 bg-white/5 border border-white/10 rounded-lg text-center hover:border-pink-500/30 transition-colors">
+                        <div className="text-xs font-semibold text-white">
                           {safeProfile.rates.halfDay}
                         </div>
-                        <div className="text-xs text-white/60">{t("rates.halfDay")}</div>
+                        <div className="text-[9px] text-white/50">{t("rates.halfDay")}</div>
                       </div>
                     )}
                     {safeProfile.rates.fullDay && (
-                      <div className="p-2 bg-white/5 border border-white/10 rounded-xl text-center hover:border-white/20 transition-colors">
-                        <div className="text-sm font-medium text-white">
+                      <div className="p-1.5 bg-white/5 border border-white/10 rounded-lg text-center hover:border-pink-500/30 transition-colors">
+                        <div className="text-xs font-semibold text-white">
                           {safeProfile.rates.fullDay}
                         </div>
-                        <div className="text-xs text-white/60">{t("rates.fullDay")}</div>
+                        <div className="text-[9px] text-white/50">{t("rates.fullDay")}</div>
                       </div>
                     )}
                     {safeProfile.rates.overnight && (
-                      <div className="p-2 bg-white/5 border border-white/10 rounded-xl text-center hover:border-white/20 transition-colors">
-                        <div className="text-sm font-medium text-white">
+                      <div className="p-1.5 bg-white/5 border border-white/10 rounded-lg text-center hover:border-pink-500/30 transition-colors">
+                        <div className="text-xs font-semibold text-white">
                           {safeProfile.rates.overnight}
                         </div>
-                        <div className="text-xs text-white/60">{t("rates.overnight")}</div>
+                        <div className="text-[9px] text-white/50">{t("rates.overnight")}</div>
                       </div>
                     )}
-                  </div>
 
-                  {/* {t("rates.customRates")} */}
-                  {safeProfile.customPrices && Array.isArray(safeProfile.customPrices) && safeProfile.customPrices.length > 0 && (
-                    <div className="mt-4 pt-4 border-t border-white/10">
-                      <h4 className="text-sm font-semibold text-white/70 mb-3">{t("rates.customRates")}</h4>
-                      <div className="space-y-2">
-                        {safeProfile.customPrices.map((custom: any, index: number) => (
-                          <div key={custom.id || index} className="flex items-center justify-between p-3 bg-white/5 border border-white/10 rounded-xl">
-                            <div>
-                              <div className="text-sm font-medium text-white">{custom.label || custom.duration}</div>
-                              {custom.description && <div className="text-xs text-white/60">{custom.description}</div>}
+                    {/* Tarifs personnalisés intégrés dans la même grille */}
+                    {safeProfile.customPrices && Array.isArray(safeProfile.customPrices) && safeProfile.customPrices.length > 0 && (
+                      <>
+                        {safeProfile.customPrices.map((customPrice: { label?: string; duration: string; price: string | number }, index: number) => (
+                          <div key={index} className="p-1.5 bg-white/5 border border-white/10 rounded-lg text-center hover:border-pink-500/30 transition-colors">
+                            <div className="text-xs font-semibold text-white">
+                              {customPrice.price}
                             </div>
-                            <div className="text-sm font-semibold text-pink-300">{custom.price} {safeProfile.rates.currency}</div>
+                            <div className="text-[9px] text-white/50">{customPrice.label || customPrice.duration}</div>
                           </div>
                         ))}
-                      </div>
-                    </div>
-                  )}
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
 
               {/* 7. Paiements - En septième selon la demande */}
               {safeProfile.options?.paymentMethods && safeProfile.options.paymentMethods.length > 0 && (
-                <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl">
+                <div className="rounded-xl sm:rounded-2xl border border-white/10 bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl shadow-lg">
                   <div className="p-4">
                     <h3 className="text-md font-medium text-white/90 mb-3 flex items-center gap-2">
                       <CreditCard className="w-4 h-4 text-green-400" />
@@ -532,7 +539,7 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
 
               {/* 8. Devises - En huitième selon la demande */}
               {safeProfile.options?.acceptedCurrencies && safeProfile.options.acceptedCurrencies.length > 0 && (
-                <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl">
+                <div className="rounded-xl sm:rounded-2xl border border-white/10 bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl shadow-lg">
                   <div className="p-4">
                     <h3 className="text-md font-medium text-white/90 mb-3">{t("sections.currencies")}</h3>
                     <div className="flex flex-wrap gap-2">
@@ -551,33 +558,27 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
 
               {/* 8. LE RESTE NE BOUGE PAS - Mode de service */}
               {(safeProfile.availability.incall || safeProfile.availability.outcall) && (
-                <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl">
+                <div className="rounded-xl sm:rounded-2xl border border-white/10 bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl shadow-lg">
                   <div className="p-5">
                     <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                       <MapPin className="w-5 h-5 text-pink-400" />
                       {t("sections.prestations")}
                     </h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="grid grid-cols-2 gap-2">
                       {safeProfile.availability.incall && (
-                        <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-green-500/10 to-emerald-500/10 rounded-xl border border-green-500/20 hover:border-green-500/40 transition-all">
-                          <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
-                            <Home className="w-5 h-5 text-green-400" />
+                        <div className="flex items-center gap-2 p-3 bg-gradient-to-r from-green-500/10 to-emerald-500/10 rounded-lg border border-green-500/20 hover:border-green-500/40 transition-all">
+                          <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                            <Home className="w-4 h-4 text-green-400" />
                           </div>
-                          <div>
-                            <div className="text-white font-medium">{t("prestations.incall")}</div>
-                            <div className="text-xs text-green-300">{t("prestations.incallDescription")}</div>
-                          </div>
+                          <div className="text-white font-medium text-sm">{t("prestations.incall")}</div>
                         </div>
                       )}
                       {safeProfile.availability.outcall && (
-                        <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 rounded-xl border border-blue-500/20 hover:border-blue-500/40 transition-all">
-                          <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
-                            <Car className="w-5 h-5 text-blue-400" />
+                        <div className="flex items-center gap-2 p-3 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 rounded-lg border border-blue-500/20 hover:border-blue-500/40 transition-all">
+                          <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+                            <Car className="w-4 h-4 text-blue-400" />
                           </div>
-                          <div>
-                            <div className="text-white font-medium">{t("prestations.outcall")}</div>
-                            <div className="text-xs text-blue-300">{t("prestations.outcallDescription")}</div>
-                          </div>
+                          <div className="text-white font-medium text-sm">{t("prestations.outcall")}</div>
                         </div>
                       )}
                     </div>
@@ -586,7 +587,7 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
               )}
 
               {/* Clientèle acceptée - Ne bouge pas */}
-              <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl">
+              <div className="rounded-xl sm:rounded-2xl border border-white/10 bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl shadow-lg">
                 <div className="p-5">
                   <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                     <Users className="w-5 h-5 text-pink-400" />
@@ -626,7 +627,7 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
                 <>
                   {/* Lieux */}
                   {safeProfile.options.amenities.filter(amenity => amenity.startsWith('opt:') && (amenity.includes('privé') || amenity.includes('discret') || amenity.includes('luxe') || amenity.includes('appartement') || amenity.includes('studio') || amenity.includes('maison'))).length > 0 && (
-                    <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl">
+                    <div className="rounded-xl sm:rounded-2xl border border-white/10 bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl shadow-lg">
                       <div className="p-4">
                         <h3 className="text-md font-medium text-white/90 mb-3 flex items-center gap-2">
                           <Home className="w-4 h-4 text-blue-400" />
@@ -652,7 +653,7 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
               )}
 
               {/* Actions de contact - Gestion intelligente du téléphone */}
-              <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl">
+              <div className="rounded-xl sm:rounded-2xl border border-white/10 bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl shadow-lg">
                 <div className="p-4">
                   <div className="text-center mb-4">
                     <h3 className="text-lg font-semibold text-white mb-1">{t("contact.title", { name: safeProfile.stageName })}</h3>
@@ -726,10 +727,10 @@ export function ProfileClientUnified({ profileId, onClose }: ProfileClientUnifie
                         // CAS 2: Numéro caché - Boutons uniquement (numéro masqué mais fonctionnel)
                         return (
                           <div className="space-y-2">
-                            <div className="text-center p-2 bg-white/5 rounded-xl border border-white/10">
-                              <div className="flex items-center justify-center gap-2 text-white/60">
-                                <Phone className="w-4 h-4" />
-                                <span className="text-sm">{t("contact.phoneAvailable")}</span>
+                            <div className="text-center px-2 py-1 bg-white/[0.03] rounded-lg border border-white/5">
+                              <div className="flex items-center justify-center gap-1.5 text-white/40">
+                                <Phone className="w-3 h-3" />
+                                <span className="text-[10px]">{t("contact.phoneAvailable")}</span>
                               </div>
                             </div>
                             <div className="grid grid-cols-3 gap-2">

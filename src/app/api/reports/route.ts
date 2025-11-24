@@ -39,6 +39,19 @@ export async function POST(request: NextRequest) {
         mediaId = media.id
       }
 
+      // Vérifier que le média existe avant de le mettre à jour
+      const mediaExists = await prisma.media.findUnique({
+        where: { id: mediaId },
+        select: { id: true }
+      })
+
+      if (!mediaExists) {
+        return NextResponse.json(
+          { success: false, error: 'Media not found by ID' },
+          { status: 404 }
+        )
+      }
+
       await prisma.media.update({
         where: { id: mediaId },
         data: {

@@ -66,25 +66,16 @@ export async function POST(request: NextRequest) {
     if (visibility === 'premium') visibilityEnum = 'PREMIUM'
     else if (visibility === 'private') visibilityEnum = 'PRIVATE'
 
-    // Trouver la position maximale actuelle pour cet owner
-    const maxPosMedia = await prisma.media.findFirst({
-      where: {
-        ownerType: ownerType as any,
-        ownerId: ownerId,
-        deletedAt: null
-      },
-      orderBy: { pos: 'desc' },
-      select: { pos: true }
-    })
+    // Utiliser la position 1 pour les nouvelles publications (feed)
+    // pos 0 = avatar dashboard (SEUL protégé), pos 1 = feed (tous les médias)
+    // Tri par createdAt DESC dans pos 1 → les plus récents apparaissent en premier
+    const newPos = 1
 
-    // Nouvelle position = max + 1 (ou 1 si aucun média)
-    const newPos = (maxPosMedia?.pos ?? 0) + 1
-
-    console.log('📍 Position calculée:', {
-      maxPos: maxPosMedia?.pos ?? 0,
+    console.log('📍 Position utilisée pour vidéo finalisée:', {
       newPos,
       ownerType,
-      ownerId
+      ownerId,
+      note: 'Position 1 pour feed, tri par createdAt DESC'
     })
 
     // Vérifier si cette vidéo existe déjà (éviter doublons)
