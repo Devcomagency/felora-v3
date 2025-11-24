@@ -6,7 +6,9 @@ import { useRouter } from 'next/navigation'
 import { Upload, Camera, Image, X, Video } from 'lucide-react'
 import dynamic from 'next/dynamic'
 
-const CameraHTML5 = dynamic(() => import('./camera/CameraHTML5'), { ssr: false })
+const CameraHTML5 = dynamic(() => import('@/components/camera/CameraHTML5'), {
+  ssr: false
+})
 
 interface MediaUploadButtonProps {
   className?: string
@@ -17,46 +19,49 @@ export default function MediaUploadButton({ className }: MediaUploadButtonProps)
   const galleryInputRef = useRef<HTMLInputElement>(null)
   const [isOpen, setIsOpen] = useState(false)
   const [showCamera, setShowCamera] = useState(false)
-  const [cameraMode, setCameraMode] = useState<'photo' | 'video' | null>(null)
 
-  // Handler pour traiter le fichier sélectionné (depuis galerie ou caméra)
+  // Handler pour traiter le fichier sélectionné (depuis galerie)
   const handleFileSelected = (file: File) => {
     if (!file) return
 
-    // Stocker le fichier dans une variable globale temporaire
-    (window as any).__pendingFile = file
+    console.log('📁 Fichier sélectionné depuis galerie:', file.name, file.type, file.size)
+
+    // Créer un Object URL pour préserver le fichier
+    const objectURL = URL.createObjectURL(file)
+
+    // Stocker les infos dans sessionStorage
+    sessionStorage.setItem('pendingFileURL', objectURL)
+    sessionStorage.setItem('pendingFileName', file.name)
+    sessionStorage.setItem('pendingFileType', file.type)
+    sessionStorage.setItem('pendingFileSize', file.size.toString())
+
+    // AUSSI stocker dans window pour accès immédiat
+    ;(window as any).__pendingFile = file
+    ;(window as any).__pendingFileURL = objectURL
+
+    console.log('✅ Fichier stocké, redirection vers /camera...')
 
     // Rediriger vers /camera pour l'éditeur
     router.push('/camera?fromUpload=true')
   }
 
+  // Handler pour capturer avec CameraHTML5
+  const handleCameraCapture = (file: File) => {
+    console.log('📸 Capture depuis CameraHTML5:', file.name, file.type)
+    setShowCamera(false)
+    handleFileSelected(file)
+  }
+
   const uploadOptions = [
     {
-      id: 'photo',
-      label: 'Prendre une photo',
+      id: 'camera',
+      label: 'Caméra (Photo/Vidéo)',
       icon: Camera,
       color: 'from-purple-500 to-pink-500',
-      description: 'Caméra directe',
+      description: 'Ouvrir la caméra',
       onClick: () => {
         setIsOpen(false)
-        setTimeout(() => {
-          setCameraMode('photo')
-          setShowCamera(true)
-        }, 250)
-      }
-    },
-    {
-      id: 'video',
-      label: 'Filmer une vidéo',
-      icon: Video,
-      color: 'from-rose-500 to-orange-500',
-      description: 'Caméra avec son',
-      onClick: () => {
-        setIsOpen(false)
-        setTimeout(() => {
-          setCameraMode('video')
-          setShowCamera(true)
-        }, 250)
+        setTimeout(() => setShowCamera(true), 100)
       }
     },
     {
@@ -165,24 +170,6 @@ export default function MediaUploadButton({ className }: MediaUploadButtonProps)
         )}
       </AnimatePresence>
 
-      {/* Caméra HTML5 */}
-      <AnimatePresence>
-        {showCamera && cameraMode && (
-          <CameraHTML5
-            initialMode={cameraMode}
-            onClose={() => {
-              setShowCamera(false)
-              setCameraMode(null)
-            }}
-            onCapture={(file) => {
-              setShowCamera(false)
-              setCameraMode(null)
-              handleFileSelected(file)
-            }}
-          />
-        )}
-      </AnimatePresence>
-
       {/* Input caché pour la galerie */}
       <input
         ref={galleryInputRef}
@@ -195,6 +182,14 @@ export default function MediaUploadButton({ className }: MediaUploadButtonProps)
           e.target.value = ''
         }}
       />
+
+      {/* CameraHTML5 Component */}
+      {showCamera && (
+        <CameraHTML5
+          onClose={() => setShowCamera(false)}
+          onCapture={handleCameraCapture}
+        />
+      )}
     </>
   )
 }

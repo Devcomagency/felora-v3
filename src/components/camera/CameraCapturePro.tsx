@@ -29,18 +29,20 @@ export default function CameraCapturePro({ onCapture, onClose, mode }: CameraPro
 
       // Définir le type de fichier accepté
       if (mode === 'video') {
-        // 🎬 VIDÉO : Seulement vidéo, pas d'attribut capture
-        // Le navigateur ouvrira directement la caméra sans menu
+        // 🎬 VIDÉO : Ouvrir la caméra directement
         input.accept = 'video/*'
-        // NE PAS mettre capture="environment" pour éviter le double menu
+        input.setAttribute('capture', 'environment') // Caméra arrière
+        console.log('🎥 Mode vidéo avec capture environment')
       } else if (mode === 'photo') {
-        // 📷 PHOTO : Seulement image, pas d'attribut capture
+        // 📷 PHOTO : Ouvrir la caméra directement
         input.accept = 'image/*'
-        // NE PAS mettre capture="environment" pour éviter le double menu
+        input.setAttribute('capture', 'environment') // Caméra arrière
+        console.log('📸 Mode photo avec capture environment')
       } else if (mode === 'upload') {
         // 📤 UPLOAD : Galerie uniquement (pas de capture)
         input.accept = 'image/*,video/*'
         // Pas d'attribut capture = ouverture de la galerie
+        console.log('📁 Mode galerie sans capture')
       }
 
       input.onchange = (e: any) => {
@@ -108,7 +110,7 @@ export default function CameraCapturePro({ onCapture, onClose, mode }: CameraPro
               const input = document.createElement('input')
               input.type = 'file'
               input.accept = 'video/*'
-              // Pas d'attribut capture pour éviter le double menu
+              input.setAttribute('capture', 'environment') // Ouvre la caméra
               input.onchange = (e: any) => {
                 const file = e.target.files?.[0]
                 if (file && onCapture) {
@@ -131,7 +133,7 @@ export default function CameraCapturePro({ onCapture, onClose, mode }: CameraPro
               const input = document.createElement('input')
               input.type = 'file'
               input.accept = 'image/*'
-              // Pas d'attribut capture pour éviter le double menu
+              input.setAttribute('capture', 'environment') // Ouvre la caméra
               input.onchange = (e: any) => {
                 const file = e.target.files?.[0]
                 if (file && onCapture) {
@@ -154,6 +156,7 @@ export default function CameraCapturePro({ onCapture, onClose, mode }: CameraPro
               const input = document.createElement('input')
               input.type = 'file'
               input.accept = 'image/*,video/*'
+              // Pas de capture = galerie uniquement
               input.onchange = (e: any) => {
                 const file = e.target.files?.[0]
                 if (file && onCapture) {

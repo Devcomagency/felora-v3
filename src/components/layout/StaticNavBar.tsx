@@ -25,8 +25,6 @@ const languages = Object.entries(languageMetadata).map(([code, meta]) => ({
   rtl: meta.rtl
 }))
 
-const CameraHTML5 = dynamic(() => import('../camera/CameraHTML5'), { ssr: false })
-
 export default function StaticNavBar() {
   const router = useRouter()
   const pathname = usePathname()
@@ -48,20 +46,35 @@ export default function StaticNavBar() {
   const [showMenu, setShowMenu] = useState(false)
   const [showLanguageSelector, setShowLanguageSelector] = useState(false)
   const [unreadConversations, setUnreadConversations] = useState(0)
-  const [showCameraOverlay, setShowCameraOverlay] = useState(false)
-  const [cameraMode, setCameraMode] = useState<'photo' | 'video' | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleFileSelected = (file: File | null) => {
     if (!file) return
 
-    // Stocker le fichier dans window (survit à la navigation client-side de Next.js)
-    ;(window as any).__pendingFile = file
+    console.log('📸 Fichier capturé depuis navbar:', file.name, file.type)
 
-    // Flag pour indiquer qu'un fichier attend
-    sessionStorage.setItem('hasPendingFile', 'true')
+    // Créer Object URL
+    const objectURL = URL.createObjectURL(file)
+
+    // Stocker dans sessionStorage
+    sessionStorage.setItem('pendingFileURL', objectURL)
+    sessionStorage.setItem('pendingFileName', file.name)
+    sessionStorage.setItem('pendingFileType', file.type)
+    sessionStorage.setItem('pendingFileSize', file.size.toString())
+
+    // Stocker dans window
+    ;(window as any).__pendingFile = file
+    ;(window as any).__pendingFileURL = objectURL
 
     // Rediriger vers l'éditeur
     nextRouter.push('/camera?fromUpload=true')
+  }
+
+  // Ouvrir la caméra native via input file
+  const openNativeCamera = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click()
+    }
   }
 
   const handleFavoritesClick = useCallback(() => {
@@ -167,11 +180,10 @@ export default function StaticNavBar() {
         icon: Plus,
         label: tCommon('create') || 'Créer',
         onClick: () => {
-          // Ouvrir directement la caméra en mode photo
-          setCameraMode('photo')
-          setShowCameraOverlay(true)
+          // Rediriger vers la page de publication
+          nextRouter.push('/publish')
         },
-        active: nextPathname === '/camera',
+        active: nextPathname === '/publish',
         special: true
       })
     }
@@ -571,23 +583,25 @@ export default function StaticNavBar() {
         )}
       </AnimatePresence>
 
-      {/* Camera Overlay */}
-      <AnimatePresence>
-        {showCameraOverlay && cameraMode && (
-          <CameraHTML5
-            initialMode={cameraMode}
-            onClose={() => {
-              setShowCameraOverlay(false)
-              setCameraMode(null)
-            }}
-            onCapture={(file) => {
-              setShowCameraOverlay(false)
-              setCameraMode(null)
-              handleFileSelected(file)
-            }}
-          />
-        )}
-      </AnimatePresence>
+      {/* Input caché pour la caméra native */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*,video/*"
+        capture="environment"
+        className="hidden"
+        onChange={(e) => {
+          console.log('📸 [StaticNavBar] onChange triggered, files:', e.target.files)
+          const file = e.target.files?.[0]
+          if (file) {
+            console.log('📸 [StaticNavBar] File found:', file.name, file.type, file.size)
+            handleFileSelected(file)
+          } else {
+            console.log('⚠️ [StaticNavBar] No file found in onChange')
+          }
+          e.target.value = '' // Reset pour permettre de re-sélectionner le même fichier
+        }}
+      />
 
       {/* Overlay pour fermer le menu */}
       <AnimatePresence>

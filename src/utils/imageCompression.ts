@@ -52,6 +52,10 @@ export async function compressImage(
         ctx?.drawImage(img, 0, 0, width, height)
 
         // Convertir en blob avec compression
+        // TOUJOURS utiliser image/jpeg pour compatibilité universelle (navigateurs + R2)
+        const outputType = 'image/jpeg'
+        const outputFileName = file.name.replace(/\.(heic|heif|png|webp)$/i, '.jpg')
+
         canvas.toBlob(
           (blob) => {
             if (!blob) {
@@ -69,8 +73,8 @@ export async function compressImage(
                     return
                   }
 
-                  const compressedFile = new File([compressedBlob], file.name, {
-                    type: file.type,
+                  const compressedFile = new File([compressedBlob], outputFileName, {
+                    type: outputType,
                     lastModified: Date.now()
                   })
 
@@ -81,12 +85,12 @@ export async function compressImage(
                     compressionRatio: (1 - compressedBlob.size / file.size) * 100
                   })
                 },
-                file.type,
+                outputType,
                 newQuality
               )
             } else {
-              const compressedFile = new File([blob], file.name, {
-                type: file.type,
+              const compressedFile = new File([blob], outputFileName, {
+                type: outputType,
                 lastModified: Date.now()
               })
 
@@ -98,7 +102,7 @@ export async function compressImage(
               })
             }
           },
-          file.type,
+          outputType,
           quality
         )
       } catch (error) {

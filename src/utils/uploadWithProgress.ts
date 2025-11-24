@@ -63,6 +63,14 @@ export async function uploadWithProgress(options: UploadOptions): Promise<void> 
     maxAttempts = 3
   } = options
 
+  console.log('📤 [UPLOAD] Démarrage upload:', {
+    url: url.substring(0, 100) + '...',
+    fileSize: file.size,
+    fileType: file.type,
+    method,
+    headers
+  })
+
   return retryWithBackoff(async () => {
     return new Promise<void>((resolve, reject) => {
       const xhr = new XMLHttpRequest()
@@ -72,6 +80,7 @@ export async function uploadWithProgress(options: UploadOptions): Promise<void> 
         xhr.upload.addEventListener('progress', (e) => {
           if (e.lengthComputable) {
             const progress = Math.round((e.loaded / e.total) * 100)
+            console.log(`📊 [UPLOAD] Progress: ${progress}%`)
             onProgress(progress)
           }
         })
@@ -79,6 +88,7 @@ export async function uploadWithProgress(options: UploadOptions): Promise<void> 
 
       // Success
       xhr.addEventListener('load', () => {
+        console.log(`✅ [UPLOAD] Load event - Status: ${xhr.status}`)
         if (xhr.status >= 200 && xhr.status < 300) {
           resolve()
         } else {
@@ -87,8 +97,15 @@ export async function uploadWithProgress(options: UploadOptions): Promise<void> 
       })
 
       // Error
-      xhr.addEventListener('error', () => {
-        reject(new Error('Network error during upload'))
+      xhr.addEventListener('error', (e) => {
+        console.error('❌ [UPLOAD] Error event:', {
+          readyState: xhr.readyState,
+          status: xhr.status,
+          statusText: xhr.statusText,
+          responseURL: xhr.responseURL,
+          event: e
+        })
+        reject(new Error(`Network error during upload - Status: ${xhr.status}, ReadyState: ${xhr.readyState}`))
       })
 
       // Timeout

@@ -128,59 +128,69 @@ function CameraPageContent() {
     })
   }, [])
 
-  // Gérer le fichier venant de MediaUploadButton ou CameraHTML5
+  // Gérer le fichier venant de MediaUploadButton (galerie)
   useEffect(() => {
     console.log('🔍 useEffect fromUpload:', fromUpload, 'window:', typeof window)
 
     if (fromUpload && typeof window !== 'undefined') {
-      const hasPending = sessionStorage.getItem('hasPendingFile')
+      // Vérifier si on a un fichier en attente
+      const pendingFileURL = sessionStorage.getItem('pendingFileURL')
+      const pendingFileName = sessionStorage.getItem('pendingFileName')
+      const pendingFileType = sessionStorage.getItem('pendingFileType')
       const pendingFile = (window as any).__pendingFile as File | undefined
 
-      console.log('🔍 hasPending:', hasPending, 'pendingFile:', pendingFile?.name)
+      console.log('🔍 Session Storage:', {
+        url: pendingFileURL ? 'présent' : 'absent',
+        name: pendingFileName,
+        type: pendingFileType,
+        windowFile: pendingFile?.name
+      })
 
-      if (hasPending) {
-        if (pendingFile) {
-          console.log('✅ Fichier reçu:', pendingFile.name, pendingFile.type, pendingFile.size)
-          handleCameraCapture(pendingFile)
+      // Si on a le fichier dans window (cas normal)
+      if (pendingFile) {
+        console.log('✅ Fichier trouvé dans window:', pendingFile.name, pendingFile.type, pendingFile.size)
+        handleCameraCapture(pendingFile)
 
-          // Nettoyer
-          delete (window as any).__pendingFile
-          sessionStorage.removeItem('hasPendingFile')
-        } else {
-          console.log('⏳ Fichier pas encore disponible, réessai dans 100ms...')
-          // Réessayer une fois après un délai court
-          const timeout = setTimeout(() => {
-            const retryFile = (window as any).__pendingFile as File | undefined
-            if (retryFile) {
-              console.log('✅ Fichier reçu après retry:', retryFile.name)
-              handleCameraCapture(retryFile)
-              delete (window as any).__pendingFile
-              sessionStorage.removeItem('hasPendingFile')
-            } else {
-              console.error('❌ Fichier toujours introuvable après retry')
-              sessionStorage.removeItem('hasPendingFile')
-              setLoadingTimeout(true)
-            }
-          }, 100)
-          return () => clearTimeout(timeout)
-        }
-      } else {
-        console.log('⚠️ Pas de flag hasPendingFile - redirect immédiat')
-        setLoadingTimeout(true)
+        // Nettoyer
+        delete (window as any).__pendingFile
+        delete (window as any).__pendingFileURL
+        sessionStorage.removeItem('pendingFileURL')
+        sessionStorage.removeItem('pendingFileName')
+        sessionStorage.removeItem('pendingFileType')
+        sessionStorage.removeItem('pendingFileSize')
+        return
       }
 
-      // Timeout de sécurité : si après 2s toujours rien, redirect
-      const safetyTimeout = setTimeout(() => {
-        if (!capturedMedia) {
-          console.error('⏱️ Timeout de sécurité - redirect vers accueil')
-          sessionStorage.removeItem('hasPendingFile')
-          setLoadingTimeout(true)
-        }
-      }, 2000)
+      // Si on n'a pas le fichier, réessayer après un court délai
+      if (pendingFileURL) {
+        console.log('⏳ Fichier pas encore dans window, réessai dans 150ms...')
+        const timeout = setTimeout(() => {
+          const retryFile = (window as any).__pendingFile as File | undefined
+          if (retryFile) {
+            console.log('✅ Fichier trouvé après retry:', retryFile.name)
+            handleCameraCapture(retryFile)
+            // Nettoyer
+            delete (window as any).__pendingFile
+            delete (window as any).__pendingFileURL
+            sessionStorage.removeItem('pendingFileURL')
+            sessionStorage.removeItem('pendingFileName')
+            sessionStorage.removeItem('pendingFileType')
+            sessionStorage.removeItem('pendingFileSize')
+          } else {
+            console.error('❌ Fichier toujours introuvable après retry')
+            // Nettoyer et redirect
+            sessionStorage.clear()
+            setLoadingTimeout(true)
+          }
+        }, 150)
+        return () => clearTimeout(timeout)
+      }
 
-      return () => clearTimeout(safetyTimeout)
+      // Si vraiment rien, timeout et redirect
+      console.log('⚠️ Aucun fichier trouvé - redirect immédiat')
+      setLoadingTimeout(true)
     }
-  }, [fromUpload, handleCameraCapture, router, capturedMedia])
+  }, [fromUpload, handleCameraCapture, capturedMedia])
 
   /**
    * Handler pour la publication avec retry automatique et progress bar
@@ -307,6 +317,20 @@ function CameraPageContent() {
     }
   }, [router, toast])
 
+  // useEffect pour gérer la redirection timeout (DOIT être avant les return conditionnels)
+  useEffect(() => {
+    if (fromUpload && loadingTimeout) {
+      router.push('/')
+    }
+  }, [fromUpload, loadingTimeout, router])
+
+  // useEffect pour gérer le fallback (DOIT être avant les return conditionnels)
+  useEffect(() => {
+    if (!mode && !fromUpload && !capturedMedia) {
+      router.back()
+    }
+  }, [mode, fromUpload, capturedMedia, router])
+
   // Le mode upload est géré directement par CameraCapturePro
   // qui ouvre l'input file et appelle handleCameraCapture
 
@@ -337,10 +361,16 @@ function CameraPageContent() {
 
   // Fallback : si fromUpload, attendre que useEffect charge le média
   if (fromUpload) {
-    // Si timeout atteint, redirect vers accueil
+    // Si timeout atteint, afficher loading pendant la redirection
     if (loadingTimeout) {
-      router.push('/')
-      return null
+      return (
+        <div className="fixed inset-0 bg-black flex items-center justify-center z-50">
+          <div className="text-white text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500 mx-auto mb-4"></div>
+            <p className="text-sm mt-2">Redirection...</p>
+          </div>
+        </div>
+      )
     }
 
     if (capturedMedia) {
@@ -359,9 +389,15 @@ function CameraPageContent() {
     )
   }
 
-  // Fallback : pas de mode ni de fichier, retour en arrière
-  router.back()
-  return null
+  // Fallback : pas de mode ni de fichier, afficher loading pendant retour
+  return (
+    <div className="fixed inset-0 bg-black flex items-center justify-center z-50">
+      <div className="text-white text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500 mx-auto mb-4"></div>
+        <p className="text-sm mt-2">Retour...</p>
+      </div>
+    </div>
+  )
 }
 
 export default function CameraPage() {
