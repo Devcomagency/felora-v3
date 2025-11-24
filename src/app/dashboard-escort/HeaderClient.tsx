@@ -100,7 +100,7 @@ export default function HeaderClient() {
         )}
       </div>
 
-      <div className="hidden sm:flex items-center gap-2">
+      <div className="flex items-center gap-2">
         <AccountCert kycStatus={kycStatus} />
       </div>
     </div>
