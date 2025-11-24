@@ -32,21 +32,13 @@ export default function EscortQuickActionsBar() {
       {/* Barre d'actions */}
       <div className="flex items-center gap-2 justify-end">
         {(status === 'ACTIVE' || status === 'VERIFIED') ? (
-          <>
-            <button
-              onClick={() => router.push('/profile-test/escort/test')}
-              className="px-3 py-1.5 rounded-lg text-xs font-medium text-neutral-400 hover:text-white hover:bg-white/5 transition-colors"
-            >
-              {t('viewProfile')}
-            </button>
-            <button
-              disabled={loading}
-              onClick={pause}
-              className="px-3 py-1.5 rounded-lg text-xs font-medium border border-yellow-500/30 text-yellow-200 hover:bg-yellow-500/10 transition-colors disabled:opacity-50"
-            >
-              {t('pauseAccount')}
-            </button>
-          </>
+          <button
+            disabled={loading}
+            onClick={pause}
+            className="px-3 py-1.5 rounded-lg text-xs font-medium border border-yellow-500/30 text-yellow-200 hover:bg-yellow-500/10 transition-colors disabled:opacity-50"
+          >
+            {t('pauseAccount')}
+          </button>
         ) : (
           <button
             disabled={loading}
