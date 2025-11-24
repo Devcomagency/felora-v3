@@ -231,6 +231,13 @@ export async function GET(
         const profilePhoto = media.find((m: any) => m.pos === 0) // Photo de profil
         const footerPhoto = media.find((m: any) => m.pos === 1)  // Photo footer
 
+        console.log('🔍 [CLUB AVATAR DEBUG]', {
+          profilePhotoFound: !!profilePhoto,
+          profilePhotoUrl: profilePhoto?.url,
+          profilePhotoBuilt: buildMediaUrl(profilePhoto?.url),
+          detailsAvatarUrl: details?.avatarUrl
+        })
+
         // ✅ Calculer si le club est ouvert maintenant basé sur les vrais horaires
         const agendaIsOpenNow = isClubOpenNow(
           services?.openingHours || null,
