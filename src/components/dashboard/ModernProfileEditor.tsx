@@ -1577,69 +1577,40 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
         </div>
       )}
 
-      {/* Header Premium avec progression et KYC */}
-      <div className="bg-gradient-to-br from-gray-800/60 via-gray-800/40 to-gray-900/60 backdrop-blur-xl border border-gray-700/50 rounded-2xl p-6">
-        {/* Progression */}
-        <div className="flex items-center justify-between gap-4 mb-6">
-          <div className="flex-1">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-semibold text-white/90">{t('completion.title')}</h3>
-              <span className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">{completionPct}%</span>
-            </div>
-            <div className="h-3 bg-black/30 rounded-full overflow-hidden border border-white/5">
-              <div
-                className="h-full bg-gradient-to-r from-purple-500 via-pink-500 to-purple-500 transition-all duration-500 ease-out"
-                style={{ width: `${completionPct}%` }}
-              />
-            </div>
-          </div>
-
-          {/* Badge KYC */}
-          <div className="flex-shrink-0">
-            {kycStatus === 'APPROVED' ? (
-              <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500/20 border border-emerald-500/30">
-                <BadgeCheck className="text-emerald-400" size={20} />
-                <span className="text-sm font-medium text-emerald-300">{t('completion.verified')}</span>
-              </div>
-            ) : kycStatus === 'PENDING' ? (
-              <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-yellow-500/20 border border-yellow-500/30">
-                <Loader2 className="text-yellow-400 animate-spin" size={20} />
-                <span className="text-sm font-medium text-yellow-300">{t('completion.verifying')}</span>
-              </div>
-            ) : (
-              <a href="/profile-test-signup/escort?step=3" className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all">
-                <ShieldCheck className="text-white/60" size={20} />
-                <span className="text-sm font-medium text-white/80">{t('completion.certify')}</span>
-              </a>
-            )}
-          </div>
+      {/* Carte de progression compacte */}
+      <div className="w-full md:w-80 bg-neutral-800/50 rounded-xl p-4 border border-white/5 backdrop-blur-sm">
+        <div className="flex justify-between text-xs font-medium mb-2">
+          <span className="text-white">{t('completion.title')}</span>
+          <span className="text-purple-400">{completionPct}%</span>
         </div>
-
-        {/* Checklist obligatoire */}
-        {requiredChecks.filter(c => !c.ok).length > 0 && (
-          <div className="pt-4 border-t border-white/5">
-            <div className="flex items-center gap-2 mb-3">
-              <AlertTriangle size={16} className="text-orange-400" />
-              <h4 className="text-sm font-semibold text-white/90">{t('completion.requiredActions')} ({requiredChecks.filter(c => !c.ok).length})</h4>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {requiredChecks.map(c => (
-                <button
-                  key={c.key}
-                  onClick={()=> setActiveTab(c.targetTab)}
-                  className={`text-xs rounded-full px-3 py-1.5 border transition-all ${
-                    c.ok
-                      ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'
-                      : 'bg-orange-500/10 text-orange-300 border-orange-500/30 hover:bg-orange-500/20'
-                  }`}
-                >
-                  {c.ok ? <CheckCircle2 size={12} className="inline mr-1"/> : <AlertTriangle size={12} className="inline mr-1"/>}
-                  {c.label}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
+        <div className="h-1.5 bg-neutral-700 rounded-full overflow-hidden mb-3">
+          <div
+            className="h-full bg-gradient-to-r from-purple-600 to-fuchsia-500 transition-all duration-500 ease-out"
+            style={{
+              width: `${completionPct}%`,
+              boxShadow: completionPct > 0 ? '0 0 10px rgba(168,85,247,0.4)' : 'none'
+            }}
+          />
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {requiredChecks.filter(c => !c.ok).length > 0 ? (
+            requiredChecks.filter(c => !c.ok).map(c => (
+              <button
+                key={c.key}
+                onClick={() => setActiveTab(c.targetTab)}
+                className="px-2 py-1 rounded bg-red-500/10 border border-red-500/20 text-[10px] text-red-400 flex items-center gap-1 hover:bg-red-500/20 transition-colors"
+              >
+                <AlertTriangle className="w-3 h-3" />
+                {c.label}
+              </button>
+            ))
+          ) : (
+            <span className="px-2 py-1 rounded bg-emerald-500/10 border border-emerald-500/20 text-[10px] text-emerald-400 flex items-center gap-1">
+              <CheckCircle2 className="w-3 h-3" />
+              {t('completion.complete')}
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Navigation par onglets - Design premium */}
