@@ -706,11 +706,12 @@
         }
       },
       "completion": {
-        "title": "Complétude du profil",
+        "title": "Complétion",
         "verified": "Vérifié",
         "verifying": "En vérification",
         "certify": "Certifier",
-        "requiredActions": "Actions requises"
+        "requiredActions": "Actions requises",
+        "complete": "Profil complet"
       },
       "requiredChecks": {
         "profilePhoto": "Photo de profil",

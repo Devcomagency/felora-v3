@@ -30,7 +30,7 @@ export default function EscortQuickActionsBar() {
       )}
 
       {/* Barre d'actions */}
-      <div className="hidden sm:flex items-center gap-2 justify-end">
+      <div className="flex items-center gap-2 justify-end">
         {(status === 'ACTIVE' || status === 'VERIFIED') ? (
           <>
             <button
