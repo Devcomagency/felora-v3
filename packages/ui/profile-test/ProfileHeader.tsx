@@ -139,6 +139,24 @@ export default function ProfileHeader({
 
           {/* Contenu par-dessus la cover photo */}
           <div className="absolute inset-x-0 bottom-0 px-5 sm:px-6 md:px-8 pb-6 sm:pb-8">
+            {/* Avatar rond pour le club - Style Instagram */}
+            {avatar && (
+              <div className="mb-4 sm:mb-5">
+                <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 border-white/20 bg-black/40 backdrop-blur-sm overflow-hidden shadow-2xl">
+                  <img
+                    src={validatedUrl || avatar}
+                    alt={name}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      console.error('❌ [ProfileHeader] Erreur chargement avatar club:', validatedUrl || avatar)
+                      const target = e.target as HTMLImageElement
+                      target.src = '/default-avatar.svg'
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+
             {/* Nom du club avec badges - Style épuré premium */}
             <div className="mb-5 sm:mb-6">
               <h1
