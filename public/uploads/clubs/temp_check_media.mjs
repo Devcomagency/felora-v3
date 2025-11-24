@@ -1,0 +1,1 @@
+console.log('Vérification médias pour salonluxeeee'); import { PrismaClient } from '@prisma/client'; const prisma = new PrismaClient(); prisma.media.findMany({ where: { ownerType: 'CLUB', ownerId: 'cmg4ww1aa00051xfgo7ilxnod' } }).then(media => { console.log('Médias trouvés:', media); process.exit(0); }).catch(e => { console.error(e); process.exit(1); });

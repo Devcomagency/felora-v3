@@ -9,6 +9,7 @@ interface PublishMediaEditorProps {
   mediaFile: File
   mediaUrl: string
   mediaType: 'image' | 'video'
+  userRole?: string // CLUB, ESCORT, etc.
   onClose: () => void
   onPublish: (data: {
     file: File
@@ -23,6 +24,7 @@ export default function PublishMediaEditor({
   mediaFile,
   mediaUrl,
   mediaType,
+  userRole,
   onClose,
   onPublish
 }: PublishMediaEditorProps) {
@@ -54,6 +56,9 @@ export default function PublishMediaEditor({
     }
   }
 
+  // Pour les CLUB : seulement Public et Privé (pas de Premium ni Description)
+  const isClub = userRole === 'CLUB' || userRole === 'SALON'
+
   const visibilityOptions = [
     {
       value: 'public' as const,
@@ -73,7 +78,7 @@ export default function PublishMediaEditor({
       label: 'Privé',
       description: 'Vous seulement'
     },
-    {
+    ...(!isClub ? [{
       value: 'premium' as const,
       icon: Crown,
       gradient: 'from-yellow-500 to-orange-500',
@@ -81,7 +86,7 @@ export default function PublishMediaEditor({
       bgGradient: 'from-yellow-500/10 via-orange-500/5 to-transparent',
       label: 'Premium',
       description: 'Contenu payant'
-    },
+    }] : []),
   ]
 
   if (publishSuccess) {
@@ -161,32 +166,34 @@ export default function PublishMediaEditor({
             </div>
           </button>
 
-          {/* Description */}
-          <div
-            className="rounded-2xl p-3"
-            style={{
-              background: 'linear-gradient(to bottom right, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03))',
-              backdropFilter: 'blur(20px)',
-              border: '1px solid rgba(255, 255, 255, 0.15)'
-            }}
-          >
-            <label className="block text-white/80 text-xs font-medium mb-2">
-              Description
-            </label>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Racontez votre moment..."
-              rows={2}
-              disabled={isPublishing}
-              className="w-full px-3 py-2 rounded-xl text-white text-sm placeholder-white/40 resize-none transition-all border focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500/50 disabled:opacity-60"
+          {/* Description - Caché pour les CLUB */}
+          {!isClub && (
+            <div
+              className="rounded-2xl p-3"
               style={{
-                background: 'linear-gradient(to bottom right, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02))',
+                background: 'linear-gradient(to bottom right, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03))',
                 backdropFilter: 'blur(20px)',
-                borderColor: 'rgba(255, 255, 255, 0.1)'
+                border: '1px solid rgba(255, 255, 255, 0.15)'
               }}
-            />
-          </div>
+            >
+              <label className="block text-white/80 text-xs font-medium mb-2">
+                Description
+              </label>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Racontez votre moment..."
+                rows={2}
+                disabled={isPublishing}
+                className="w-full px-3 py-2 rounded-xl text-white text-sm placeholder-white/40 resize-none transition-all border focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500/50 disabled:opacity-60"
+                style={{
+                  background: 'linear-gradient(to bottom right, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02))',
+                  backdropFilter: 'blur(20px)',
+                  borderColor: 'rgba(255, 255, 255, 0.1)'
+                }}
+              />
+            </div>
+          )}
 
           {/* Visibilité */}
           <div

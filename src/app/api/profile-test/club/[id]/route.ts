@@ -83,8 +83,14 @@ export async function GET(
   context: { params: Promise<{ id: string }> }
 ) {
   const startTime = Date.now()
-  
+
   try {
+    // Vérifier la session pour déterminer si l'utilisateur est le propriétaire
+    const { getServerSession } = await import('next-auth')
+    const { authOptions } = await import('@/lib/auth')
+    const session = await getServerSession(authOptions as any)
+    const userId = session?.user?.id
+
     // Extract client identifier for rate limiting
     const clientId = getClientIdentifier(request)
     
@@ -231,6 +237,9 @@ export async function GET(
           services?.isOpen24_7 || false
         )
 
+        // Vérifier si l'utilisateur connecté est le propriétaire du club
+        const isOwner = userId === club.userId
+
         clubProfile = {
           id: club.handle,
           dbId: club.id, // ID de la base de données pour les API internes
@@ -244,12 +253,26 @@ export async function GET(
           languages: services?.languages || [],
           services: services?.services || [],
           media: media
-            .filter((m: any) => m.pos === 0 || m.pos >= 2) // Inclure la photo de couverture (pos 0) ET les médias de publication (pos 2+)
+            .filter((m: any) => {
+              // Pour les CLUB : afficher pos 0 (avatar) + pos >= 1 (publications)
+              // - Si propriétaire : afficher PUBLIC + PRIVATE
+              // - Si visiteur : afficher seulement PUBLIC
+              if (m.pos === 0) return true // Avatar toujours visible
+              if (m.pos >= 1) {
+                if (isOwner) {
+                  return m.visibility === 'PUBLIC' || m.visibility === 'PRIVATE'
+                } else {
+                  return m.visibility === 'PUBLIC'
+                }
+              }
+              return false
+            })
             .map((m: any) => ({
               type: m.type.toLowerCase() as 'image' | 'video',
               url: buildMediaUrl(m.url),
               thumb: buildMediaUrl(m.thumbUrl),
-              pos: m.pos // Ajouter la position pour debug
+              pos: m.pos, // Ajouter la position pour debug
+              visibility: m.visibility // Ajouter la visibilité pour debug
             })),
           contact: {
             phone: details?.phone || club.user?.phoneE164 || null,
@@ -277,7 +300,7 @@ export async function GET(
         // Calculer les vraies stats de réactions pour les médias du club
         try {
           const clubMediaIds = media
-            .filter((m: any) => m.pos >= 2) // Seulement les médias de publication
+            .filter((m: any) => m.pos >= 1) // Seulement les médias de publication (pos >= 1)
             .map((m: any) => m.id)
 
           if (clubMediaIds.length > 0) {
