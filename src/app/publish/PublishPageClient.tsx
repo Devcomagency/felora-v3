@@ -113,7 +113,6 @@ export default function PublishPageClient({ userRole }: PublishPageClientProps) 
 
       // 3. Compression d'image - DÉSACTIVÉE TEMPORAIREMENT POUR TEST MOBILE
       let fileToUpload = data.file
-      alert('DEBUG: Fichier prêt pour upload - ' + data.file.name)
 
       // COMPRESSION DÉSACTIVÉE - TEST
       // const compressionResult = await compressImageIfNeeded(data.file, {
