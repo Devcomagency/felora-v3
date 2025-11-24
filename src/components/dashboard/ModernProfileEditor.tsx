@@ -2183,11 +2183,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                   {/* Carte + Confidentialité (compact) */}
                   {profileData.address && profileData.coordinates && (
                     <div className="mt-4 space-y-3">
-                      <LocationPreviewMap
-                        coordinates={profileData.coordinates}
-                        address={profileData.address}
-                        privacy={profileData.addressPrivacy}
-                      />
+                      {/* LocationPreviewMap retiré pour simplifier l'UI */}
 
                       {/* Confidentialité en ligne */}
                       <div className="flex items-center gap-3 p-3 bg-gray-800/30 rounded-lg border border-gray-700/30">
