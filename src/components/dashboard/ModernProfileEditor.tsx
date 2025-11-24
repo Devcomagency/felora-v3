@@ -1661,7 +1661,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                 <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-purple-500/10 to-pink-500/10 animate-pulse" />
               )}
               <div className="relative">
-                <div className="flex items-center gap-2 mb-2">
+                <div className="flex items-center gap-2">
                   <div className={`p-2 rounded-lg transition-all ${
                     isActive ? 'bg-purple-500/20' : 'bg-gray-700/50 group-hover:bg-gray-700'
                   }`}>
@@ -1673,11 +1673,6 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                     {tab.label}
                   </span>
                 </div>
-                <p className={`text-xs transition-all ${
-                  isActive ? 'text-purple-300/80' : 'text-gray-500 group-hover:text-gray-400'
-                }`}>
-                  {tab.description}
-                </p>
               </div>
             </button>
           )
