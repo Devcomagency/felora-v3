@@ -30,14 +30,31 @@ export default function EscortQuickActionsBar() {
       )}
 
       {/* Barre d'actions */}
-      <div className="bg-black/60 backdrop-blur border border-white/10 rounded-xl px-4 py-2 text-sm flex items-center gap-2 flex-wrap justify-end">
+      <div className="hidden sm:flex items-center gap-2 justify-end">
         {(status === 'ACTIVE' || status === 'VERIFIED') ? (
           <>
-            <button onClick={() => router.push('/profile-test/escort/test')} className="px-3 py-1.5 rounded-lg border border-white/10 text-white/80 hover:bg-white/10">{t('viewProfile')}</button>
-            <button disabled={loading} onClick={pause} className="px-3 py-1.5 rounded-lg border border-yellow-500/30 text-yellow-200 hover:bg-yellow-500/10">{t('pauseAccount')}</button>
+            <button
+              onClick={() => router.push('/profile-test/escort/test')}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium text-neutral-400 hover:text-white hover:bg-white/5 transition-colors"
+            >
+              {t('viewProfile')}
+            </button>
+            <button
+              disabled={loading}
+              onClick={pause}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium border border-yellow-500/30 text-yellow-200 hover:bg-yellow-500/10 transition-colors disabled:opacity-50"
+            >
+              {t('pauseAccount')}
+            </button>
           </>
         ) : (
-          <button disabled={loading} onClick={activate} className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white">{t('activateAccount')}</button>
+          <button
+            disabled={loading}
+            onClick={activate}
+            className="px-3 py-1.5 rounded-lg bg-white text-black text-xs font-semibold hover:bg-neutral-200 transition-colors shadow-lg shadow-white/5 disabled:opacity-50"
+          >
+            {t('activateAccount')}
+          </button>
         )}
       </div>
     </div>

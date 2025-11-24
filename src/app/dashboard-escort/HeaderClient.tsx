@@ -54,14 +54,54 @@ export default function HeaderClient() {
   }
 
   return (
-    <div className="bg-black/70 backdrop-blur border border-white/10 rounded-xl px-4 py-3 text-sm">
-      <div className="flex items-center gap-3">
-        <div className={`px-2.5 py-1 rounded-lg text-xs font-medium border ${status === 'ACTIVE' || status === 'VERIFIED' ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30' : status === 'PAUSED' ? 'bg-yellow-500/15 text-yellow-300 border-yellow-500/30' : 'bg-gray-500/15 text-gray-300 border-gray-500/30'}`}>
-          {loading ? '…' : status === 'ACTIVE' ? t('status.active') : status === 'VERIFIED' ? t('status.verified') : status === 'PAUSED' ? t('status.paused') : t('status.inactive')}
+    <div className="glass rounded-xl p-1.5 flex items-center justify-between mb-6">
+      <div className="flex items-center gap-4 px-2">
+        <div className="flex items-center gap-2">
+          {(status === 'ACTIVE' || status === 'VERIFIED') && (
+            <>
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </span>
+              <span className="text-xs font-medium text-emerald-400 tracking-wide uppercase">
+                {loading ? '…' : status === 'VERIFIED' ? t('status.verified') : t('status.active')}
+              </span>
+            </>
+          )}
+          {status === 'PAUSED' && (
+            <>
+              <span className="relative flex h-2 w-2">
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-yellow-500"></span>
+              </span>
+              <span className="text-xs font-medium text-yellow-400 tracking-wide uppercase">{t('status.paused')}</span>
+            </>
+          )}
+          {status === 'PENDING' && (
+            <>
+              <span className="relative flex h-2 w-2">
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-gray-500"></span>
+              </span>
+              <span className="text-xs font-medium text-gray-400 tracking-wide uppercase">{t('status.inactive')}</span>
+            </>
+          )}
+        </div>
+        <div className="h-3 w-px bg-white/10"></div>
+        <div className="flex items-center gap-1.5 text-neutral-500">
+          <ShieldCheck className="w-3.5 h-3.5" />
+          <span className="text-xs">{isVerified ? 'Vérifié' : 'Non vérifié'}</span>
         </div>
         {loading && (
-          <div className="text-xs text-white/60 flex items-center"><Loader2 size={14} className="animate-spin mr-2"/> {t('loading')}</div>
+          <>
+            <div className="h-3 w-px bg-white/10"></div>
+            <div className="text-xs text-neutral-500 flex items-center">
+              <Loader2 size={14} className="animate-spin mr-1.5"/> {t('loading')}
+            </div>
+          </>
         )}
+      </div>
+
+      <div className="hidden sm:flex items-center gap-2">
+        <AccountCert kycStatus={kycStatus} />
       </div>
     </div>
   )

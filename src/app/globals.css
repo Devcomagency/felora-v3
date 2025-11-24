@@ -297,3 +297,60 @@ body[data-camera-active] [data-top-nav] {
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 107, 157, 0.5);
 }
+
+/* ========================================
+   DASHBOARD ESCORT - NEW DESIGN SYSTEM
+   ======================================== */
+
+/* Custom Scrollbar for Dashboard */
+.fel-v2 ::-webkit-scrollbar { 
+  width: 6px; 
+}
+
+.fel-v2 ::-webkit-scrollbar-track { 
+  background: transparent; 
+}
+
+.fel-v2 ::-webkit-scrollbar-thumb { 
+  background: #262626; 
+  border-radius: 3px; 
+}
+
+.fel-v2 ::-webkit-scrollbar-thumb:hover { 
+  background: #404040; 
+}
+
+/* No Scrollbar utility */
+.fel-v2 .no-scrollbar::-webkit-scrollbar { 
+  display: none; 
+}
+
+.fel-v2 .no-scrollbar { 
+  -ms-overflow-style: none;
+  scrollbar-width: none; 
+}
+
+/* Glass Effects */
+.fel-v2 .glass {
+  background: rgba(20, 20, 20, 0.6);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* Custom Inputs */
+.fel-v2 .input-dark {
+  background: #0f0f0f;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.2s ease;
+}
+
+.fel-v2 .input-dark:focus {
+  border-color: rgba(168, 85, 247, 0.5);
+  box-shadow: 0 0 0 1px rgba(168, 85, 247, 0.2);
+  outline: none;
+}
+
+/* Safe Area */
+.fel-v2 .safe-pb { 
+  padding-bottom: env(safe-area-inset-bottom); 
+}
