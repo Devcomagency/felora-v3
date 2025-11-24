@@ -152,16 +152,25 @@ function KycNudge() {
 function AccountCert({ kycStatus }: { kycStatus: 'NONE' | 'PENDING' | 'APPROVED' | 'REJECTED' }) {
   if (kycStatus === 'APPROVED') {
     return (
-      <span className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-lg bg-emerald-500/15 text-emerald-300 border border-emerald-500/30"><BadgeCheck size={14}/> Vérifié</span>
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium uppercase tracking-wide">
+        <BadgeCheck className="w-3 h-3" /> Vérifié
+      </span>
     )
   }
   if (kycStatus === 'PENDING') {
     return (
-      <span className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-lg bg-yellow-500/15 text-yellow-200 border border-yellow-500/30">Vérification en cours…</span>
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] rounded bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 font-medium uppercase tracking-wide">
+        <Loader2 className="w-3 h-3 animate-spin" /> En cours…
+      </span>
     )
   }
   // NONE or REJECTED
   return (
-    <a href="/profile-test-signup/escort?step=3" className="px-3 py-2 rounded-lg bg-white/5 text-white/80 border border-white/10 hover:bg-white/10">Certifier mon compte</a>
+    <a
+      href="/profile-test-signup/escort?step=3"
+      className="px-3 py-1.5 rounded-lg text-xs font-medium text-neutral-400 hover:text-white hover:bg-white/5 transition-colors"
+    >
+      Certifier
+    </a>
   )
 }
