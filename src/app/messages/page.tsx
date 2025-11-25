@@ -423,6 +423,10 @@ function NewMessagesPage() {
             ? { ...conv, unreadCount: 0 }
             : conv
         ))
+
+        // 🔥 Déclencher le rafraîchissement du badge footer
+        window.dispatchEvent(new Event('felora:messages:refresh'))
+        console.log('[MESSAGES] 🔄 Événement de rafraîchissement badge déclenché')
       } catch (error: any) {
         if (error.name === 'AbortError') {
           console.log('[MESSAGES] Requête annulée (changement rapide de conversation)')

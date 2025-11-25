@@ -127,13 +127,31 @@ export default function StaticNavBar() {
 
   // 🔥 Écouter les événements globaux de rafraîchissement des conversations
   useEffect(() => {
-    const handleRefresh = () => {
-      refreshMessages() // Rafraîchir immédiatement le badge
+    const handleRefresh = async () => {
+      console.log('[NAVBAR] 🔄 Rafraîchissement badge demandé')
+      refreshMessages() // Rafraîchir les notifications
+
+      // Rafraîchir aussi le compteur de conversations immédiatement
+      try {
+        const res = await fetch('/api/e2ee/conversations/list')
+        if (!res.ok) return
+        const data = await res.json()
+        const convs = Array.isArray(data?.conversations) ? data.conversations : []
+
+        const convCount = convs.reduce((acc: number, c: any) => acc + (c.unreadCount > 0 ? 1 : 0), 0)
+        const unreadMessageNotifsCount = messageNotifications.filter((n: any) => !n.read).length
+        const totalCount = Math.max(convCount, unreadMessageNotifsCount)
+
+        setUnreadConversations(totalCount)
+        console.log('[NAVBAR] ✅ Badge mis à jour:', totalCount)
+      } catch (error) {
+        console.error('[NAVBAR] ❌ Erreur rafraîchissement badge:', error)
+      }
     }
 
     window.addEventListener('felora:messages:refresh', handleRefresh)
     return () => window.removeEventListener('felora:messages:refresh', handleRefresh)
-  }, [refreshMessages])
+  }, [refreshMessages, messageNotifications])
 
   // 🚀 OPTIMISÉ : Factoriser les listeners window (menu + langues)
   useEffect(() => {
