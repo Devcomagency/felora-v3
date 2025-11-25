@@ -63,6 +63,7 @@ export default function ActionsBar({
   const [followState, setFollowState] = useState(isFollowing)
   const [showContactDropdown, setShowContactDropdown] = useState(false)
   const [loading, setLoading] = useState<string | null>(null)
+  const [showGiftComingSoon, setShowGiftComingSoon] = useState(false)
 
   // Optimistic follow with rollback
   const handleFollow = useCallback(async () => {
@@ -120,31 +121,67 @@ export default function ActionsBar({
 
         {/* Bouton Cadeau - Style register page avec gradient rose */}
         {showGift && onGift && (
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => onGift?.(profileId)}
-            className="py-2.5 px-4 text-white rounded-xl font-semibold text-sm transition-all duration-500 border flex items-center justify-center gap-2 flex-1"
-            style={{
-              background: 'linear-gradient(to right, #EC489930, #EC489920)',
-              borderColor: '#EC489950',
-              boxShadow: '0 8px 16px #EC489920',
-              minWidth: 0
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'linear-gradient(to right, #EC489940, #EC489930)'
-              e.currentTarget.style.borderColor = '#EC489960'
-              e.currentTarget.style.boxShadow = '0 12px 24px #EC489930'
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'linear-gradient(to right, #EC489930, #EC489920)'
-              e.currentTarget.style.borderColor = '#EC489950'
-              e.currentTarget.style.boxShadow = '0 8px 16px #EC489920'
-            }}
-          >
-            <Diamond size={16} />
-            <span>{t('gift')}</span>
-          </motion.button>
+          <div className="relative flex-1">
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => setShowGiftComingSoon(true)}
+              className="w-full py-2.5 px-4 text-white rounded-xl font-semibold text-sm transition-all duration-500 border flex items-center justify-center gap-2"
+              style={{
+                background: 'linear-gradient(to right, #EC489930, #EC489920)',
+                borderColor: '#EC489950',
+                boxShadow: '0 8px 16px #EC489920',
+                minWidth: 0
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'linear-gradient(to right, #EC489940, #EC489930)'
+                e.currentTarget.style.borderColor = '#EC489960'
+                e.currentTarget.style.boxShadow = '0 12px 24px #EC489930'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'linear-gradient(to right, #EC489930, #EC489920)'
+                e.currentTarget.style.borderColor = '#EC489950'
+                e.currentTarget.style.boxShadow = '0 8px 16px #EC489920'
+              }}
+            >
+              <Diamond size={16} />
+              <span>{t('gift')}</span>
+            </motion.button>
+
+            {/* Modal Coming Soon */}
+            {showGiftComingSoon && (
+              <div
+                className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+                onClick={() => setShowGiftComingSoon(false)}
+              >
+                <motion.div
+                  initial={{ scale: 0.9, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.9, opacity: 0 }}
+                  className="bg-gradient-to-br from-gray-900 to-black border border-pink-500/30 rounded-2xl p-6 max-w-sm w-full shadow-2xl"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="text-center">
+                    <div className="mb-4 inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-pink-500/20 to-purple-500/20 border border-pink-500/30">
+                      <Diamond size={32} className="text-pink-400" />
+                    </div>
+                    <h3 className="text-xl font-bold text-white mb-2">
+                      Fonctionnalité en développement
+                    </h3>
+                    <p className="text-gray-400 mb-6">
+                      La fonctionnalité de cadeaux virtuels est actuellement en cours de développement et sera bientôt disponible ! 🎁
+                    </p>
+                    <button
+                      onClick={() => setShowGiftComingSoon(false)}
+                      className="w-full py-3 px-6 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-xl font-semibold hover:from-pink-600 hover:to-purple-600 transition-all"
+                    >
+                      Compris !
+                    </button>
+                  </div>
+                </motion.div>
+              </div>
+            )}
+          </div>
         )}
 
         {/* Message ou Contact - Style register page avec gradient bleu */}
@@ -238,7 +275,7 @@ export default function ActionsBar({
 
         {/* Bouton Contact intelligent avec gestion des 3 cas */}
         {contact && (() => {
-          const { phoneVisibility, phone } = contact;
+          const { phoneDisplayType, phone } = contact;
           const phoneNumber = phone || '';
           const cleanPhone = phoneNumber.replace(/\D/g, '');
 
@@ -253,7 +290,7 @@ export default function ActionsBar({
             : `sms:${cleanPhone}?body=${encodeURIComponent(smsMessage)}`;
           const callUrl = `tel:${cleanPhone}`;
 
-          if (phoneVisibility === 'none') {
+          if (phoneDisplayType === 'messagerie_privee') {
             // CAS 3: Messagerie privée uniquement - Bouton spécial
             return (
               <button
@@ -270,18 +307,18 @@ export default function ActionsBar({
                 <ChevronDown size={12} />
               </button>
             );
-          } else if ((phoneVisibility === 'visible' || phoneVisibility === 'hidden') && phoneNumber) {
+          } else if ((phoneDisplayType === 'visible' || phoneDisplayType === 'cache_avec_boutons') && phoneNumber) {
             // CAS 1 & 2: Numéro visible ou caché - Dropdown avec options
             return (
               <div className="relative">
                 <button
                   onClick={() => setShowContactDropdown(!showContactDropdown)}
                   className={`p-2 rounded-lg border transition-all hover:bg-white/15 active:scale-95 flex items-center gap-1 ${
-                    phoneVisibility === 'visible'
+                    phoneDisplayType === 'visible'
                       ? 'bg-green-500/20 text-green-300 border-green-500/30'
                       : 'bg-white/10 text-gray-300 border-white/20'
                   }`}
-                  title={phoneVisibility === 'visible' ? `Téléphone: ${phoneNumber}` : 'Contact téléphonique disponible'}
+                  title={phoneDisplayType === 'visible' ? `Téléphone: ${phoneNumber}` : 'Contact téléphonique disponible'}
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
@@ -292,7 +329,7 @@ export default function ActionsBar({
                 {/* Dropdown menu */}
                 {showContactDropdown && (
                   <div className="absolute top-full mt-2 right-0 bg-black/90 backdrop-blur-xl rounded-lg border border-white/10 shadow-2xl z-50 min-w-[160px]">
-                    {phoneVisibility === 'visible' && (
+                    {phoneDisplayType === 'visible' && (
                       <div className="px-4 py-2 border-b border-white/10">
                         <div className="text-xs text-gray-400 mb-1">{t('phoneContact.phoneNumberLabel')}</div>
                         <div className="text-sm font-mono text-green-300">{phoneNumber}</div>

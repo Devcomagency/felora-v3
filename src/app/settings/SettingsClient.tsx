@@ -408,18 +408,6 @@ export default function SettingsClient({ user }: SettingsClientProps) {
             </div>
           </div>
 
-          <a
-            href="https://felora.com/faq"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-full px-4 py-3 flex items-center justify-between hover:bg-white/5 transition-colors block"
-          >
-            <div className="flex items-center gap-3">
-              <HelpCircle size={18} className="text-white/60" />
-              <span>Centre d'aide / FAQ</span>
-            </div>
-            <ChevronRight size={18} className="text-white/40" />
-          </a>
 
           <a
             href="mailto:support@felora.com?subject=Demande de support"
