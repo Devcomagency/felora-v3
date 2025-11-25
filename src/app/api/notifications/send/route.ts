@@ -172,10 +172,27 @@ export async function POST(request: NextRequest) {
       console.log('[NOTIFICATIONS] ℹ️ SSE non disponible, l\'utilisateur recevra via polling')
     }
 
-    // TODO: Envoyer aussi un email si configuré
-    // if (targetUser.emailNotifications) {
-    //   await sendEmail(targetUser.email, title, message)
-    // }
+    // 📧 Envoyer aussi un email si l'utilisateur a activé les notifications email
+    try {
+      const { sendNotificationEmail } = await import('@/lib/email')
+      const emailResult = await sendNotificationEmail(
+        targetUser.id,
+        title,
+        message,
+        validatedLink
+      )
+
+      if (emailResult.success) {
+        console.log('[NOTIFICATIONS] ✅ Email de notification envoyé')
+      } else if ((emailResult as any).skipped) {
+        console.log('[NOTIFICATIONS] ⏭️ Email non envoyé (notifications désactivées)')
+      } else {
+        console.error('[NOTIFICATIONS] ❌ Erreur envoi email:', emailResult.error)
+      }
+    } catch (error) {
+      // Fallback silencieux - l'email n'est pas critique
+      console.error('[NOTIFICATIONS] ⚠️ Erreur lors de l\'envoi d\'email:', error)
+    }
 
     return NextResponse.json({
       success: true,
