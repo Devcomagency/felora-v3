@@ -29,24 +29,31 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    // 🚀 OPTIMISATION : Utiliser une requête JSON Prisma directe
-    // Au lieu de charger toutes les notifications en mémoire puis filtrer,
-    // on filtre directement en base de données avec path JSON
-    const result = await prisma.notification.updateMany({
+    // 🚀 Charger les notifications MESSAGE_RECEIVED, puis filtrer par conversationId
+    const allNotifs = await prisma.notification.findMany({
       where: {
         userId: session.user.id,
         type: 'MESSAGE_RECEIVED',
-        read: false,
-        // Filtrer directement sur le JSON metadata.conversationId
-        metadata: {
-          path: ['conversationId'],
-          equals: conversationId
-        } as Prisma.JsonFilter
-      },
-      data: {
-        read: true
+        read: false
       }
     })
+
+    // Filtrer en mémoire par conversationId dans metadata
+    const notifIdsToMark = allNotifs
+      .filter((n: any) => n.metadata && (n.metadata as any).conversationId === conversationId)
+      .map((n: any) => n.id)
+
+    let result = { count: 0 }
+    if (notifIdsToMark.length > 0) {
+      result = await prisma.notification.updateMany({
+        where: {
+          id: { in: notifIdsToMark }
+        },
+        data: {
+          read: true
+        }
+      })
+    }
 
     // 🆕 Mettre à jour E2EEConversationRead.lastReadAt en parallèle
     await prisma.e2EEConversationRead.upsert({

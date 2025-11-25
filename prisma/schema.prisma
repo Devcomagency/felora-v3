@@ -66,17 +66,17 @@ model EscortProfileV2 {
 }
 
 model ClubProfileV2 {
-  id          String      @id @default(cuid())
-  userId      String      @unique
-  handle      String      @unique
+  id          String        @id @default(cuid())
+  userId      String        @unique
+  handle      String        @unique
   companyName String?
   ideNumber   String?
   managerName String?
-  verified    Boolean     @default(false)
-  kycStatus   KycStatusV2 @default(PENDING)
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  user        User        @relation("ClubProfileV2User", fields: [userId], references: [id], onDelete: Cascade)
+  verified    Boolean       @default(false)
+  kycStatus   KycStatusV2   @default(PENDING)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  user        User          @relation("ClubProfileV2User", fields: [userId], references: [id], onDelete: Cascade)
   details     ClubDetails?
   services    ClubServices?
 
@@ -84,44 +84,44 @@ model ClubProfileV2 {
 }
 
 model ClubDetails {
-  id               String    @id @default(cuid())
-  clubId           String    @unique
-  name             String?
-  description      String?
-  address          String?
-  city             String?
-  postalCode       String?
-  country          String?   @default("CH")
-  openingHours     String?
-  websiteUrl       String?
-  email            String?
-  phone            String?
-  avatarUrl        String?
-  coverUrl         String?
-  isActive         Boolean   @default(false)
-  capacity         Int?
-  latitude         Float?
-  longitude        Float?
-  establishmentType String?  @default("club")
-  views            Int       @default(0)
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
-  club             ClubProfileV2 @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  id                String        @id @default(cuid())
+  clubId            String        @unique
+  name              String?
+  description       String?
+  address           String?
+  city              String?
+  postalCode        String?
+  country           String?       @default("CH")
+  openingHours      String?
+  websiteUrl        String?
+  email             String?
+  phone             String?
+  avatarUrl         String?
+  coverUrl          String?
+  isActive          Boolean       @default(false)
+  capacity          Int?
+  latitude          Float?
+  longitude         Float?
+  establishmentType String?       @default("club")
+  views             Int           @default(0)
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  club              ClubProfileV2 @relation(fields: [clubId], references: [id], onDelete: Cascade)
 
   @@map("club_details")
 }
 
 model ClubServices {
-  id             String   @id @default(cuid())
-  clubId         String   @unique
-  languages      String[] @default([])
-  paymentMethods String[] @default([])
-  services       String[] @default([])
-  equipments     String[] @default([])
-  isOpen24_7     Boolean  @default(false)
+  id             String        @id @default(cuid())
+  clubId         String        @unique
+  languages      String[]      @default([])
+  paymentMethods String[]      @default([])
+  services       String[]      @default([])
+  equipments     String[]      @default([])
+  isOpen24_7     Boolean       @default(false)
   openingHours   String?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
   club           ClubProfileV2 @relation(fields: [clubId], references: [id], onDelete: Cascade)
 
   @@map("club_services")
@@ -145,8 +145,8 @@ model KycSubmission {
   reviewerId       String?
   reviewedAt       DateTime?
   rejectionReason  String?
-  adminNotes       String?     // Notes de l'admin (séparées des données techniques)
-  notes            String?     // Données techniques JSON (legacy, à supprimer plus tard)
+  adminNotes       String? // Notes de l'admin (séparées des données techniques)
+  notes            String? // Données techniques JSON (legacy, à supprimer plus tard)
   createdAt        DateTime    @default(now())
   updatedAt        DateTime    @updatedAt
   user             User        @relation("UserKycSubmissions", fields: [userId], references: [id], onDelete: Cascade)
@@ -186,8 +186,8 @@ model ClientProfile {
 }
 
 model EscortProfile {
-  id                  String       @id @default(cuid())
-  userId              String       @unique
+  id                  String         @id @default(cuid())
+  userId              String         @unique
   firstName           String
   stageName           String
   dateOfBirth         DateTime
@@ -201,17 +201,17 @@ model EscortProfile {
   ville               String?
   rue                 String?
   numero              String?
-  addressVisible      Boolean      @default(false)
+  addressVisible      Boolean        @default(false)
   latitude            Float?
   longitude           Float?
-  addressPrivacy      String?      @default("precise") // "precise" | "approximate"
+  addressPrivacy      String?        @default("precise") // "precise" | "approximate"
   services            String
   rates               String
   availability        String
   profilePhoto        String?
   galleryPhotos       String
   videos              String
-  status              EscortStatus @default(PENDING)
+  status              EscortStatus   @default(PENDING)
   verificationData    Json?
   isVerifiedBadge     Boolean        @default(false)
   profileCompleted    Boolean        @default(false)
@@ -225,9 +225,9 @@ model EscortProfile {
   category            EscortCategory @default(ESCORT)
   telegramChatId      String?
   telegramUsername    String?
-  telegramConnected   Boolean      @default(false)
-  telegramEnabled     Boolean      @default(false)
-  messagingPreference String       @default("APP_ONLY")
+  telegramConnected   Boolean        @default(false)
+  telegramEnabled     Boolean        @default(false)
+  messagingPreference String         @default("APP_ONLY")
   height              Int?
   bodyType            String?
   hairColor           String?
@@ -243,7 +243,7 @@ model EscortProfile {
   rateHalfDay         Float?
   rateFullDay         Float?
   rateOvernight       Float?
-  currency            String       @default("CHF")
+  currency            String         @default("CHF")
   paymentMethods      String? // Méthodes de paiement acceptées (JSON)
   venueOptions        String? // Lieu & Options (JSON): Douche à deux, Jacuzzi, etc.
   acceptedCurrencies  String? // Devises acceptées (JSON): CHF, EUR, USD
@@ -251,55 +251,55 @@ model EscortProfile {
   practices           String?
   orientation         String?
   acceptedClients     String?
-  outcall             Boolean      @default(false)
-  incall              Boolean      @default(false)
+  outcall             Boolean        @default(false)
+  incall              Boolean        @default(false)
   timeSlots           String?
-  availableNow        Boolean      @default(false)
-  weekendAvailable    Boolean      @default(false)
-  hasPrivatePhotos    Boolean      @default(false)
-  hasPrivateVideos    Boolean      @default(false)
-  hasWebcamLive       Boolean      @default(false)
-  acceptsGifts        Boolean      @default(false)
-  isActive            Boolean      @default(false)
-  totalLikes          Int          @default(0)
-  totalReacts         Int          @default(0)
-  createdAt           DateTime     @default(now())
-  updatedAt           DateTime     @updatedAt
-  acceptsCouples      Boolean      @default(false)
-  acceptsHandicapped  Boolean      @default(false)
-  acceptsSeniors      Boolean      @default(false)
-  acceptsWomen        Boolean      @default(false)
+  availableNow        Boolean        @default(false)
+  weekendAvailable    Boolean        @default(false)
+  hasPrivatePhotos    Boolean        @default(false)
+  hasPrivateVideos    Boolean        @default(false)
+  hasWebcamLive       Boolean        @default(false)
+  acceptsGifts        Boolean        @default(false)
+  isActive            Boolean        @default(false)
+  totalLikes          Int            @default(0)
+  totalReacts         Int            @default(0)
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+  acceptsCouples      Boolean        @default(false)
+  acceptsHandicapped  Boolean        @default(false)
+  acceptsSeniors      Boolean        @default(false)
+  acceptsWomen        Boolean        @default(false)
   breastType          String?
   // hairLength          String? // TODO: Uncomment when DB migration applied
-  phoneVisibility     String?      @default("hidden")
+  phoneVisibility     String?        @default("hidden")
   pubicHair           String?
   smoker              Boolean?
 
   // Nouveaux champs manquants ajoutés
-  phoneDisplayType    String?      @default("hidden") // visible, cache_avec_boutons, messagerie_privee
-  originDetails       String?      // Origine détaillée
-  blockedCountries    Json?        // Liste des codes pays bloqués (ex: ["FR", "DE", "IT"])
+  phoneDisplayType String? @default("hidden") // visible, cache_avec_boutons, messagerie_privee
+  originDetails    String? // Origine détaillée
+  blockedCountries Json? // Liste des codes pays bloqués (ex: ["FR", "DE", "IT"])
 
   // Services détaillés
-  servicesClassic     String?      // Services classiques (JSON)
-  servicesBdsm        String?      // Services BDSM & Fétiches (JSON)
-  servicesMassage     String?      // Services massages (JSON)
+  servicesClassic String? // Services classiques (JSON)
+  servicesBdsm    String? // Services BDSM & Fétiches (JSON)
+  servicesMassage String? // Services massages (JSON)
 
   // Tarifs détaillés
-  baseRate            Float?       // Tarif de base "À partir de"
-  rateStructure       String?      // Structure tarifs détaillée (JSON)
+  baseRate      Float? // Tarif de base "À partir de"
+  rateStructure String? // Structure tarifs détaillée (JSON)
 
   // Validation âge
-  ageVerified         Boolean      @default(false) // Âge certifié
+  ageVerified Boolean @default(false) // Âge certifié
 
   // Agenda/Disponibilité
-  agendaEnabled       Boolean      @default(true)  // Activer l'agenda
+  agendaEnabled Boolean @default(true) // Activer l'agenda
 
   // Tarifs personnalisés et blocage géographique
-  customPrices        Json?        // Tarifs personnalisés (ex: 90 minutes, week-end, etc.)
-  geoBlocking         Json?        // Blocage géographique par cantons et villes
+  customPrices Json? // Tarifs personnalisés (ex: 90 minutes, week-end, etc.)
+  geoBlocking  Json? // Blocage géographique par cantons et villes
 
-  user                User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("escort_profiles")
 }
@@ -591,17 +591,17 @@ model UserDevice {
 }
 
 model E2EEConversation {
-  id                String   @id @default(cuid())
-  isGroup           Boolean  @default(false)
-  name              String?
-  participants      Json
-  participantsKey   String   @unique
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  
+  id              String   @id @default(cuid())
+  isGroup         Boolean  @default(false)
+  name            String?
+  participants    Json
+  participantsKey String   @unique
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
   // Messages éphémères
-  ephemeralMode     Boolean  @default(false)
-  ephemeralDuration Int      @default(86400) // 24h en secondes
+  ephemeralMode     Boolean @default(false)
+  ephemeralDuration Int     @default(86400) // 24h en secondes
 
   @@index([isGroup])
 }
@@ -619,12 +619,12 @@ model E2EEMessageEnvelope {
   createdAt      DateTime       @default(now())
   deliveredAt    DateTime?
   readAt         DateTime?
-  
+
   // Messages éphémères et contrôles média
-  viewMode       String?        // "once" | "unlimited"
-  downloadable   Boolean        @default(true)
-  expiresAt      DateTime?      // Date d'expiration calculée
-  viewedBy       String[]       @default([]) // Array de userIds qui ont vu (pour vue unique)
+  viewMode     String? // "once" | "unlimited"
+  downloadable Boolean   @default(true)
+  expiresAt    DateTime? // Date d'expiration calculée
+  viewedBy     String[]  @default([]) // Array de userIds qui ont vu (pour vue unique)
 
   @@unique([conversationId, messageId])
   @@index([conversationId, createdAt])
@@ -667,31 +667,31 @@ model ChatReport {
 }
 
 model Media {
-  id              String          @id @default(cuid())
-  ownerType       String
-  ownerId         String
-  type            String
-  url             String
-  thumbUrl        String?
-  description     String?
-  visibility      MediaVisibility @default(PUBLIC)
-  price           Int?
-  pos             Int?
-  likeCount       Int             @default(0)
-  reactCount      Int             @default(0)
+  id             String          @id @default(cuid())
+  ownerType      String
+  ownerId        String
+  type           String
+  url            String
+  thumbUrl       String?
+  description    String?
+  visibility     MediaVisibility @default(PUBLIC)
+  price          Int?
+  pos            Int?
+  likeCount      Int             @default(0)
+  reactCount     Int             @default(0)
   // External video ID (Bunny.net videoId, Mux assetId, etc.)
-  externalId      String?
+  externalId     String?
   // Moderation fields (simplified)
-  reportCount     Int             @default(0)
-  reportReason    String?
-  reportedAt      DateTime?
-  deletedBy       String?
-  deletedAt       DateTime?
-  deletionReason  String?
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
-  mediaAccess     MediaAccess[]
-  reactions       Reaction[]
+  reportCount    Int             @default(0)
+  reportReason   String?
+  reportedAt     DateTime?
+  deletedBy      String?
+  deletedAt      DateTime?
+  deletionReason String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  mediaAccess    MediaAccess[]
+  reactions      Reaction[]
 
   @@index([reportCount])
   @@index([ownerType, ownerId])
@@ -827,11 +827,11 @@ enum EscortStatus {
 }
 
 enum EscortCategory {
-  ESCORT           // Escort classique
-  MASSEUSE         // Masseuse érotique
-  DOMINATRICE      // Dominatrice / BDSM
-  TRANSSEXUELLE    // Transsexuelle / Trans
-  AUTRE            // Autre catégorie
+  ESCORT // Escort classique
+  MASSEUSE // Masseuse érotique
+  DOMINATRICE // Dominatrice / BDSM
+  TRANSSEXUELLE // Transsexuelle / Trans
+  AUTRE // Autre catégorie
 }
 
 enum ConversationType {
@@ -855,12 +855,12 @@ enum DeliveryStatus {
 }
 
 enum ReportStatus {
-  PENDING     // En attente de traitement
-  REVIEWING   // En cours d'examen
-  REVIEWED    // Examiné (ancien, garder pour compatibilité)
-  RESOLVED    // Résolu
-  DISMISSED   // Rejeté/non fondé
-  ESCALATED   // Escaladé (cas grave)
+  PENDING // En attente de traitement
+  REVIEWING // En cours d'examen
+  REVIEWED // Examiné (ancien, garder pour compatibilité)
+  RESOLVED // Résolu
+  DISMISSED // Rejeté/non fondé
+  ESCALATED // Escaladé (cas grave)
 }
 
 enum SubscriptionPlan {
@@ -945,43 +945,43 @@ enum ReactionType {
 // ============================================
 
 model ClubEscortInvitation {
-  id         String                    @id @default(cuid())
-  clubId     String                    // ID du club qui invite
-  escortId   String                    // ID de l'escort invitée
-  status     ClubEscortInvitationStatus @default(PENDING)
-  message    String?                   // Message d'invitation optionnel
-  sentAt     DateTime                  @default(now())
-  respondedAt DateTime?                // Date de réponse
-  expiresAt  DateTime                  // Date d'expiration de l'invitation (7 jours)
-  createdAt  DateTime                  @default(now())
-  updatedAt  DateTime                  @updatedAt
+  id          String                     @id @default(cuid())
+  clubId      String // ID du club qui invite
+  escortId    String // ID de l'escort invitée
+  status      ClubEscortInvitationStatus @default(PENDING)
+  message     String? // Message d'invitation optionnel
+  sentAt      DateTime                   @default(now())
+  respondedAt DateTime? // Date de réponse
+  expiresAt   DateTime // Date d'expiration de l'invitation (7 jours)
+  createdAt   DateTime                   @default(now())
+  updatedAt   DateTime                   @updatedAt
 
   @@unique([clubId, escortId]) // Un club ne peut envoyer qu'une seule invitation à une escort à la fois
-  @@index([escortId, status])   // Index pour récupérer les invitations d'une escort
-  @@index([clubId, status])     // Index pour récupérer les invitations d'un club
+  @@index([escortId, status]) // Index pour récupérer les invitations d'une escort
+  @@index([clubId, status]) // Index pour récupérer les invitations d'un club
   @@map("club_escort_invitations")
 }
 
 model ClubEscortLink {
-  id         String   @id @default(cuid())
-  clubId     String   // ID du club
-  escortId   String   // ID de l'escort
-  position   Int?     // Position dans la liste (pour l'ordre d'affichage)
-  joinedAt   DateTime @default(now())
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id        String   @id @default(cuid())
+  clubId    String // ID du club
+  escortId  String // ID de l'escort
+  position  Int? // Position dans la liste (pour l'ordre d'affichage)
+  joinedAt  DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([clubId, escortId]) // Une escort ne peut être liée qu'une fois à un club
-  @@index([clubId])             // Index pour récupérer les escorts d'un club
-  @@index([escortId])           // Index pour récupérer les clubs d'une escort
+  @@index([clubId]) // Index pour récupérer les escorts d'un club
+  @@index([escortId]) // Index pour récupérer les clubs d'une escort
   @@map("club_escort_links")
 }
 
 enum ClubEscortInvitationStatus {
-  PENDING   // En attente de réponse
-  ACCEPTED  // Acceptée
-  DECLINED  // Refusée
-  EXPIRED   // Expirée
+  PENDING // En attente de réponse
+  ACCEPTED // Acceptée
+  DECLINED // Refusée
+  EXPIRED // Expirée
   CANCELLED // Annulée par le club
 }
 
@@ -996,8 +996,8 @@ model Notification {
   title     String
   message   String
   read      Boolean          @default(false)
-  link      String?          // URL optionnelle pour redirection
-  metadata  String?          // Données JSON optionnelles
+  link      String? // URL optionnelle pour redirection
+  metadata  String? // Données JSON optionnelles
   createdAt DateTime         @default(now())
   user      User             @relation("UserNotifications", fields: [userId], references: [id], onDelete: Cascade)
 
@@ -1007,13 +1007,13 @@ model Notification {
 }
 
 enum NotificationType {
-  KYC_APPROVED         // Vérification KYC approuvée
-  KYC_REJECTED         // Vérification KYC rejetée
-  ACCOUNT_BANNED       // Compte banni
-  MESSAGE_RECEIVED     // Message reçu
-  SUBSCRIPTION_NEW     // Nouvel abonnement
+  KYC_APPROVED // Vérification KYC approuvée
+  KYC_REJECTED // Vérification KYC rejetée
+  ACCOUNT_BANNED // Compte banni
+  MESSAGE_RECEIVED // Message reçu
+  SUBSCRIPTION_NEW // Nouvel abonnement
   SUBSCRIPTION_EXPIRED // Abonnement expiré
-  SYSTEM_ALERT         // Alerte système
+  SYSTEM_ALERT // Alerte système
 }
 
 // ============================================
@@ -1021,33 +1021,33 @@ enum NotificationType {
 // ============================================
 
 model Report {
-  id              String       @id @default(cuid())
+  id String @id @default(cuid())
 
   // Qui signale
-  reporterId      String?      // ID de l'utilisateur qui signale (null si anonyme/non connecté)
-  reporterEmail   String?      // Email du signaleur
-  reporterIp      String?      // IP du signaleur (pour tracking des abus)
+  reporterId    String? // ID de l'utilisateur qui signale (null si anonyme/non connecté)
+  reporterEmail String? // Email du signaleur
+  reporterIp    String? // IP du signaleur (pour tracking des abus)
 
   // Quoi est signalé
-  reportType      ReportType   // Type de signalement (profil, message, média, comportement)
-  targetType      String       // Type de cible: 'escort', 'club', 'conversation', 'media', 'user'
-  targetId        String       // ID de la cible signalée
+  reportType ReportType // Type de signalement (profil, message, média, comportement)
+  targetType String // Type de cible: 'escort', 'club', 'conversation', 'media', 'user'
+  targetId   String // ID de la cible signalée
 
   // Détails du signalement
-  reason          ReportReason // Raison principale du signalement
-  description     String?      // Description détaillée (optionnelle)
-  evidence        String?      // Preuves (URLs, screenshots) en JSON
+  reason      ReportReason // Raison principale du signalement
+  description String? // Description détaillée (optionnelle)
+  evidence    String? // Preuves (URLs, screenshots) en JSON
 
   // Traitement
-  status          ReportStatus @default(PENDING)
-  reviewedBy      String?      // ID de l'admin qui a traité
-  reviewedAt      DateTime?    // Date de traitement
-  reviewNotes     String?      // Notes de l'admin
-  actionTaken     String?      // Action prise (warning, ban, deleted, etc.)
+  status      ReportStatus @default(PENDING)
+  reviewedBy  String? // ID de l'admin qui a traité
+  reviewedAt  DateTime? // Date de traitement
+  reviewNotes String? // Notes de l'admin
+  actionTaken String? // Action prise (warning, ban, deleted, etc.)
 
   // Métadonnées
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([reporterId])
   @@index([reporterEmail])
@@ -1060,11 +1060,11 @@ model Report {
 
 model IgnoredReportEntity {
   id         String   @id @default(cuid())
-  identifier String   // Email ou IP
-  type       String   // 'email' ou 'ip'
-  ignoredBy  String   // ID de l'admin qui a ignoré
+  identifier String // Email ou IP
+  type       String // 'email' ou 'ip'
+  ignoredBy  String // ID de l'admin qui a ignoré
   ignoredAt  DateTime @default(now())
-  reason     String?  // Raison de l'ignorance (optionnel)
+  reason     String? // Raison de l'ignorance (optionnel)
 
   @@unique([identifier, type])
   @@index([identifier])
@@ -1073,45 +1073,44 @@ model IgnoredReportEntity {
 }
 
 enum ReportType {
-  PROFILE       // Signalement de profil escort/club
-  MESSAGE       // Signalement de message/conversation
-  MEDIA         // Signalement de média
-  BEHAVIOR      // Signalement de comportement
-  OTHER         // Autre
+  PROFILE // Signalement de profil escort/club
+  MESSAGE // Signalement de message/conversation
+  MEDIA // Signalement de média
+  BEHAVIOR // Signalement de comportement
+  OTHER // Autre
 }
 
 enum ReportReason {
   // Profils
-  FAKE_PROFILE           // Faux profil
-  FAKE_PHOTOS            // Fausses photos
-  SCAM                   // Arnaque
-  IMPERSONATION          // Usurpation d'identité
-  MISLEADING_INFO        // Informations trompeuses
-  UNDERAGE               // Mineur
+  FAKE_PROFILE // Faux profil
+  FAKE_PHOTOS // Fausses photos
+  SCAM // Arnaque
+  IMPERSONATION // Usurpation d'identité
+  MISLEADING_INFO // Informations trompeuses
+  UNDERAGE // Mineur
 
   // Messages
-  HARASSMENT             // Harcèlement
-  SPAM                   // Spam
-  INAPPROPRIATE_CONTENT  // Contenu inapproprié
-  THREATS                // Menaces
-  HATE_SPEECH            // Discours haineux
+  HARASSMENT // Harcèlement
+  SPAM // Spam
+  INAPPROPRIATE_CONTENT // Contenu inapproprié
+  THREATS // Menaces
+  HATE_SPEECH // Discours haineux
 
   // Médias
-  INAPPROPRIATE_MEDIA    // Média inapproprié
-  COPYRIGHT              // Violation de droits d'auteur
-  EXPLICIT_CONTENT       // Contenu explicite non autorisé
+  INAPPROPRIATE_MEDIA // Média inapproprié
+  COPYRIGHT // Violation de droits d'auteur
+  EXPLICIT_CONTENT // Contenu explicite non autorisé
 
   // Comportements
-  NO_SHOW                // Rendez-vous manqué
-  PAYMENT_ISSUE          // Problème de paiement
-  UNPROFESSIONAL         // Comportement non professionnel
-  SAFETY_CONCERN         // Problème de sécurité
+  NO_SHOW // Rendez-vous manqué
+  PAYMENT_ISSUE // Problème de paiement
+  UNPROFESSIONAL // Comportement non professionnel
+  SAFETY_CONCERN // Problème de sécurité
 
   // Autres
-  TOS_VIOLATION          // Violation des CGU
-  OTHER                  // Autre
+  TOS_VIOLATION // Violation des CGU
+  OTHER // Autre
 }
-
 
 // ============================================
 // TRADUCTIONS AUTOMATIQUES (LibreTranslate)
