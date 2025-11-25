@@ -1,10 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { ArrowLeft, Lock, Bell, Globe, HelpCircle, ChevronRight, Mail, AlertTriangle, Trash2 } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
-import { usePathname } from '@/navigation'
 import { signOut } from 'next-auth/react'
 
 interface User {
