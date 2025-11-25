@@ -394,6 +394,16 @@ function NewMessagesPage() {
 
         const data = await res.json()
         console.log('[MESSAGES] ✅ Conversation marquée ouverte:', data)
+
+        // 🔄 Recharger la liste des conversations pour mettre à jour unreadCount
+        loadConversations(controller.signal)
+
+        // 🔄 Mettre à jour l'état local de la conversation active
+        setConversations(prev => prev.map(conv =>
+          conv.id === activeConversation.id
+            ? { ...conv, unreadCount: 0 }
+            : conv
+        ))
       } catch (error: any) {
         if (error.name === 'AbortError') {
           console.log('[MESSAGES] Requête annulée (changement rapide de conversation)')

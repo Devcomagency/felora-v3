@@ -27,6 +27,20 @@ export async function GET() {
       if (!lastByConv.has(m.conversationId)) lastByConv.set(m.conversationId, m)
     }
 
+    // 🔥 Compter TOUS les messages non lus (pas juste le dernier)
+    const allMessages = await prisma.e2EEMessage.findMany({
+      where: {
+        conversationId: { in: convIds },
+        senderId: { not: userId }, // Seulement les messages reçus
+        readAt: null // Non lus
+      },
+      select: { conversationId: true }
+    })
+    const unreadByConv = new Map<string, number>()
+    for (const m of allMessages) {
+      unreadByConv.set(m.conversationId, (unreadByConv.get(m.conversationId) || 0) + 1)
+    }
+
     // Batch users
     const allParticipantIds = Array.from(new Set(mine.flatMap(c => (c.participants as any as string[]) || [])))
     const users = await prisma.user.findMany({ where: { id: { in: allParticipantIds } }, select: { id: true, name: true, role: true } })
@@ -74,7 +88,7 @@ export async function GET() {
           }
         : undefined
       const lastReadAt = readMap.get(c.id)
-      const unreadCount = lastMsg && (!lastReadAt || (new Date(lastMsg.createdAt).getTime() > new Date(lastReadAt).getTime())) ? 1 : 0
+      const unreadCount = unreadByConv.get(c.id) || 0 // 🔥 Nombre réel de messages non lus
       return {
         id: c.id,
         type: 'direct',
