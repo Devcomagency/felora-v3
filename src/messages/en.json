@@ -1464,7 +1464,8 @@
       },
       "header": {
         "title": "Identity Verification",
-        "subtitle": "Final step to activate your account"
+        "subtitle": "Get the verified badge to reassure and attract more clients",
+        "privacy": "🔒 All your data is deleted after verification, nothing is stored"
       },
       "required": {
         "title": "Required documents:",
@@ -1506,17 +1507,17 @@
           "tip2": "Make sure everything is readable"
         },
         "video": {
-          "label": "Short face video",
-          "header": "Presentation video (max 30s, max 25MB)",
-          "description": "Introduce yourself saying your full name. Film in portrait mode with good lighting. Keep the video short to stay under 25MB.",
+          "label": "Short full-body video",
+          "header": "Presentation video (max 15s, max 25MB)",
+          "description": "Introduce yourself saying your full name. Film yourself from head to toe in portrait mode with good lighting. Keep the video short to stay under 25MB.",
           "selectLabel": "Select your video",
           "required": "Required",
-          "req1": "Maximum duration 30 seconds",
-          "req2": "Your face clearly visible",
+          "req1": "Maximum duration 15 seconds",
+          "req2": "Your full body visible (head to toe)",
           "req3": "Say your full name",
-          "tip1": "Film in portrait mode (vertical)",
-          "tip2": "Ensure good lighting",
-          "tip3": "Speak clearly and look at the camera"
+          "tip1": "Film in portrait mode (vertical) - full body visible",
+          "tip2": "Show distinctive features (tattoos, piercings, beauty marks)",
+          "tip3": "Ensure good lighting and speak clearly"
         }
       },
       "status": {
@@ -1769,6 +1770,9 @@
     "help": {
       "requirements": "Requirements",
       "tips": "Tips"
+    },
+    "actions": {
+      "viewExample": "View example"
     }
   },
   "reportModal": {
@@ -1888,6 +1892,11 @@
     "cookies": {
       "title": "Cookie Policy",
       "metadata": "Cookie usage policy of Felora"
+    }
+  },
+  "kyc": {
+    "actions": {
+      "viewExample": "View example"
     }
   }
 }

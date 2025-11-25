@@ -1459,7 +1459,8 @@
       },
       "header": {
         "title": "Verificación de identidad",
-        "subtitle": "Último paso para activar tu cuenta"
+        "subtitle": "Obtén la insignia verificada para tranquilizar y atraer más clientes",
+        "privacy": "🔒 Todos tus datos se eliminan después de la verificación, nada se almacena"
       },
       "required": {
         "title": "Documentos requeridos:",
@@ -1501,17 +1502,17 @@
           "tip2": "Asegúrate de que todo sea legible"
         },
         "video": {
-          "label": "Video corto de rostro",
-          "header": "Video de presentación (máx. 30s, máx. 25MB)",
-          "description": "Preséntate diciendo tu nombre completo. Graba en modo retrato con buena iluminación. Mantén el video corto para estar bajo 25MB.",
+          "label": "Video corto de cuerpo entero",
+          "header": "Video de presentación (máx. 15s, máx. 25MB)",
+          "description": "Preséntate diciendo tu nombre completo. Grábate de la cabeza a los pies en modo retrato con buena iluminación. Mantén el video corto para estar bajo 25MB.",
           "selectLabel": "Selecciona tu video",
           "required": "Requerido",
-          "req1": "Duración máxima 30 segundos",
-          "req2": "Tu rostro claramente visible",
+          "req1": "Duración máxima 15 segundos",
+          "req2": "Tu cuerpo completo visible (de cabeza a pies)",
           "req3": "Di tu nombre completo",
-          "tip1": "Graba en modo retrato (vertical)",
-          "tip2": "Asegúrate de tener buena iluminación",
-          "tip3": "Habla claramente y mira a la cámara"
+          "tip1": "Graba en modo retrato (vertical) - cuerpo completo visible",
+          "tip2": "Muestra rasgos distintivos (tatuajes, piercings, lunares)",
+          "tip3": "Asegúrate de tener buena iluminación y habla claramente"
         }
       },
       "status": {
@@ -1764,6 +1765,9 @@
     "help": {
       "requirements": "Requisitos",
       "tips": "Consejos"
+    },
+    "actions": {
+      "viewExample": "Ver ejemplo"
     }
   },
   "reportModal": {
@@ -1883,6 +1887,11 @@
     "cookies": {
       "title": "Política de Cookies",
       "metadata": "Política de uso de cookies de Felora"
+    }
+  },
+  "kyc": {
+    "actions": {
+      "viewExample": "Ver ejemplo"
     }
   }
 }

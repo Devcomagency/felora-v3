@@ -1465,7 +1465,8 @@
       },
       "header": {
         "title": "Vérification d'identité",
-        "subtitle": "Dernière étape pour activer votre compte"
+        "subtitle": "Obtenez le badge vérifié pour rassurer et attirer plus de clients",
+        "privacy": "🔒 Toutes vos données sont supprimées après vérification, rien n'est conservé"
       },
       "required": {
         "title": "Documents requis :",
@@ -1507,17 +1508,17 @@
           "tip2": "Assurez-vous que tout est lisible"
         },
         "video": {
-          "label": "Vidéo courte visage",
-          "header": "Vidéo de présentation (max 30s, max 25MB)",
-          "description": "Présentez-vous en disant votre nom complet. Filmez en mode portrait avec une bonne luminosité. Gardez la vidéo courte pour rester sous 25MB.",
+          "label": "Vidéo courte corps entier",
+          "header": "Vidéo de présentation (max 15s, max 25MB)",
+          "description": "Présentez-vous en disant votre nom complet. Filmez-vous de la tête aux pieds en mode portrait avec une bonne luminosité. Gardez la vidéo courte pour rester sous 25MB.",
           "selectLabel": "Sélectionner votre vidéo",
           "required": "Requis",
-          "req1": "Durée maximum 30 secondes",
-          "req2": "Votre visage bien visible",
+          "req1": "Durée maximum 15 secondes",
+          "req2": "Tout votre corps visible (de la tête aux pieds)",
           "req3": "Dites votre nom complet",
-          "tip1": "Filmez en mode portrait (vertical)",
-          "tip2": "Assurez-vous d'avoir une bonne luminosité",
-          "tip3": "Parlez clairement et regardez la caméra"
+          "tip1": "Filmez en mode portrait (vertical) - corps entier visible",
+          "tip2": "Montrez les signes distinctifs (tatouages, piercings, grains de beauté)",
+          "tip3": "Assurez-vous d'avoir une bonne luminosité et parlez clairement"
         }
       },
       "status": {
@@ -1528,7 +1529,8 @@
       "actions": {
         "completeLater": "Compléter plus tard",
         "validateVerification": "Valider la vérification",
-        "submitting": "Envoi..."
+        "submitting": "Envoi...",
+        "viewExample": "Voir exemple"
       },
       "checklist": {
         "title": "Checklist des documents",
@@ -1833,6 +1835,9 @@
     "help": {
       "requirements": "Exigences",
       "tips": "Conseils"
+    },
+    "actions": {
+      "viewExample": "Voir exemple"
     }
   },
   "reportPage": {

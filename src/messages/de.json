@@ -1459,7 +1459,8 @@
       },
       "header": {
         "title": "Identitätsverifizierung",
-        "subtitle": "Letzter Schritt zur Aktivierung Ihres Kontos"
+        "subtitle": "Erhalten Sie das Verifizierungsabzeichen, um mehr Kunden zu beruhigen und anzuziehen",
+        "privacy": "🔒 Alle Ihre Daten werden nach der Verifizierung gelöscht, nichts wird gespeichert"
       },
       "required": {
         "title": "Erforderliche Dokumente:",
@@ -1501,17 +1502,17 @@
           "tip2": "Stellen Sie sicher, dass alles lesbar ist"
         },
         "video": {
-          "label": "Kurzes Gesichtsvideo",
-          "header": "Präsentationsvideo (max 30s, max 25MB)",
-          "description": "Stellen Sie sich vor, indem Sie Ihren vollständigen Namen sagen. Filmen Sie im Hochformat mit guter Beleuchtung. Halten Sie das Video kurz, um unter 25MB zu bleiben.",
+          "label": "Kurzes Ganzkörpervideo",
+          "header": "Präsentationsvideo (max 15s, max 25MB)",
+          "description": "Stellen Sie sich vor, indem Sie Ihren vollständigen Namen sagen. Filmen Sie sich von Kopf bis Fuß im Hochformat mit guter Beleuchtung. Halten Sie das Video kurz, um unter 25MB zu bleiben.",
           "selectLabel": "Wählen Sie Ihr Video",
           "required": "Erforderlich",
-          "req1": "Maximale Dauer 30 Sekunden",
-          "req2": "Ihr Gesicht deutlich sichtbar",
+          "req1": "Maximale Dauer 15 Sekunden",
+          "req2": "Ihr ganzer Körper sichtbar (von Kopf bis Fuß)",
           "req3": "Sagen Sie Ihren vollständigen Namen",
-          "tip1": "Filmen Sie im Hochformat (vertikal)",
-          "tip2": "Stellen Sie gute Beleuchtung sicher",
-          "tip3": "Sprechen Sie deutlich und schauen Sie in die Kamera"
+          "tip1": "Filmen Sie im Hochformat (vertikal) - ganzer Körper sichtbar",
+          "tip2": "Zeigen Sie Unterscheidungsmerkmale (Tattoos, Piercings, Muttermale)",
+          "tip3": "Stellen Sie gute Beleuchtung sicher und sprechen Sie deutlich"
         }
       },
       "status": {
@@ -1764,6 +1765,9 @@
     "help": {
       "requirements": "Anforderungen",
       "tips": "Tipps"
+    },
+    "actions": {
+      "viewExample": "Beispiel ansehen"
     }
   },
   "reportModal": {
@@ -1883,6 +1887,11 @@
     "cookies": {
       "title": "Cookie-Richtlinie",
       "metadata": "Cookie-Nutzungsrichtlinie von Felora"
+    }
+  },
+  "kyc": {
+    "actions": {
+      "viewExample": "Beispiel ansehen"
     }
   }
 }

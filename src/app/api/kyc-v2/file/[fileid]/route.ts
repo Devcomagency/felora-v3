@@ -1,10 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
+import { prisma } from '@/lib/prisma'
 
 export async function GET(
   request: NextRequest,
   context: { params: Promise<{ fileid: string }> }
 ) {
   try {
+    // 🔒 Rate limiting pour empêcher les attaques bruteforce
+    const { rateLimit, rateKey } = await import('@/lib/rate-limit')
+    const key = rateKey(request as any, 'kyc-file-access')
+    const rl = rateLimit({ key, limit: 50, windowMs: 60_000 }) // Max 50 fichiers/min
+    if (!rl.ok) {
+      console.warn(`[KYC Security] Rate limit exceeded for IP`)
+      return NextResponse.json({ error: 'rate_limited' }, { status: 429 })
+    }
+
     const { fileid: filename } = await context.params
     let decodedFilename = decodeURIComponent(filename)
 
@@ -16,6 +28,48 @@ export async function GET(
     // Security: prevent path traversal
     if (decodedFilename.includes('..')) {
       return NextResponse.json({ error: 'invalid_filename' }, { status: 400 })
+    }
+
+    // 🔒 SÉCURITÉ CRITIQUE : Vérifier l'authentification
+    const session = await getServerSession(authOptions as any)
+
+    if (!session?.user?.id) {
+      console.warn(`[KYC Security] Unauthorized access attempt to: ${decodedFilename}`)
+      return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
+    }
+
+    const userId = session.user.id
+    const userRole = (session.user as any).role
+
+    // Extraire le nom de fichier sans le préfixe kyc/
+    const fileKey = decodedFilename.replace('kyc/', '')
+
+    // 🔒 Vérifier que l'utilisateur a le droit d'accéder à ce document
+    // Règle 1: Les ADMIN peuvent tout voir
+    // Règle 2: Les utilisateurs peuvent voir UNIQUEMENT leurs propres documents KYC
+    if (userRole !== 'ADMIN') {
+      // Vérifier que ce fichier appartient bien à l'utilisateur connecté
+      const submission = await prisma.kycSubmission.findFirst({
+        where: {
+          userId: userId,
+          OR: [
+            { docFrontKey: fileKey },
+            { docBackKey: fileKey },
+            { selfieSignKey: fileKey },
+            { livenessKey: fileKey }
+          ]
+        },
+        select: { id: true }
+      })
+
+      if (!submission) {
+        console.warn(`[KYC Security] User ${userId} attempted to access unauthorized file: ${fileKey}`)
+        return NextResponse.json({ error: 'forbidden' }, { status: 403 })
+      }
+
+      console.log(`[KYC Security] ✅ User ${userId} authorized to access their own file: ${fileKey}`)
+    } else {
+      console.log(`[KYC Security] ✅ Admin ${userId} accessing KYC file: ${fileKey}`)
     }
 
     // Configuration R2

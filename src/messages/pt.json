@@ -1459,7 +1459,8 @@
       },
       "header": {
         "title": "Verificação de identidade",
-        "subtitle": "Última etapa para ativar sua conta"
+        "subtitle": "Obtenha o selo verificado para tranquilizar e atrair mais clientes",
+        "privacy": "🔒 Todos os seus dados são excluídos após a verificação, nada é armazenado"
       },
       "required": {
         "title": "Documentos obrigatórios:",
@@ -1501,17 +1502,17 @@
           "tip2": "Certifique-se de que tudo seja legível"
         },
         "video": {
-          "label": "Vídeo curto de rosto",
-          "header": "Vídeo de apresentação (máx. 30s, máx. 25MB)",
-          "description": "Apresente-se dizendo seu nome completo. Filme em modo retrato com boa iluminação. Mantenha o vídeo curto para ficar abaixo de 25MB.",
+          "label": "Vídeo curto de corpo inteiro",
+          "header": "Vídeo de apresentação (máx. 15s, máx. 25MB)",
+          "description": "Apresente-se dizendo seu nome completo. Filme-se da cabeça aos pés em modo retrato com boa iluminação. Mantenha o vídeo curto para ficar abaixo de 25MB.",
           "selectLabel": "Selecione seu vídeo",
           "required": "Obrigatório",
-          "req1": "Duração máxima 30 segundos",
-          "req2": "Seu rosto claramente visível",
+          "req1": "Duração máxima 15 segundos",
+          "req2": "Seu corpo inteiro visível (da cabeça aos pés)",
           "req3": "Diga seu nome completo",
-          "tip1": "Filme em modo retrato (vertical)",
-          "tip2": "Certifique-se de ter boa iluminação",
-          "tip3": "Fale claramente e olhe para a câmera"
+          "tip1": "Filme em modo retrato (vertical) - corpo inteiro visível",
+          "tip2": "Mostre características distintivas (tatuagens, piercings, pintas)",
+          "tip3": "Certifique-se de ter boa iluminação e fale claramente"
         }
       },
       "status": {
@@ -1764,6 +1765,9 @@
     "help": {
       "requirements": "Requisitos",
       "tips": "Dicas"
+    },
+    "actions": {
+      "viewExample": "Ver exemplo"
     }
   },
   "reportModal": {
@@ -1883,6 +1887,11 @@
     "cookies": {
       "title": "Política de Cookies",
       "metadata": "Política de uso de cookies da Felora"
+    }
+  },
+  "kyc": {
+    "actions": {
+      "viewExample": "Ver exemplo"
     }
   }
 }

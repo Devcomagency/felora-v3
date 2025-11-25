@@ -192,10 +192,10 @@ export function useNotifications(options?: {
  */
 export function useNotificationSSE(options?: { enabled?: boolean }) {
   const { refresh } = useNotifications({ enabled: false })
-  const { data: session } = useSession()
+  const { status } = useSession()
   const eventSourceRef = useRef<EventSource | null>(null)
   const enabled = options?.enabled ?? true
-  const isAuthenticated = session?.user?.id
+  const isAuthenticated = status === 'authenticated'
 
   useEffect(() => {
     // Désactiver si non authentifié ou pas enabled
@@ -277,7 +277,7 @@ export function useNotificationSSE(options?: { enabled?: boolean }) {
   }, [enabled, isAuthenticated, refresh])
 
   return {
-    isConnected: eventSourceRef.current?.readyState === EventSource.OPEN
+    isConnected: typeof window !== 'undefined' && eventSourceRef.current?.readyState === EventSource.OPEN
   }
 }
 

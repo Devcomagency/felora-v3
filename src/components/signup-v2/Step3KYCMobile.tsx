@@ -111,7 +111,7 @@ export default function Step3KYCMobile({ userId, role='ESCORT', onSubmitted }:{ 
       label: t('upload.idFront.label'),
       icon: FileText,
       description: t('upload.idFront.req1'),
-      example: '/examples/id-front.jpg',
+      example: undefined, // Pas d'exemple pour les documents d'identité (sensible)
       requirements: [t('upload.idFront.req1'), t('upload.idFront.req2'), t('upload.idFront.req3')],
       tips: [t('upload.idFront.tip1'), t('upload.idFront.tip2')]
     },
@@ -120,7 +120,7 @@ export default function Step3KYCMobile({ userId, role='ESCORT', onSubmitted }:{ 
       label: t('upload.idBack.label'),
       icon: FileText,
       description: t('upload.idBack.req1'),
-      example: '/examples/id-back.jpg',
+      example: undefined, // Pas d'exemple pour les documents d'identité (sensible)
       requirements: [t('upload.idBack.req1'), t('upload.idBack.req2'), t('upload.idBack.req3')],
       tips: [t('upload.idBack.tip1'), t('upload.idBack.tip2')]
     },
@@ -129,7 +129,7 @@ export default function Step3KYCMobile({ userId, role='ESCORT', onSubmitted }:{ 
       label: t('upload.selfie.label'),
       icon: Camera,
       description: t('upload.selfie.req1'),
-      example: '/examples/selfie-sign.jpg',
+      example: '/examples/selfie-example.jpg',
       requirements: [t('upload.selfie.req1'), t('upload.selfie.req2'), t('upload.selfie.req3')],
       tips: [t('upload.selfie.tip1'), t('upload.selfie.tip2')]
     },
@@ -138,7 +138,7 @@ export default function Step3KYCMobile({ userId, role='ESCORT', onSubmitted }:{ 
       label: t('upload.video.label'),
       icon: Video,
       description: t('upload.video.req1'),
-      example: '/examples/liveness-video.mp4',
+      example: '/examples/video-example.mp4',
       requirements: [t('upload.video.req1'), t('upload.video.req2'), t('upload.video.req3')],
       tips: [t('upload.video.tip1'), t('upload.video.tip2'), t('upload.video.tip3')]
     }
@@ -257,8 +257,11 @@ export default function Step3KYCMobile({ userId, role='ESCORT', onSubmitted }:{ 
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-black tracking-tight mb-3 bg-gradient-to-r from-white via-white/90 to-white/80 bg-clip-text text-transparent">
             {t('header.title')}
           </h1>
-          <p className="text-white/70 text-base md:text-lg max-w-2xl mx-auto font-light">
+          <p className="text-white/70 text-base md:text-lg max-w-2xl mx-auto font-light mb-3">
             {t('header.subtitle')}
+          </p>
+          <p className="text-green-400/80 text-sm md:text-base max-w-2xl mx-auto font-medium">
+            {t('header.privacy')}
           </p>
         </motion.div>
       </motion.div>

@@ -1,7 +1,8 @@
 "use client"
-import { useCallback, useId, useState } from 'react'
+import { useCallback, useId, useState, useEffect } from 'react'
 import { CheckCircle, AlertCircle, Image, Video, FileText, HelpCircle, X, Check, BadgeCheck } from 'lucide-react'
 import { useTranslations } from 'next-intl'
+import { createPortal } from 'react-dom'
 
 interface UploadDropProps {
   label: string
@@ -32,9 +33,15 @@ export default function UploadDrop({
   const [uploadedUrl, setUploadedUrl] = useState<string|null>(null)
   const [previewUrl, setPreviewUrl] = useState<string|null>(null)
   const [compressing, setCompressing] = useState(false)
-  const [showExample, setShowExample] = useState(false)
+  const [showExampleModal, setShowExampleModal] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const uid = useId()
   const inputId = `file-${uid}`
+
+  // Pour s'assurer que le portail ne s'exécute que côté client
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   // Compresseur vidéo efficace pour mobile
   const compressVideo = useCallback(async (file: File): Promise<File> => {
@@ -249,12 +256,13 @@ export default function UploadDrop({
             <button
               onClick={(e) => {
                 e.preventDefault()
-                setShowExample(!showExample)
+                setShowExampleModal(true)
               }}
-              className="text-white/60 hover:text-white/80 transition-colors"
-              title={t('viewExample')}
+              className="flex items-center gap-1 px-2 py-1 text-xs bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 rounded-md transition-colors"
+              title={t('actions.viewExample')}
             >
-              <HelpCircle size={14} />
+              <HelpCircle size={12} />
+              {t('actions.viewExample')}
             </button>
           )}
         </div>
@@ -279,31 +287,6 @@ export default function UploadDrop({
             : 'border-white/20 bg-white/5 hover:border-white/40 hover:bg-white/10'
         } cursor-pointer relative`}
       >
-        {/* Exemple intégré dans la zone d'upload */}
-        {exampleImage && !previewUrl && showExample && (
-          <div className="absolute inset-0 p-4">
-            <div className="relative w-full h-full rounded-lg overflow-hidden">
-              <img 
-                src={exampleImage} 
-                alt={`Exemple ${label}`}
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-              <div className="absolute bottom-2 left-2 text-white text-xs font-medium">
-                {t('example')}
-              </div>
-              <button
-                onClick={(e) => {
-                  e.preventDefault()
-                  setShowExample(false)
-                }}
-                className="absolute top-2 right-2 w-6 h-6 bg-black/50 rounded-full flex items-center justify-center text-white hover:bg-black/70 transition-colors"
-              >
-                <X size={12} />
-              </button>
-            </div>
-          </div>
-        )}
 
         {/* Preview du fichier uploadé */}
         {previewUrl && (
@@ -330,7 +313,7 @@ export default function UploadDrop({
         )}
 
         {/* Contenu par défaut */}
-        {!previewUrl && !(showExample && exampleImage) && (
+        {!previewUrl && (
           <div className="flex flex-col items-center justify-center text-center space-y-2">
             <div className="p-3 rounded-full bg-white/10 group-hover:bg-white/20 transition-colors">
               {isVideo ? <Video size={24} className="text-white/80" /> : 
@@ -352,8 +335,87 @@ export default function UploadDrop({
         )}
       </label>
 
+      {/* Modal d'exemple - Rendu avec React Portal pour z-index correct */}
+      {showExampleModal && exampleImage && mounted && createPortal(
+        <div
+          className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-[9999]"
+          onClick={() => setShowExampleModal(false)}
+        >
+          <div
+            className="relative w-full max-w-md md:max-w-lg bg-gradient-to-br from-white/10 to-white/5 rounded-xl border border-white/20 overflow-hidden max-h-[90vh] flex flex-col shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header compact */}
+            <div className="p-3 border-b border-white/10 flex items-center justify-between flex-shrink-0">
+              <h3 className="text-white font-bold text-sm md:text-base">📸 {label}</h3>
+              <button
+                onClick={() => setShowExampleModal(false)}
+                className="w-7 h-7 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white transition-colors"
+              >
+                <X size={14} />
+              </button>
+            </div>
+
+            {/* Contenu scrollable */}
+            <div className="p-3 overflow-y-auto flex-1">
+              <div className="rounded-lg overflow-hidden mb-3">
+                {isVideo ? (
+                  <video src={exampleImage} className="w-full max-h-[50vh] object-contain bg-black" controls autoPlay muted loop playsInline />
+                ) : (
+                  <img src={exampleImage} alt={`Exemple ${label}`} className="w-full max-h-[50vh] object-contain bg-black" />
+                )}
+              </div>
+
+              {/* Requirements et tips compacts */}
+              {(requirements.length > 0 || tips.length > 0) && (
+                <div className="space-y-2">
+                  {requirements.length > 0 && (
+                    <div className="bg-black/20 rounded-lg border border-white/5 p-2.5">
+                      <h5 className="text-white/90 font-semibold mb-1.5 text-xs">✓ {t('help.requirements')}:</h5>
+                      <ul className="space-y-1">
+                        {requirements.map((req, index) => (
+                          <li key={index} className="flex items-start gap-1.5 text-white/70 text-xs">
+                            <CheckCircle size={12} className="text-green-400 flex-shrink-0 mt-0.5" />
+                            <span>{req}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {tips.length > 0 && (
+                    <div className="bg-black/20 rounded-lg border border-white/5 p-2.5">
+                      <h5 className="text-white/90 font-semibold mb-1.5 text-xs">💡 {t('help.tips')}:</h5>
+                      <ul className="space-y-1">
+                        {tips.map((tip, index) => (
+                          <li key={index} className="flex items-start gap-1.5 text-white/70 text-xs">
+                            <div className="w-1 h-1 bg-yellow-400/60 rounded-full mt-1.5 flex-shrink-0" />
+                            <span>{tip}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Footer compact */}
+            <div className="p-3 border-t border-white/10 flex justify-end flex-shrink-0">
+              <button
+                onClick={() => setShowExampleModal(false)}
+                className="px-3 py-1.5 text-sm bg-gradient-to-r from-pink-500/20 to-purple-500/20 hover:from-pink-500/30 hover:to-purple-500/30 border border-pink-500/30 text-white rounded-lg font-medium transition-all"
+              >
+                Fermer
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
       {/* Aide compacte */}
-      {(requirements.length > 0 || tips.length > 0) && showExample && (
+      {(requirements.length > 0 || tips.length > 0) && false && (
         <div className="p-3 bg-black/20 rounded-lg border border-white/5 text-xs space-y-2">
           {requirements.length > 0 && (
             <div>

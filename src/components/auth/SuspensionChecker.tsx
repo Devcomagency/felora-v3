@@ -14,8 +14,8 @@ export default function SuspensionChecker() {
   const lastCheckRef = useRef<number>(0)
 
   useEffect(() => {
-    // ⚠️ NE RIEN FAIRE si l'utilisateur n'est pas connecté (statut "loading" ou "unauthenticated")
-    if (status !== 'authenticated') {
+    // ⚠️ NE RIEN FAIRE si l'utilisateur n'est pas connecté ou si on est côté serveur
+    if (typeof window === 'undefined' || status !== 'authenticated') {
       return
     }
 

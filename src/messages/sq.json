@@ -1459,7 +1459,8 @@
       },
       "header": {
         "title": "Verifikimi i identitetit",
-        "subtitle": "Hapi i fundit për të aktivizuar llogarinë tuaj"
+        "subtitle": "Merrni shenjën e verifikuar për të qetësuar dhe tërhequr më shumë klientë",
+        "privacy": "🔒 Të gjitha të dhënat tuaja fshihen pas verifikimit, asgjë nuk ruhet"
       },
       "required": {
         "title": "Dokumentet e kërkuara:",
@@ -1501,17 +1502,17 @@
           "tip2": "Sigurohuni që gjithçka është e lexueshme"
         },
         "video": {
-          "label": "Video e shkurtër e fytyrës",
-          "header": "Video prezantuese (max 30s, max 25MB)",
-          "description": "Prezantohuni duke thënë emrin tuaj të plotë. Filmoni në modalitetin portret me ndriçim të mirë. Mbajeni videon të shkurtër për të qëndruar nën 25MB.",
+          "label": "Video e shkurtër e trupit të plotë",
+          "header": "Video prezantuese (max 15s, max 25MB)",
+          "description": "Prezantohuni duke thënë emrin tuaj të plotë. Filmoni veten nga koka deri te këmbët në modalitetin portret me ndriçim të mirë. Mbajeni videon të shkurtër për të qëndruar nën 25MB.",
           "selectLabel": "Zgjidhni videon tuaj",
           "required": "E detyrueshme",
-          "req1": "Kohëzgjatja maksimale 30 sekonda",
-          "req2": "Fytyra juaj qartësisht e dukshme",
+          "req1": "Kohëzgjatja maksimale 15 sekonda",
+          "req2": "I gjithë trupi juaj i dukshëm (nga koka deri te këmbët)",
           "req3": "Thuani emrin tuaj të plotë",
-          "tip1": "Filmoni në modalitetin portret (vertikal)",
-          "tip2": "Sigurohuni që të keni ndriçim të mirë",
-          "tip3": "Flisni qartë dhe shikoni kamerën"
+          "tip1": "Filmoni në modalitetin portret (vertikal) - trupi i plotë i dukshëm",
+          "tip2": "Tregoni karakteristikat dalluese (tatuazhe, piercing, nishan)",
+          "tip3": "Sigurohuni që të keni ndriçim të mirë dhe flisni qartë"
         }
       },
       "status": {
@@ -1764,6 +1765,9 @@
     "help": {
       "requirements": "Kërkesat",
       "tips": "Këshilla"
+    },
+    "actions": {
+      "viewExample": "Shiko shembull"
     }
   },
   "reportModal": {
@@ -1883,6 +1887,11 @@
     "cookies": {
       "title": "Politika e Cookie-ve",
       "metadata": "Politika e përdorimit të cookie-ve të Felora"
+    }
+  },
+  "kyc": {
+    "actions": {
+      "viewExample": "Shiko shembull"
     }
   }
 }
