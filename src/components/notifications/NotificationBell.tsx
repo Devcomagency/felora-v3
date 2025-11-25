@@ -198,13 +198,13 @@ export default function NotificationBell() {
 
             {/* Liste des notifications */}
             <div className="overflow-y-auto" style={{ maxHeight: 'calc(100vh - 14rem)' }}>
-              {notifications.length === 0 ? (
+              {notifications.filter(n => !n.read).length === 0 ? (
                 <div className="p-8 text-center text-white/60">
                   <Bell size={48} className="mx-auto mb-4 opacity-50" />
                   <p>Aucune notification</p>
                 </div>
               ) : (
-                notifications.map((notif) => (
+                notifications.filter(n => !n.read).map((notif) => (
                   <div
                     key={notif.id}
                     className={`p-3 sm:p-4 border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer ${

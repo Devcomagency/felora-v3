@@ -93,18 +93,28 @@ export default function StaticNavBar() {
   // 🔥 SUPPRIMÉ : Badge de notification simulé avec Math.random()
   // Maintenant géré par NotificationBell avec le hook unifié useNotifications
 
-  // Unread badge for messages (naïf: conversations with updatedAt > last-seen from localStorage)
+  // Unread badge for messages (compte les conversations non lues + notifications MESSAGE_RECEIVED non lues)
   useEffect(() => {
     if (!isAuthenticated) { setUnreadConversations(0); return }
     let stopped = false
     const computeUnread = async () => {
       try {
+        // Récupérer les conversations
         const res = await fetch('/api/e2ee/conversations/list')
         if (!res.ok) return
         const data = await res.json()
         const convs = Array.isArray(data?.conversations) ? data.conversations : []
-        const count = convs.reduce((acc: number, c: any) => acc + (c.unreadCount > 0 ? 1 : 0), 0)
-        if (!stopped) setUnreadConversations(count)
+
+        // Récupérer les notifications MESSAGE_RECEIVED non lues
+        const notifRes = await fetch('/api/notifications?channel=messages')
+        const notifData = notifRes.ok ? await notifRes.json() : { notifications: [] }
+        const unreadMessageNotifs = (notifData.notifications || []).filter((n: any) => !n.read)
+
+        // Compter : conversations avec unreadCount > 0 OU notifications non lues
+        const convCount = convs.reduce((acc: number, c: any) => acc + (c.unreadCount > 0 ? 1 : 0), 0)
+        const totalCount = Math.max(convCount, unreadMessageNotifs.length)
+
+        if (!stopped) setUnreadConversations(totalCount)
       } catch {}
     }
     computeUnread()
