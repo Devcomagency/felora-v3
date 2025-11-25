@@ -28,10 +28,10 @@ export async function GET() {
     }
 
     // 🔥 Compter TOUS les messages non lus (pas juste le dernier)
-    const allMessages = await prisma.e2EEMessage.findMany({
+    const allMessages = await prisma.e2EEMessageEnvelope.findMany({
       where: {
         conversationId: { in: convIds },
-        senderId: { not: userId }, // Seulement les messages reçus
+        senderUserId: { not: userId }, // Seulement les messages reçus
         readAt: null // Non lus
       },
       select: { conversationId: true }

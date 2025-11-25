@@ -41,11 +41,11 @@ export async function POST(request: NextRequest) {
     const result = await prisma.$transaction(async (tx) => {
       const now = new Date()
 
-      // 1. Marquer les messages comme lus (E2EEMessage)
-      const messagesUpdated = await tx.e2EEMessage.updateMany({
+      // 1. Marquer les messages comme lus (E2EEMessageEnvelope)
+      const messagesUpdated = await tx.e2EEMessageEnvelope.updateMany({
         where: {
           conversationId,
-          senderId: { not: session.user.id }, // Seulement les messages reçus
+          senderUserId: { not: session.user.id }, // Seulement les messages reçus
           readAt: null // Non encore lus
         },
         data: {
@@ -71,21 +71,31 @@ export async function POST(request: NextRequest) {
         }
       })
 
-      // 3. Marquer les notifications MESSAGE_RECEIVED comme lues (filtre JSON direct)
-      const notificationsUpdated = await tx.notification.updateMany({
+      // 3. Marquer les notifications MESSAGE_RECEIVED comme lues
+      // On charge d'abord les notifications, puis on filtre par conversationId
+      const allNotifs = await tx.notification.findMany({
         where: {
           userId: session.user.id,
           type: 'MESSAGE_RECEIVED',
-          read: false,
-          metadata: {
-            path: ['conversationId'],
-            equals: conversationId
-          } as Prisma.JsonFilter
-        },
-        data: {
-          read: true
+          read: false
         }
       })
+
+      const notifIdsToMark = allNotifs
+        .filter((n: any) => n.metadata && (n.metadata as any).conversationId === conversationId)
+        .map((n: any) => n.id)
+
+      let notificationsUpdated = { count: 0 }
+      if (notifIdsToMark.length > 0) {
+        notificationsUpdated = await tx.notification.updateMany({
+          where: {
+            id: { in: notifIdsToMark }
+          },
+          data: {
+            read: true
+          }
+        })
+      }
 
       return {
         messagesMarkedRead: messagesUpdated.count,
