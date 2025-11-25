@@ -457,22 +457,17 @@ export default function StaticNavBar() {
                     )}
                   </AnimatePresence>
 
-                  {(() => {
-                    const isClubContext = (user?.role === 'CLUB') || nextPathname?.startsWith('/club')
-                    const settingsHref = isClubContext ? '/club/settings' : (user?.role === 'ESCORT' ? '/escort/settings' : '/settings')
-                    const settingsLabel = isClubContext ? `${t('settings')} (Club)` : t('settings')
-                    return (
-                      <motion.button
-                        whileHover={{ backgroundColor: "rgba(255, 255, 255, 0.04)" }}
-                        whileTap={{ scale: 0.98 }}
-                        onClick={() => { nextRouter.push(settingsHref); setShowMenu(false) }}
-                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/90 hover:text-white transition-colors text-left"
-                      >
-                        <Settings size={18} className="text-white/70" />
-                        <span className="text-sm font-medium">{settingsLabel}</span>
-                      </motion.button>
-                    )
-                  })()}
+                  {isAuthenticated && (
+                    <motion.button
+                      whileHover={{ backgroundColor: "rgba(255, 255, 255, 0.04)" }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => { nextRouter.push('/settings'); setShowMenu(false) }}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/90 hover:text-white transition-colors text-left"
+                    >
+                      <Settings size={18} className="text-white/70" />
+                      <span className="text-sm font-medium">{t('settings')}</span>
+                    </motion.button>
+                  )}
                 </div>
 
                 {/* Authentification */}
@@ -497,6 +492,20 @@ export default function StaticNavBar() {
                       <LogIn size={18} className="text-white/70" />
                       <span className="text-sm font-medium">{t('login')}</span>
                     </motion.button>
+
+                    <motion.a
+                      href="mailto:support@felora.com?subject=Contact"
+                      whileHover={{ backgroundColor: "rgba(255, 255, 255, 0.04)" }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => setShowMenu(false)}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/90 hover:text-white transition-colors text-left"
+                    >
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/70">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                        <polyline points="22,6 12,13 2,6" />
+                      </svg>
+                      <span className="text-sm font-medium">{tCommon('contactUs') || 'Nous contacter'}</span>
+                    </motion.a>
                   </div>
                 ) : (
                   <div className="space-y-1 pt-2 border-t border-white/[0.06]">

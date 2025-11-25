@@ -26,6 +26,8 @@ model User {
   // Champs de suspension temporaire
   suspendedUntil       DateTime?
   suspensionReason     String?
+  // Préférences
+  emailNotifications   Boolean              @default(true)
   accounts             Account[]
   profile              ClientProfile?
   clubProfile          ClubProfile?

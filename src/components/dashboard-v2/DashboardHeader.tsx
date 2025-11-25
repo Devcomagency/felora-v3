@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession, signOut } from 'next-auth/react'
-import { Bell, Search, Menu, X } from 'lucide-react'
+import { Bell, Search, Menu, X, Settings } from 'lucide-react'
 
 export default function DashboardHeader() {
   const router = useRouter()
@@ -64,6 +64,17 @@ export default function DashboardHeader() {
                     <div className="py-2">
                       <button
                         onClick={() => {
+                          router.push('/settings')
+                          setShowUserMenu(false)
+                        }}
+                        className="w-full px-4 py-2 text-left text-sm text-gray-300 hover:text-white hover:bg-gray-800 transition-colors flex items-center gap-2"
+                      >
+                        <Settings size={16} />
+                        Paramètres
+                      </button>
+
+                      <button
+                        onClick={() => {
                           router.push('/')
                           setShowUserMenu(false)
                         }}
@@ -71,7 +82,7 @@ export default function DashboardHeader() {
                       >
                         Voir le site
                       </button>
-                      
+
                       <button
                         onClick={() => {
                           signOut()
@@ -104,6 +115,17 @@ export default function DashboardHeader() {
           <div className="px-4 py-4 space-y-2">
             <button
               onClick={() => {
+                router.push('/settings')
+                setShowMobileMenu(false)
+              }}
+              className="block w-full text-left px-4 py-2 text-sm text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg transition-colors flex items-center gap-2"
+            >
+              <Settings size={16} />
+              Paramètres
+            </button>
+
+            <button
+              onClick={() => {
                 router.push('/')
                 setShowMobileMenu(false)
               }}
@@ -111,6 +133,7 @@ export default function DashboardHeader() {
             >
               Voir le site
             </button>
+
             <button
               onClick={() => {
                 signOut()
