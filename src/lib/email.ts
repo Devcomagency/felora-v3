@@ -221,6 +221,7 @@ export const emailTemplates = {
 /**
  * Envoie une notification par email à un utilisateur
  * Vérifie d'abord si l'utilisateur a activé les notifications email
+ * Utilise Resend si disponible, sinon fallback sur SMTP
  */
 export async function sendNotificationEmail(
   userId: string,
@@ -258,7 +259,28 @@ export async function sendNotificationEmail(
     // Générer le template email
     const template = emailTemplates.notification(title, message, link)
 
-    // Envoyer l'email
+    // Essayer d'abord avec Resend
+    if (process.env.RESEND_API_KEY) {
+      try {
+        const { sendEmailResend } = await import('./resend')
+        const result = await sendEmailResend({
+          to: user.email,
+          subject: template.subject,
+          html: template.html
+        })
+
+        if (result.success) {
+          console.log('[EMAIL] ✅ Notification envoyée par email via Resend à:', user.email)
+          return result
+        } else {
+          console.warn('[EMAIL] ⚠️ Resend a échoué, fallback sur SMTP')
+        }
+      } catch (resendError) {
+        console.warn('[EMAIL] ⚠️ Erreur Resend, fallback sur SMTP:', resendError)
+      }
+    }
+
+    // Fallback sur SMTP
     const result = await sendEmail({
       to: user.email,
       subject: template.subject,
@@ -266,7 +288,7 @@ export async function sendNotificationEmail(
     })
 
     if (result.success) {
-      console.log('[EMAIL] ✅ Notification envoyée par email à:', user.email)
+      console.log('[EMAIL] ✅ Notification envoyée par email via SMTP à:', user.email)
     }
 
     return result

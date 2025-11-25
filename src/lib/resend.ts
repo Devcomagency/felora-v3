@@ -118,5 +118,62 @@ export const emailTemplates = {
         </p>
       </div>
     `
-  })
+  }),
+
+  notification: (title: string, message: string, link?: string | null) => {
+    // Déterminer l'icône basée sur le titre ou le message
+    let icon = '📢'
+    let color = '#4FD1C7'
+
+    if (title.toLowerCase().includes('alert') || title.toLowerCase().includes('attention')) {
+      icon = '⚠️'
+      color = '#FFD700'
+    } else if (title.toLowerCase().includes('error') || title.toLowerCase().includes('erreur')) {
+      icon = '❌'
+      color = '#FF4444'
+    } else if (title.toLowerCase().includes('success') || title.toLowerCase().includes('succès')) {
+      icon = '✅'
+      color = '#4FD1C7'
+    } else if (title.toLowerCase().includes('info') || title.toLowerCase().includes('information')) {
+      icon = 'ℹ️'
+      color = '#B794F6'
+    } else if (title.toLowerCase().includes('message')) {
+      icon = '💬'
+      color = '#06B6D4'
+    }
+
+    return {
+      subject: `${icon} ${title}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #0D0D0D; padding: 30px; border-radius: 16px; border: 1px solid ${color};">
+          <div style="text-align: center; margin-bottom: 20px;">
+            <div style="font-size: 60px; margin-bottom: 10px;">
+              ${icon}
+            </div>
+            <h1 style="color: ${color}; margin: 0; font-size: 24px;">
+              ${title}
+            </h1>
+          </div>
+          <div style="background: rgba(255, 255, 255, 0.05); padding: 20px; border-radius: 12px; margin: 20px 0;">
+            <p style="color: #F8F9FA; line-height: 1.6; margin: 0; white-space: pre-line;">
+              ${message}
+            </p>
+          </div>
+          ${link ? `
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${link}" style="background: linear-gradient(135deg, ${color}, #FF6B9D); color: white; padding: 15px 30px; text-decoration: none; border-radius: 50px; font-weight: bold; display: inline-block;">
+              📱 Voir sur Felora
+            </a>
+          </div>
+          ` : ''}
+          <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+            <p style="color: #888; font-size: 12px; text-align: center; margin: 0;">
+              Felora - Plateforme premium de rencontres en Suisse 🇨🇭<br/>
+              <a href="https://felora.ch/settings" style="color: #4FD1C7; text-decoration: none;">Gérer mes notifications</a>
+            </p>
+          </div>
+        </div>
+      `
+    }
+  }
 }
