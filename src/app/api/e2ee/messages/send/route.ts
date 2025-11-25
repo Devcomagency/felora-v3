@@ -119,7 +119,7 @@ export async function POST(request: NextRequest) {
             recipientId,
             'Nouveau message',
             `${user.name || 'Un utilisateur'} vous a envoyé un message`,
-            `/messages?conv=${conversationId}`
+            `https://felora.ch/messages?conv=${conversationId}`
           )
 
           if (emailResult.success) {
