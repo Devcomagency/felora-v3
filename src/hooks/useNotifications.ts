@@ -238,6 +238,11 @@ export function useNotificationSSE(options?: { enabled?: boolean }) {
         // Revalider SWR pour mettre à jour l'UI immédiatement
         refresh()
 
+        // 🔥 Déclencher un événement global pour que d'autres composants puissent réagir
+        window.dispatchEvent(new CustomEvent('felora:notification:received', {
+          detail: notification
+        }))
+
         // Optionnel : Afficher une notification navigateur
         if ('Notification' in window && Notification.permission === 'granted') {
           new Notification(notification.title, {

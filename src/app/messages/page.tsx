@@ -20,6 +20,7 @@ import { useNetworkError } from '@/hooks/useNetworkError'
 import NetworkErrorBanner from '@/components/NetworkErrorBanner'
 import ReportModal from '@/components/ReportModal'
 import { useTranslations } from 'next-intl'
+import { useNotificationSSE } from '@/hooks/useNotifications'
 
 // Old messages page (V3 original)
 function OldMessagesPage() {
@@ -56,6 +57,10 @@ function NewMessagesPage() {
   const { success: toastSuccess, error: toastError } = useNotification()
   
   const { error: networkError, isRetrying, retryCount, handleError, clearError, retry } = useNetworkError()
+
+  // 🔥 SSE pour les notifications en temps réel
+  useNotificationSSE({ enabled: true })
+
   const headerTitle = useMemo(() => {
     if (activeConversation && activeConversation.participants?.length) {
       const parts = activeConversation.participants as any[]
@@ -347,6 +352,20 @@ function NewMessagesPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status])
+
+  // 🔥 Rafraîchir les conversations quand une notification SSE arrive
+  useEffect(() => {
+    const handleSSENotification = () => {
+      console.log('[MESSAGES] 🔔 SSE notification reçue, rafraîchissement...')
+      loadConversations() // Recharger les conversations
+
+      // Déclencher aussi le rafraîchissement global pour le badge du footer
+      window.dispatchEvent(new Event('felora:messages:refresh'))
+    }
+
+    window.addEventListener('felora:notification:received', handleSSENotification)
+    return () => window.removeEventListener('felora:notification:received', handleSSENotification)
+  }, [loadConversations])
 
   // Load messages for active conversation
   const handleSelectConversation = async (conversation: Conversation) => {
