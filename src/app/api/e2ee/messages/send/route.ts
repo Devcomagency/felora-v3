@@ -111,6 +111,28 @@ export async function POST(request: NextRequest) {
           }
         })
         console.log('[SEND API] ✅ Notification MESSAGE_RECEIVED créée pour', recipientId)
+
+        // 📧 Envoyer aussi un email si l'utilisateur a activé les notifications email
+        try {
+          const { sendNotificationEmail } = await import('@/lib/email')
+          const emailResult = await sendNotificationEmail(
+            recipientId,
+            'Nouveau message',
+            `${user.name || 'Un utilisateur'} vous a envoyé un message`,
+            `/messages?conv=${conversationId}`
+          )
+
+          if (emailResult.success) {
+            console.log('[SEND API] ✅ Email de notification envoyé au destinataire')
+          } else if ((emailResult as any).skipped) {
+            console.log('[SEND API] ⏭️ Email non envoyé (notifications désactivées)')
+          } else {
+            console.error('[SEND API] ❌ Erreur envoi email:', emailResult.error)
+          }
+        } catch (emailError) {
+          // Fallback silencieux - l'email n'est pas critique
+          console.error('[SEND API] ⚠️ Erreur lors de l\'envoi d\'email:', emailError)
+        }
       } catch (notifError) {
         console.error('[SEND API] ❌ Erreur création notification:', notifError)
         // Ne pas bloquer l'envoi du message si la notification échoue
