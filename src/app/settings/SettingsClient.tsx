@@ -25,6 +25,7 @@ export default function SettingsClient({ user }: SettingsClientProps) {
   const [emailNotifications, setEmailNotifications] = useState(true)
   const [showLanguageModal, setShowLanguageModal] = useState(false)
   const [showPasswordModal, setShowPasswordModal] = useState(false)
+  const [showEmailModal, setShowEmailModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
 
   // Password change form
@@ -38,6 +39,12 @@ export default function SettingsClient({ user }: SettingsClientProps) {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false)
   const [showNewPassword, setShowNewPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+
+  // Email change form
+  const [newEmail, setNewEmail] = useState('')
+  const [emailLoading, setEmailLoading] = useState(false)
+  const [emailError, setEmailError] = useState('')
+  const [emailSuccess, setEmailSuccess] = useState(false)
 
   // Delete account form
   const [deleteEmail, setDeleteEmail] = useState('')
@@ -144,6 +151,57 @@ export default function SettingsClient({ user }: SettingsClientProps) {
     }
   }
 
+  const handleChangeEmail = async () => {
+    setEmailError('')
+    setEmailSuccess(false)
+
+    // Validation
+    if (!newEmail) {
+      setEmailError('Veuillez entrer un nouvel email')
+      return
+    }
+
+    // Validation format email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(newEmail)) {
+      setEmailError('Format d\'email invalide')
+      return
+    }
+
+    if (newEmail === user.email) {
+      setEmailError('Ce email est déjà votre email actuel')
+      return
+    }
+
+    setEmailLoading(true)
+
+    try {
+      const res = await fetch('/api/settings/change-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ newEmail })
+      })
+
+      const data = await res.json()
+
+      if (res.ok) {
+        setEmailSuccess(true)
+        alert('Email modifié avec succès ! Veuillez vous reconnecter.')
+        // Déconnexion pour forcer reconnexion avec nouvel email
+        setTimeout(async () => {
+          await signOut({ callbackUrl: '/login' })
+        }, 2000)
+      } else {
+        setEmailError(data.error || 'Erreur lors du changement d\'email')
+      }
+    } catch (error) {
+      console.error('Erreur:', error)
+      setEmailError('Erreur de connexion au serveur')
+    } finally {
+      setEmailLoading(false)
+    }
+  }
+
   const handleDeleteAccount = async () => {
     setDeleteError('')
 
@@ -203,6 +261,20 @@ export default function SettingsClient({ user }: SettingsClientProps) {
               <h2 className="text-lg font-semibold">Compte</h2>
             </div>
           </div>
+
+          <button
+            onClick={() => setShowEmailModal(true)}
+            className="w-full px-4 py-3 flex items-center justify-between hover:bg-white/5 transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <Mail size={18} className="text-white/60" />
+              <div className="text-left">
+                <div>Modifier mon email</div>
+                <div className="text-xs text-white/40">{user.email}</div>
+              </div>
+            </div>
+            <ChevronRight size={18} className="text-white/40" />
+          </button>
 
           <button
             onClick={() => setShowPasswordModal(true)}
@@ -353,6 +425,73 @@ export default function SettingsClient({ user }: SettingsClientProps) {
                 className="w-full py-3 bg-white/10 hover:bg-white/20 rounded-lg transition-colors"
               >
                 Annuler
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Changer d'email */}
+      {showEmailModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-end md:items-center justify-center p-4 pb-24 md:pb-4">
+          <div className="bg-[#1A1A1A] rounded-2xl w-full max-w-md max-h-[85vh] overflow-y-auto">
+            <div className="p-4 border-b border-white/10">
+              <h3 className="text-lg font-semibold">Modifier mon email</h3>
+            </div>
+            <div className="p-4 space-y-4">
+              {emailError && (
+                <div className="p-3 bg-red-500/20 border border-red-500 rounded-lg text-sm text-red-500">
+                  {emailError}
+                </div>
+              )}
+              {emailSuccess && (
+                <div className="p-3 bg-green-500/20 border border-green-500 rounded-lg text-sm text-green-500">
+                  Email modifié avec succès ! Redirection...
+                </div>
+              )}
+              <div>
+                <label className="block text-sm text-white/60 mb-2">Email actuel</label>
+                <input
+                  type="email"
+                  value={user.email}
+                  disabled
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white/40 cursor-not-allowed"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-white/60 mb-2">Nouvel email</label>
+                <input
+                  type="email"
+                  value={newEmail}
+                  onChange={(e) => setNewEmail(e.target.value)}
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:border-pink-500"
+                  placeholder="nouveau.email@exemple.com"
+                  disabled={emailSuccess}
+                />
+              </div>
+              <div className="text-xs text-white/60">
+                ⚠️ Vous serez déconnecté après le changement d'email et devrez vous reconnecter avec votre nouveau email.
+              </div>
+            </div>
+            <div className="p-4 border-t border-white/10 flex gap-3">
+              <button
+                onClick={() => {
+                  setShowEmailModal(false)
+                  setEmailError('')
+                  setNewEmail('')
+                  setEmailSuccess(false)
+                }}
+                className="flex-1 py-3 bg-white/10 hover:bg-white/20 rounded-lg transition-colors"
+                disabled={emailLoading || emailSuccess}
+              >
+                Annuler
+              </button>
+              <button
+                onClick={handleChangeEmail}
+                disabled={emailLoading || emailSuccess}
+                className="flex-1 py-3 bg-pink-500 hover:bg-pink-600 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {emailLoading ? 'Modification...' : 'Modifier'}
               </button>
             </div>
           </div>
