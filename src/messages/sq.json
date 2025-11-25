@@ -25,7 +25,9 @@
     "privacy": "Privatësia",
     "terms": "Kushtet",
     "cookies": "Cookies",
-    "charCount": "{current} / {min} karaktere minimum"
+    "charCount": "{current} / {min} karaktere minimum",
+    "contactUs": "Na kontaktoni",
+    "loginRequired": "Ju lutemi kyçuni për të hyrë në këtë funksion"
   },
   "search": {
     "title": "Kërkim",

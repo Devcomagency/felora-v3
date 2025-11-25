@@ -25,7 +25,9 @@
     "privacy": "Конфиденциальность",
     "terms": "Условия",
     "cookies": "Cookies",
-    "charCount": "{current} / {min} символов минимум"
+    "charCount": "{current} / {min} символов минимум",
+    "contactUs": "Свяжитесь с нами",
+    "loginRequired": "Войдите, чтобы получить доступ к этой функции"
   },
   "search": {
     "title": "Поиск",

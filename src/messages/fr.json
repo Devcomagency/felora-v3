@@ -25,7 +25,9 @@
     "privacy": "Confidentialité",
     "terms": "Conditions",
     "cookies": "Cookies",
-    "charCount": "{current} / {min} caractères minimum"
+    "charCount": "{current} / {min} caractères minimum",
+    "contactUs": "Nous contacter",
+    "loginRequired": "Connectez-vous pour accéder à cette fonctionnalité"
   },
   "search": {
     "title": "Recherche",
