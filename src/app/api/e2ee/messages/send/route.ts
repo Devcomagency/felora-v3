@@ -112,6 +112,40 @@ export async function POST(request: NextRequest) {
         })
         console.log('[SEND API] ✅ Notification MESSAGE_RECEIVED créée pour', recipientId)
 
+        // 🔥 Broadcaster la notification via SSE pour mise à jour temps réel
+        try {
+          const { broadcastNotification } = await import('@/app/api/notifications/sse/route')
+          const newNotification = await prisma.notification.findFirst({
+            where: {
+              userId: recipientId,
+              type: 'MESSAGE_RECEIVED',
+              link: `/messages?conv=${conversationId}`
+            },
+            orderBy: { createdAt: 'desc' }
+          })
+
+          if (newNotification) {
+            const notificationPayload = {
+              id: newNotification.id,
+              type: newNotification.type,
+              title: newNotification.title,
+              message: newNotification.message,
+              read: false,
+              link: newNotification.link,
+              createdAt: newNotification.createdAt.toISOString()
+            }
+            const broadcasted = broadcastNotification(recipientId, notificationPayload)
+            if (broadcasted) {
+              console.log('[SEND API] ✅ Notification SSE envoyée en temps réel')
+            } else {
+              console.log('[SEND API] ℹ️ Pas de connexion SSE active pour le destinataire')
+            }
+          }
+        } catch (sseError) {
+          console.error('[SEND API] ⚠️ Erreur broadcast SSE:', sseError)
+          // Non-bloquant, continuer même si SSE échoue
+        }
+
         // 📧 Envoyer aussi un email si l'utilisateur a activé les notifications email
         try {
           const { sendNotificationEmail } = await import('@/lib/email')
