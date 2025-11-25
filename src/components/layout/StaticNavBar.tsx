@@ -112,12 +112,11 @@ export default function StaticNavBar() {
         const data = await res.json()
         const convs = Array.isArray(data?.conversations) ? data.conversations : []
 
-        // Compter : conversations avec unreadCount > 0 OU notifications non lues
+        // Compter uniquement les conversations avec unreadCount > 0
+        // (les notifications sont déjà reflétées dans unreadCount)
         const convCount = convs.reduce((acc: number, c: any) => acc + (c.unreadCount > 0 ? 1 : 0), 0)
-        const unreadMessageNotifsCount = messageNotifications.filter((n: any) => !n.read).length
-        const totalCount = Math.max(convCount, unreadMessageNotifsCount)
 
-        if (!stopped) setUnreadConversations(totalCount)
+        if (!stopped) setUnreadConversations(convCount)
       } catch {}
     }
     computeUnread()
@@ -138,9 +137,21 @@ export default function StaticNavBar() {
         const data = await res.json()
         const convs = Array.isArray(data?.conversations) ? data.conversations : []
 
+        // 🔍 Debug : afficher les conversations avec unreadCount
+        const unreadConvs = convs.filter((c: any) => c.unreadCount > 0)
+        console.log('[NAVBAR] 🔍 Conversations non lues:', unreadConvs.map((c: any) => ({
+          id: c.id,
+          unreadCount: c.unreadCount,
+          participants: c.participants.map((p: any) => p.name)
+        })))
+
         const convCount = convs.reduce((acc: number, c: any) => acc + (c.unreadCount > 0 ? 1 : 0), 0)
         const unreadMessageNotifsCount = messageNotifications.filter((n: any) => !n.read).length
-        const totalCount = Math.max(convCount, unreadMessageNotifsCount)
+
+        console.log('[NAVBAR] 📊 convCount:', convCount, '| notifCount:', unreadMessageNotifsCount)
+
+        // Utiliser uniquement le convCount (les notifications sont déjà comptées dans unreadCount)
+        const totalCount = convCount
 
         setUnreadConversations(totalCount)
         console.log('[NAVBAR] ✅ Badge mis à jour:', totalCount)
