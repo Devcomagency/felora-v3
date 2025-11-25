@@ -320,8 +320,8 @@ export default function SettingsClient({ user }: SettingsClientProps) {
 
       {/* Modal Langue */}
       {showLanguageModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-end md:items-center justify-center p-4">
-          <div className="bg-[#1A1A1A] rounded-2xl w-full max-w-md max-h-[80vh] overflow-hidden">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-end md:items-center justify-center p-4 pb-24 md:pb-4">
+          <div className="bg-[#1A1A1A] rounded-2xl w-full max-w-md max-h-[85vh] overflow-hidden">
             <div className="p-4 border-b border-white/10">
               <h3 className="text-lg font-semibold">Choisir la langue</h3>
             </div>
@@ -356,8 +356,8 @@ export default function SettingsClient({ user }: SettingsClientProps) {
 
       {/* Modal Changer mot de passe */}
       {showPasswordModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-end md:items-center justify-center p-4">
-          <div className="bg-[#1A1A1A] rounded-2xl w-full max-w-md">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-end md:items-center justify-center p-4 pb-24 md:pb-4">
+          <div className="bg-[#1A1A1A] rounded-2xl w-full max-w-md max-h-[85vh] overflow-y-auto">
             <div className="p-4 border-b border-white/10">
               <h3 className="text-lg font-semibold">Changer de mot de passe</h3>
             </div>
@@ -426,8 +426,8 @@ export default function SettingsClient({ user }: SettingsClientProps) {
 
       {/* Modal Supprimer compte */}
       {showDeleteModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-end md:items-center justify-center p-4">
-          <div className="bg-[#1A1A1A] rounded-2xl w-full max-w-md">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-end md:items-center justify-center p-4 pb-24 md:pb-4">
+          <div className="bg-[#1A1A1A] rounded-2xl w-full max-w-md max-h-[85vh] overflow-y-auto">
             <div className="p-4 border-b border-white/10">
               <h3 className="text-lg font-semibold text-red-500">Supprimer mon compte</h3>
             </div>
