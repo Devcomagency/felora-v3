@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import crypto from 'crypto'
-import { sendEmail } from '@/lib/email'
+import { sendEmailResend } from '@/lib/resend'
+import { sendMail } from '@/lib/mail'
 
 export async function POST(req: NextRequest) {
   try {
@@ -28,19 +29,64 @@ export async function POST(req: NextRequest) {
       const resetUrl = `${baseUrl.replace(/\/$/, '')}/reset-password?token=${encodeURIComponent(token)}`
 
       const html = `
-        <div style="font-family:Inter,system-ui,sans-serif;font-size:14px;color:#111">
-          <p>Bonjour,</p>
-          <p>Vous avez demandé la réinitialisation de votre mot de passe. Cliquez sur le bouton ci‑dessous :</p>
-          <p><a href="${resetUrl}" style="display:inline-block;background:#7C3AED;color:#fff;padding:10px 16px;border-radius:8px;text-decoration:none">Réinitialiser mon mot de passe</a></p>
-          <p>Ou copiez le lien : <br />${resetUrl}</p>
-          <p style="color:#666">Ce lien expire dans 30 minutes. Si vous n'êtes pas à l'origine de cette demande, ignorez cet email.</p>
+        <div style="font-family:Inter,system-ui,sans-serif;max-width:600px;margin:0 auto;background:#0D0D0D;padding:30px;border-radius:16px;border:1px solid #7C3AED;">
+          <div style="text-align:center;margin-bottom:20px;">
+            <div style="font-size:60px;margin-bottom:10px;">🔑</div>
+            <h1 style="color:#7C3AED;margin:0;font-size:24px;">Réinitialisation du mot de passe</h1>
+          </div>
+          <div style="background:rgba(255,255,255,0.05);padding:20px;border-radius:12px;margin:20px 0;">
+            <p style="color:#F8F9FA;line-height:1.6;margin:0 0 15px 0;">Bonjour,</p>
+            <p style="color:#F8F9FA;line-height:1.6;margin:0 0 15px 0;">Vous avez demandé la réinitialisation de votre mot de passe Felora.</p>
+            <p style="color:#F8F9FA;line-height:1.6;margin:0;">Cliquez sur le bouton ci-dessous pour définir un nouveau mot de passe :</p>
+          </div>
+          <div style="text-align:center;margin:30px 0;">
+            <a href="${resetUrl}" style="background:linear-gradient(135deg,#7C3AED,#FF6B9D);color:white;padding:15px 30px;text-decoration:none;border-radius:50px;font-weight:bold;display:inline-block;">
+              🔐 Réinitialiser mon mot de passe
+            </a>
+          </div>
+          <div style="background:rgba(255,255,255,0.05);padding:15px;border-radius:8px;margin:20px 0;">
+            <p style="color:#888;font-size:12px;margin:0 0 5px 0;">Ou copiez ce lien dans votre navigateur :</p>
+            <p style="color:#4FD1C7;font-size:11px;word-break:break-all;margin:0;">${resetUrl}</p>
+          </div>
+          <div style="margin-top:30px;padding-top:20px;border-top:1px solid rgba(255,255,255,0.1);">
+            <p style="color:#888;font-size:12px;text-align:center;margin:0;">
+              ⏱️ Ce lien expire dans <strong style="color:#FF6B9D;">30 minutes</strong><br/>
+              Si vous n'êtes pas à l'origine de cette demande, ignorez cet email.<br/><br/>
+              Felora - Plateforme premium de rencontres en Suisse 🇨🇭
+            </p>
+          </div>
         </div>
       `
-      await sendEmail({
+
+      // Envoyer via Resend
+      const resendRes = await sendEmailResend({
         to: user.email,
-        subject: 'Réinitialisation du mot de passe FELORA',
+        subject: '🔑 Réinitialisation de votre mot de passe - Felora',
         html: html
       })
+
+      if (!resendRes?.success) {
+        // En production, échouer si Resend ne fonctionne pas
+        if (process.env.NODE_ENV === 'production') {
+          console.error('[PASSWORD RESET] Resend failed:', resendRes?.error)
+          // On retourne success:true quand même pour éviter l'énumération d'emails
+        } else {
+          // En dev: fallback SMTP
+          const smtpRes = await sendMail(user.email, '🔑 Réinitialisation de votre mot de passe - Felora', html)
+          if (smtpRes?.ok) {
+            console.log('[PASSWORD RESET] ✅ Email sent via SMTP fallback')
+          }
+        }
+      } else {
+        console.log('[PASSWORD RESET] ✅ Resend success:', { to: user.email, id: resendRes?.messageId })
+      }
+
+      // En développement, logger le lien pour faciliter les tests
+      if (process.env.NODE_ENV === 'development') {
+        console.log('\n🔗 [DEV] Lien de réinitialisation:')
+        console.log(resetUrl)
+        console.log('\n')
+      }
     }
 
     return NextResponse.json({ success: true })

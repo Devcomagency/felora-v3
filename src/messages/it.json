@@ -25,7 +25,8 @@
     "privacy": "Privacy",
     "terms": "Termini",
     "cookies": "Cookie",
-    "charCount": "{current} / {min} caratteri minimo"
+    "charCount": "{current} / {min} caratteri minimo",
+    "myProfile": "Il mio profilo"
   },
   "search": {
     "title": "Ricerca",

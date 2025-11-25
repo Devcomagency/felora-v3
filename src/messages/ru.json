@@ -27,7 +27,8 @@
     "cookies": "Cookies",
     "charCount": "{current} / {min} символов минимум",
     "contactUs": "Свяжитесь с нами",
-    "loginRequired": "Войдите, чтобы получить доступ к этой функции"
+    "loginRequired": "Войдите, чтобы получить доступ к этой функции",
+    "myProfile": "Мой профиль"
   },
   "search": {
     "title": "Поиск",

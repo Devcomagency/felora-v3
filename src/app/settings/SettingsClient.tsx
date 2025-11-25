@@ -42,9 +42,12 @@ export default function SettingsClient({ user }: SettingsClientProps) {
 
   // Email change form
   const [newEmail, setNewEmail] = useState('')
+  const [verificationCode, setVerificationCode] = useState('')
+  const [emailStep, setEmailStep] = useState<'input' | 'verify'>('input') // Étape: saisie email ou vérification code
   const [emailLoading, setEmailLoading] = useState(false)
   const [emailError, setEmailError] = useState('')
   const [emailSuccess, setEmailSuccess] = useState(false)
+  const [countdown, setCountdown] = useState(0)
 
   // Delete account form
   const [deleteEmail, setDeleteEmail] = useState('')
@@ -151,9 +154,9 @@ export default function SettingsClient({ user }: SettingsClientProps) {
     }
   }
 
-  const handleChangeEmail = async () => {
+  // Fonction pour envoyer le code de vérification
+  const handleSendVerificationCode = async () => {
     setEmailError('')
-    setEmailSuccess(false)
 
     // Validation
     if (!newEmail) {
@@ -176,10 +179,49 @@ export default function SettingsClient({ user }: SettingsClientProps) {
     setEmailLoading(true)
 
     try {
-      const res = await fetch('/api/settings/change-email', {
+      const res = await fetch('/api/settings/email/send-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ newEmail })
+      })
+
+      const data = await res.json()
+
+      if (res.ok) {
+        // Passer à l'étape de vérification
+        setEmailStep('verify')
+        setCountdown(60) // 60 secondes avant de pouvoir renvoyer
+        // Log du code en dev
+        if (data.devCode) {
+          console.log('🔐 Code de vérification (dev):', data.devCode)
+        }
+      } else {
+        setEmailError(data.error || 'Erreur lors de l\'envoi du code')
+      }
+    } catch (error) {
+      console.error('Erreur:', error)
+      setEmailError('Erreur de connexion au serveur')
+    } finally {
+      setEmailLoading(false)
+    }
+  }
+
+  // Fonction pour vérifier le code et changer l'email
+  const handleVerifyAndChangeEmail = async () => {
+    setEmailError('')
+
+    if (!verificationCode || verificationCode.length !== 6) {
+      setEmailError('Veuillez entrer le code à 6 chiffres')
+      return
+    }
+
+    setEmailLoading(true)
+
+    try {
+      const res = await fetch('/api/settings/email/verify-and-change', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ newEmail, code: verificationCode })
       })
 
       const data = await res.json()
@@ -192,7 +234,7 @@ export default function SettingsClient({ user }: SettingsClientProps) {
           await signOut({ callbackUrl: '/login' })
         }, 2000)
       } else {
-        setEmailError(data.error || 'Erreur lors du changement d\'email')
+        setEmailError(data.error || 'Code incorrect ou expiré')
       }
     } catch (error) {
       console.error('Erreur:', error)
@@ -201,6 +243,14 @@ export default function SettingsClient({ user }: SettingsClientProps) {
       setEmailLoading(false)
     }
   }
+
+  // Countdown pour le renvoi du code
+  useEffect(() => {
+    if (countdown > 0) {
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000)
+      return () => clearTimeout(timer)
+    }
+  }, [countdown])
 
   const handleDeleteAccount = async () => {
     setDeleteError('')
@@ -449,26 +499,73 @@ export default function SettingsClient({ user }: SettingsClientProps) {
                   Email modifié avec succès ! Redirection...
                 </div>
               )}
-              <div>
-                <label className="block text-sm text-white/60 mb-2">Email actuel</label>
-                <input
-                  type="email"
-                  value={user.email}
-                  disabled
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white/40 cursor-not-allowed"
-                />
-              </div>
-              <div>
-                <label className="block text-sm text-white/60 mb-2">Nouvel email</label>
-                <input
-                  type="email"
-                  value={newEmail}
-                  onChange={(e) => setNewEmail(e.target.value)}
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:border-pink-500"
-                  placeholder="nouveau.email@exemple.com"
-                  disabled={emailSuccess}
-                />
-              </div>
+
+              {/* Étape 1 : Saisie du nouvel email */}
+              {emailStep === 'input' && (
+                <>
+                  <div>
+                    <label className="block text-sm text-white/60 mb-2">Email actuel</label>
+                    <input
+                      type="email"
+                      value={user.email}
+                      disabled
+                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white/40 cursor-not-allowed"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-white/60 mb-2">Nouvel email</label>
+                    <input
+                      type="email"
+                      value={newEmail}
+                      onChange={(e) => setNewEmail(e.target.value)}
+                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:border-pink-500"
+                      placeholder="nouveau.email@exemple.com"
+                    />
+                  </div>
+                  <div className="text-xs text-white/60">
+                    📧 Un code de vérification sera envoyé à cette adresse
+                  </div>
+                </>
+              )}
+
+              {/* Étape 2 : Vérification du code */}
+              {emailStep === 'verify' && (
+                <>
+                  <div className="text-center">
+                    <div className="text-4xl mb-2">📧</div>
+                    <p className="text-sm text-white/80 mb-2">
+                      Code envoyé à <strong className="text-pink-400">{newEmail}</strong>
+                    </p>
+                    <p className="text-xs text-white/60">
+                      Vérifiez votre boîte de réception (et spams)
+                    </p>
+                  </div>
+                  <div>
+                    <label className="block text-sm text-white/60 mb-2 text-center">Code de vérification (6 chiffres)</label>
+                    <input
+                      type="text"
+                      value={verificationCode}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/\D/g, '').slice(0, 6)
+                        setVerificationCode(value)
+                      }}
+                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:border-pink-500 text-center text-2xl tracking-widest"
+                      placeholder="000000"
+                      maxLength={6}
+                    />
+                  </div>
+                  <div className="text-center">
+                    <button
+                      onClick={handleSendVerificationCode}
+                      disabled={countdown > 0 || emailLoading}
+                      className="text-sm text-pink-500 hover:text-pink-400 disabled:text-white/40 disabled:cursor-not-allowed"
+                    >
+                      {countdown > 0 ? `Renvoyer le code dans ${countdown}s` : 'Renvoyer le code'}
+                    </button>
+                  </div>
+                </>
+              )}
+
               <div className="text-xs text-white/60">
                 ⚠️ Vous serez déconnecté après le changement d'email et devrez vous reconnecter avec votre nouveau email.
               </div>
@@ -479,7 +576,10 @@ export default function SettingsClient({ user }: SettingsClientProps) {
                   setShowEmailModal(false)
                   setEmailError('')
                   setNewEmail('')
+                  setVerificationCode('')
+                  setEmailStep('input')
                   setEmailSuccess(false)
+                  setCountdown(0)
                 }}
                 className="flex-1 py-3 bg-white/10 hover:bg-white/20 rounded-lg transition-colors"
                 disabled={emailLoading || emailSuccess}
@@ -487,11 +587,11 @@ export default function SettingsClient({ user }: SettingsClientProps) {
                 Annuler
               </button>
               <button
-                onClick={handleChangeEmail}
-                disabled={emailLoading || emailSuccess}
+                onClick={emailStep === 'input' ? handleSendVerificationCode : handleVerifyAndChangeEmail}
+                disabled={emailLoading || emailSuccess || (emailStep === 'verify' && verificationCode.length !== 6)}
                 className="flex-1 py-3 bg-pink-500 hover:bg-pink-600 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {emailLoading ? 'Modification...' : 'Modifier'}
+                {emailLoading ? (emailStep === 'input' ? 'Envoi...' : 'Vérification...') : (emailStep === 'input' ? 'Envoyer le code' : 'Valider')}
               </button>
             </div>
           </div>

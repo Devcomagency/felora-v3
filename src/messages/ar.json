@@ -25,7 +25,8 @@
     "privacy": "الخصوصية",
     "terms": "الشروط",
     "cookies": "الكوكيز",
-    "charCount": "{current} / {min} حرف كحد أدنى"
+    "charCount": "{current} / {min} حرف كحد أدنى",
+    "myProfile": "ملفي الشخصي"
   },
   "search": {
     "title": "بحث",

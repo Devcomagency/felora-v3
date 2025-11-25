@@ -521,31 +521,19 @@ export default function StaticNavBar() {
                         <span className="text-sm font-medium">Essayer la nouvelle version (v2)</span>
                       </motion.button>
                     )}
-                    {/* Dashboard pour escortes */}
+                    {/* Mon profil pour escortes */}
                     {user?.role === 'ESCORT' && (
-                      <>
-                        <motion.button
-                          whileHover={{ backgroundColor: "rgba(255, 255, 255, 0.04)" }}
-                          whileTap={{ scale: 0.98 }}
-                          onClick={() => { nextRouter.push('/dashboard-escort/profil'); setShowMenu(false) }}
-                          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/90 hover:text-white transition-colors text-left"
-                        >
-                          <BarChart3 size={18} className="text-white/70" />
-                          <span className="text-sm font-medium">{t('dashboard')}</span>
-                        </motion.button>
-
-                        <motion.button
-                          whileHover={{ backgroundColor: "rgba(255, 255, 255, 0.04)" }}
-                          whileTap={{ scale: 0.98 }}
-                          onClick={() => { nextRouter.push('/dashboard-escort/activite'); setShowMenu(false) }}
-                          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/90 hover:text-white transition-colors text-left"
-                        >
-                          <Calendar size={18} className="text-white/70" />
-                          <span className="text-sm font-medium">{tCommon('schedule') || 'Agenda'}</span>
-                        </motion.button>
-                      </>
+                      <motion.button
+                        whileHover={{ backgroundColor: "rgba(255, 255, 255, 0.04)" }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => { nextRouter.push('/dashboard-escort/profil'); setShowMenu(false) }}
+                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/90 hover:text-white transition-colors text-left"
+                      >
+                        <User size={18} className="text-white/70" />
+                        <span className="text-sm font-medium">{tCommon('myProfile') || 'Mon profil'}</span>
+                      </motion.button>
                     )}
-                    {/* Dashboard pour clubs */}
+                    {/* Mon profil pour clubs */}
                     {user?.role === 'CLUB' && (
                       <motion.button
                         whileHover={{ backgroundColor: "rgba(255, 255, 255, 0.04)" }}
@@ -553,8 +541,8 @@ export default function StaticNavBar() {
                         onClick={() => { nextRouter.push('/club/profile'); setShowMenu(false) }}
                         className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/90 hover:text-white transition-colors text-left"
                       >
-                        <BarChart3 size={18} className="text-white/70" />
-                        <span className="text-sm font-medium">{t('dashboard')}</span>
+                        <User size={18} className="text-white/70" />
+                        <span className="text-sm font-medium">{tCommon('myProfile') || 'Mon profil'}</span>
                       </motion.button>
                     )}
 

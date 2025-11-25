@@ -27,7 +27,8 @@
     "cookies": "Cookies",
     "charCount": "{current} / {min} caracteres mínimo",
     "contactUs": "Contacte-nos",
-    "loginRequired": "Faça login para acessar este recurso"
+    "loginRequired": "Faça login para acessar este recurso",
+    "myProfile": "Meu perfil"
   },
   "search": {
     "title": "Pesquisa",
