@@ -1,14 +1,10 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
+import { withAdmin } from '@/lib/serverAuth'
+import { logger } from '@/lib/logger'
 
-// Headers pour bypasser la protection Vercel
-export const headers = {
-  'x-vercel-deployment-protection-bypass': 'true',
-  'x-deployment-protection-bypass': 'true'
-}
-
-// API debug pour vérifier la config R2 (sans upload)
-export async function GET() {
-  console.log('🔍 [DEBUG R2] Checking R2 configuration')
+// API debug pour vérifier la config R2 (PROTÉGÉE PAR AUTH ADMIN)
+export const GET = withAdmin(async (request: NextRequest) => {
+  logger.security('Admin accessing R2 config')
 
   const r2Config = {
     storageProvider: process.env.STORAGE_PROVIDER,
@@ -32,7 +28,7 @@ export async function GET() {
     status === 'SET' || status === 'cloudflare-r2'
   )
 
-  console.log('🔍 [DEBUG R2] Config status:', configStatus)
+  logger.info('[DEBUG R2] Config status', configStatus)
 
   return NextResponse.json({
     success: true,
@@ -42,4 +38,4 @@ export async function GET() {
     environment: process.env.NODE_ENV,
     timestamp: new Date().toISOString()
   })
-}
+})

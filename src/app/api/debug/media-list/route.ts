@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { withAdmin } from '@/lib/serverAuth'
+import { logger } from '@/lib/logger'
 
-// Route de debug pour voir tous les médias (NON AUTHENTIFIÉE - DEBUG SEULEMENT)
-export async function GET(request: NextRequest) {
+// Route de debug pour voir tous les médias (PROTÉGÉE PAR AUTH ADMIN)
+export const GET = withAdmin(async (request: NextRequest) => {
   try {
+    logger.security('Admin accessing media list')
     const medias = await prisma.media.findMany({
       select: {
         id: true,
@@ -51,10 +54,10 @@ export async function GET(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('❌ [DEBUG MEDIA LIST] Erreur:', error)
+    logger.error('[DEBUG MEDIA LIST] Erreur', error)
     return NextResponse.json({
       success: false,
-      error: error.message
+      error: error instanceof Error ? error.message : 'Unknown error'
     }, { status: 500 })
   }
-}
+})

@@ -1,6 +1,8 @@
 import { NextRequest } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
+import { getCorsHeaders } from '@/lib/serverAuth'
+import { logger } from '@/lib/logger'
 
 /**
  * GET /api/notifications/sse
@@ -27,15 +29,19 @@ export async function GET(request: NextRequest) {
     const session = await getServerSession(authOptions)
 
     if (!session?.user?.id) {
+      logger.security('Unauthorized SSE connection attempt', {
+        ip: request.headers.get('x-forwarded-for')
+      })
       return new Response('Unauthorized', { status: 401 })
     }
 
     const userId = session.user.id
+    const origin = request.headers.get('origin')
 
     // Créer un ReadableStream pour SSE
     const stream = new ReadableStream({
       start(controller) {
-        console.log(`[SSE] 📡 Connexion établie pour user: ${userId}`)
+        logger.info(`[SSE] Connexion établie pour user: ${userId}`)
 
         // Stocker la connexion
         connections.set(userId, controller)
@@ -51,7 +57,7 @@ export async function GET(request: NextRequest) {
             const heartbeat = encoder.encode(`: heartbeat ${Date.now()}\n\n`)
             controller.enqueue(heartbeat)
           } catch (error) {
-            console.error(`[SSE] ❌ Erreur heartbeat user ${userId}:`, error)
+            logger.error(`[SSE] Erreur heartbeat user ${userId}`, error)
             clearInterval(heartbeatInterval)
             connections.delete(userId)
           }
@@ -59,7 +65,7 @@ export async function GET(request: NextRequest) {
 
         // Cleanup lors de la fermeture de la connexion
         request.signal.addEventListener('abort', () => {
-          console.log(`[SSE] 🔌 Connexion fermée pour user: ${userId}`)
+          logger.info(`[SSE] Connexion fermée pour user: ${userId}`)
           clearInterval(heartbeatInterval)
           connections.delete(userId)
           try {
@@ -69,25 +75,24 @@ export async function GET(request: NextRequest) {
       },
 
       cancel() {
-        console.log(`[SSE] ⚠️ Stream annulé pour user: ${userId}`)
+        logger.info(`[SSE] Stream annulé pour user: ${userId}`)
         connections.delete(userId)
       }
     })
 
-    // Retourner la réponse SSE
+    // Retourner la réponse SSE avec CORS sécurisés
+    const corsHeaders = getCorsHeaders(origin)
+
     return new Response(stream, {
       headers: {
         'Content-Type': 'text/event-stream',
         'Cache-Control': 'no-cache',
         'Connection': 'keep-alive',
-        // CORS headers si nécessaire
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET',
-        'Access-Control-Allow-Headers': 'Content-Type'
+        ...corsHeaders
       }
     })
   } catch (error) {
-    console.error('[SSE] ❌ Erreur lors de la création du stream:', error)
+    logger.error('[SSE] Erreur lors de la création du stream', error)
     return new Response('Internal Server Error', { status: 500 })
   }
 }
@@ -103,7 +108,7 @@ export function broadcastNotification(userId: string, notification: any) {
   const controller = connections.get(userId)
 
   if (!controller) {
-    console.log(`[SSE] ℹ️ Pas de connexion active pour user: ${userId}`)
+    logger.debug(`[SSE] Pas de connexion active pour user: ${userId}`)
     return false
   }
 
@@ -113,10 +118,10 @@ export function broadcastNotification(userId: string, notification: any) {
     const data = encoder.encode(event)
 
     controller.enqueue(data)
-    console.log(`[SSE] ✅ Notification envoyée en temps réel à user: ${userId}`)
+    logger.info(`[SSE] Notification envoyée en temps réel à user: ${userId}`)
     return true
   } catch (error) {
-    console.error(`[SSE] ❌ Erreur broadcast pour user ${userId}:`, error)
+    logger.error(`[SSE] Erreur broadcast pour user ${userId}`, error)
     connections.delete(userId)
     return false
   }
@@ -134,7 +139,7 @@ export function broadcastNotificationToMultiple(userIds: string[], notification:
     }
   }
 
-  console.log(`[SSE] 📊 Broadcast: ${successCount}/${userIds.length} envoyés`)
+  logger.info(`[SSE] Broadcast: ${successCount}/${userIds.length} envoyés`)
   return successCount
 }
 

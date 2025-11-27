@@ -1,7 +1,11 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { withAdmin } from '@/lib/serverAuth'
+import { logger } from '@/lib/logger'
 
-export async function GET() {
+export const GET = withAdmin(async (request: NextRequest) => {
+  logger.security('Admin accessing media check')
+
   // Vérifier quelques vidéos
   const videos = await prisma.media.findMany({
     where: {
@@ -54,4 +58,4 @@ export async function GET() {
     mediaTableVideos: videos,
     escortSlots: parsedSlots
   })
-}
+})
