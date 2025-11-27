@@ -9,13 +9,13 @@
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "/icon?size=192",
+      "src": "/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/icon?size=512",
+      "src": "/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
@@ -30,7 +30,7 @@
       "url": "/search",
       "icons": [
         {
-          "src": "/icon?size=192",
+          "src": "/icon-192.png",
           "sizes": "192x192"
         }
       ]
@@ -42,7 +42,7 @@
       "url": "/messages",
       "icons": [
         {
-          "src": "/icon?size=192",
+          "src": "/icon-192.png",
           "sizes": "192x192"
         }
       ]
@@ -54,7 +54,7 @@
       "url": "/map",
       "icons": [
         {
-          "src": "/icon?size=192",
+          "src": "/icon-192.png",
           "sizes": "192x192"
         }
       ]
@@ -62,7 +62,7 @@
   ],
   "screenshots": [
     {
-      "src": "/opengraph-image",
+      "src": "/og-image.png",
       "sizes": "1200x630",
       "type": "image/png",
       "form_factor": "wide"

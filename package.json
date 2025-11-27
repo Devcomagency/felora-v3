@@ -20,6 +20,7 @@
     "test:e2e:ui": "playwright test --ui",
     "playwright:install": "playwright install --with-deps",
     "cleanup:keep-user": "node scripts/cleanup-keep-user.js",
+    "generate:og": "node scripts/generate-og-image.js",
     "cap:add:ios": "npx cap add ios",
     "cap:add:android": "npx cap add android",
     "cap:open:ios": "npx cap open ios",

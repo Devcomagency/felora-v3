@@ -24,7 +24,7 @@ export const metadata: Metadata = {
   },
   description: 'Rencontres premium — profils vérifiés, messagerie sécurisée, cartes et médias. Rejoignez la plateforme d\'excellence suisse.',
   applicationName: 'Felora',
-  metadataBase: new URL(process.env.NEXTAUTH_URL || 'http://localhost:3000'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || 'https://felora.ch'),
   keywords: ['rencontres premium', 'escort', 'profils vérifiés', 'messagerie sécurisée', 'Suisse'],
   authors: [{ name: 'Felora' }],
   creator: 'Felora',
@@ -38,10 +38,11 @@ export const metadata: Metadata = {
     locale: 'fr_CH',
     images: [
       {
-        url: '/opengraph-image',
+        url: '/og-image.png',
         width: 1200,
         height: 630,
         alt: 'Felora — Plateforme Premium',
+        type: 'image/png',
       },
     ],
   },
@@ -49,7 +50,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Felora — Plateforme Premium',
     description: 'Rencontres d\'exception — profils vérifiés, messagerie sécurisée.',
-    images: ['/opengraph-image'],
+    images: ['/og-image.png'],
     creator: '@felora',
     site: '@felora',
   },
@@ -60,15 +61,17 @@ export const metadata: Metadata = {
   manifest: '/manifest.json',
   icons: {
     icon: [
-      { url: '/icon', type: 'image/png', sizes: '512x512' },
+      { url: '/favicon-32x32.png', type: 'image/png', sizes: '32x32' },
+      { url: '/icon-192.png', type: 'image/png', sizes: '192x192' },
+      { url: '/icon-512.png', type: 'image/png', sizes: '512x512' },
     ],
     apple: [
-      { url: '/apple-icon', type: 'image/png', sizes: '180x180' },
+      { url: '/apple-touch-icon.png', type: 'image/png', sizes: '180x180' },
     ],
     other: [
       {
         rel: 'apple-touch-icon',
-        url: '/apple-icon',
+        url: '/apple-touch-icon.png',
       },
     ],
   },
