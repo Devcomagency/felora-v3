@@ -1,0 +1,71 @@
+{
+  "name": "Felora — Plateforme Premium",
+  "short_name": "Felora",
+  "description": "Rencontres d'exception — profils vérifiés, messagerie sécurisée, géolocalisation et médias premium.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#FF6B9D",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon?size=192",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon?size=512",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["social", "lifestyle"],
+  "shortcuts": [
+    {
+      "name": "Recherche",
+      "short_name": "Recherche",
+      "description": "Rechercher des profils",
+      "url": "/search",
+      "icons": [
+        {
+          "src": "/icon?size=192",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Messages",
+      "short_name": "Messages",
+      "description": "Accéder à la messagerie",
+      "url": "/messages",
+      "icons": [
+        {
+          "src": "/icon?size=192",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Carte",
+      "short_name": "Carte",
+      "description": "Voir la carte interactive",
+      "url": "/map",
+      "icons": [
+        {
+          "src": "/icon?size=192",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/opengraph-image",
+      "sizes": "1200x630",
+      "type": "image/png",
+      "form_factor": "wide"
+    }
+  ]
+}

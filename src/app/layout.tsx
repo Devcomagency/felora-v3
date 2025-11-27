@@ -22,22 +22,68 @@ export const metadata: Metadata = {
     default: 'Felora — Plateforme Premium',
     template: '%s — Felora',
   },
-  description: 'Rencontres premium — profils vérifiés, messagerie sécurisée, cartes et médias.',
+  description: 'Rencontres premium — profils vérifiés, messagerie sécurisée, cartes et médias. Rejoignez la plateforme d\'excellence suisse.',
   applicationName: 'Felora',
   metadataBase: new URL(process.env.NEXTAUTH_URL || 'http://localhost:3000'),
+  keywords: ['rencontres premium', 'escort', 'profils vérifiés', 'messagerie sécurisée', 'Suisse'],
+  authors: [{ name: 'Felora' }],
+  creator: 'Felora',
+  publisher: 'Felora',
   openGraph: {
-    title: 'Felora',
-    description: 'Rencontres premium — profils vérifiés, messagerie sécurisée, cartes et médias.',
+    title: 'Felora — Plateforme Premium',
+    description: 'Rencontres d\'exception — profils vérifiés, messagerie sécurisée, géolocalisation et médias premium.',
     url: '/',
     siteName: 'Felora',
     type: 'website',
+    locale: 'fr_CH',
+    images: [
+      {
+        url: '/opengraph-image',
+        width: 1200,
+        height: 630,
+        alt: 'Felora — Plateforme Premium',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Felora — Plateforme Premium',
+    description: 'Rencontres d\'exception — profils vérifiés, messagerie sécurisée.',
+    images: ['/opengraph-image'],
+    creator: '@felora',
+    site: '@felora',
   },
   robots: {
     index: true,
     follow: true,
   },
+  manifest: '/manifest.json',
   icons: {
-    icon: '/favicon.ico',
+    icon: [
+      { url: '/icon', type: 'image/png', sizes: '512x512' },
+    ],
+    apple: [
+      { url: '/apple-icon', type: 'image/png', sizes: '180x180' },
+    ],
+    other: [
+      {
+        rel: 'apple-touch-icon',
+        url: '/apple-icon',
+      },
+    ],
+  },
+  appleWebApp: {
+    capable: true,
+    title: 'Felora',
+    statusBarStyle: 'black-translucent',
+  },
+  formatDetection: {
+    telephone: false,
+    email: false,
+    address: false,
+  },
+  verification: {
+    // Ajoute ici les codes de vérification Google, Bing, etc. si nécessaire
   },
 }
 
