@@ -25,8 +25,13 @@ const getBannedIPs = (): string[] => {
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // 🚨 IMPORTANT: Ne PAS toucher aux routes API - les laisser passer directement
-  if (pathname.startsWith('/api')) {
+  // 🚨 CRITICAL: Exclure COMPLÈTEMENT les routes API, _next, fichiers statiques
+  if (
+    pathname.startsWith('/api') ||
+    pathname.startsWith('/_next') ||
+    pathname.startsWith('/_vercel') ||
+    pathname.includes('.') // Fichiers statiques (.js, .css, .png, etc.)
+  ) {
     return NextResponse.next()
   }
 
@@ -90,8 +95,7 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  // Matcher: Exclure explicitement /api pour éviter les redirections
-  matcher: [
-    '/((?!api|_next|_next/static|_next/image|_next/webpack-hmr|favicon.ico|auth-check|camera).*)',
-  ],
+  // Matcher: Appliquer le middleware à TOUTES les routes
+  // L'exclusion des routes API est gérée dans le code du middleware (ligne 25-33)
+  matcher: ['/(.*)',],
 }
