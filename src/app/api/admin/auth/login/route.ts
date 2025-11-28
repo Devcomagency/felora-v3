@@ -23,6 +23,15 @@ export async function POST(request: NextRequest) {
     // ⚠️ BACKWARD COMPATIBILITY: Support de l'ancien système pendant migration
     const ADMIN_PASSWORD_LEGACY = process.env.ADMIN_PASSWORD
 
+    // 🐛 DEBUG: Log pour vérifier les variables (à supprimer après debug)
+    console.log('🔍 ENV CHECK:', {
+      hasEmail: !!ADMIN_EMAIL,
+      hasHash: !!ADMIN_PASSWORD_HASH,
+      hasLegacy: !!ADMIN_PASSWORD_LEGACY,
+      hashPreview: ADMIN_PASSWORD_HASH?.substring(0, 15) + '...',
+      emailPreview: ADMIN_EMAIL?.substring(0, 10) + '...'
+    })
+
     // Validation: Au moins un système d'auth doit être configuré
     if (!ADMIN_EMAIL) {
       console.error('🚨 ADMIN_EMAIL not configured')
@@ -53,16 +62,25 @@ export async function POST(request: NextRequest) {
 
     if (ADMIN_PASSWORD_HASH) {
       // ✅ NOUVEAU SYSTÈME: Bcrypt hash (SÉCURISÉ)
+      console.log('🔍 Testing with bcrypt hash...')
       isPasswordValid = await bcrypt.compare(password, ADMIN_PASSWORD_HASH)
+      console.log('🔍 Bcrypt result:', isPasswordValid)
       if (isPasswordValid) {
         console.log('✅ Admin login with bcrypt hash (secure)')
+      } else {
+        console.log('❌ Bcrypt hash did not match')
       }
     } else if (ADMIN_PASSWORD_LEGACY) {
       // ⚠️ ANCIEN SYSTÈME: Plain text comparison (LEGACY - À SUPPRIMER)
+      console.log('🔍 Testing with legacy password...')
       isPasswordValid = password === ADMIN_PASSWORD_LEGACY
       if (isPasswordValid) {
         console.warn('⚠️  Admin login with legacy plain password - UPGRADE TO BCRYPT HASH!')
+      } else {
+        console.log('❌ Legacy password did not match')
       }
+    } else {
+      console.error('🚨 NO PASSWORD METHOD AVAILABLE (neither hash nor legacy)')
     }
 
     if (!isPasswordValid) {
