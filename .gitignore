@@ -57,3 +57,6 @@ Thumbs.db
 
 # Prisma
 /prisma/migrations/*/migration.sql
+
+# Admin credentials (never commit!)
+ADMIN_CREDENTIALS.txt
