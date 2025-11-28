@@ -69,6 +69,11 @@ export async function middleware(request: NextRequest) {
   // 4️⃣ PROTECTION PAR MOT DE PASSE TEMPORAIRE
   const SITE_PASSWORD = process.env.SITE_PASSWORD
 
+  // 🚨 EXCEPTION: Ne PAS protéger les routes admin (elles ont leur propre auth)
+  if (pathname.startsWith('/admin')) {
+    return intlMiddleware(request)
+  }
+
   // Si pas de mot de passe défini, appliquer next-intl et continuer
   if (!SITE_PASSWORD) {
     return intlMiddleware(request)
