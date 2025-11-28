@@ -90,7 +90,8 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
+  // 🚨 TEMPORAIRE: Désactiver complètement le middleware pour debug
   matcher: [
-    '/((?!api|_next|_next/static|_next/image|_next/webpack-hmr|favicon.ico|auth-check|camera).*)',
+    '/this-path-does-not-exist-disable-middleware',
   ],
 }
