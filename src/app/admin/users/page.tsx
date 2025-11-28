@@ -155,23 +155,31 @@ export default function AdminUsersPage() {
     }
   }, [])
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setAuthError(null)
 
-    // Authentification admin (mêmes credentials que /admin/kyc)
-    const adminCredentials = {
-      email: 'info@devcom.ch',
-      password: 'Devcom20!'
-    }
+    try {
+      // 🔐 Appeler l'API d'authentification sécurisée
+      const response = await fetch('/api/admin/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      })
 
-    if (email === adminCredentials.email && password === adminCredentials.password) {
-      setIsAuthenticated(true)
-      localStorage.setItem('felora-admin-auth', 'true')
-      fetchUsers()
-      loadSavedFilters()
-    } else {
-      setAuthError('Email ou mot de passe incorrect')
+      const data = await response.json()
+
+      if (data.success) {
+        setIsAuthenticated(true)
+        localStorage.setItem('felora-admin-auth', 'true')
+        fetchUsers()
+        loadSavedFilters()
+      } else {
+        setAuthError(data.error || 'Email ou mot de passe incorrect')
+      }
+    } catch (error) {
+      console.error('Login error:', error)
+      setAuthError('Erreur de connexion au serveur')
     }
   }
 
