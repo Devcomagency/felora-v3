@@ -71,20 +71,20 @@ export async function middleware(request: NextRequest) {
 
   // 🚨 EXCEPTION: Ne PAS protéger les routes admin (elles ont leur propre auth)
   if (pathname.startsWith('/admin')) {
-    return intlMiddleware(request)
+    return NextResponse.next()
   }
 
-  // Si pas de mot de passe défini, appliquer next-intl et continuer
+  // Si pas de mot de passe défini, continuer normalement
   if (!SITE_PASSWORD) {
-    return intlMiddleware(request)
+    return NextResponse.next()
   }
 
   // Vérifier si l'utilisateur a déjà entré le bon mot de passe
   const authCookie = request.cookies.get('site-auth')?.value
 
-  // Si le cookie existe et correspond au mot de passe, appliquer next-intl
+  // Si le cookie existe et correspond au mot de passe, continuer
   if (authCookie === SITE_PASSWORD) {
-    return intlMiddleware(request)
+    return NextResponse.next()
   }
 
   // Si on est sur la page de login, laisser passer
