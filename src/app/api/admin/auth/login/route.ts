@@ -24,13 +24,22 @@ export async function POST(request: NextRequest) {
     const ADMIN_PASSWORD_LEGACY = process.env.ADMIN_PASSWORD
 
     // 🐛 DEBUG: Log pour vérifier les variables (à supprimer après debug)
-    console.log('🔍 ENV CHECK:', {
+    const debugInfo = {
       hasEmail: !!ADMIN_EMAIL,
       hasHash: !!ADMIN_PASSWORD_HASH,
       hasLegacy: !!ADMIN_PASSWORD_LEGACY,
-      hashPreview: ADMIN_PASSWORD_HASH?.substring(0, 15) + '...',
-      emailPreview: ADMIN_EMAIL?.substring(0, 10) + '...'
-    })
+      hashLength: ADMIN_PASSWORD_HASH?.length || 0,
+      hashPreview: ADMIN_PASSWORD_HASH?.substring(0, 20) + '...',
+      emailValue: ADMIN_EMAIL,
+      receivedEmail: email,
+      receivedPasswordLength: password.length,
+    }
+    console.log('🔍 ENV CHECK:', debugInfo)
+
+    // Retourner les infos de debug dans la réponse si c'est un test
+    if (email === 'debug@test.com') {
+      return NextResponse.json({ debug: debugInfo })
+    }
 
     // Validation: Au moins un système d'auth doit être configuré
     if (!ADMIN_EMAIL) {
