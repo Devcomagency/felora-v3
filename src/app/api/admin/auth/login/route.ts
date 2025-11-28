@@ -36,9 +36,28 @@ export async function POST(request: NextRequest) {
     }
     console.log('🔍 ENV CHECK:', debugInfo)
 
-    // Retourner les infos de debug dans la réponse si c'est un test
+    // 🚨 TOUJOURS retourner les infos de debug pour comprendre le problème
     if (email === 'debug@test.com') {
-      return NextResponse.json({ debug: debugInfo })
+      return NextResponse.json({
+        debug: debugInfo,
+        timestamp: Date.now(),
+        version: 'v2.0' // Pour vérifier que c'est bien le nouveau code
+      })
+    }
+
+    // 🐛 HASH TEST: Tester si bcrypt fonctionne
+    if (email === 'hashtest@test.com') {
+      const testHash = '$2b$10$RLTaYYRZo0LXsVRhQzwDS.1y1mH5QsLtGciC8beY6LvMF4U2lgKw2'
+      const testPassword = 'Felora2025!SecureAdmin'
+      const bcryptResult = await bcrypt.compare(testPassword, testHash)
+      const envHashResult = ADMIN_PASSWORD_HASH ? await bcrypt.compare(testPassword, ADMIN_PASSWORD_HASH) : null
+
+      return NextResponse.json({
+        testHashWorks: bcryptResult,
+        envHashWorks: envHashResult,
+        envHashValue: ADMIN_PASSWORD_HASH?.substring(0, 30),
+        version: 'v2.0'
+      })
     }
 
     // Validation: Au moins un système d'auth doit être configuré
