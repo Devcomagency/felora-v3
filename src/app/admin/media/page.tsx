@@ -19,6 +19,7 @@ interface MediaItem {
     stageName?: string
     slug?: string
     userId?: string
+    deleted?: boolean
   }
   reportCount: number
   price: number | null
@@ -617,30 +618,41 @@ export default function AdminMediaImproved() {
                     {/* Propriétaire - Lien visible avec icône */}
                     <td className="px-6 py-4">
                       <div>
-                        <button
-                          onClick={() => {
-                            // ✅ FIX: Utiliser la bonne URL selon le type
-                            let profileUrl = ''
-                            if (item.ownerType === 'ESCORT') {
-                              // Escort : /profile/{ownerId}
-                              profileUrl = `/profile/${item.ownerId}`
-                            } else if (item.ownerType === 'CLUB' && item.owner?.slug) {
-                              // Club : /profile-test/club/{slug}
-                              profileUrl = `/profile-test/club/${item.owner.slug}`
-                            } else {
-                              // Fallback
-                              profileUrl = `/profile/${item.ownerId}`
-                            }
-                            window.open(profileUrl, '_blank')
-                          }}
-                          className="flex items-center gap-2 text-sm font-medium text-purple-400 hover:text-purple-300 transition-colors group/link"
-                          aria-label={`Voir le profil de ${item.owner?.stageName || item.owner?.name || 'Unknown'}`}
-                        >
-                          <span className="underline underline-offset-2 decoration-purple-400/30 group-hover/link:decoration-purple-300">
-                            {item.owner?.stageName || item.owner?.name || 'Unknown'}
-                          </span>
-                          <ExternalLink size={14} className="opacity-60 group-hover/link:opacity-100 transition-opacity" />
-                        </button>
+                        {item.owner?.deleted ? (
+                          // Compte supprimé - pas cliquable
+                          <div className="flex items-center gap-2 text-sm font-medium text-gray-500">
+                            <span className="italic opacity-75">
+                              {item.owner?.stageName || item.owner?.name || 'Compte supprimé'}
+                            </span>
+                            <Trash2 size={14} className="opacity-40" />
+                          </div>
+                        ) : (
+                          // Compte actif - cliquable
+                          <button
+                            onClick={() => {
+                              // ✅ FIX: Utiliser la bonne URL selon le type
+                              let profileUrl = ''
+                              if (item.ownerType === 'ESCORT') {
+                                // Escort : /profile/{ownerId}
+                                profileUrl = `/profile/${item.ownerId}`
+                              } else if (item.ownerType === 'CLUB' && item.owner?.slug) {
+                                // Club : /profile-test/club/{slug}
+                                profileUrl = `/profile-test/club/${item.owner.slug}`
+                              } else {
+                                // Fallback
+                                profileUrl = `/profile/${item.ownerId}`
+                              }
+                              window.open(profileUrl, '_blank')
+                            }}
+                            className="flex items-center gap-2 text-sm font-medium text-purple-400 hover:text-purple-300 transition-colors group/link"
+                            aria-label={`Voir le profil de ${item.owner?.stageName || item.owner?.name || 'Unknown'}`}
+                          >
+                            <span className="underline underline-offset-2 decoration-purple-400/30 group-hover/link:decoration-purple-300">
+                              {item.owner?.stageName || item.owner?.name || 'Unknown'}
+                            </span>
+                            <ExternalLink size={14} className="opacity-60 group-hover/link:opacity-100 transition-opacity" />
+                          </button>
+                        )}
                         <div className="flex items-center gap-1 mt-1">
                           <span className={`text-xs px-2 py-0.5 rounded-full ${
                             item.ownerType === 'ESCORT'
@@ -649,6 +661,11 @@ export default function AdminMediaImproved() {
                           }`}>
                             {item.ownerType === 'ESCORT' ? '👤 Escort' : '🏢 Club'}
                           </span>
+                          {item.owner?.deleted && (
+                            <span className="text-xs px-2 py-0.5 rounded-full bg-red-500/10 text-red-400">
+                              ⚠️ Supprimé
+                            </span>
+                          )}
                         </div>
                       </div>
                     </td>

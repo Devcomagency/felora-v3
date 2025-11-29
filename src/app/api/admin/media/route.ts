@@ -141,6 +141,24 @@ export async function GET(request: NextRequest) {
     const escortMap = new Map(escorts.map(e => [e.id, e]))
     const clubMap = new Map(clubs.map(c => [c.id, c]))
 
+    // ✅ FILTRER : Ne garder que les médias avec des propriétaires ACTIFS
+    const mediaWithValidOwners = mediaItems.filter(m => {
+      // ❌ Filtrer les médias avec ownerId "unknown" (données corrompues)
+      if (m.ownerId === 'unknown') return false
+
+      if (m.ownerType === 'ESCORT') {
+        return escortMap.has(m.ownerId) // Escort existe
+      }
+
+      if (m.ownerType === 'CLUB') {
+        return clubMap.has(m.ownerId) // Club existe
+      }
+
+      return false
+    })
+
+    console.log(`[ADMIN MEDIA] Filtered to ${mediaWithValidOwners.length} media with valid owners (removed ${mediaItems.length - mediaWithValidOwners.length} orphaned media)`)
+
     // Helper function to validate and clean URLs
     const cleanUrl = (url: string | null): string | null => {
       if (!url) return null
@@ -156,8 +174,8 @@ export async function GET(request: NextRequest) {
       return url
     }
 
-    // ✅ Enrichir les médias (opération synchrone maintenant)
-    const enrichedMedia = mediaItems.map((m) => {
+    // ✅ Enrichir les médias avec propriétaires VALIDES seulement
+    const enrichedMedia = mediaWithValidOwners.map((m) => {
       let owner = null
 
       if (m.ownerType === 'ESCORT' && m.ownerId) {
@@ -185,9 +203,18 @@ export async function GET(request: NextRequest) {
         }
       }
 
-      // Default to Unknown if no owner found
+      // Default to better fallback if no owner found
       if (!owner) {
-        owner = { name: 'Unknown', stageName: 'Unknown' }
+        if (m.ownerId === 'unknown') {
+          owner = { name: 'Propriétaire non défini', stageName: 'Non défini' }
+        } else {
+          // Orphaned record - club/escort was deleted
+          owner = {
+            name: `${m.ownerType === 'CLUB' ? 'Club' : 'Escort'} supprimé`,
+            stageName: 'Compte supprimé',
+            deleted: true
+          }
+        }
       }
 
       // Clean URLs

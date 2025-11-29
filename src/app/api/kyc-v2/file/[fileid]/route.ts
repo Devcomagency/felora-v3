@@ -33,13 +33,20 @@ export async function GET(
     // 🔒 SÉCURITÉ CRITIQUE : Vérifier l'authentification
     const session = await getServerSession(authOptions as any)
 
-    if (!session?.user?.id) {
+    // ⚠️ DEV MODE: Bypass auth in development
+    const isDevBypass = process.env.NODE_ENV === 'development' && process.env.DISABLE_ADMIN_AUTH !== 'false'
+
+    if (!session?.user?.id && !isDevBypass) {
       console.warn(`[KYC Security] Unauthorized access attempt to: ${decodedFilename}`)
       return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
     }
 
-    const userId = session.user.id
-    const userRole = (session.user as any).role
+    const userId = isDevBypass ? 'dev-admin' : session.user.id
+    const userRole = isDevBypass ? 'ADMIN' : (session.user as any).role
+
+    if (isDevBypass) {
+      console.log('⚠️ [DEV MODE] KYC file access bypassed for development')
+    }
 
     // Extraire le nom de fichier sans le préfixe kyc/
     const fileKey = decodedFilename.replace('kyc/', '')

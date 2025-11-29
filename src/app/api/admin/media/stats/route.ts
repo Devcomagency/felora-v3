@@ -8,18 +8,66 @@ export async function GET() {
   if (authError) return authError
 
   try {
-    // Total active media (not deleted)
-    const totalActive = await prisma.media.count({
-      where: { deletedAt: null }
-    })
+    // ✅ FILTRER : Récupérer seulement les médias avec propriétaires VALIDES
 
-    // Reported media
-    const reported = await prisma.media.count({
-      where: {
-        deletedAt: null,
-        reportCount: { gt: 0 }
+    // 1. Récupérer tous les médias actifs
+    const allMedia = await prisma.media.findMany({
+      where: { deletedAt: null },
+      select: {
+        id: true,
+        ownerType: true,
+        ownerId: true,
+        reportCount: true,
+        visibility: true,
+        createdAt: true
       }
     })
+
+    // 2. Récupérer les IDs des escorts et clubs valides
+    const escortIds = [...new Set(
+      allMedia
+        .filter(m => m.ownerType === 'ESCORT' && m.ownerId && m.ownerId !== 'unknown')
+        .map(m => m.ownerId)
+    )]
+
+    const clubIds = [...new Set(
+      allMedia
+        .filter(m => m.ownerType === 'CLUB' && m.ownerId && m.ownerId !== 'unknown')
+        .map(m => m.ownerId)
+    )]
+
+    const existingEscorts = escortIds.length > 0
+      ? await prisma.escortProfile.findMany({
+          where: { id: { in: escortIds } },
+          select: { id: true }
+        })
+      : []
+
+    const existingClubs = clubIds.length > 0
+      ? await prisma.clubProfile.findMany({
+          where: { id: { in: clubIds } },
+          select: { id: true }
+        })
+      : []
+
+    const validEscortIds = new Set(existingEscorts.map(e => e.id))
+    const validClubIds = new Set(existingClubs.map(c => c.id))
+
+    // 3. Filtrer pour ne garder que les médias avec propriétaires valides
+    const validMedia = allMedia.filter(m => {
+      if (m.ownerId === 'unknown') return false
+      if (m.ownerType === 'ESCORT') return validEscortIds.has(m.ownerId)
+      if (m.ownerType === 'CLUB') return validClubIds.has(m.ownerId)
+      return false
+    })
+
+    // Total active media (with valid owners)
+    const totalActive = validMedia.length
+
+    console.log(`[MEDIA STATS] Total in DB: ${allMedia.length}, Valid: ${validMedia.length}, Filtered out: ${allMedia.length - validMedia.length}`)
+
+    // Reported media (filtrés)
+    const reported = validMedia.filter(m => m.reportCount > 0).length
 
     // Deleted this week
     const oneWeekAgo = new Date()
@@ -31,24 +79,18 @@ export async function GET() {
       }
     })
 
-    // Uploaded today
+    // Uploaded today (filtrés)
     const today = new Date()
     today.setHours(0, 0, 0, 0)
 
-    const uploadedToday = await prisma.media.count({
-      where: {
-        deletedAt: null,
-        createdAt: { gte: today }
-      }
-    })
+    const uploadedToday = validMedia.filter(m =>
+      new Date(m.createdAt) >= today
+    ).length
 
-    // Premium media
-    const totalPremium = await prisma.media.count({
-      where: {
-        deletedAt: null,
-        visibility: { in: ['PREMIUM', 'PRIVATE'] }
-      }
-    })
+    // Premium media (filtrés)
+    const totalPremium = validMedia.filter(m =>
+      m.visibility === 'PREMIUM' || m.visibility === 'PRIVATE'
+    ).length
 
     return NextResponse.json({
       success: true,
