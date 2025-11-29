@@ -1,7 +1,8 @@
 'use client'
 
 import React, { useState } from 'react'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
+import Link from 'next/link'
 import {
   Shield, Users, UserCircle, Building2, Image, AlertTriangle,
   CreditCard, Gem, Gift, MessageSquare, BarChart3, Settings,
@@ -149,6 +150,7 @@ export default function AdminLayout({
   children: React.ReactNode
 }) {
   const pathname = usePathname()
+  const router = useRouter()
   const [expandedSections, setExpandedSections] = useState<string[]>([])
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
@@ -271,7 +273,7 @@ export default function AdminLayout({
                     {isExpanded && (
                       <div className="ml-6 mt-1 space-y-1">
                         {section.children.map((child) => (
-                          <a
+                          <Link
                             key={child.href}
                             href={child.href}
                             onClick={() => setSidebarOpen(false)}
@@ -282,14 +284,14 @@ export default function AdminLayout({
                             }`}
                           >
                             {child.title}
-                          </a>
+                          </Link>
                         ))}
                       </div>
                     )}
                   </>
                 ) : (
-                  <a
-                    href={section.href}
+                  <Link
+                    href={section.href!}
                     onClick={() => setSidebarOpen(false)}
                     className={`flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all ${
                       isActive(section.href!)
@@ -302,7 +304,7 @@ export default function AdminLayout({
                       <span>{section.title}</span>
                     </div>
                     <ChevronRight size={14} />
-                  </a>
+                  </Link>
                 )}
               </div>
             )
