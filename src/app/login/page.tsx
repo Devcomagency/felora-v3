@@ -6,6 +6,7 @@ import { signIn, getSession } from 'next-auth/react'
 import { motion } from 'framer-motion'
 import { Shield, LogIn, Mail, Lock, ArrowRight, Sparkles } from 'lucide-react'
 import { useTranslations } from 'next-intl'
+import track from '@/lib/analytics/tracking'
 
 interface LoginForm {
   email: string
@@ -29,6 +30,10 @@ function LoginContent() {
 
   // Récupérer le message depuis les paramètres URL
   useEffect(() => {
+    // 📊 Track login page view
+    const referrer = searchParams.get('redirect') || 'direct'
+    track.loginPageView(referrer)
+
     const message = searchParams.get('message')
     if (message) {
       setSuccessMessage(decodeURIComponent(message))
@@ -69,9 +74,18 @@ function LoginContent() {
       })
 
       if (result?.error) {
+        // 📊 Track login failure
+        track.loginFailed(result.error, 'credentials')
         // Afficher le message d'erreur exact (suspension, ban, ou identifiants invalides)
         setErrors([result.error])
       } else {
+        // Get user type from session to track success
+        const session = await getSession()
+        const userType = session?.user?.role || 'unknown'
+
+        // 📊 Track login success
+        track.loginSuccess('credentials', userType)
+
         // Vérifier s'il y a une redirection spécifique
         const redirect = searchParams.get('redirect')
         if (redirect) {
@@ -83,6 +97,8 @@ function LoginContent() {
         window.location.href = '/'
       }
     } catch (error) {
+      // 📊 Track connection error
+      track.loginFailed('connection_error', 'credentials')
       setErrors([t('errors.connectionError')])
     } finally {
       setLoading(false)

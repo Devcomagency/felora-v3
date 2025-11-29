@@ -2,13 +2,15 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { 
-  ArrowLeft, Star, MapPin, Crown, Diamond, 
+import {
+  ArrowLeft, Star, MapPin, Crown, Diamond,
   ChevronDown, MessageCircle, BadgeCheck
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { getMessageButtonConfig } from '@/utils/messageButtonLogic'
 import { EscortProfile, useProfileStore } from '../../stores/profileStore.simple'
+import track from '@/lib/analytics/tracking'
+import { useSession } from 'next-auth/react'
 
 interface ProfileHeaderProps {
   profile: EscortProfile
@@ -41,11 +43,15 @@ export default function ProfileHeaderSimple({ profile, extendedData, onShowDetai
   }
 
   const handleCall = (phoneNumber: string) => {
+    // 📊 Track phone call
+    track.contactPhone(profile.id, 'escort')
     window.open(`tel:${phoneNumber}`)
     setShowContactDropdown(false)
   }
 
   const handleWhatsApp = (phoneNumber: string) => {
+    // 📊 Track WhatsApp contact
+    track.contactWhatsApp(profile.id, 'escort')
     const cleanNumber = phoneNumber.replace(/\+|\s/g, '')
     const message = `Salut ${profile.stageName} ! Je souhaite vous contacter via FELORA.`
     window.open(`https://wa.me/${cleanNumber}?text=${encodeURIComponent(message)}`)
