@@ -5,6 +5,7 @@ import { Heart, Play, Image as ImageIcon, Verified } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { buildCdnUrl } from '@/lib/media/cdn'
 import { useTranslations } from 'next-intl'
+import track from '@/lib/analytics/tracking'
 
 interface EscortCardProps {
   escort: {
@@ -61,11 +62,21 @@ export default function EscortCard({ escort, onLike, isLiked = false }: EscortCa
   const [isPlaying, setIsPlaying] = useState(false)
 
   const handleCardClick = () => {
+    // 📊 Track escort card click
+    track.escortCardClick(escort.id, escort.city, escort.status)
     router.push(`/profile/${escort.id}`)
   }
 
   const handleLike = (e: React.MouseEvent) => {
     e.stopPropagation()
+
+    // 📊 Track like/unlike
+    if (isLiked) {
+      track.removeFromFavorites(escort.id)
+    } else {
+      track.addToFavorites(escort.id)
+    }
+
     onLike?.(escort.id)
   }
 

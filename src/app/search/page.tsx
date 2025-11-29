@@ -17,6 +17,7 @@ import { useDebounce } from '@/hooks/useDebounce'
 import EscortCard2025 from '@/components/search/EscortCard2025'
 import ClubCard from '@/components/search/ClubCard'
 import SearchFiltersSimple from '@/components/search/SearchFiltersSimple'
+import track from '@/lib/analytics/tracking'
 
 // Skeleton components
 function EscortCardSkeleton() {
@@ -102,8 +103,14 @@ function SearchContent() {
     if (debouncedSearchQuery !== escortsFilters.q) {
       setEscortsFilters((prev) => ({ ...prev, q: debouncedSearchQuery }))
       setClubsFilters((prev) => ({ ...prev, q: debouncedSearchQuery }))
+
+      // 📊 Track search
+      if (debouncedSearchQuery) {
+        const resultCount = activeSection === 'escorts' ? escortsTotal : clubsTotal
+        track.searchPerformed(debouncedSearchQuery, resultCount, activeSection)
+      }
     }
-  }, [debouncedSearchQuery, escortsFilters.q, setEscortsFilters, setClubsFilters])
+  }, [debouncedSearchQuery, escortsFilters.q, setEscortsFilters, setClubsFilters, activeSection, escortsTotal, clubsTotal])
 
   // Gestion des filtres pour les escortes (memoized)
   const handleEscortsFiltersChange = useCallback((newFilters: any) => {
@@ -123,6 +130,9 @@ function SearchContent() {
       clubsSectionRef.current.scrollIntoView({ behavior: 'smooth' })
     }
     setActiveSection(section)
+
+    // 📊 Track tab change
+    track.tabChange(section)
   }, [])
 
   // Infinite scroll pour les escortes (avec throttle pour performance)

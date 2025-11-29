@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Heart, Share2, Flag, Verified, MapPin, Clock, Star } from 'lucide-react'
+import track from '@/lib/analytics/tracking'
 
 interface ProfileHeaderProps {
   escort: {
@@ -22,6 +23,12 @@ export default function ProfileHeader({ escort, onLike, isLiked = false }: Profi
   const [showShareMenu, setShowShareMenu] = useState(false)
 
   const handleLike = () => {
+    // 📊 Track like/unlike
+    if (isLiked) {
+      track.profileUnlike(escort.id, 'escort')
+    } else {
+      track.profileLike(escort.id, 'escort')
+    }
     onLike?.(escort.id)
   }
 
@@ -33,6 +40,8 @@ export default function ProfileHeader({ escort, onLike, isLiked = false }: Profi
           text: escort.bio,
           url: window.location.href
         })
+        // 📊 Track share with native share
+        track.profileShare(escort.id, 'native')
       } catch (err) {
         console.log('Share cancelled')
       }
@@ -41,6 +50,8 @@ export default function ProfileHeader({ escort, onLike, isLiked = false }: Profi
       navigator.clipboard.writeText(window.location.href)
       setShowShareMenu(true)
       setTimeout(() => setShowShareMenu(false), 2000)
+      // 📊 Track share with clipboard
+      track.profileShare(escort.id, 'clipboard')
     }
   }
 
