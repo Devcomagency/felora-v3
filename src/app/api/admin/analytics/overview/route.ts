@@ -1,16 +1,12 @@
 import { NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/app/api/auth/[...nextauth]/route'
+import { requireAdminAuth } from '@/lib/admin-auth'
 import { prisma } from '@/lib/prisma'
 
 export async function GET() {
   try {
-    const session = await getServerSession(authOptions)
-
-    // Vérifier que l'utilisateur est admin
-    if (!session || session.user?.role !== 'ADMIN') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    // ✅ Vérification admin avec dev bypass
+    const authError = await requireAdminAuth()
+    if (authError) return authError
 
     // Calculer les dates
     const now = new Date()
