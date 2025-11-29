@@ -82,12 +82,7 @@ const navSections: NavSection[] = [
   {
     title: 'Analytics',
     icon: BarChart3,
-    children: [
-      { title: 'Dashboard', href: '/admin/analytics' },
-      { title: 'Utilisateurs', href: '/admin/analytics/users' },
-      { title: 'Revenus', href: '/admin/analytics/revenue' },
-      { title: 'Contenu', href: '/admin/analytics/content' }
-    ]
+    href: '/admin/analytics'
   },
   {
     title: 'Paramètres App',
