@@ -168,6 +168,7 @@ const nextConfig = {
       'https://*.sentry.io',
       'https://vitals.vercel-analytics.com',
       'https://cloud.umami.is',
+      'https://api-gateway.umami.dev',
 
       // Vercel Live (feedback / overlays)
       'https://vercel.live',
