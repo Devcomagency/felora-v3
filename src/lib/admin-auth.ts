@@ -6,6 +6,13 @@ import { NextRequest, NextResponse } from 'next/server'
  * @returns true si authentifié, false sinon
  */
 export async function isAdminAuthenticated(): Promise<boolean> {
+  // 🔓 DEV MODE: Bypass auth en développement local
+  // ⚠️ À RETIRER EN PRODUCTION ou définir DISABLE_ADMIN_AUTH=false
+  if (process.env.NODE_ENV === 'development' && process.env.DISABLE_ADMIN_AUTH !== 'false') {
+    console.log('⚠️ [DEV MODE] Admin auth bypassed for development')
+    return true
+  }
+
   try {
     const cookieStore = await cookies()
     const token = cookieStore.get('felora-admin-token')
