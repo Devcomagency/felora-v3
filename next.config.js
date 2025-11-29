@@ -167,6 +167,7 @@ const nextConfig = {
       // Observability & Analytics
       'https://*.sentry.io',
       'https://vitals.vercel-analytics.com',
+      'https://cloud.umami.is',
 
       // Vercel Live (feedback / overlays)
       'https://vercel.live',
@@ -178,7 +179,7 @@ const nextConfig = {
     
     const csp = [
       "default-src 'self'",
-      `script-src 'self' ${isDev ? "'unsafe-inline' 'unsafe-eval'" : "'unsafe-inline'"} blob: https://api.mapbox.com https://*.sentry.io https://vercel.live https://*.vercel.live`,
+      `script-src 'self' ${isDev ? "'unsafe-inline' 'unsafe-eval'" : "'unsafe-inline'"} blob: https://api.mapbox.com https://*.sentry.io https://vercel.live https://*.vercel.live https://cloud.umami.is`,
       "style-src 'self' 'unsafe-inline' https://api.mapbox.com",
       // Autoriser l'application à embarquer (iframe) des outils Vercel Live
       "frame-src 'self' https://vercel.live https://*.vercel.live",
