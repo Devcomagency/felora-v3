@@ -4,9 +4,9 @@ import React, { useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
-  Shield, Users, UserCircle, Building2, Image, AlertTriangle,
-  CreditCard, Gem, Gift, MessageSquare, BarChart3, Settings,
-  Mail, Lock, FileText, Headphones, Target, ChevronDown, ChevronRight, LogOut
+  Shield, Users, Building2, Image, AlertTriangle,
+  BarChart3, Settings, Mail, Lock, FileText, Headphones, Target,
+  ChevronDown, ChevronRight, LogOut
 } from 'lucide-react'
 
 interface NavSection {
@@ -42,43 +42,6 @@ const navSections: NavSection[] = [
     title: 'Signalements',
     icon: AlertTriangle,
     href: '/admin/reports'
-  },
-  {
-    title: 'Paiements',
-    icon: CreditCard,
-    children: [
-      { title: 'Transactions', href: '/admin/payments' },
-      { title: 'Historique', href: '/admin/payments/history' },
-      { title: 'Remboursements', href: '/admin/payments/refunds' },
-      { title: 'Statistiques', href: '/admin/payments/stats' }
-    ]
-  },
-  {
-    title: 'Système Diamonds',
-    icon: Gem,
-    children: [
-      { title: 'Prix des packs', href: '/admin/diamonds/pricing' },
-      { title: 'Historique achats', href: '/admin/diamonds/purchases' },
-      { title: 'Créditer diamonds', href: '/admin/diamonds/credit' }
-    ]
-  },
-  {
-    title: 'Gestion Cadeaux',
-    icon: Gift,
-    children: [
-      { title: 'Liste cadeaux', href: '/admin/gifts' },
-      { title: 'Créer cadeau', href: '/admin/gifts/create' },
-      { title: 'Statistiques', href: '/admin/gifts/stats' }
-    ]
-  },
-  {
-    title: 'Modération Messages',
-    icon: MessageSquare,
-    children: [
-      { title: 'Conversations signalées', href: '/admin/messages/reported' },
-      { title: 'Spam détecté', href: '/admin/messages/spam' },
-      { title: 'Statistiques', href: '/admin/messages/stats' }
-    ]
   },
   {
     title: 'Analytics',
