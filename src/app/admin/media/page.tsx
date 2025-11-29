@@ -250,7 +250,7 @@ export default function AdminMediaImproved() {
   const SkeletonLoader = () => (
     <div className="space-y-4">
       {[1, 2, 3, 4, 5].map((i) => (
-        <div key={i} className="flex gap-4 animate-skeleton">
+        <div key={`skeleton-${i}`} className="flex gap-4 animate-skeleton">
           <div className="h-12 w-32 bg-gray-800 rounded-lg"></div>
           <div className="h-12 flex-1 bg-gray-800 rounded-lg"></div>
           <div className="h-12 w-24 bg-gray-800 rounded-lg"></div>
@@ -761,7 +761,7 @@ export default function AdminMediaImproved() {
                 <span key={`ellipsis-${index}`} className="px-2 text-gray-500">...</span>
               ) : (
                 <button
-                  key={page}
+                  key={`page-${page}-${index}`}
                   onClick={() => setCurrentPage(page as number)}
                   className={`
                     min-w-[44px] h-11 px-4 rounded-xl font-semibold transition-all shadow-lg
