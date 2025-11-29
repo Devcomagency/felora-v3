@@ -19,7 +19,7 @@ export async function GET() {
     const viewsData = await prisma.escortProfile.aggregate({
       _sum: { views: true },
       _avg: { views: true },
-      where: { isActive: true }
+      where: { status: 'ACTIVE' }
     })
 
     const totalViews = viewsData._sum.views || 0
@@ -28,7 +28,7 @@ export async function GET() {
     // 2. Likes & Réactions
     const likesData = await prisma.escortProfile.aggregate({
       _sum: { likes: true, totalLikes: true, totalReacts: true },
-      where: { isActive: true }
+      where: { status: 'ACTIVE' }
     })
 
     const totalLikes = (likesData._sum.likes || 0) + (likesData._sum.totalLikes || 0)
@@ -118,7 +118,7 @@ export async function GET() {
 
     // 10. Top escorts par engagement (vues + likes combinés)
     const topEscorts = await prisma.escortProfile.findMany({
-      where: { isActive: true },
+      where: { status: 'ACTIVE' },
       select: {
         id: true,
         stageName: true,

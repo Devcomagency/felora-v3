@@ -44,7 +44,7 @@ export async function GET() {
     })
 
     const activeEscorts = await prisma.escortProfile.count({
-      where: { isActive: true }
+      where: { status: 'ACTIVE' }
     })
 
     const verifiedEscorts = await prisma.escortProfile.count({

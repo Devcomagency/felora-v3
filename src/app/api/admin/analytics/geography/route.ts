@@ -15,31 +15,34 @@ export async function GET() {
     const thirtyDaysAgo = subDays(today, 30)
 
     // 1. Escortes par canton
-    const escortsByCanton = await prisma.escortProfile.groupBy({
-      by: ['canton'],
-      _count: { id: true },
-      where: {
-        isActive: true,
-        canton: { not: null }
-      },
-      orderBy: {
-        _count: { id: 'desc' }
-      }
+    const allEscorts = await prisma.escortProfile.findMany({
+      where: { status: 'ACTIVE' },
+      select: { canton: true, city: true }
     })
 
+    const cantonCounts = allEscorts
+      .filter(e => e.canton)
+      .reduce((acc: Record<string, number>, e) => {
+        acc[e.canton!] = (acc[e.canton!] || 0) + 1
+        return acc
+      }, {})
+
+    const escortsByCanton = Object.entries(cantonCounts)
+      .map(([canton, count]) => ({ canton, _count: { id: count } }))
+      .sort((a, b) => b._count.id - a._count.id)
+
     // 2. Escortes par ville
-    const escortsByCity = await prisma.escortProfile.groupBy({
-      by: ['city'],
-      _count: { id: true },
-      where: {
-        isActive: true,
-        city: { not: null }
-      },
-      orderBy: {
-        _count: { id: 'desc' }
-      },
-      take: 20
-    })
+    const cityCounts = allEscorts
+      .filter(e => e.city)
+      .reduce((acc: Record<string, number>, e) => {
+        acc[e.city!] = (acc[e.city!] || 0) + 1
+        return acc
+      }, {})
+
+    const escortsByCity = Object.entries(cityCounts)
+      .map(([city, count]) => ({ city, _count: { id: count } }))
+      .sort((a, b) => b._count.id - a._count.id)
+      .slice(0, 20)
 
     // 3. Croissance par canton (30 derniers jours)
     const cantonGrowth = []
@@ -48,8 +51,8 @@ export async function GET() {
 
       const previousCount = await prisma.escortProfile.count({
         where: {
-          canton: canton.canton,
-          isActive: true,
+          canton: canton.canton as string,
+          status: 'ACTIVE',
           createdAt: { lt: thirtyDaysAgo }
         }
       })
@@ -67,59 +70,77 @@ export async function GET() {
     }
 
     // 4. Villes avec le plus de vues
-    const citiesWithMostViews = await prisma.escortProfile.groupBy({
-      by: ['city'],
-      _sum: { views: true },
-      _count: { id: true },
-      where: {
-        isActive: true,
-        city: { not: null }
-      },
-      orderBy: {
-        _sum: { views: 'desc' }
-      },
-      take: 15
+    const escortsWithViews = await prisma.escortProfile.findMany({
+      where: { status: 'ACTIVE' },
+      select: { city: true, views: true }
     })
 
-    const citiesFormatted = citiesWithMostViews.map(c => ({
-      city: c.city,
-      escorts: c._count.id,
-      totalViews: c._sum.views || 0,
-      avgViewsPerEscort: c._count.id > 0 ? ((c._sum.views || 0) / c._count.id).toFixed(1) : '0'
-    }))
+    const cityViews = escortsWithViews
+      .filter(e => e.city)
+      .reduce((acc: Record<string, { count: number; views: number }>, e) => {
+        if (!acc[e.city!]) acc[e.city!] = { count: 0, views: 0 }
+        acc[e.city!].count++
+        acc[e.city!].views += e.views || 0
+        return acc
+      }, {})
+
+    const citiesFormatted = Object.entries(cityViews)
+      .map(([city, data]) => ({
+        city,
+        escorts: data.count,
+        totalViews: data.views,
+        avgViewsPerEscort: data.count > 0 ? (data.views / data.count).toFixed(1) : '0'
+      }))
+      .sort((a, b) => b.totalViews - a.totalViews)
+      .slice(0, 15)
 
     // 5. Catégories par ville (top 5 villes)
     const topCities = escortsByCity.slice(0, 5)
     const categoriesByCity = []
 
-    for (const city of topCities) {
-      const categories = await prisma.escortProfile.groupBy({
-        by: ['category'],
-        _count: { id: true },
+    for (const cityData of topCities) {
+      const escorts = await prisma.escortProfile.findMany({
         where: {
-          city: city.city,
-          isActive: true
-        }
+          city: cityData.city as string,
+          status: 'ACTIVE'
+        },
+        select: { category: true }
       })
 
+      const categoryCounts = escorts.reduce((acc: Record<string, number>, e) => {
+        acc[e.category] = (acc[e.category] || 0) + 1
+        return acc
+      }, {})
+
       categoriesByCity.push({
-        city: city.city,
-        categories: categories.map(c => ({
-          category: c.category,
-          count: c._count.id
+        city: cityData.city,
+        categories: Object.entries(categoryCounts).map(([category, count]) => ({
+          category,
+          count
         }))
       })
     }
 
     // 6. Nouveaux profils par canton (30j)
-    const newEscortsByCanton = await prisma.escortProfile.groupBy({
-      by: ['canton'],
-      _count: { id: true },
+    const newEscorts = await prisma.escortProfile.findMany({
       where: {
         createdAt: { gte: thirtyDaysAgo },
-        canton: { not: null }
-      }
+        status: 'ACTIVE'
+      },
+      select: { canton: true }
     })
+
+    const newCantonCounts = newEscorts
+      .filter(e => e.canton)
+      .reduce((acc: Record<string, number>, e) => {
+        acc[e.canton!] = (acc[e.canton!] || 0) + 1
+        return acc
+      }, {})
+
+    const newEscortsByCanton = Object.entries(newCantonCounts).map(([canton, count]) => ({
+      canton,
+      _count: { id: count }
+    }))
 
     // 7. Calcul opportunités (demand/supply ratio estimé)
     // On estime la demande par les vues moyennes

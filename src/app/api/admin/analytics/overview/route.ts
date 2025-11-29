@@ -13,14 +13,13 @@ export async function GET() {
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
     const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000)
 
-    // 1. Escortes actives
+    // 1. Escortes actives (status ACTIVE uniquement)
     const activeEscorts = await prisma.escortProfile.count({
-      where: { isActive: true, status: 'ACTIVE' }
+      where: { status: 'ACTIVE' }
     })
 
     const activeEscortsLastPeriod = await prisma.escortProfile.count({
       where: {
-        isActive: true,
         status: 'ACTIVE',
         createdAt: { lte: thirtyDaysAgo }
       }
@@ -29,7 +28,7 @@ export async function GET() {
     // 2. Vues totales (somme des vues de tous les profils actifs)
     const viewsData = await prisma.escortProfile.aggregate({
       _sum: { views: true },
-      where: { isActive: true }
+      where: { status: 'ACTIVE' }
     })
     const totalViews = viewsData._sum.views || 0
 
@@ -102,7 +101,7 @@ export async function GET() {
 
     const topPerformers = await prisma.escortProfile.findMany({
       where: {
-        isActive: true,
+        status: 'ACTIVE',
         updatedAt: { gte: sevenDaysAgo }
       },
       orderBy: { views: 'desc' },

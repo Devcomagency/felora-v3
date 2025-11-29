@@ -71,7 +71,7 @@ export async function GET() {
     // 2. Profils inactifs
     const dormantProfiles = await prisma.escortProfile.count({
       where: {
-        isActive: true,
+        status: 'ACTIVE',
         updatedAt: { lt: subDays(now, 60) }
       }
     })
@@ -123,25 +123,26 @@ export async function GET() {
     }
 
     // 5. Opportunités géographiques
-    const citiesData = await prisma.escortProfile.groupBy({
-      by: ['city'],
-      _count: { id: true },
-      _sum: { views: true },
-      where: {
-        isActive: true,
-        city: { not: null }
-      },
-      having: {
-        views: { _sum: { gt: 0 } }
-      }
+    const escortsForOpportunities = await prisma.escortProfile.findMany({
+      where: { status: 'ACTIVE' },
+      select: { city: true, views: true }
     })
 
-    const opportunities = citiesData
-      .map(c => ({
-        city: c.city,
-        escorts: c._count.id,
-        views: c._sum.views || 0,
-        ratio: c._count.id > 0 ? (c._sum.views || 0) / c._count.id : 0
+    const cityCounts = escortsForOpportunities
+      .filter(e => e.city)
+      .reduce((acc: Record<string, { count: number; views: number }>, e) => {
+        if (!acc[e.city!]) acc[e.city!] = { count: 0, views: 0 }
+        acc[e.city!].count++
+        acc[e.city!].views += e.views || 0
+        return acc
+      }, {})
+
+    const opportunities = Object.entries(cityCounts)
+      .map(([city, data]) => ({
+        city,
+        escorts: data.count,
+        views: data.views,
+        ratio: data.count > 0 ? data.views / data.count : 0
       }))
       .filter(c => c.ratio > 100 && c.escorts < 20)
       .sort((a, b) => b.ratio - a.ratio)
@@ -162,7 +163,7 @@ export async function GET() {
     // 6. Taux de conversion
     const totalViews = await prisma.escortProfile.aggregate({
       _sum: { views: true },
-      where: { isActive: true }
+      where: { status: 'ACTIVE' }
     })
 
     const totalContacts = await prisma.message.count({
@@ -268,7 +269,7 @@ export async function GET() {
     // 9. Profils incomplets
     const incompleteProfiles = await prisma.escortProfile.count({
       where: {
-        isActive: true,
+        status: 'ACTIVE',
         OR: [
           { profilePhoto: null },
           { description: { equals: '' } },
@@ -292,7 +293,7 @@ export async function GET() {
     // 10. Top performer
     const topEscort = await prisma.escortProfile.findFirst({
       where: {
-        isActive: true,
+        status: 'ACTIVE',
         updatedAt: { gte: sevenDaysAgo }
       },
       orderBy: { views: 'desc' },
