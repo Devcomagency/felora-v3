@@ -8,6 +8,7 @@ import { useTranslations } from 'next-intl'
 import useSWR from 'swr'
 import Supercluster from 'supercluster'
 import 'maplibre-gl/dist/maplibre-gl.css'
+import track from '@/lib/analytics/tracking'
 
 // Types
 type EscortData = {
@@ -102,6 +103,11 @@ export default function MapTest() {
   const [bounds, setBounds] = useState<[number, number, number, number] | null>(null)
   const [showFilters, setShowFilters] = useState(false)
   const [selectedEscort, setSelectedEscort] = useState<EscortData | null>(null)
+
+  // 📊 Track map opened on mount
+  useEffect(() => {
+    track.mapOpened('default')
+  }, [])
   const [clusterPopup, setClusterPopup] = useState<{
     latitude: number
     longitude: number
@@ -470,8 +476,11 @@ export default function MapTest() {
   const onClusterClick = useCallback((cluster: any) => {
     const clusterId = cluster.properties.cluster_id
     const zoom = supercluster.getClusterExpansionZoom(clusterId)
-    
+
     if (zoom > viewState.zoom && zoom <= 14) {
+      // 📊 Track map zoom
+      track.mapZoom(Math.min(zoom + 1, 16))
+
       // Zoom to expand cluster
       setViewState({
         latitude: cluster.geometry.coordinates[1],

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { Plus, Trash2, Edit3, Eye, Lock, Video, Image as ImageIcon, GripVertical, Loader } from 'lucide-react'
 import { VideoCompressor } from '@/lib/video-compression'
+import track from '@/lib/analytics/tracking'
 
 type MediaItem = {
   id: string
@@ -168,6 +169,11 @@ export default function MediaManager() {
 
         const result = await confirmRes.json()
         console.log('✅ Upload complet:', result.mediaId)
+
+        // 📊 Track media upload
+        const mediaType = processedFile.type.startsWith('video/') ? 'VIDEO' : 'IMAGE'
+        track.mediaUpload(mediaType, processedFile.size, active)
+
         toast.success('Média ajouté avec succès')
       } catch (e:any) {
         console.log('💥 Erreur upload complète:', e)
@@ -208,10 +214,20 @@ export default function MediaManager() {
 
   const remove = async (id:string) => {
     if (!confirm('Supprimer ce média ?')) return
+
+    // Find media to track its type before deletion
+    const media = items.find(m => m.id === id)
+
     try {
       const r = await fetch(`/api/media/${id}/delete`, { method: 'DELETE', credentials:'include' })
       if (!r.ok) throw new Error()
       setItems(prev => prev.filter(x => x.id !== id))
+
+      // 📊 Track media deletion
+      if (media) {
+        track.mediaDelete(id, media.type)
+      }
+
       toast.success('Média supprimé')
     } catch { toast.error('Suppression échouée') }
   }

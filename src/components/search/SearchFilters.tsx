@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { X, MapPin, Filter } from 'lucide-react'
 import { useTranslations } from 'next-intl'
+import track from '@/lib/analytics/tracking'
 
 interface SearchFiltersProps {
   filters: {
@@ -350,6 +351,26 @@ export default function SearchFilters({ filters, onFiltersChange, onClose, isOpe
       privatePhotos,
       exclusiveVideos
     }
+
+    // 📊 Track filters applied
+    const activeFilters: string[] = []
+    let filterCount = 0
+
+    if (selectedCategories.length > 0) { activeFilters.push('categories'); filterCount++ }
+    if (selectedCity) { activeFilters.push('city'); filterCount++; track.filterCity(selectedCity, selectedCanton) }
+    if (ageRange[0] !== 18 || ageRange[1] !== 65) { activeFilters.push('age'); filterCount++; track.filterAge(ageRange[0], ageRange[1]) }
+    if (services.length > 0) { activeFilters.push('services'); filterCount++; track.filterServices(services) }
+    if (languages.length > 0) { activeFilters.push('languages'); filterCount++; track.filterLanguages(languages) }
+    if (budgetRange[0] > 0 || budgetRange[1] < 2000) { activeFilters.push('rates'); filterCount++; track.filterRates(budgetRange[0], budgetRange[1]) }
+    if (availableNow || incall || outcall) { activeFilters.push('availability'); filterCount++; track.filterAvailability(availableNow, incall, outcall) }
+    if (verified) { activeFilters.push('verified'); filterCount++; track.filterVerified(true) }
+    if (bodyType) { activeFilters.push('bodyType'); filterCount++ }
+    if (hairColor) { activeFilters.push('hairColor'); filterCount++ }
+    if (eyeColor) { activeFilters.push('eyeColor'); filterCount++ }
+    if (ethnicity) { activeFilters.push('ethnicity'); filterCount++ }
+
+    track.filtersApplied(filterCount, activeFilters)
+
     onFiltersChange(newFilters)
     onClose()
   }
@@ -432,6 +453,9 @@ export default function SearchFilters({ filters, onFiltersChange, onClose, isOpe
       exclusiveVideos: false
     }
     
+    // 📊 Track filters reset
+    track.filtersReset()
+
     onFiltersChange(resetFiltersData)
     onClose()
   }
