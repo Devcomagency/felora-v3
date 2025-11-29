@@ -17,6 +17,7 @@ interface MediaItem {
   owner?: {
     name: string
     stageName?: string
+    slug?: string
     userId?: string
   }
   reportCount: number
@@ -618,7 +619,18 @@ export default function AdminMediaImproved() {
                       <div>
                         <button
                           onClick={() => {
-                            const profileUrl = `/profile/${item.ownerId}`
+                            // ✅ FIX: Utiliser la bonne URL selon le type
+                            let profileUrl = ''
+                            if (item.ownerType === 'ESCORT') {
+                              // Escort : /profile/{ownerId}
+                              profileUrl = `/profile/${item.ownerId}`
+                            } else if (item.ownerType === 'CLUB' && item.owner?.slug) {
+                              // Club : /profile-test/club/{slug}
+                              profileUrl = `/profile-test/club/${item.owner.slug}`
+                            } else {
+                              // Fallback
+                              profileUrl = `/profile/${item.ownerId}`
+                            }
                             window.open(profileUrl, '_blank')
                           }}
                           className="flex items-center gap-2 text-sm font-medium text-purple-400 hover:text-purple-300 transition-colors group/link"

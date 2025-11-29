@@ -176,6 +176,7 @@ export async function GET(request: NextRequest) {
         if (club) {
           owner = {
             name: club.name || 'Unknown',
+            stageName: club.name || 'Unknown', // Pour cohérence avec l'affichage
             slug: club.handle,
             userId: club.userId
           }
