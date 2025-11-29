@@ -373,7 +373,7 @@ export default function AdminClubsPage() {
                   </button>
 
                   <button
-                    onClick={() => window.location.href = `/profile/club/${club.id}`}
+                    onClick={() => window.open(`/profile-test/club/${club.handle}`, '_blank')}
                     className="px-3 py-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 rounded-lg text-sm transition-colors flex items-center gap-2"
                   >
                     <Eye size={14} />
