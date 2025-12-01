@@ -268,7 +268,7 @@ export default function ActionsBar({
         )}
 
         {/* Bouton Contact intelligent avec gestion des 3 cas */}
-        {contact && (() => {
+        {contact && contact.phoneDisplayType !== 'messagerie_privee' && (() => {
           const { phoneVisibility, phoneDisplayType, phone } = contact;
           const phoneNumber = phone || '';
           const cleanPhone = phoneNumber.replace(/\D/g, '');
@@ -286,23 +286,51 @@ export default function ActionsBar({
 
           console.log('🔍 [ActionsBar DEBUG] Contact:', { phoneVisibility, phoneDisplayType, phoneNumber, hasPhone: !!phone });
 
-          if (phoneDisplayType === 'messagerie_privee') {
-            // CAS 3: Messagerie privée uniquement - Pas de bouton téléphone du tout
-            return null;
-          } else if ((phoneDisplayType === 'visible' || phoneDisplayType === 'cache_avec_boutons' || phoneDisplayType === 'hidden') && phoneNumber) {
-            // CAS 1 & 2: Numéro visible ou caché - Dropdown avec options
-            // On utilise phoneVisibility comme source de vérité pour afficher le numéro
-            const isVisible = phoneVisibility === 'visible';
+          // CAS 1 & 2: Numéro visible ou caché - Dropdown avec options
+          // On utilise phoneVisibility comme source de vérité pour afficher le numéro
+          const isVisible = phoneVisibility === 'visible';
+
+          if ((phoneDisplayType === 'visible' || phoneDisplayType === 'cache_avec_boutons' || phoneDisplayType === 'hidden') && phoneNumber) {
             return (
-              <div className="relative" ref={dropdownRef}>
+              <div className="relative flex-1" ref={dropdownRef}>
                 <button
                   onClick={() => setShowContactDropdown(!showContactDropdown)}
-                  className={`p-2 rounded-lg border transition-all hover:bg-white/15 active:scale-95 flex items-center gap-1 ${
+                  className={`w-full py-2.5 px-4 text-white rounded-xl font-semibold text-sm transition-all duration-500 border flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-95 ${
                     isVisible
                       ? 'bg-green-500/20 text-green-300 border-green-500/30'
                       : 'bg-white/10 text-gray-300 border-white/20'
                   }`}
+                  style={{
+                    background: isVisible
+                      ? 'linear-gradient(to right, rgba(34, 197, 94, 0.2), rgba(34, 197, 94, 0.1))'
+                      : 'linear-gradient(to right, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05))',
+                    borderColor: isVisible ? 'rgba(34, 197, 94, 0.3)' : 'rgba(255, 255, 255, 0.2)',
+                    boxShadow: isVisible ? '0 8px 16px rgba(34, 197, 94, 0.2)' : '0 8px 16px rgba(255, 255, 255, 0.1)',
+                    minWidth: 0
+                  }}
                   title={isVisible ? `Téléphone: ${phoneNumber}` : 'Contact téléphonique disponible'}
+                  onMouseEnter={(e) => {
+                    if (isVisible) {
+                      e.currentTarget.style.background = 'linear-gradient(to right, rgba(34, 197, 94, 0.3), rgba(34, 197, 94, 0.2))'
+                      e.currentTarget.style.borderColor = 'rgba(34, 197, 94, 0.4)'
+                      e.currentTarget.style.boxShadow = '0 12px 24px rgba(34, 197, 94, 0.3)'
+                    } else {
+                      e.currentTarget.style.background = 'linear-gradient(to right, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.1))'
+                      e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.25)'
+                      e.currentTarget.style.boxShadow = '0 12px 24px rgba(255, 255, 255, 0.15)'
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (isVisible) {
+                      e.currentTarget.style.background = 'linear-gradient(to right, rgba(34, 197, 94, 0.2), rgba(34, 197, 94, 0.1))'
+                      e.currentTarget.style.borderColor = 'rgba(34, 197, 94, 0.3)'
+                      e.currentTarget.style.boxShadow = '0 8px 16px rgba(34, 197, 94, 0.2)'
+                    } else {
+                      e.currentTarget.style.background = 'linear-gradient(to right, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05))'
+                      e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)'
+                      e.currentTarget.style.boxShadow = '0 8px 16px rgba(255, 255, 255, 0.1)'
+                    }
+                  }}
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
