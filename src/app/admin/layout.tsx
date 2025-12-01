@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
   Shield, Users, Building2, Image, AlertTriangle,
-  BarChart3, Settings, Mail, Lock, FileText, Headphones, Target,
+  BarChart3, Settings, Lock, Headphones,
   ChevronDown, ChevronRight, LogOut
 } from 'lucide-react'
 
@@ -59,16 +59,6 @@ const navSections: NavSection[] = [
     ]
   },
   {
-    title: 'Communications',
-    icon: Mail,
-    children: [
-      { title: 'Emails en masse', href: '/admin/comms/emails' },
-      { title: 'Notifications push', href: '/admin/comms/push' },
-      { title: 'Annonces', href: '/admin/comms/announcements' },
-      { title: 'Templates', href: '/admin/comms/templates' }
-    ]
-  },
-  {
     title: 'Sécurité & Logs',
     icon: Lock,
     children: [
@@ -78,31 +68,12 @@ const navSections: NavSection[] = [
     ]
   },
   {
-    title: 'Contenu & Pages',
-    icon: FileText,
-    children: [
-      { title: 'CGU/CGV', href: '/admin/content/terms' },
-      { title: 'Confidentialité', href: '/admin/content/privacy' },
-      { title: 'FAQ', href: '/admin/content/faq' },
-      { title: 'Bannières', href: '/admin/content/banners' }
-    ]
-  },
-  {
     title: 'Support Client',
     icon: Headphones,
     children: [
       { title: 'Tickets', href: '/admin/support/tickets' },
       { title: 'Messages', href: '/admin/support/messages' },
       { title: 'Historique', href: '/admin/support/history' }
-    ]
-  },
-  {
-    title: 'Marketing',
-    icon: Target,
-    children: [
-      { title: 'Codes promo', href: '/admin/marketing/promos' },
-      { title: 'Campagnes', href: '/admin/marketing/campaigns' },
-      { title: 'Statistiques', href: '/admin/marketing/stats' }
     ]
   }
 ]

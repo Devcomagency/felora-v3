@@ -111,7 +111,7 @@ function ProfileCard({ profile, onClick }: ProfileCardProps) {
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-2xl">
-                {isEscort ? '👤' : '🏢'}
+                👤
               </div>
             )}
           </div>

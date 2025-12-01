@@ -159,7 +159,7 @@ function SingleMarker({ profile, type, onClick }: SingleMarkerProps) {
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-xl">
-                {isEscort ? '👤' : '🏢'}
+                👤
               </div>
             )}
 

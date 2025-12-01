@@ -430,7 +430,7 @@ export default function ProfileHeader({
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-white/10">
               <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-                📅 {t('scheduleModal.title')}
+                {t('scheduleModal.title')}
               </h2>
               <button
                 onClick={() => setIsScheduleModalOpen(false)}
@@ -496,7 +496,7 @@ export default function ProfileHeader({
                   {/* Absences spécifiques */}
                   {normalizedSchedule.absences && normalizedSchedule.absences.length > 0 && (
                     <div>
-                      <h3 className="text-sm font-medium text-white mb-3">🚫 {t('scheduleModal.absences')}</h3>
+                      <h3 className="text-sm font-medium text-white mb-3">{t('scheduleModal.absences')}</h3>
                       <div className="space-y-2">
                         {normalizedSchedule.absences.map((absence) => (
                           <div key={absence.id} className="p-2 rounded-lg bg-red-500/10 border border-red-500/20">
