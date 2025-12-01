@@ -1099,7 +1099,7 @@
   },
   "profileModal": {
     "close": "Fechar",
-    "loading": "Carregando perfil unificado...",
+    "loading": "Carregando...",
     "error": {
       "title": "Erro de carregamento",
       "description": "Perfil não encontrado"

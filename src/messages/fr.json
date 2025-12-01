@@ -1102,7 +1102,7 @@
   },
   "profileModal": {
     "close": "Fermer",
-    "loading": "Chargement du profil unifié...",
+    "loading": "Chargement...",
     "error": {
       "title": "Erreur de chargement",
       "description": "Profil non trouvé"

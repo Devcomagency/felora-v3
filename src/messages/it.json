@@ -1094,7 +1094,7 @@
   },
   "profileModal": {
     "close": "Chiudi",
-    "loading": "Caricamento profilo unificato...",
+    "loading": "Caricamento...",
     "error": {
       "title": "Errore di caricamento",
       "description": "Profilo non trovato"

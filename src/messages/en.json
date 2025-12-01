@@ -1101,7 +1101,7 @@
   },
   "profileModal": {
     "close": "Close",
-    "loading": "Loading unified profile...",
+    "loading": "Loading...",
     "error": {
       "title": "Loading error",
       "description": "Profile not found"

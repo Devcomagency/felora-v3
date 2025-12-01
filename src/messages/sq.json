@@ -1099,7 +1099,7 @@
   },
   "profileModal": {
     "close": "Mbyll",
-    "loading": "Duke ngarkuar profilin e unifikuar...",
+    "loading": "Duke u ngarkuar...",
     "error": {
       "title": "Gabim në ngarkim",
       "description": "Profili nuk u gjet"

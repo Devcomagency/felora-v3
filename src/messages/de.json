@@ -1096,7 +1096,7 @@
   },
   "profileModal": {
     "close": "Schließen",
-    "loading": "Einheitliches Profil wird geladen...",
+    "loading": "Laden...",
     "error": {
       "title": "Ladefehler",
       "description": "Profil nicht gefunden"
