@@ -286,39 +286,9 @@ export default function ActionsBar({
 
           console.log('🔍 [ActionsBar DEBUG] Contact:', { phoneVisibility, phoneNumber, hasPhone: !!phone });
 
-          // CAS 3: Messagerie privée uniquement
+          // CAS 3: Messagerie privée uniquement - NE PAS AFFICHER le bouton
           if (phoneVisibility === 'none') {
-            return (
-              <button
-                onClick={() => {
-                  onMessage?.(profileId);
-                  if (navigator.vibrate) navigator.vibrate([30]);
-                }}
-                className="flex-1 py-2.5 px-4 text-white rounded-xl font-semibold text-sm transition-all duration-500 border hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2"
-                style={{
-                  background: 'linear-gradient(to right, rgba(168, 85, 247, 0.2), rgba(168, 85, 247, 0.1))',
-                  borderColor: 'rgba(168, 85, 247, 0.3)',
-                  boxShadow: '0 8px 16px rgba(168, 85, 247, 0.2)',
-                  minWidth: 0
-                }}
-                title="Contact par messagerie privée uniquement"
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'linear-gradient(to right, rgba(168, 85, 247, 0.3), rgba(168, 85, 247, 0.2))'
-                  e.currentTarget.style.borderColor = 'rgba(168, 85, 247, 0.4)'
-                  e.currentTarget.style.boxShadow = '0 12px 24px rgba(168, 85, 247, 0.3)'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'linear-gradient(to right, rgba(168, 85, 247, 0.2), rgba(168, 85, 247, 0.1))'
-                  e.currentTarget.style.borderColor = 'rgba(168, 85, 247, 0.3)'
-                  e.currentTarget.style.boxShadow = '0 8px 16px rgba(168, 85, 247, 0.2)'
-                }}
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                </svg>
-                <span>{t('contact')}</span>
-              </button>
-            );
+            return null; // Le bouton disparaît complètement
           }
 
           // CAS 1 & 2: Numéro visible ou caché - Dropdown avec options
