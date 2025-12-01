@@ -360,13 +360,11 @@ export default function ActionsBar({
                           <div className="text-xs font-medium text-purple-400 mb-1">🔒 Messagerie privée uniquement</div>
                           <div className="text-xs text-gray-400">{profileName} ne partage pas son numéro</div>
                         </>
-                      ) : isVisible ? (
+                      ) : (
                         <>
                           <div className="text-xs text-gray-400 mb-1">{t('phoneContact.phoneNumberLabel')}</div>
                           <div className="text-sm font-mono text-green-300">{phoneNumber}</div>
                         </>
-                      ) : (
-                        <div className="text-xs text-gray-400">Numéro disponible via les boutons</div>
                       )}
                     </div>
                     <div className="py-2">
