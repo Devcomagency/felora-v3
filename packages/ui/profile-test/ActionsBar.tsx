@@ -71,7 +71,6 @@ export default function ActionsBar({
   const [showContactDropdown, setShowContactDropdown] = useState(false)
   const [loading, setLoading] = useState<string | null>(null)
   const [showGiftComingSoon, setShowGiftComingSoon] = useState(false)
-  const [showPrivateMessageModal, setShowPrivateMessageModal] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   // Fermer le dropdown au clic extérieur
@@ -268,45 +267,8 @@ export default function ActionsBar({
           </a>
         )}
 
-        {/* Bouton Contact intelligent - Toujours visible */}
+        {/* Bouton Contact - TOUJOURS visible, ouvre dropdown */}
         {contact && contact.phone && (() => {
-          const { phoneVisibility, phoneDisplayType, phone } = contact;
-
-          // CAS 3: Messagerie privée uniquement - Bouton spécial qui ouvre un modal
-          if (phoneVisibility === 'none') {
-            return (
-              <button
-                onClick={() => setShowPrivateMessageModal(true)}
-                className="py-2.5 px-4 text-white rounded-xl font-semibold text-sm transition-all duration-500 border flex items-center justify-center gap-2 flex-1 hover:scale-[1.02] active:scale-95"
-                style={{
-                  background: 'linear-gradient(to right, rgba(139, 92, 246, 0.3), rgba(139, 92, 246, 0.2))',
-                  borderColor: 'rgba(139, 92, 246, 0.5)',
-                  boxShadow: '0 8px 16px rgba(139, 92, 246, 0.2)',
-                  minWidth: 0
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'linear-gradient(to right, rgba(139, 92, 246, 0.4), rgba(139, 92, 246, 0.3))'
-                  e.currentTarget.style.borderColor = 'rgba(139, 92, 246, 0.6)'
-                  e.currentTarget.style.boxShadow = '0 12px 24px rgba(139, 92, 246, 0.3)'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'linear-gradient(to right, rgba(139, 92, 246, 0.3), rgba(139, 92, 246, 0.2))'
-                  e.currentTarget.style.borderColor = 'rgba(139, 92, 246, 0.5)'
-                  e.currentTarget.style.boxShadow = '0 8px 16px rgba(139, 92, 246, 0.2)'
-                }}
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                </svg>
-                <span>{t('contact')}</span>
-              </button>
-            );
-          }
-
-          // CAS 1 & 2: Numéro visible ou caché - Dropdown normal
-        })()}
-
-        {contact && contact.phoneVisibility !== 'none' && contact.phone && (() => {
           const { phoneVisibility, phoneDisplayType, phone } = contact;
           const phoneNumber = phone || '';
           const cleanPhone = phoneNumber.replace(/\D/g, '');
@@ -377,15 +339,42 @@ export default function ActionsBar({
 
                 {/* Dropdown menu */}
                 {showContactDropdown && (
-                  <div className="absolute top-full mt-2 right-0 bg-black/90 backdrop-blur-xl rounded-lg border border-white/10 shadow-2xl z-50 min-w-[160px]">
-                    {isVisible && (
-                      <div className="px-4 py-2 border-b border-white/10">
-                        <div className="text-xs text-gray-400 mb-1">{t('phoneContact.phoneNumberLabel')}</div>
-                        <div className="text-sm font-mono text-green-300">{phoneNumber}</div>
-                      </div>
-                    )}
+                  <div className="absolute top-full mt-2 right-0 bg-black/90 backdrop-blur-xl rounded-lg border border-white/10 shadow-2xl z-50 min-w-[200px]">
+                    {/* Header avec numéro ou message */}
+                    <div className="px-4 py-3 border-b border-white/10">
+                      {phoneVisibility === 'none' ? (
+                        <>
+                          <div className="text-xs font-medium text-purple-400 mb-1">🔒 Messagerie privée uniquement</div>
+                          <div className="text-xs text-gray-400">{profileName} ne partage pas son numéro</div>
+                        </>
+                      ) : isVisible ? (
+                        <>
+                          <div className="text-xs text-gray-400 mb-1">{t('phoneContact.phoneNumberLabel')}</div>
+                          <div className="text-sm font-mono text-green-300">{phoneNumber}</div>
+                        </>
+                      ) : (
+                        <div className="text-xs text-gray-400">Numéro disponible via les boutons</div>
+                      )}
+                    </div>
                     <div className="py-2">
-                      <button
+                      {phoneVisibility === 'none' ? (
+                        /* Messagerie uniquement - Bouton Message */
+                        <button
+                          onClick={() => {
+                            setShowContactDropdown(false)
+                            onMessage?.(profileId)
+                          }}
+                          className="w-full px-4 py-2 text-left text-sm text-purple-300 hover:bg-purple-500/10 flex items-center gap-3 transition-colors font-medium"
+                        >
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                          </svg>
+                          Envoyer un message
+                        </button>
+                      ) : (
+                        /* Numéro visible/caché - Boutons téléphone */
+                        <>
+                          <button
                         onClick={() => {
                           if (navigator.vibrate) navigator.vibrate([30])
                           window.open(callUrl)
@@ -426,6 +415,8 @@ export default function ActionsBar({
                         </svg>
                         {t('phoneContact.sms')}
                       </button>
+                        </>
+                      )}
                     </div>
                   </div>
                 )}
@@ -483,56 +474,6 @@ export default function ActionsBar({
         )}
       </div>
 
-      {/* Modal Messagerie Privée Uniquement */}
-      {showPrivateMessageModal && (
-        <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-          onClick={() => setShowPrivateMessageModal(false)}
-        >
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.9, opacity: 0 }}
-            className="bg-gradient-to-br from-gray-900 to-black border border-purple-500/30 rounded-2xl p-6 max-w-sm w-full shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="text-center">
-              <div className="mb-4 inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-500/30">
-                <svg className="w-8 h-8 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-bold text-white mb-2">
-                Contact par messagerie uniquement
-              </h3>
-              <p className="text-gray-400 mb-6">
-                {profileName} souhaite être contactée uniquement par messagerie privée.
-                Aucun numéro de téléphone n'est disponible.
-              </p>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setShowPrivateMessageModal(false)}
-                  className="flex-1 py-3 px-6 bg-white/10 text-white rounded-xl font-semibold hover:bg-white/20 transition-all border border-white/20"
-                >
-                  Annuler
-                </button>
-                <button
-                  onClick={() => {
-                    setShowPrivateMessageModal(false)
-                    onMessage?.(profileId)
-                  }}
-                  className="flex-1 py-3 px-6 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-semibold hover:from-purple-600 hover:to-pink-600 transition-all flex items-center justify-center gap-2"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                  </svg>
-                  Envoyer un message
-                </button>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      )}
     </div>
   )
 }
