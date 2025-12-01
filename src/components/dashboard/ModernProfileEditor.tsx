@@ -2797,7 +2797,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                           }}
                           className="flex-1 px-3 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white text-sm placeholder:text-gray-500 focus:border-purple-500 focus:outline-none"
                         />
-                        <div className="flex items-center gap-2 sm:gap-3">
+                        <div className="flex items-center gap-2 w-full sm:w-auto">
                           <input
                             type="number"
                             placeholder={t('pricing.priceCHF')}
@@ -2807,7 +2807,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                                 cp.id === customPrice.id ? { ...cp, price: parseInt(e.target.value) || 0 } : cp
                               ))
                             }}
-                            className="flex-1 sm:w-28 px-3 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white text-sm placeholder:text-gray-500 focus:border-purple-500 focus:outline-none"
+                            className="flex-1 px-3 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white text-sm placeholder:text-gray-500 focus:border-purple-500 focus:outline-none min-w-0"
                           />
                           <button
                             type="button"
