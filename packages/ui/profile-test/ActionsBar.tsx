@@ -59,6 +59,13 @@ export default function ActionsBar({
   const t = useTranslations('actionsBar')
   const finalPrimaryLabel = primaryLabel || t('viewMore')
 
+  console.log('🔍 [ActionsBar] Props:', {
+    showMessage,
+    hasOnMessage: !!onMessage,
+    hasContact: !!contact,
+    contact
+  })
+
   // Optimistic UI states
   const [followState, setFollowState] = useState(isFollowing)
   const [showContactDropdown, setShowContactDropdown] = useState(false)
@@ -184,36 +191,8 @@ export default function ActionsBar({
           </div>
         )}
 
-        {/* Message ou Contact - Style register page avec gradient bleu */}
-        {onMessage && !showMessage && (
-          <button
-            onClick={handleMessage}
-            className="py-2.5 px-4 text-white rounded-xl font-semibold text-sm transition-all duration-500 border flex items-center justify-center gap-2 flex-1"
-            style={{
-              background: 'linear-gradient(to right, #06B6D430, #06B6D420)',
-              borderColor: '#06B6D450',
-              boxShadow: '0 8px 16px #06B6D420',
-              minWidth: 0
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'linear-gradient(to right, #06B6D440, #06B6D430)'
-              e.currentTarget.style.borderColor = '#06B6D460'
-              e.currentTarget.style.boxShadow = '0 12px 24px #06B6D430'
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'linear-gradient(to right, #06B6D430, #06B6D420)'
-              e.currentTarget.style.borderColor = '#06B6D450'
-              e.currentTarget.style.boxShadow = '0 8px 16px #06B6D420'
-            }}
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-            </svg>
-            <span>{t('contact')}</span>
-          </button>
-        )}
-
-        {showMessage && onMessage && (
+        {/* Bouton Message - Affiche seulement si messagerie_privee */}
+        {showMessage && onMessage && contact?.phoneDisplayType === 'messagerie_privee' && (
           <button
             onClick={handleMessage}
             className="py-2.5 px-4 text-white rounded-xl font-semibold text-sm transition-all duration-500 border flex items-center justify-center gap-2 flex-1"
@@ -275,7 +254,7 @@ export default function ActionsBar({
 
         {/* Bouton Contact intelligent avec gestion des 3 cas */}
         {contact && (() => {
-          const { phoneDisplayType, phone } = contact;
+          const { phoneVisibility, phoneDisplayType, phone } = contact;
           const phoneNumber = phone || '';
           const cleanPhone = phoneNumber.replace(/\D/g, '');
 
@@ -290,37 +269,25 @@ export default function ActionsBar({
             : `sms:${cleanPhone}?body=${encodeURIComponent(smsMessage)}`;
           const callUrl = `tel:${cleanPhone}`;
 
-          console.log('🔍 [ActionsBar DEBUG] Contact:', { phoneDisplayType, phoneNumber, hasPhone: !!phone });
+          console.log('🔍 [ActionsBar DEBUG] Contact:', { phoneVisibility, phoneDisplayType, phoneNumber, hasPhone: !!phone });
 
           if (phoneDisplayType === 'messagerie_privee') {
-            // CAS 3: Messagerie privée uniquement - Bouton spécial
-            return (
-              <button
-                onClick={() => {
-                  onMessage?.(profileId);
-                  if (navigator.vibrate) navigator.vibrate([30]);
-                }}
-                className="p-2 rounded-lg bg-purple-500/20 text-purple-300 border border-purple-500/30 transition-all hover:bg-purple-500/30 active:scale-95 flex items-center gap-1"
-                title="Contact par messagerie privée uniquement"
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                </svg>
-                <ChevronDown size={12} />
-              </button>
-            );
-          } else if ((phoneDisplayType === 'visible' || phoneDisplayType === 'cache_avec_boutons') && phoneNumber) {
+            // CAS 3: Messagerie privée uniquement - Pas de bouton téléphone
+            return null;
+          } else if ((phoneDisplayType === 'visible' || phoneDisplayType === 'cache_avec_boutons' || phoneDisplayType === 'hidden') && phoneNumber) {
             // CAS 1 & 2: Numéro visible ou caché - Dropdown avec options
+            // On utilise phoneVisibility comme source de vérité pour afficher le numéro
+            const isVisible = phoneVisibility === 'visible';
             return (
               <div className="relative">
                 <button
                   onClick={() => setShowContactDropdown(!showContactDropdown)}
                   className={`p-2 rounded-lg border transition-all hover:bg-white/15 active:scale-95 flex items-center gap-1 ${
-                    phoneDisplayType === 'visible'
+                    isVisible
                       ? 'bg-green-500/20 text-green-300 border-green-500/30'
                       : 'bg-white/10 text-gray-300 border-white/20'
                   }`}
-                  title={phoneDisplayType === 'visible' ? `Téléphone: ${phoneNumber}` : 'Contact téléphonique disponible'}
+                  title={isVisible ? `Téléphone: ${phoneNumber}` : 'Contact téléphonique disponible'}
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
@@ -331,7 +298,7 @@ export default function ActionsBar({
                 {/* Dropdown menu */}
                 {showContactDropdown && (
                   <div className="absolute top-full mt-2 right-0 bg-black/90 backdrop-blur-xl rounded-lg border border-white/10 shadow-2xl z-50 min-w-[160px]">
-                    {phoneDisplayType === 'visible' && (
+                    {isVisible && (
                       <div className="px-4 py-2 border-b border-white/10">
                         <div className="text-xs text-gray-400 mb-1">{t('phoneContact.phoneNumberLabel')}</div>
                         <div className="text-sm font-mono text-green-300">{phoneNumber}</div>
