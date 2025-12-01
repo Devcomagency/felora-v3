@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
         const data = encoder.encode(`data: ${JSON.stringify({ type: 'connected', timestamp: new Date().toISOString() })}\n\n`)
         controller.enqueue(data)
 
-        // Heartbeat toutes les 30 secondes pour maintenir la connexion
+        // Heartbeat toutes les 25 secondes pour maintenir la connexion (Vercel timeout = 60s)
         const heartbeatInterval = setInterval(() => {
           try {
             const heartbeat = encoder.encode(`: heartbeat ${Date.now()}\n\n`)
@@ -61,7 +61,7 @@ export async function GET(request: NextRequest) {
             clearInterval(heartbeatInterval)
             connections.delete(userId)
           }
-        }, 30000)
+        }, 25000)
 
         // Cleanup lors de la fermeture de la connexion
         request.signal.addEventListener('abort', () => {

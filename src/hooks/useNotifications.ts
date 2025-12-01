@@ -258,11 +258,13 @@ export function useNotificationSSE(options?: { enabled?: boolean }) {
 
     // Événement: erreur de connexion
     eventSource.addEventListener('error', (e) => {
-      console.error('[SSE] ❌ Erreur connexion:', e)
-
-      // Fermer et cleanup (EventSource reconnecte automatiquement)
+      // Ne logger que les vraies erreurs (pas les reconnexions normales)
       if (eventSource.readyState === EventSource.CLOSED) {
         console.log('[SSE] 🔌 Connexion fermée, reconnexion automatique...')
+      } else if (eventSource.readyState === EventSource.CONNECTING) {
+        // En cours de reconnexion, ne pas logger (c'est normal)
+      } else {
+        console.error('[SSE] ❌ Erreur connexion:', e)
       }
     })
 
