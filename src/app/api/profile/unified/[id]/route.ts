@@ -731,13 +731,31 @@ function transformUpdateData(body: any): Record<string, any> {
   }
 
   // Contact et visibilité
-  if (body.phoneVisibility !== undefined) {
+  const hasPhoneVisibility = body.phoneVisibility !== undefined
+  const hasPhoneDisplayType = body.phoneDisplayType !== undefined
+
+  if (hasPhoneVisibility) {
     data.phoneVisibility = body.phoneVisibility
     console.log('🔥🔥🔥 [transformUpdateData] phoneVisibility AJOUTÉ:', body.phoneVisibility)
+
+    const derivedDisplayType = mapPhoneVisibilityToDisplayType(body.phoneVisibility)
+    if (derivedDisplayType) {
+      data.phoneDisplayType = derivedDisplayType
+      console.log('🔄 [transformUpdateData] phoneDisplayType synchronisé depuis phoneVisibility:', derivedDisplayType)
+    }
   }
-  if (body.phoneDisplayType !== undefined) {
+
+  if (hasPhoneDisplayType) {
     data.phoneDisplayType = body.phoneDisplayType
     console.log('🔥🔥🔥 [transformUpdateData] phoneDisplayType AJOUTÉ:', body.phoneDisplayType)
+
+    if (!hasPhoneVisibility) {
+      const derivedVisibility = mapPhoneDisplayTypeToVisibility(body.phoneDisplayType)
+      if (derivedVisibility) {
+        data.phoneVisibility = derivedVisibility
+        console.log('🔄 [transformUpdateData] phoneVisibility synchronisé depuis phoneDisplayType:', derivedVisibility)
+      }
+    }
   }
 
   // Agenda
@@ -839,6 +857,54 @@ function categorizeServicesForUpdate(services: string[]): {
   })
 
   return result
+}
+
+type PhoneVisibility = 'visible' | 'hidden' | 'none'
+type PhoneDisplayType = 'visible' | 'cache_avec_boutons' | 'messagerie_privee' | 'hidden'
+
+function mapPhoneVisibilityToDisplayType(visibility?: string | null): PhoneDisplayType | undefined {
+  switch (visibility) {
+    case 'visible':
+      return 'visible'
+    case 'none':
+      return 'messagerie_privee'
+    case 'hidden':
+      return 'hidden'
+    default:
+      return undefined
+  }
+}
+
+function mapPhoneDisplayTypeToVisibility(displayType?: string | null): PhoneVisibility | undefined {
+  switch (displayType) {
+    case 'visible':
+      return 'visible'
+    case 'cache_avec_boutons':
+    case 'hidden':
+      return 'hidden'
+    case 'messagerie_privee':
+      return 'none'
+    default:
+      return undefined
+  }
+}
+
+function normalizePhoneVisibility(rawVisibility?: string | null, rawDisplayType?: string | null): PhoneVisibility {
+  const normalizedVisibility = mapPhoneDisplayTypeToVisibility(rawDisplayType)
+  if (rawVisibility && ['visible', 'hidden', 'none'].includes(rawVisibility)) {
+    return rawVisibility as PhoneVisibility
+  }
+  if (normalizedVisibility) {
+    return normalizedVisibility
+  }
+  return 'hidden'
+}
+
+function normalizePhoneDisplayType(rawVisibility?: string | null, rawDisplayType?: string | null): PhoneDisplayType {
+  if (rawDisplayType && ['visible', 'hidden', 'messagerie_privee', 'cache_avec_boutons'].includes(rawDisplayType)) {
+    return rawDisplayType as PhoneDisplayType
+  }
+  return mapPhoneVisibilityToDisplayType(rawVisibility) || 'hidden'
 }
 
 /**
