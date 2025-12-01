@@ -143,12 +143,11 @@ export default function ActionsBar({
 
         {/* Bouton Cadeau - Style register page avec gradient rose */}
         {showGift && onGift && (
-          <div className="relative flex-1">
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => setShowGiftComingSoon(true)}
-              className="w-full py-2.5 px-4 text-white rounded-xl font-semibold text-sm transition-all duration-500 border flex items-center justify-center gap-2"
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => setShowGiftComingSoon(true)}
+            className="relative flex-1 py-2.5 px-4 text-white rounded-xl font-semibold text-sm transition-all duration-500 border flex items-center justify-center gap-2"
               style={{
                 background: 'linear-gradient(to right, #EC489930, #EC489920)',
                 borderColor: '#EC489950',
@@ -169,40 +168,39 @@ export default function ActionsBar({
               <Diamond size={16} />
               <span>{t('gift')}</span>
             </motion.button>
+        )}
 
-            {/* Modal Coming Soon */}
-            {showGiftComingSoon && (
-              <div
-                className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-                onClick={() => setShowGiftComingSoon(false)}
-              >
-                <motion.div
-                  initial={{ scale: 0.9, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  exit={{ scale: 0.9, opacity: 0 }}
-                  className="bg-gradient-to-br from-gray-900 to-black border border-pink-500/30 rounded-2xl p-6 max-w-sm w-full shadow-2xl"
-                  onClick={(e) => e.stopPropagation()}
+        {/* Modal Coming Soon - Rendu en dehors du bouton */}
+        {showGiftComingSoon && showGift && onGift && (
+          <div
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={() => setShowGiftComingSoon(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-gradient-to-br from-gray-900 to-black border border-pink-500/30 rounded-2xl p-6 max-w-sm w-full shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="text-center">
+                <div className="mb-4 inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-pink-500/20 to-purple-500/20 border border-pink-500/30">
+                  <Diamond size={32} className="text-pink-400" />
+                </div>
+                <h3 className="text-xl font-bold text-white mb-2">
+                  Fonctionnalité en développement
+                </h3>
+                <p className="text-gray-400 mb-6">
+                  La fonctionnalité de cadeaux virtuels est actuellement en cours de développement et sera bientôt disponible ! 🎁
+                </p>
+                <button
+                  onClick={() => setShowGiftComingSoon(false)}
+                  className="w-full py-3 px-6 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-xl font-semibold hover:from-pink-600 hover:to-purple-600 transition-all"
                 >
-                  <div className="text-center">
-                    <div className="mb-4 inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-pink-500/20 to-purple-500/20 border border-pink-500/30">
-                      <Diamond size={32} className="text-pink-400" />
-                    </div>
-                    <h3 className="text-xl font-bold text-white mb-2">
-                      Fonctionnalité en développement
-                    </h3>
-                    <p className="text-gray-400 mb-6">
-                      La fonctionnalité de cadeaux virtuels est actuellement en cours de développement et sera bientôt disponible ! 🎁
-                    </p>
-                    <button
-                      onClick={() => setShowGiftComingSoon(false)}
-                      className="w-full py-3 px-6 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-xl font-semibold hover:from-pink-600 hover:to-purple-600 transition-all"
-                    >
-                      Compris !
-                    </button>
-                  </div>
-                </motion.div>
+                  Compris !
+                </button>
               </div>
-            )}
+            </motion.div>
           </div>
         )}
 
