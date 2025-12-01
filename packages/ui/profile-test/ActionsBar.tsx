@@ -267,8 +267,8 @@ export default function ActionsBar({
           </a>
         )}
 
-        {/* Bouton Contact intelligent avec gestion des 3 cas */}
-        {contact && contact.phoneDisplayType !== 'messagerie_privee' && (() => {
+        {/* Bouton Contact intelligent - Ne s'affiche PAS en mode messagerie_privee */}
+        {contact && contact.phoneDisplayType !== 'messagerie_privee' && contact.phone && (() => {
           const { phoneVisibility, phoneDisplayType, phone } = contact;
           const phoneNumber = phone || '';
           const cleanPhone = phoneNumber.replace(/\D/g, '');
@@ -290,8 +290,7 @@ export default function ActionsBar({
           // On utilise phoneVisibility comme source de vérité pour afficher le numéro
           const isVisible = phoneVisibility === 'visible';
 
-          if ((phoneDisplayType === 'visible' || phoneDisplayType === 'cache_avec_boutons' || phoneDisplayType === 'hidden') && phoneNumber) {
-            return (
+          return (
               <div className="relative flex-1" ref={dropdownRef}>
                 <button
                   onClick={() => setShowContactDropdown(!showContactDropdown)}
@@ -393,10 +392,7 @@ export default function ActionsBar({
                   </div>
                 )}
               </div>
-            );
-          }
-
-          return null; // Pas de contact disponible
+          )
         })()}
       </div>
 
