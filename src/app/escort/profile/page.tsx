@@ -1574,9 +1574,9 @@ export default function EscortProfile() {
                   onChange={(e) => updateField('phoneVisibility', e.target.value as 'visible' | 'hidden' | 'none')}
                   className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-purple-500"
                 >
-                  <option value="none">Non renseigné</option>
-                  <option value="hidden">Masqué (clients peuvent demander)</option>
-                  <option value="visible">Visible publiquement</option>
+                  <option value="none">🔒 Messagerie privée uniquement</option>
+                  <option value="hidden">📞 Numéro caché (boutons WhatsApp/SMS/Appel)</option>
+                  <option value="visible">📞 Numéro visible (affiché + boutons)</option>
                 </select>
               </div>
             </div>
