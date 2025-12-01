@@ -71,6 +71,7 @@ export default function ActionsBar({
   const [showContactDropdown, setShowContactDropdown] = useState(false)
   const [loading, setLoading] = useState<string | null>(null)
   const [showGiftComingSoon, setShowGiftComingSoon] = useState(false)
+  const [showPrivateMessageModal, setShowPrivateMessageModal] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   // Fermer le dropdown au clic extérieur
@@ -267,7 +268,44 @@ export default function ActionsBar({
           </a>
         )}
 
-        {/* Bouton Contact intelligent - Ne s'affiche PAS si phoneVisibility === 'none' (messagerie privée) */}
+        {/* Bouton Contact intelligent - Toujours visible */}
+        {contact && contact.phone && (() => {
+          const { phoneVisibility, phoneDisplayType, phone } = contact;
+
+          // CAS 3: Messagerie privée uniquement - Bouton spécial qui ouvre un modal
+          if (phoneVisibility === 'none') {
+            return (
+              <button
+                onClick={() => setShowPrivateMessageModal(true)}
+                className="py-2.5 px-4 text-white rounded-xl font-semibold text-sm transition-all duration-500 border flex items-center justify-center gap-2 flex-1 hover:scale-[1.02] active:scale-95"
+                style={{
+                  background: 'linear-gradient(to right, rgba(139, 92, 246, 0.3), rgba(139, 92, 246, 0.2))',
+                  borderColor: 'rgba(139, 92, 246, 0.5)',
+                  boxShadow: '0 8px 16px rgba(139, 92, 246, 0.2)',
+                  minWidth: 0
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'linear-gradient(to right, rgba(139, 92, 246, 0.4), rgba(139, 92, 246, 0.3))'
+                  e.currentTarget.style.borderColor = 'rgba(139, 92, 246, 0.6)'
+                  e.currentTarget.style.boxShadow = '0 12px 24px rgba(139, 92, 246, 0.3)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'linear-gradient(to right, rgba(139, 92, 246, 0.3), rgba(139, 92, 246, 0.2))'
+                  e.currentTarget.style.borderColor = 'rgba(139, 92, 246, 0.5)'
+                  e.currentTarget.style.boxShadow = '0 8px 16px rgba(139, 92, 246, 0.2)'
+                }}
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+                <span>{t('contact')}</span>
+              </button>
+            );
+          }
+
+          // CAS 1 & 2: Numéro visible ou caché - Dropdown normal
+        })()}
+
         {contact && contact.phoneVisibility !== 'none' && contact.phone && (() => {
           const { phoneVisibility, phoneDisplayType, phone } = contact;
           const phoneNumber = phone || '';
@@ -444,6 +482,57 @@ export default function ActionsBar({
           </button>
         )}
       </div>
+
+      {/* Modal Messagerie Privée Uniquement */}
+      {showPrivateMessageModal && (
+        <div
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          onClick={() => setShowPrivateMessageModal(false)}
+        >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+            className="bg-gradient-to-br from-gray-900 to-black border border-purple-500/30 rounded-2xl p-6 max-w-sm w-full shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="text-center">
+              <div className="mb-4 inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-500/30">
+                <svg className="w-8 h-8 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">
+                Contact par messagerie uniquement
+              </h3>
+              <p className="text-gray-400 mb-6">
+                {profileName} souhaite être contactée uniquement par messagerie privée.
+                Aucun numéro de téléphone n'est disponible.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowPrivateMessageModal(false)}
+                  className="flex-1 py-3 px-6 bg-white/10 text-white rounded-xl font-semibold hover:bg-white/20 transition-all border border-white/20"
+                >
+                  Annuler
+                </button>
+                <button
+                  onClick={() => {
+                    setShowPrivateMessageModal(false)
+                    onMessage?.(profileId)
+                  }}
+                  className="flex-1 py-3 px-6 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-semibold hover:from-purple-600 hover:to-pink-600 transition-all flex items-center justify-center gap-2"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                  </svg>
+                  Envoyer un message
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   )
 }
