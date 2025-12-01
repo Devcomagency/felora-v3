@@ -268,8 +268,8 @@ export default function ActionsBar({
         )}
 
         {/* Bouton Contact - TOUJOURS visible, ouvre dropdown */}
-        {contact && contact.phone && (() => {
-          const { phoneVisibility, phoneDisplayType, phone } = contact;
+        {contact && (() => {
+          const { phoneVisibility, phone } = contact;
           const phoneNumber = phone || '';
           const cleanPhone = phoneNumber.replace(/\D/g, '');
 
@@ -284,32 +284,41 @@ export default function ActionsBar({
             : `sms:${cleanPhone}?body=${encodeURIComponent(smsMessage)}`;
           const callUrl = `tel:${cleanPhone}`;
 
-          console.log('🔍 [ActionsBar DEBUG] Contact:', { phoneVisibility, phoneDisplayType, phoneNumber, hasPhone: !!phone });
+          console.log('🔍 [ActionsBar DEBUG] Contact:', { phoneVisibility, phoneNumber, hasPhone: !!phone });
 
-          // CAS 1 & 2: Numéro visible ou caché - Dropdown avec options
-          // On utilise phoneVisibility comme source de vérité pour afficher le numéro
-          const isVisible = phoneVisibility === 'visible';
+          // Déterminer le mode d'affichage
+          // Si phoneVisibility est 'none' OU si pas de phone → Messagerie uniquement
+          const isMessagingOnly = !phoneVisibility || phoneVisibility === 'none' || !phone;
+          const isVisible = phoneVisibility === 'visible' && phone;
 
           return (
               <div className="relative flex-1" ref={dropdownRef}>
                 <button
                   onClick={() => setShowContactDropdown(!showContactDropdown)}
                   className={`w-full py-2.5 px-4 text-white rounded-xl font-semibold text-sm transition-all duration-500 border flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-95 ${
-                    isVisible
+                    isMessagingOnly
+                      ? 'bg-purple-500/20 text-purple-300 border-purple-500/30'
+                      : isVisible
                       ? 'bg-green-500/20 text-green-300 border-green-500/30'
                       : 'bg-white/10 text-gray-300 border-white/20'
                   }`}
                   style={{
-                    background: isVisible
+                    background: isMessagingOnly
+                      ? 'linear-gradient(to right, rgba(168, 85, 247, 0.2), rgba(168, 85, 247, 0.1))'
+                      : isVisible
                       ? 'linear-gradient(to right, rgba(34, 197, 94, 0.2), rgba(34, 197, 94, 0.1))'
                       : 'linear-gradient(to right, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05))',
-                    borderColor: isVisible ? 'rgba(34, 197, 94, 0.3)' : 'rgba(255, 255, 255, 0.2)',
-                    boxShadow: isVisible ? '0 8px 16px rgba(34, 197, 94, 0.2)' : '0 8px 16px rgba(255, 255, 255, 0.1)',
+                    borderColor: isMessagingOnly ? 'rgba(168, 85, 247, 0.3)' : isVisible ? 'rgba(34, 197, 94, 0.3)' : 'rgba(255, 255, 255, 0.2)',
+                    boxShadow: isMessagingOnly ? '0 8px 16px rgba(168, 85, 247, 0.2)' : isVisible ? '0 8px 16px rgba(34, 197, 94, 0.2)' : '0 8px 16px rgba(255, 255, 255, 0.1)',
                     minWidth: 0
                   }}
-                  title={isVisible ? `Téléphone: ${phoneNumber}` : 'Contact téléphonique disponible'}
+                  title={isMessagingOnly ? 'Messagerie privée uniquement' : isVisible ? `Téléphone: ${phoneNumber}` : 'Contact téléphonique disponible'}
                   onMouseEnter={(e) => {
-                    if (isVisible) {
+                    if (isMessagingOnly) {
+                      e.currentTarget.style.background = 'linear-gradient(to right, rgba(168, 85, 247, 0.3), rgba(168, 85, 247, 0.2))'
+                      e.currentTarget.style.borderColor = 'rgba(168, 85, 247, 0.4)'
+                      e.currentTarget.style.boxShadow = '0 12px 24px rgba(168, 85, 247, 0.3)'
+                    } else if (isVisible) {
                       e.currentTarget.style.background = 'linear-gradient(to right, rgba(34, 197, 94, 0.3), rgba(34, 197, 94, 0.2))'
                       e.currentTarget.style.borderColor = 'rgba(34, 197, 94, 0.4)'
                       e.currentTarget.style.boxShadow = '0 12px 24px rgba(34, 197, 94, 0.3)'
@@ -320,7 +329,11 @@ export default function ActionsBar({
                     }
                   }}
                   onMouseLeave={(e) => {
-                    if (isVisible) {
+                    if (isMessagingOnly) {
+                      e.currentTarget.style.background = 'linear-gradient(to right, rgba(168, 85, 247, 0.2), rgba(168, 85, 247, 0.1))'
+                      e.currentTarget.style.borderColor = 'rgba(168, 85, 247, 0.3)'
+                      e.currentTarget.style.boxShadow = '0 8px 16px rgba(168, 85, 247, 0.2)'
+                    } else if (isVisible) {
                       e.currentTarget.style.background = 'linear-gradient(to right, rgba(34, 197, 94, 0.2), rgba(34, 197, 94, 0.1))'
                       e.currentTarget.style.borderColor = 'rgba(34, 197, 94, 0.3)'
                       e.currentTarget.style.boxShadow = '0 8px 16px rgba(34, 197, 94, 0.2)'
@@ -342,7 +355,7 @@ export default function ActionsBar({
                   <div className="absolute top-full mt-2 right-0 bg-black/90 backdrop-blur-xl rounded-lg border border-white/10 shadow-2xl z-50 min-w-[200px]">
                     {/* Header avec numéro ou message */}
                     <div className="px-4 py-3 border-b border-white/10">
-                      {phoneVisibility === 'none' ? (
+                      {isMessagingOnly ? (
                         <>
                           <div className="text-xs font-medium text-purple-400 mb-1">🔒 Messagerie privée uniquement</div>
                           <div className="text-xs text-gray-400">{profileName} ne partage pas son numéro</div>
@@ -357,7 +370,7 @@ export default function ActionsBar({
                       )}
                     </div>
                     <div className="py-2">
-                      {phoneVisibility === 'none' ? (
+                      {isMessagingOnly ? (
                         /* Messagerie uniquement - Bouton Message */
                         <button
                           onClick={() => {
