@@ -206,8 +206,8 @@ export default function ActionsBar({
           </div>
         )}
 
-        {/* Bouton Message - Affiche seulement si messagerie_privee */}
-        {showMessage && onMessage && contact?.phoneDisplayType === 'messagerie_privee' && (
+        {/* Bouton Message - Toujours visible si onMessage existe */}
+        {showMessage && onMessage && (
           <button
             onClick={handleMessage}
             className="py-2.5 px-4 text-white rounded-xl font-semibold text-sm transition-all duration-500 border flex items-center justify-center gap-2 flex-1"
