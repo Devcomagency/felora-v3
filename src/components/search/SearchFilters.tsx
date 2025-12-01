@@ -940,7 +940,7 @@ export default function SearchFilters({ filters, onFiltersChange, onClose, isOpe
         </div>
 
         {/* Actions */}
-        <div className="sticky bottom-0 p-6 pb-24 border-t border-white/10 bg-black/50 backdrop-blur-sm">
+        <div className="sticky bottom-0 p-6 border-t border-white/10 bg-black/50 backdrop-blur-sm mb-20">
           <div className="space-y-4">
             {/* Tri */}
             <div>

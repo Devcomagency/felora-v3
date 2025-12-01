@@ -241,40 +241,11 @@ export default function ActionsBar({
           </button>
         )}
 
-        {/* Site Web pour clubs - Style register page avec gradient violet */}
-        {website && !website.includes('@') && (
-          <a
-            href={website.startsWith('http') ? website : `https://${website}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="py-2.5 px-4 text-white rounded-xl font-semibold text-sm transition-all duration-500 border flex items-center justify-center gap-2 flex-1"
-            title="Visiter le site web"
-            style={{
-              background: 'linear-gradient(to right, #8B5CF630, #8B5CF620)',
-              borderColor: '#8B5CF650',
-              boxShadow: '0 8px 16px #8B5CF620',
-              minWidth: 0
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'linear-gradient(to right, #8B5CF640, #8B5CF630)'
-              e.currentTarget.style.borderColor = '#8B5CF660'
-              e.currentTarget.style.boxShadow = '0 12px 24px #8B5CF630'
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'linear-gradient(to right, #8B5CF630, #8B5CF620)'
-              e.currentTarget.style.borderColor = '#8B5CF650'
-              e.currentTarget.style.boxShadow = '0 8px 16px #8B5CF620'
-            }}
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-            </svg>
-            <span>{t('website')}</span>
-          </a>
-        )}
+        {/* Bouton Contact intelligent avec gestion des 4 cas - TOUJOURS dans la première ligne */}
+        {(() => {
+          // Si pas de contact du tout, retourner null
+          if (!contact) return null;
 
-        {/* Bouton Contact intelligent avec gestion des 3 cas */}
-        {contact && (() => {
           const { phoneDisplayType, phone } = contact;
           const phoneNumber = phone || '';
           const cleanPhone = phoneNumber.replace(/\D/g, '');
@@ -289,6 +260,8 @@ export default function ActionsBar({
             ? `sms:${cleanPhone}&body=${encodeURIComponent(smsMessage)}`
             : `sms:${cleanPhone}?body=${encodeURIComponent(smsMessage)}`;
           const callUrl = `tel:${cleanPhone}`;
+
+          console.log('[ActionsBar] Contact data:', { phoneDisplayType, phoneNumber, phone });
 
           if (phoneDisplayType === 'messagerie_privee') {
             // CAS 3: Messagerie privée uniquement - Bouton spécial
@@ -382,9 +355,20 @@ export default function ActionsBar({
                 )}
               </div>
             );
+          } else {
+            // CAS 4: Contact caché ou non disponible - Afficher quand même le bouton mais désactivé
+            return (
+              <button
+                disabled
+                className="p-2 rounded-lg bg-gray-500/10 text-gray-500 border border-gray-500/20 opacity-50 cursor-not-allowed flex items-center gap-1"
+                title="Contact téléphonique non disponible"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                </svg>
+              </button>
+            );
           }
-
-          return null; // Pas de contact disponible
         })()}
       </div>
 

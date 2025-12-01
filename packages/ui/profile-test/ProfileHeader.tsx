@@ -444,14 +444,14 @@ export default function ProfileHeader({
             <div className="p-4 overflow-y-auto max-h-[60vh]">
               {!normalizedSchedule ? (
                 <div className="text-center text-white/60 py-8">
-                  📋 {t('scheduleModal.noSchedule')}
+                  {t('scheduleModal.noSchedule')}
                 </div>
               ) : (
                 <div className="space-y-4">
                   {/* Planning hebdomadaire */}
                   {weeklyEntries.length > 0 && (
                     <div>
-                      <h3 className="text-sm font-medium text-white mb-3">📅 {t('scheduleModal.weeklySchedule')}</h3>
+                      <h3 className="text-sm font-medium text-white mb-3">{t('scheduleModal.weeklySchedule')}</h3>
                       <div className="space-y-2">
                         {weeklyEntries.map((day, index) => {
                           const weekdayIndex = Number.isInteger(day.weekday) ? day.weekday : index
@@ -483,10 +483,10 @@ export default function ProfileHeader({
                   {/* Pause générale */}
                   {normalizedSchedule.pause && (
                     <div>
-                      <h3 className="text-sm font-medium text-white mb-3">⏸️ {t('scheduleModal.generalPause')}</h3>
+                      <h3 className="text-sm font-medium text-white mb-3">{t('scheduleModal.generalPause')}</h3>
                       <div className="p-3 rounded-lg bg-orange-500/10 border border-orange-500/20">
                         <div className="text-sm text-orange-300">
-                          Du {new Date(normalizedSchedule.pause.start).toLocaleDateString('fr-CH')}
+                          Du {new Date(normalizedSchedule.pause.start).toLocaleDateString('fr-CH')}{' '}
                           au {new Date(normalizedSchedule.pause.end).toLocaleDateString('fr-CH')}
                         </div>
                       </div>
@@ -501,7 +501,7 @@ export default function ProfileHeader({
                         {normalizedSchedule.absences.map((absence) => (
                           <div key={absence.id} className="p-2 rounded-lg bg-red-500/10 border border-red-500/20">
                             <div className="text-sm text-red-300">
-                              Du {new Date(absence.start).toLocaleDateString('fr-CH')}
+                              Du {new Date(absence.start).toLocaleDateString('fr-CH')}{' '}
                               au {new Date(absence.end).toLocaleDateString('fr-CH')}
                             </div>
                           </div>
@@ -515,7 +515,7 @@ export default function ProfileHeader({
                    !normalizedSchedule.pause &&
                    (!normalizedSchedule.absences || normalizedSchedule.absences.length === 0) && (
                     <div className="text-center text-white/60 py-4">
-                      📋 {t('scheduleModal.noDetailedSchedule')}
+                      {t('scheduleModal.noDetailedSchedule')}
                     </div>
                   )}
                 </div>

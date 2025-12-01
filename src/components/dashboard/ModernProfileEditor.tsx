@@ -2790,7 +2790,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                 {customPrices.length > 0 && (
                   <div className="space-y-3">
                     {customPrices.map((customPrice) => (
-                      <div key={customPrice.id} className="flex items-center gap-3 p-3 bg-gray-700/30 rounded-lg border border-gray-600/50">
+                      <div key={customPrice.id} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 p-3 bg-gray-700/30 rounded-lg border border-gray-600/50">
                         <input
                           type="text"
                           placeholder={t('pricing.customDurationPlaceholder')}
@@ -2802,27 +2802,29 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                           }}
                           className="flex-1 px-3 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white text-sm placeholder:text-gray-500 focus:border-purple-500 focus:outline-none"
                         />
-                        <input
-                          type="number"
-                          placeholder={t('pricing.priceCHF')}
-                          value={customPrice.price || ''}
-                          onChange={(e) => {
-                            setCustomPrices(prev => prev.map(cp =>
-                              cp.id === customPrice.id ? { ...cp, price: parseInt(e.target.value) || 0 } : cp
-                            ))
-                          }}
-                          className="w-28 px-3 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white text-sm placeholder:text-gray-500 focus:border-purple-500 focus:outline-none"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setCustomPrices(prev => prev.filter(cp => cp.id !== customPrice.id))
-                          }}
-                          className="p-2 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
-                          title={t('pricing.delete')}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        <div className="flex items-center gap-2 sm:gap-3">
+                          <input
+                            type="number"
+                            placeholder={t('pricing.priceCHF')}
+                            value={customPrice.price || ''}
+                            onChange={(e) => {
+                              setCustomPrices(prev => prev.map(cp =>
+                                cp.id === customPrice.id ? { ...cp, price: parseInt(e.target.value) || 0 } : cp
+                              ))
+                            }}
+                            className="flex-1 sm:w-28 px-3 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white text-sm placeholder:text-gray-500 focus:border-purple-500 focus:outline-none"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setCustomPrices(prev => prev.filter(cp => cp.id !== customPrice.id))
+                            }}
+                            className="p-2 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors flex-shrink-0"
+                            title={t('pricing.delete')}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>

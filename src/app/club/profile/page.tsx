@@ -619,10 +619,8 @@ function ServicesPanel(){
     t('equipmentsList.sauna'),
     t('equipmentsList.airConditioning'),
     t('equipmentsList.smokingArea'),
-    t('equipmentsList.parking'),
     t('equipmentsList.handicapAccess'),
     t('equipmentsList.musicAmbiance'),
-    t('equipmentsList.bar'),
     t('equipmentsList.poleDance')
   ]
 
