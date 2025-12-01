@@ -2017,9 +2017,6 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                       ))}
                     </optgroup>
                   </select>
-                  <div className="mt-2 text-xs">
-                    <a href="/profile-test-signup/escort?step=3" className="text-purple-300 hover:text-purple-200 inline-flex items-center gap-1"><BadgeCheck size={14}/> {t('basic.certifyAge')}</a>
-                  </div>
                 </div>
               </div>
 
