@@ -267,8 +267,8 @@ export default function ActionsBar({
           </a>
         )}
 
-        {/* Bouton Contact intelligent - Ne s'affiche PAS en mode messagerie_privee */}
-        {contact && contact.phoneDisplayType !== 'messagerie_privee' && contact.phone && (() => {
+        {/* Bouton Contact intelligent - Ne s'affiche PAS si phoneVisibility === 'none' (messagerie privée) */}
+        {contact && contact.phoneVisibility !== 'none' && contact.phone && (() => {
           const { phoneVisibility, phoneDisplayType, phone } = contact;
           const phoneNumber = phone || '';
           const cleanPhone = phoneNumber.replace(/\D/g, '');
