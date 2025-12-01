@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useEffect, useRef } from 'react'
 import { Diamond, ChevronDown } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useTranslations } from 'next-intl'
@@ -71,6 +71,21 @@ export default function ActionsBar({
   const [showContactDropdown, setShowContactDropdown] = useState(false)
   const [loading, setLoading] = useState<string | null>(null)
   const [showGiftComingSoon, setShowGiftComingSoon] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+
+  // Fermer le dropdown au clic extérieur
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowContactDropdown(false)
+      }
+    }
+
+    if (showContactDropdown) {
+      document.addEventListener('mousedown', handleClickOutside)
+      return () => document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [showContactDropdown])
 
   // Optimistic follow with rollback
   const handleFollow = useCallback(async () => {
@@ -272,14 +287,14 @@ export default function ActionsBar({
           console.log('🔍 [ActionsBar DEBUG] Contact:', { phoneVisibility, phoneDisplayType, phoneNumber, hasPhone: !!phone });
 
           if (phoneDisplayType === 'messagerie_privee') {
-            // CAS 3: Messagerie privée uniquement - Pas de bouton téléphone
+            // CAS 3: Messagerie privée uniquement - Pas de bouton téléphone du tout
             return null;
           } else if ((phoneDisplayType === 'visible' || phoneDisplayType === 'cache_avec_boutons' || phoneDisplayType === 'hidden') && phoneNumber) {
             // CAS 1 & 2: Numéro visible ou caché - Dropdown avec options
             // On utilise phoneVisibility comme source de vérité pour afficher le numéro
             const isVisible = phoneVisibility === 'visible';
             return (
-              <div className="relative">
+              <div className="relative" ref={dropdownRef}>
                 <button
                   onClick={() => setShowContactDropdown(!showContactDropdown)}
                   className={`p-2 rounded-lg border transition-all hover:bg-white/15 active:scale-95 flex items-center gap-1 ${
