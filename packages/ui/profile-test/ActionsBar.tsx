@@ -269,7 +269,7 @@ export default function ActionsBar({
 
         {/* Bouton Contact - TOUJOURS visible, ouvre dropdown */}
         {contact && (() => {
-          const { phoneVisibility, phone } = contact;
+          const { phoneDisplayType, phone } = contact;
           const phoneNumber = phone || '';
           const cleanPhone = phoneNumber.replace(/\D/g, '');
 
@@ -284,12 +284,14 @@ export default function ActionsBar({
             : `sms:${cleanPhone}?body=${encodeURIComponent(smsMessage)}`;
           const callUrl = `tel:${cleanPhone}`;
 
-          console.log('🔍 [ActionsBar DEBUG] Contact:', { phoneVisibility, phoneNumber, hasPhone: !!phone });
+          console.log('🔍 [ActionsBar DEBUG] Contact:', { phoneDisplayType, phoneNumber, hasPhone: !!phone });
 
-          // Déterminer le mode d'affichage
-          // Si phoneVisibility est 'none' OU si pas de phone → Messagerie uniquement
-          const isMessagingOnly = !phoneVisibility || phoneVisibility === 'none' || !phone;
-          const isVisible = phoneVisibility === 'visible' && phone;
+          // Déterminer le mode d'affichage avec phoneDisplayType
+          // Cas 1: 'visible' → Affiche numéro + boutons
+          // Cas 2: 'hidden' ou 'cache_avec_boutons' → Cache numéro mais affiche boutons
+          // Cas 3: 'messagerie_privee' ou pas de phone → Messagerie uniquement
+          const isMessagingOnly = phoneDisplayType === 'messagerie_privee' || !phone;
+          const isVisible = phoneDisplayType === 'visible' && phone;
 
           return (
               <div className="relative flex-1" ref={dropdownRef}>
