@@ -101,6 +101,8 @@ export async function GET() {
         isBlocked: false,
         createdAt: c.createdAt,
         updatedAt: c.updatedAt,
+        ephemeralMode: c.ephemeralMode || false,
+        ephemeralDuration: c.ephemeralDuration || 86400,
       }
     })
 
