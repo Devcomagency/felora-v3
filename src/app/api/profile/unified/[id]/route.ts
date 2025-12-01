@@ -486,17 +486,14 @@ export async function POST(
     }
 
     // Mettre à jour le profil
-    console.log('🔄 [API UNIFIED POST] Données à sauvegarder dans la DB:', {
-      physical: transformedData.physical,
-      hasPhysical: !!transformedData.physical,
-      physicalKeys: transformedData.physical ? Object.keys(transformedData.physical) : 'undefined'
-    })
-    
+    console.log('🔄 [API UNIFIED POST] Données à sauvegarder dans la DB:', transformedData)
+    console.log('🔥🔥🔥 [API UNIFIED POST] phoneVisibility dans transformedData:', transformedData.phoneVisibility)
+
     await prisma.escortProfile.update({
       where: { userId: session.user.id },
       data: transformedData
     })
-    
+
     console.log('✅ [API UNIFIED POST] Données sauvegardées avec succès dans la DB')
 
     // Mettre à jour le téléphone dans la table User si fourni
@@ -734,8 +731,14 @@ function transformUpdateData(body: any): Record<string, any> {
   }
 
   // Contact et visibilité
-  if (body.phoneVisibility !== undefined) data.phoneVisibility = body.phoneVisibility
-  if (body.phoneDisplayType !== undefined) data.phoneDisplayType = body.phoneDisplayType
+  if (body.phoneVisibility !== undefined) {
+    data.phoneVisibility = body.phoneVisibility
+    console.log('🔥🔥🔥 [transformUpdateData] phoneVisibility AJOUTÉ:', body.phoneVisibility)
+  }
+  if (body.phoneDisplayType !== undefined) {
+    data.phoneDisplayType = body.phoneDisplayType
+    console.log('🔥🔥🔥 [transformUpdateData] phoneDisplayType AJOUTÉ:', body.phoneDisplayType)
+  }
 
   // Agenda
   if (body.timeSlots !== undefined && body.timeSlots !== null && body.timeSlots !== '') {
