@@ -2046,9 +2046,7 @@ export default function ModernProfileEditor({ agendaOnly = false }: { agendaOnly
                       'Deutsch',
                       'Italiano',
                       'Español',
-                      'Русский',
-                      'العربية',
-                      '中文'
+                      'Arabe'
                     ].map((lang) => (
                       <StarRating
                         key={lang}
