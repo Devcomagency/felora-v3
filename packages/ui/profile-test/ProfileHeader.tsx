@@ -351,7 +351,7 @@ export default function ProfileHeader({
           <div className={coverPhoto ? '' : 'flex flex-col items-center'}>
             <h4 className="text-white font-medium mb-2 text-sm text-center">{coverPhoto ? t('languages') : ''}</h4>
             <div className="flex flex-wrap gap-2 justify-center">
-              {languages.slice(0, 4).map((language) => (
+              {languages.filter(lang => !['Русский', 'العربية', '中文'].includes(lang)).slice(0, 4).map((language) => (
                 <span
                   key={language}
                   className="px-3 py-1 bg-blue-500/20 text-blue-300 text-xs rounded-full border border-blue-500/30 font-medium"
