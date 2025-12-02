@@ -2,15 +2,18 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { requireAdminAuth } from '@/lib/admin-auth'
+import { requireAdmin } from '@/lib/admin-auth'
 
 /**
  * POST /api/admin/users/delete
  * Supprimer définitivement un compte utilisateur
  */
 export async function POST(request: NextRequest) {
-  const authError = await requireAdminAuth()
-  if (authError) return authError
+  // 🔐 SÉCURITÉ : Vérifier que l'utilisateur est admin
+  const auth = await requireAdmin(request)
+  if (!auth.authorized) {
+    return NextResponse.json({ error: auth.error }, { status: auth.status })
+  }
 
   try {
     const session = await getServerSession(authOptions)

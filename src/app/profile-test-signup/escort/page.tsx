@@ -1,14 +1,9 @@
 "use client"
 import { Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslations } from 'next-intl'
-import Stepper from '@/components/signup-v2/Stepper'
-import Step1PreSignup from '@/components/signup-v2/Step1PreSignup'
 import Step1PreSignupMobile from '@/components/signup-v2/Step1PreSignupMobile'
-import Step2Plan from '@/components/signup-v2/Step2Plan'
-import Step2PlanMobile from '@/components/signup-v2/Step2PlanMobile'
-import Step3KYC from '@/components/signup-v2/Step3KYC'
 import Step3KYCMobile from '@/components/signup-v2/Step3KYCMobile'
 
 function EscortSignupContent(){
@@ -19,11 +14,6 @@ function EscortSignupContent(){
   const stepParam = Number(sp.get('step') || '1')
   const [step, setStep] = useState<number>(stepParam)
   const [routing, setRouting] = useState(false)
-  const steps = useMemo(()=>[
-    { id:1, label:'Pré‑inscription' },
-    { id:2, label:'Offre' },
-    { id:3, label:'KYC' },
-  ],[])
 
   // Restore userId from localStorage OR fetch from session if user is logged in
   useEffect(() => {
@@ -85,12 +75,12 @@ function EscortSignupContent(){
             console.log('📡 Response status:', r.status)
             const d = await r.json()
             console.log('📡 Response data:', d)
-            if (d?.ok) { 
+            if (d?.ok) {
               console.log('✅ Account created successfully, userId:', d.userId)
               setUserId(d.userId)
               try { localStorage.setItem('felora-signup-userId', d.userId) } catch {}
-              setStep(2)
-              router.push('/profile-test-signup/escort?step=2')
+              setStep(3)
+              router.push('/profile-test-signup/escort?step=3')
             } else {
               console.error('❌ Account creation failed:', d?.error)
               throw new Error(d?.error || t('page.errorAccount'))
@@ -113,14 +103,6 @@ function EscortSignupContent(){
             <p className="text-white/80">{t('page.loadingAccount')}</p>
           </div>
         </div>
-      )}
-
-      {step === 2 && (
-        <Step2PlanMobile onSelect={(plan)=>{
-          console.log('Plan selected:', plan)
-          setStep(3);
-          router.push('/profile-test-signup/escort?step=3')
-        }} />
       )}
 
       {step === 3 && (

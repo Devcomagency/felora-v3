@@ -5,8 +5,7 @@ import Script from 'next/script'
 import AnalyticsLoader from "@/components/AnalyticsLoader";
 import AppGateway from "@/components/AppGateway";
 import StaticNavBar from "@/components/layout/StaticNavBar";
-import AgeGate from "@/components/AgeGate";
-import CookieConsent from "@/components/CookieConsent";
+import AgeLanguageGate from "@/components/AgeLanguageGate";
 import FooterLegal from "@/components/FooterLegal";
 import ToastContainer from "@/components/ui/Toast";
 import ConditionalLayout from "@/components/layout/ConditionalLayout";
@@ -133,7 +132,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <NextIntlClientProvider messages={messages}>
           <Providers>
             <SuspensionChecker />
-            <AgeGate />
+            <AgeLanguageGate />
             <AppGateway>
               <div data-app-shell style={{
                 minHeight: '100vh',
@@ -149,7 +148,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 <FooterLegal />
               </ConditionalLayout>
             </AppGateway>
-            <CookieConsent />
             <ToastContainer />
             <UploadMonitor />
             <GlobalUploadProgress />

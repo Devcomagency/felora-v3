@@ -170,7 +170,7 @@ export default function Step2PlanMobile({ onSelect }:{ onSelect:(plan:Plan)=>voi
         transition={{ delay: 0.3 + idx * 0.1 }}
         onHoverStart={() => setHoveredPlan(plan.id)}
         onHoverEnd={() => setHoveredPlan(null)}
-        className="relative flex-shrink-0 w-72 md:w-full snap-center p-3"
+        className="relative w-full"
       >
         {/* Card - hauteur fixe pour uniformité */}
         <button
@@ -326,23 +326,9 @@ export default function Step2PlanMobile({ onSelect }:{ onSelect:(plan:Plan)=>voi
         </motion.div>
       </motion.div>
 
-      {/* Plans - horizontal scroll on mobile, grid on desktop */}
-      <div className="w-full max-w-6xl mx-auto">
-        {/* Mobile: Horizontal scroll with snap */}
-        <div
-          ref={scrollContainerRef}
-          className="md:hidden overflow-x-auto scrollbar-hide -mx-4 px-4 snap-x snap-mandatory"
-          style={{ scrollPaddingLeft: '1rem' }}
-        >
-          <div className="flex gap-4 pb-4">
-            {plans.map((plan, idx) => renderPlanCard(plan, idx))}
-          </div>
-        </div>
-
-        {/* Desktop: Grid 3 columns */}
-        <div className="hidden md:grid grid-cols-3 gap-4 lg:gap-6">
-          {plans.map((plan, idx) => renderPlanCard(plan, idx))}
-        </div>
+      {/* Plans - vertical layout on all screens */}
+      <div className="w-full max-w-2xl mx-auto space-y-4">
+        {plans.map((plan, idx) => renderPlanCard(plan, idx))}
       </div>
 
       {/* Code Promo Section */}

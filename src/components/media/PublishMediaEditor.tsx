@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { X, MapPin, Eye, EyeOff, Crown, Loader2, CheckCircle2, Image as ImageIcon, Video as VideoIcon } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
 
 type VisibilityType = 'public' | 'private' | 'premium'
 
@@ -35,6 +36,7 @@ export default function PublishMediaEditor({
   const [isPublishing, setIsPublishing] = useState(false)
   const [publishSuccess, setPublishSuccess] = useState(false)
   const [showFullPreview, setShowFullPreview] = useState(false)
+  const [showDevModal, setShowDevModal] = useState(false)
 
   const handlePublish = async () => {
     setIsPublishing(true)
@@ -216,7 +218,14 @@ export default function PublishMediaEditor({
                 return (
                   <button
                     key={option.value}
-                    onClick={() => setVisibility(option.value)}
+                    onClick={() => {
+                      // Si c'est Premium, afficher le modal au lieu de sélectionner
+                      if (option.value === 'premium') {
+                        setShowDevModal(true)
+                      } else {
+                        setVisibility(option.value)
+                      }
+                    }}
                     disabled={isPublishing}
                     className={`group w-full rounded-xl border transition-all duration-500 ${
                       isSelected
@@ -363,6 +372,41 @@ export default function PublishMediaEditor({
           </div>
         </div>
       )}
+
+      {/* Modal "En cours de développement" */}
+      <AnimatePresence>
+        {showDevModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[9999] flex items-center justify-center p-4"
+            onClick={() => setShowDevModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="glass-card p-8 max-w-md w-full text-center relative"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="text-6xl mb-4">🚧</div>
+              <h2 className="text-2xl font-bold text-white mb-2">
+                En cours de développement
+              </h2>
+              <p className="text-gray-300 mb-6">
+                Cette fonctionnalité est actuellement en développement. Elle sera disponible prochainement.
+              </p>
+              <button
+                onClick={() => setShowDevModal(false)}
+                className="w-full px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-lg font-medium hover:from-pink-600 hover:to-purple-700 transition-all"
+              >
+                Fermer
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

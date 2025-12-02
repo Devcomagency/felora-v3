@@ -1,14 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { requireAdminAuth } from '@/lib/admin-auth'
+import { requireAdmin } from '@/lib/admin-auth'
 
 /**
  * GET /api/admin/reports
  * Liste tous les signalements avec filtres
  */
 export async function GET(request: NextRequest) {
-  const authError = await requireAdminAuth()
-  if (authError) return authError
+  // 🔐 SÉCURITÉ : Vérifier que l'utilisateur est admin
+  const auth = await requireAdmin(request)
+  if (!auth.authorized) {
+    return NextResponse.json({ error: auth.error }, { status: auth.status })
+  }
 
   try {
     const searchParams = request.nextUrl.searchParams

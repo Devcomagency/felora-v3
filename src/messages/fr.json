@@ -201,26 +201,26 @@
         "client": {
           "title": "Client",
           "subtitle": "Découvrir & Rencontrer",
-          "description": "Accédez aux profils premium et aux fonctionnalités exclusives",
-          "benefit1": "Navigation illimitée",
-          "benefit2": "Messagerie privée",
-          "benefit3": "Favoris & alertes"
+          "description": "Découvrez les profils et contactez en toute discrétion.",
+          "benefit1": "Navigation",
+          "benefit2": "Favoris",
+          "benefit3": "Messagerie"
         },
         "escort": {
-          "title": "Escorte Indépendante",
+          "title": "Indépendante",
           "subtitle": "Développer votre activité",
-          "description": "Créez votre profil professionnel et gérez vos rendez-vous",
-          "benefit1": "Profil personnalisé",
-          "benefit2": "Gestion des réservations",
-          "benefit3": "Paiements sécurisés"
+          "description": "Présentez-vous, attirez plus de clients, gérez votre visibilité.",
+          "benefit1": "Profil",
+          "benefit2": "Médias",
+          "benefit3": "Contacts"
         },
         "salon": {
-          "title": "Établissement",
+          "title": "Etablissement",
           "subtitle": "Gérer votre équipe",
-          "description": "Créez votre espace professionnel multi-profils",
-          "benefit1": "Gestion d'équipe",
-          "benefit2": "Planning centralisé",
-          "benefit3": "Analytics avancées"
+          "description": "Présentez votre établissement et vos escorts en vitrine.",
+          "benefit1": "Page dédiée",
+          "benefit2": "Présentation professionnelle",
+          "benefit3": "Visibilité renforcée"
         }
       },
       "footer": {
@@ -1097,6 +1097,11 @@
       "videoThumbnail": "Thumbnail en cours...",
       "watchVideo": "Lire la vidéo",
       "viewFullscreen": "Voir le média en plein écran"
+    },
+    "devModal": {
+      "title": "En cours de développement",
+      "description": "Cette fonctionnalité est actuellement en développement. Elle sera disponible prochainement.",
+      "close": "Fermer"
     },
     "private": ""
   },

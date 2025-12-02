@@ -1,7 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { requireAdmin } from '@/lib/admin-auth'
 
 export async function POST(request: NextRequest) {
+  // 🔐 SÉCURITÉ : Vérifier que l'utilisateur est admin
+  const auth = await requireAdmin(request)
+  if (!auth.authorized) {
+    return NextResponse.json({
+      success: false,
+      error: auth.error
+    }, { status: auth.status })
+  }
+
   try {
     const { userId, action, reason } = await request.json()
 

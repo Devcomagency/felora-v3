@@ -8,17 +8,26 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   try {
+    // Await params first (Next.js 15 requirement)
+    const resolvedParams = await params
+
     const profile = await prisma.user.findUnique({
-      where: { id: params.id },
+      where: { id: resolvedParams.id },
       select: {
         name: true,
-        city: true,
-        age: true,
-        verified: true,
-        premium: true,
-        languages: true,
-        services: true,
-        description: true,
+        // city is not on User model - get it from escortProfile
+        escortProfile: {
+          select: {
+            city: true,
+            description: true,
+          }
+        },
+        // These fields don't exist on User either
+        // verified: true,
+        // premium: true,
+        // languages: true,
+        // services: true,
+        // description: true,
       },
     })
 
@@ -29,14 +38,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       }
     }
 
-    const title = `${profile.name}${profile.age ? `, ${profile.age} ans` : ''}${profile.city ? ` — ${profile.city}` : ''}`
+    const city = profile.escortProfile?.city
+    const title = `${profile.name}${city ? ` — ${city}` : ''}`
     const badges = []
-    if (profile.verified) badges.push('✓ Vérifié')
-    if (profile.premium) badges.push('⭐ Premium')
+    // TODO: Add verified and premium badges when we have those fields
 
-    const description = profile.description
-      ? profile.description.slice(0, 155) + (profile.description.length > 155 ? '...' : '')
-      : `${profile.name}${profile.city ? ` à ${profile.city}` : ''} — ${badges.join(' • ')} — Disponible sur Felora, la plateforme premium.`
+    const description = profile.escortProfile?.description
+      ? profile.escortProfile.description.slice(0, 155) + (profile.escortProfile.description.length > 155 ? '...' : '')
+      : `${profile.name}${city ? ` à ${city}` : ''} — ${badges.join(' • ')} — Disponible sur Felora, la plateforme premium.`
 
     return {
       title,
@@ -47,7 +56,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         type: 'profile',
         images: [
           {
-            url: `/profile/${params.id}/opengraph-image`,
+            url: `/profile/${resolvedParams.id}/opengraph-image`,
             width: 1200,
             height: 630,
             alt: `Profil de ${profile.name} sur Felora`,
@@ -60,10 +69,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         card: 'summary_large_image',
         title,
         description,
-        images: [`/profile/${params.id}/opengraph-image`],
+        images: [`/profile/${resolvedParams.id}/opengraph-image`],
       },
       alternates: {
-        canonical: `/profile/${params.id}`,
+        canonical: `/profile/${resolvedParams.id}`,
       },
     }
   } catch (error) {

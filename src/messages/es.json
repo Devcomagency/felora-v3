@@ -201,26 +201,26 @@
         "client": {
           "title": "Cliente",
           "subtitle": "Descubrir y Conocer",
-          "description": "Acceso a perfiles premium y funciones exclusivas",
-          "benefit1": "Navegación ilimitada",
-          "benefit2": "Mensajería privada",
-          "benefit3": "Favoritos y alertas"
+          "description": "Descubra perfiles y contacte con total discreción.",
+          "benefit1": "Navegación",
+          "benefit2": "Favoritos",
+          "benefit3": "Mensajería"
         },
         "escort": {
-          "title": "Escort Independiente",
+          "title": "Independiente",
           "subtitle": "Desarrollar su negocio",
-          "description": "Cree su perfil profesional y gestione sus citas",
-          "benefit1": "Perfil personalizado",
-          "benefit2": "Gestión de reservas",
-          "benefit3": "Pagos seguros"
+          "description": "Preséntese, atraiga más clientes, gestione su visibilidad.",
+          "benefit1": "Perfil",
+          "benefit2": "Medios",
+          "benefit3": "Contactos"
         },
         "salon": {
           "title": "Establecimiento",
           "subtitle": "Gestionar su equipo",
-          "description": "Cree su espacio profesional multiperfil",
-          "benefit1": "Gestión de equipo",
-          "benefit2": "Planificación centralizada",
-          "benefit3": "Analíticas avanzadas"
+          "description": "Presente su establecimiento y sus escorts en escaparate.",
+          "benefit1": "Página dedicada",
+          "benefit2": "Presentación profesional",
+          "benefit3": "Visibilidad reforzada"
         }
       },
       "footer": {

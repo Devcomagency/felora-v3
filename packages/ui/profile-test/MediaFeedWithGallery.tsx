@@ -69,28 +69,16 @@ function MediaPlayer({ id, type, url, thumb, poster, index, isActive, profileId,
   const videoRef = useRef<HTMLVideoElement>(null)
   const [isPlaying, setIsPlaying] = useState(false)
   const [error, setError] = useState(false)
-  const [guestId, setGuestId] = useState<string | null>(null)
 
   // Hook HLS pour supporter les vidéos Bunny.net (.m3u8)
   useHLS(videoRef, url, isActive && type === 'video')
 
-  useEffect(() => {
-    try {
-      const key = 'felora-user-id'
-      let u = localStorage.getItem(key)
-      if (!u) { u = `guest_${Math.random().toString(36).slice(2)}`; localStorage.setItem(key, u) }
-      setGuestId(u)
-    } catch {}
-  }, [])
-  const effectiveUserId = useMemo(() => userId ?? guestId ?? 'felora-guest', [userId, guestId])
+  // useReactions génère automatiquement un guest ID si userId est null
   const mediaId = useMemo(() => stableMediaId({ rawId: id, profileId, url }), [id, profileId, url])
+  const { stats, userHasLiked, userReactions, toggleReaction } = useReactions(mediaId, userId, refreshTrigger)
 
-  const { stats, userHasLiked, userReactions, toggleReaction } = useReactions(mediaId, effectiveUserId, refreshTrigger)
-
-  // Debug: Log stats when they change
-  useEffect(() => {
-    console.log(`[MediaPlayer] Stats updated for ${mediaId}:`, stats)
-  }, [stats, mediaId])
+  // Debug: Log stats on every render
+  console.log(`[MediaPlayer RENDER] mediaId=${mediaId}, stats.total=${stats?.total}, optimisticDelta=${optimisticDelta}`)
   
 
   const trackMediaView = useCallback(async (mediaUrl: string, mediaIndex: number) => {
@@ -404,7 +392,8 @@ export default function MediaFeedWithGallery({
   const { isGalleryUnlocked, handleUnlockContent, handleUnlockGallery } = useMediaInteractions()
   const [unlockTarget, setUnlockTarget] = useState<{ id: string; url: string } | null>(null)
   const [showFullscreenManagementModal, setShowFullscreenManagementModal] = useState(false)
-  
+  const [showDevModal, setShowDevModal] = useState(false)
+
 
   // Catégorisation par visibility (PUBLIC, PREMIUM, PRIVATE)
   const publicContent = useMemo(() => media.filter(m => (m.visibility || 'PUBLIC') === 'PUBLIC'), [media])
@@ -413,7 +402,8 @@ export default function MediaFeedWithGallery({
 
   const mixedContent = useMemo(() => [...publicContent, ...premiumContent, ...privateContent], [publicContent, premiumContent, privateContent])
 
-  const fullUserId = useMemo(() => userId ?? 'dev-guest', [userId])
+  // Laisser useReactions gérer la génération du guest ID si userId est null
+  const fullUserId = useMemo(() => userId ?? null, [userId])
 
   // Detect #media-{id} in URL hash and open that media in fullscreen
   useEffect(() => {
@@ -575,7 +565,7 @@ export default function MediaFeedWithGallery({
             </button>
             {showPremiumTab && (
               <button
-                onClick={() => setActiveTab('premium')}
+                onClick={() => setShowDevModal(true)}
                 className={`flex-1 py-3 text-center transition-all ${
                   activeTab === 'premium'
                     ? 'border-b-2 border-white text-white'
@@ -1049,6 +1039,41 @@ export default function MediaFeedWithGallery({
         onDeleteMedia={onDeleteMedia || defaultDeleteMedia}
         showPremiumOption={showPremiumTab}
       />
+
+      {/* Modal "En cours de développement" */}
+      <AnimatePresence>
+        {showDevModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[9999] flex items-center justify-center p-4"
+            onClick={() => setShowDevModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="glass-card p-8 max-w-md w-full text-center relative"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="text-6xl mb-4">🚧</div>
+              <h2 className="text-2xl font-bold text-white mb-2">
+                {t('devModal.title') || 'En cours de développement'}
+              </h2>
+              <p className="text-gray-300 mb-6">
+                {t('devModal.description') || 'Cette fonctionnalité est actuellement en développement. Elle sera disponible prochainement.'}
+              </p>
+              <button
+                onClick={() => setShowDevModal(false)}
+                className="w-full px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-lg font-medium hover:from-pink-600 hover:to-purple-700 transition-all"
+              >
+                {t('devModal.close') || 'Fermer'}
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   )
 }

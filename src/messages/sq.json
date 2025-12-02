@@ -201,26 +201,26 @@
         "client": {
           "title": "Klient",
           "subtitle": "Zbulo dhe Takohuni",
-          "description": "Qasje në profile premium dhe veçori ekskluzive",
-          "benefit1": "Shfletim i pakufizuar",
-          "benefit2": "Mesazhe private",
-          "benefit3": "Të preferuara dhe njoftime"
+          "description": "Zbuloni profile dhe kontaktoni me diskretim të plotë.",
+          "benefit1": "Navigim",
+          "benefit2": "Të preferuara",
+          "benefit3": "Mesazhe"
         },
         "escort": {
-          "title": "Shoqëruese e Pavarur",
+          "title": "E Pavarur",
           "subtitle": "Zhvilloni biznesin tuaj",
-          "description": "Krijoni profilin tuaj profesional dhe menaxhoni takimet tuaja",
-          "benefit1": "Profil i personalizuar",
-          "benefit2": "Menaxhim rezervimesh",
-          "benefit3": "Pagesa të sigurta"
+          "description": "Prezantohuni, tërhiqni më shumë klientë, menaxhoni dukshmërinë tuaj.",
+          "benefit1": "Profil",
+          "benefit2": "Media",
+          "benefit3": "Kontakte"
         },
         "salon": {
           "title": "Vendbanim",
           "subtitle": "Menaxhoni ekipin tuaj",
-          "description": "Krijoni hapësirën tuaj profesionale me shumë profile",
-          "benefit1": "Menaxhimi i ekipit",
-          "benefit2": "Planifikim i centralizuar",
-          "benefit3": "Analitikë të avancuara"
+          "description": "Prezantoni vendbanimin tuaj dhe shoqëruesit tuaj në shfaqje.",
+          "benefit1": "Faqe e dedikuar",
+          "benefit2": "Prezantim profesional",
+          "benefit3": "Dukshmëri e përforcuar"
         }
       },
       "footer": {

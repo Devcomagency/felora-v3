@@ -199,26 +199,26 @@
         "client": {
           "title": "Cliente",
           "subtitle": "Scopri e Incontra",
-          "description": "Accesso ai profili premium e funzionalità esclusive",
-          "benefit1": "Navigazione illimitata",
-          "benefit2": "Messaggistica privata",
-          "benefit3": "Preferiti e avvisi"
+          "description": "Scopri i profili e contatta in totale discrezione.",
+          "benefit1": "Navigazione",
+          "benefit2": "Preferiti",
+          "benefit3": "Messaggistica"
         },
         "escort": {
-          "title": "Escort Indipendente",
+          "title": "Indipendente",
           "subtitle": "Sviluppa la tua attività",
-          "description": "Crea il tuo profilo professionale e gestisci i tuoi appuntamenti",
-          "benefit1": "Profilo personalizzato",
-          "benefit2": "Gestione prenotazioni",
-          "benefit3": "Pagamenti sicuri"
+          "description": "Presentati, attira più clienti, gestisci la tua visibilità.",
+          "benefit1": "Profilo",
+          "benefit2": "Media",
+          "benefit3": "Contatti"
         },
         "salon": {
           "title": "Stabilimento",
           "subtitle": "Gestisci il tuo team",
-          "description": "Crea il tuo spazio professionale multi-profilo",
-          "benefit1": "Gestione del team",
-          "benefit2": "Pianificazione centralizzata",
-          "benefit3": "Analytics avanzate"
+          "description": "Presenta il tuo stabilimento e le tue escort in vetrina.",
+          "benefit1": "Pagina dedicata",
+          "benefit2": "Presentazione professionale",
+          "benefit3": "Visibilità rafforzata"
         }
       },
       "footer": {

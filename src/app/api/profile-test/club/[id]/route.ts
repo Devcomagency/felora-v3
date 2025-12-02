@@ -9,6 +9,7 @@ import { toClubProfileDTO, createMinimalProfile } from '../../../../../../packag
 import { validateProfileId, validateQuery, validateClubProfile } from '../../../../../../packages/core/profile-test/validators'
 import { rateLimit, getClientIdentifier } from '../../../../../../packages/core/profile-test/rateLimit'
 import { isClubOpenNow } from '@/lib/club-utils'
+import { getCachedClubProfile, setCachedClubProfile } from '@/lib/cache-utils'
 
 const prisma = new PrismaClient()
 
@@ -42,41 +43,7 @@ function buildMediaUrl(url: string | null | undefined): string | null {
   return url
 }
 
-// Simple memory cache for profiles (5 minute TTL)
-const profileCache = new Map<string, { data: any; expires: number }>()
-const CACHE_TTL = 5 * 60 * 1000 // 5 minutes
-
-/**
- * Get cached profile or null if expired/missing
- */
-function getCachedProfile(id: string) {
-  const cached = profileCache.get(id)
-  if (cached && cached.expires > Date.now()) {
-    return cached.data
-  }
-  profileCache.delete(id)
-  return null
-}
-
-/**
- * Cache profile data
- */
-function setCachedProfile(id: string, data: any) {
-  profileCache.set(id, {
-    data,
-    expires: Date.now() + CACHE_TTL
-  })
-  
-  // Cleanup old entries periodically
-  if (profileCache.size > 100) {
-    const now = Date.now()
-    for (const [key, value] of profileCache.entries()) {
-      if (value.expires <= now) {
-        profileCache.delete(key)
-      }
-    }
-  }
-}
+// Cache functions are now imported from cache-utils
 
 export async function GET(
   request: NextRequest,
@@ -138,7 +105,7 @@ export async function GET(
     // Check cache first (but skip if cache_bust is requested)
     const cacheBust = (query as any)?.cache_bust || request.headers.get('cache-control') === 'no-cache'
     if (!cacheBust) {
-      const cached = getCachedProfile(validatedId)
+      const cached = getCachedClubProfile(validatedId)
       if (cached) {
         headers.set('X-Cache', 'HIT')
         const ttfb = Date.now() - startTime
@@ -357,7 +324,7 @@ export async function GET(
         const mock = createMockClubFromId(validatedId)
         const dto = toClubProfileDTO(mock)
         const validated = validateClubProfile(dto)
-        setCachedProfile(validatedId, validated)
+        setCachedClubProfile(validatedId, validated)
         headers.set('X-Cache', 'DEMO')
         const ttfb = Date.now() - startTime
         headers.set('X-Response-Time', `${ttfb}ms`)
@@ -380,7 +347,7 @@ export async function GET(
     const validatedProfile = clubProfile // validateClubProfile(clubProfile)
     
     // Cache the result
-    setCachedProfile(validatedId, validatedProfile)
+    setCachedClubProfile(validatedId, validatedProfile)
     
     headers.set('X-Cache', 'MISS')
     const ttfb = Date.now() - startTime

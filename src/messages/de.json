@@ -201,26 +201,26 @@
         "client": {
           "title": "Kunde",
           "subtitle": "Entdecken & Treffen",
-          "description": "Zugang zu Premium-Profilen und exklusiven Funktionen",
-          "benefit1": "Unbegrenztes Stöbern",
-          "benefit2": "Private Nachrichten",
-          "benefit3": "Favoriten & Benachrichtigungen"
+          "description": "Entdecken Sie Profile und kontaktieren Sie in völliger Diskretion.",
+          "benefit1": "Navigation",
+          "benefit2": "Favoriten",
+          "benefit3": "Messaging"
         },
         "escort": {
-          "title": "Unabhängige Escort",
+          "title": "Unabhängig",
           "subtitle": "Entwickeln Sie Ihr Geschäft",
-          "description": "Erstellen Sie Ihr professionelles Profil und verwalten Sie Ihre Termine",
-          "benefit1": "Personalisiertes Profil",
-          "benefit2": "Buchungsverwaltung",
-          "benefit3": "Sichere Zahlungen"
+          "description": "Präsentieren Sie sich, gewinnen Sie mehr Kunden, verwalten Sie Ihre Sichtbarkeit.",
+          "benefit1": "Profil",
+          "benefit2": "Medien",
+          "benefit3": "Kontakte"
         },
         "salon": {
           "title": "Einrichtung",
           "subtitle": "Verwalten Sie Ihr Team",
-          "description": "Erstellen Sie Ihren professionellen Mehrprofilbereich",
-          "benefit1": "Teamverwaltung",
-          "benefit2": "Zentralisierte Planung",
-          "benefit3": "Erweiterte Analysen"
+          "description": "Präsentieren Sie Ihre Einrichtung und Ihre Escorts im Schaufenster.",
+          "benefit1": "Dedizierte Seite",
+          "benefit2": "Professionelle Präsentation",
+          "benefit3": "Erweiterte Sichtbarkeit"
         }
       },
       "footer": {

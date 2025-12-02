@@ -27,6 +27,32 @@ function LoginContent() {
   const [errors, setErrors] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
   const [successMessage, setSuccessMessage] = useState<string>('')
+  const [checkingSession, setCheckingSession] = useState(true)
+
+  // Vérifier si l'utilisateur est déjà connecté
+  useEffect(() => {
+    const checkExistingSession = async () => {
+      try {
+        const session = await getSession()
+        if (session?.user) {
+          // L'utilisateur est déjà connecté, rediriger vers la page d'accueil
+          const redirect = searchParams.get('redirect')
+          if (redirect) {
+            router.push(redirect)
+          } else {
+            router.push('/')
+          }
+          return
+        }
+      } catch (error) {
+        console.error('Error checking session:', error)
+      } finally {
+        setCheckingSession(false)
+      }
+    }
+
+    checkExistingSession()
+  }, [router, searchParams])
 
   // Récupérer le message depuis les paramètres URL
   useEffect(() => {
@@ -107,6 +133,21 @@ function LoginContent() {
 
   const updateForm = (field: keyof LoginForm, value: any) => {
     setForm({ ...form, [field]: value })
+  }
+
+  // Afficher un loader pendant la vérification de session
+  if (checkingSession) {
+    return (
+      <main className="fixed inset-0 bg-black text-white overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-pink-900/10 via-black to-black" />
+        <div className="relative z-10 h-full flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-8 h-8 border-2 border-white/30 border-t-pink-500 rounded-full animate-spin mx-auto mb-4" />
+            <p className="text-white/70">{t('loading')}</p>
+          </div>
+        </div>
+      </main>
+    )
   }
 
   return (

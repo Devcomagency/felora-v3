@@ -1,7 +1,14 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { requireAdmin } from '@/lib/admin-auth'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  // 🔐 SÉCURITÉ CRITIQUE : Vérifier que l'utilisateur est admin avant d'exposer les données KYC
+  const auth = await requireAdmin(request)
+  if (!auth.authorized) {
+    return NextResponse.json({ error: auth.error }, { status: auth.status })
+  }
+
   try {
     // Récupérer toutes les soumissions KYC
     const submissions = await prisma.kycSubmission.findMany({
