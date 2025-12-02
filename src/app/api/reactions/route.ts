@@ -40,6 +40,7 @@ export async function GET(req: NextRequest) {
 
   try {
     const data = await getStats(mediaId, userId)
+    console.log(`[REACTIONS GET] mediaId=${mediaId}, total=${data.stats.total}, reactions=${JSON.stringify(data.stats.reactions)}`)
     return NextResponse.json({ success:true, ...data })
   } catch (e:any) {
     return NextResponse.json({ success:false, error: e?.message || 'server_error' }, { status: 500 })

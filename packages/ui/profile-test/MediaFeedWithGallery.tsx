@@ -86,6 +86,11 @@ function MediaPlayer({ id, type, url, thumb, poster, index, isActive, profileId,
   const mediaId = useMemo(() => stableMediaId({ rawId: id, profileId, url }), [id, profileId, url])
 
   const { stats, userHasLiked, userReactions, toggleReaction } = useReactions(mediaId, effectiveUserId, refreshTrigger)
+
+  // Debug: Log stats when they change
+  useEffect(() => {
+    console.log(`[MediaPlayer] Stats updated for ${mediaId}:`, stats)
+  }, [stats, mediaId])
   
 
   const trackMediaView = useCallback(async (mediaUrl: string, mediaIndex: number) => {

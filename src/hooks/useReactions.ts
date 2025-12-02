@@ -24,34 +24,39 @@ function useReactions(mediaIdRaw: string, userIdRaw?: string|null, refreshTrigge
     if (key === lastGetKeyRef.current) return
     lastGetKeyRef.current = key
 
-    // Délai réduit pour une meilleure réactivité
-    const timeoutId = setTimeout(() => {
-      inflightGet.current?.abort()
-      const ctrl = new AbortController()
-      inflightGet.current = ctrl
+    console.log(`[useReactions] Effect triggered for mediaId=${mediaId}, userId=${userId}`)
 
-      const qs = new URLSearchParams({ mediaId, ...(userId ? { userId } : {}) })
+    // Fetch immédiat pour éviter les problèmes de timing avec le démontage du composant
+    console.log(`[useReactions] Starting fetch for mediaId=${mediaId}`)
+    inflightGet.current?.abort()
+    const ctrl = new AbortController()
+    inflightGet.current = ctrl
 
-      fetch(`/api/reactions?${qs}`, { cache: 'no-store', signal: ctrl.signal })
-        .then(r => {
-          if (ctrl.signal.aborted) return
-          return r.json()
-        })
-        .then(d => {
-          if (!d || ctrl.signal.aborted) return
-          if (d?.stats) setStats(d.stats)
-          if (typeof d?.userHasLiked === 'boolean') setUserHasLiked(d.userHasLiked)
-          if (Array.isArray(d?.userReactions)) setUserReactions(d.userReactions)
-        })
-        .catch(err => {
-          if (!ctrl.signal.aborted) {
-            console.warn('Reaction fetch failed:', err?.message)
-          }
-        })
-    }, 50)
+    const qs = new URLSearchParams({ mediaId, ...(userId ? { userId } : {}) })
 
-    return () => { 
-      clearTimeout(timeoutId)
+    fetch(`/api/reactions?${qs}`, { cache: 'no-store', signal: ctrl.signal })
+      .then(r => {
+        if (ctrl.signal.aborted) return
+        return r.json()
+      })
+      .then(d => {
+        if (!d || ctrl.signal.aborted) return
+        console.log(`[useReactions] Received data for ${mediaId}:`, d)
+        if (d?.stats) {
+          console.log(`[useReactions] Setting stats:`, d.stats)
+          // Force new object reference to trigger React re-render
+          setStats({ ...d.stats, reactions: { ...d.stats.reactions } })
+        }
+        if (typeof d?.userHasLiked === 'boolean') setUserHasLiked(d.userHasLiked)
+        if (Array.isArray(d?.userReactions)) setUserReactions(d.userReactions)
+      })
+      .catch(err => {
+        if (!ctrl.signal.aborted) {
+          console.warn('Reaction fetch failed:', err?.message)
+        }
+      })
+
+    return () => {
       inflightGet.current?.abort()
     }
   }, [mediaId, userId, refreshTrigger])
