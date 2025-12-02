@@ -501,7 +501,7 @@ export default function EscortProfileTestPage() {
     }
 
     try {
-      const mediaIds = profile.media.map(m => stableMediaId({ rawId: null, profileId: profile.id, url: m.url }))
+      const mediaIds = profile.media.map(m => stableMediaId({ rawId: m.id || null, profileId: profile.id, url: m.url }))
       const res = await fetch('/api/reactions/bulk', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

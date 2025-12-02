@@ -71,8 +71,19 @@ export default function TikTokFeedCard({ item, initialTotal, index }: TikTokFeed
   const { data: session } = useSession()
   const { addToPreloadQueue, isPreloaded } = useTikTokPreloader()
 
-  // Build a stable mediaId
-  const mediaId = stableMediaId({ rawId: null, profileId: item.author.id, url: item.url })
+  // Générer un userId pour les guests (comme dans VideoFeedCard)
+  const [userId, setUserId] = useState<string | null>(null)
+  useEffect(() => {
+    try {
+      const key = 'felora-user-id'
+      let u = localStorage.getItem(key)
+      if (!u) { u = `guest_${Math.random().toString(36).slice(2)}`; localStorage.setItem(key, u) }
+      setUserId(u)
+    } catch {}
+  }, [])
+
+  // Build a stable mediaId - UTILISER LE VRAI ID DU MÉDIA
+  const mediaId = stableMediaId({ rawId: item.id, profileId: item.author.id, url: item.url })
 
   // Déterminer l'URL du profil selon le type
   const isClub = item.ownerType === 'CLUB'
@@ -149,7 +160,7 @@ export default function TikTokFeedCard({ item, initialTotal, index }: TikTokFeed
     setTimeout(() => setShowHeart(false), 1000)
   }, [])
 
-  const { stats, userHasLiked, userReactions, toggleReaction } = useReactions(mediaId, session?.user?.id, 0)
+  const { stats, userHasLiked, userReactions, toggleReaction } = useReactions(mediaId, session?.user?.id || userId, 0)
 
   // Gestion des clics
   const handleVideoClick = useCallback(() => {

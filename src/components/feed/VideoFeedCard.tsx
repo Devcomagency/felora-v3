@@ -230,9 +230,8 @@ export default function VideoFeedCard({ item, initialTotal }: VideoFeedCardProps
   const { data: session, status: sessionStatus } = useSession()
 
   // Build a stable mediaId and a stable guest user id
-  // IMPORTANT: On force rawId: null pour utiliser le hash basé sur profileId + url
-  // Cela garantit que le même média a le même ID dans le feed ET dans le profil
-  const mediaId = stableMediaId({ rawId: null, profileId: item.author.id, url: item.url })
+  // UTILISER LE VRAI ID DU MÉDIA pour que les réactions persistent
+  const mediaId = stableMediaId({ rawId: item.id, profileId: item.author.id, url: item.url })
 
   // Déterminer l'URL du profil selon le type (CLUB ou ESCORT)
   const isClub = item.ownerType === 'CLUB'

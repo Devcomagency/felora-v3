@@ -340,14 +340,13 @@ export async function GET(
 
     // Ajouter les médias du feed qui sont réellement visibles
     for (const mediaItem of feedMedia) {
-      // Ajouter l'ID brut si disponible (pour les médias de la table Media)
-      if (mediaItem.id && mediaItem.id !== `slot-${feedMedia.indexOf(mediaItem)}`) {
-        allMediaIds.push(mediaItem.id)
-      }
-      
-      // Ajouter le hash basé sur URL (pour tous les médias)
-      const hashId = stableMediaId({ rawId: null, profileId, url: mediaItem.url })
-      allMediaIds.push(hashId)
+      // UTILISER LE VRAI ID au lieu d'un hash
+      const mediaId = stableMediaId({
+        rawId: mediaItem.id && mediaItem.id !== `slot-${feedMedia.indexOf(mediaItem)}` ? mediaItem.id : null,
+        profileId,
+        url: mediaItem.url
+      })
+      allMediaIds.push(mediaId)
     }
 
     console.log(`🔥 [PROFILE API] Feed media count: ${feedMedia.length}`)
@@ -470,14 +469,17 @@ export async function GET(
     console.log(`🔥 [PROFILE API] Réactions via mediaIds: ${reactionsViaMediaIds.length}`)
     console.log(`🔥 [PROFILE API] Total réactions: ${allReactions.length} (${likeCount} likes + ${reactCount} autres)`)
 
+    // 🔥 CORRECTION : Utiliser les champs totalLikes et totalReacts du profil
+    // Ces champs sont maintenant synchronisés automatiquement lors de chaque réaction
     const stats = {
-      likes: likeCount || 0,
+      likes: escort.totalLikes || 0,
       views: escort.views || 0,
       rating: escort.rating || 0,
-      reactions: reactCount || 0
+      reactions: escort.totalReacts || 0
     }
 
-    console.log(`🔥 [PROFILE API] Stats calculés pour ${profileId}:`, stats)
+    console.log(`🔥 [PROFILE API] Stats pour ${profileId}:`, stats)
+    console.log(`🔥 [PROFILE API] Compteurs: totalLikes=${escort.totalLikes}, totalReacts=${escort.totalReacts}`)
 
     const profile = {
       id: escort.id,

@@ -83,7 +83,7 @@ function MediaPlayer({ id, type, url, thumb, poster, index, isActive, profileId,
     } catch {}
   }, [])
   const effectiveUserId = useMemo(() => userId ?? guestId ?? 'felora-guest', [userId, guestId])
-  const mediaId = useMemo(() => stableMediaId({ rawId: null, profileId, url }), [id, profileId, url])
+  const mediaId = useMemo(() => stableMediaId({ rawId: id, profileId, url }), [id, profileId, url])
 
   const { stats, userHasLiked, userReactions, toggleReaction } = useReactions(mediaId, effectiveUserId, refreshTrigger)
   
@@ -434,7 +434,8 @@ export default function MediaFeedWithGallery({
 
   const fullscreenMediaId = useMemo(() => {
     if (!fullscreenMedia) return ''
-    return stableMediaId({ rawId: null, profileId, url: fullscreenMedia })
+    const item = mixedContent.find(m => m.url === fullscreenMedia)
+    return stableMediaId({ rawId: item?.id || null, profileId, url: fullscreenMedia })
   }, [mixedContent, profileId, fullscreenIndex, fullscreenMedia])
   
   const { userHasLiked: fsUserHasLiked, userReactions: fsUserReactions, toggleReaction: fsToggle } = useReactions(fullscreenMediaId, fullUserId)
