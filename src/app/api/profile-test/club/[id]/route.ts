@@ -281,6 +281,7 @@ export async function GET(
               return false
             })
             .map((m: any) => ({
+              id: m.id, // ✅ ID du média pour les réactions
               type: m.type.toLowerCase() as 'image' | 'video',
               url: buildMediaUrl(m.url),
               thumb: buildMediaUrl(m.thumbUrl),
