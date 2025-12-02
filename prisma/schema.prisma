@@ -74,6 +74,8 @@ model ClubProfileV2 {
   managerName String?
   verified    Boolean       @default(false)
   kycStatus   KycStatusV2   @default(PENDING)
+  totalLikes  Int           @default(0)
+  totalReacts Int           @default(0)
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
   user        User          @relation("ClubProfileV2User", fields: [userId], references: [id], onDelete: Cascade)
