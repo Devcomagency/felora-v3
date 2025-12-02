@@ -305,38 +305,12 @@ export async function GET(
           establishmentType: details?.establishmentType || 'club',
           stats: {
             views: (details as any)?.views || 0, // ✅ Lire les vraies vues depuis la base de données
-            likes: 0, // Sera calculé après
-            reactions: 0 // Sera calculé après
+            likes: club.totalLikes || 0, // ✅ Utiliser les compteurs du modèle ClubProfileV2
+            reactions: club.totalReacts || 0 // ✅ Utiliser les compteurs du modèle ClubProfileV2
           }
         }
 
-        // Calculer les vraies stats de réactions pour les médias du club
-        try {
-          const clubMediaIds = media
-            .filter((m: any) => m.pos >= 1) // Seulement les médias de publication (pos >= 1)
-            .map((m: any) => m.id)
-
-          if (clubMediaIds.length > 0) {
-            // Compter les réactions pour les médias du club
-            const reactions = await prisma.reaction.findMany({
-              where: {
-                mediaId: { in: clubMediaIds }
-              },
-              select: { type: true }
-            })
-
-            const likeCount = reactions.filter(r => r.type === 'LIKE').length
-            const reactCount = reactions.filter(r => r.type !== 'LIKE').length
-
-            // Mettre à jour les stats
-            clubProfile.stats.likes = likeCount
-            clubProfile.stats.reactions = reactCount
-
-            console.log(`🔥 [CLUB API] Club ${validatedId}: ${likeCount} likes + ${reactCount} reactions`)
-          }
-        } catch (error) {
-          console.error('Erreur calcul stats club:', error)
-        }
+        console.log(`🔥 [CLUB API] Club ${validatedId}: ${club.totalLikes} likes + ${club.totalReacts} reactions (from DB counters)`)
 
         console.log('🌐 Website check:', {
           'details?.websiteUrl': details?.websiteUrl,
