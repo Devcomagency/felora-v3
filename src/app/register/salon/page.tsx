@@ -362,7 +362,7 @@ export default function ClubRegisterPage() {
                     </div>
                     <span className="text-sm text-white/70 group-hover:text-white/90 transition-colors">
                       {t('form.acceptTos')}{' '}
-                      <a href="/legal/cgu" target="_blank" className="text-violet-400 hover:text-violet-300 underline">
+                      <a href="/legal/terms" target="_blank" className="text-violet-400 hover:text-violet-300 underline">
                         {t('form.acceptTosLink')}
                       </a>{' '}
                       <span className="text-red-400">{t('form.required')}</span>

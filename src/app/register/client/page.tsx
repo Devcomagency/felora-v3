@@ -346,7 +346,7 @@ export default function ClientRegisterPage() {
                     </div>
                     <span className="text-sm text-white/70 group-hover:text-white/90 transition-colors">
                       J'accepte les{' '}
-                      <a href="/legal/cgu" target="_blank" className="text-cyan-400 hover:text-cyan-300 underline">
+                      <a href="/legal/terms" target="_blank" className="text-cyan-400 hover:text-cyan-300 underline">
                         {t('form.tosLink')}
                       </a>
                     </span>

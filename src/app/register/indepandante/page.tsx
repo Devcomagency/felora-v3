@@ -228,7 +228,7 @@ export default function EscortRegisterPage() {
         }
 
         // Rediriger vers le flux de paiement et KYC
-        router.push('/profile-test-signup/escort?step=2')
+        router.push('/profile-test-signup/escort?step=3')
       } else {
         setError(data?.error || t('errors.accountCreationError'))
       }
