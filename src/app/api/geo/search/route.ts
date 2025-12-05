@@ -81,7 +81,7 @@ export async function GET(req: Request) {
         name: e.stageName || 'Escort',
         lat: e.latitude as number,
         lng: e.longitude as number,
-        avatar: e.profilePhoto || `https://picsum.photos/seed/${e.id}/200/200`,
+        avatar: e.profilePhoto || '/default-avatar.svg',
         city: e.city || '',
         services: safeParseArray(e.services),
         languages: safeParseArray(e.languages),

@@ -828,11 +828,11 @@ export default function MapTest() {
                 {/* Portrait compact, UX-friendly */}
                 <div className="w-full rounded-lg overflow-hidden mb-3 relative" style={{ height: 200 }}>
                   <img
-                    src={selectedEscort.avatar || '/default-avatar.png'}
+                    src={selectedEscort.avatar || '/default-avatar.svg'}
                     alt={selectedEscort.name}
                     loading="eager"
                     onError={(e) => {
-                      e.currentTarget.src = '/default-avatar.png'
+                      e.currentTarget.src = '/default-avatar.svg'
                     }}
                     style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }}
                   />

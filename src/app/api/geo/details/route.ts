@@ -49,7 +49,7 @@ export async function GET(req: Request) {
         id: escortProfile.id,
         displayName: escortProfile.stageName || escortProfile.firstName || 'Escort',
         handle: `@${escortProfile.stageName?.toLowerCase().replace(/\s+/g, '_') || escortProfile.firstName?.toLowerCase() || 'escort'}`,
-        avatar: escortProfile.profilePhoto || '/default-avatar.png',
+        avatar: escortProfile.profilePhoto || media[0]?.thumbUrl || media[0]?.url || '/default-avatar.svg',
         city: escortProfile.city || '—',
         description: escortProfile.description || 'Profil d\'escort professionnel',
         verified: !!escortProfile.isVerifiedBadge,
