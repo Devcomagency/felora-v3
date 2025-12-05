@@ -66,37 +66,13 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // 4️⃣ PROTECTION PAR MOT DE PASSE TEMPORAIRE
-  const SITE_PASSWORD = process.env.SITE_PASSWORD
+  // 4️⃣ PROTECTION PAR MOT DE PASSE TEMPORAIRE - DÉSACTIVÉ
+  // La protection par mot de passe est désactivée pour permettre l'accès public
+  // const SITE_PASSWORD = process.env.SITE_PASSWORD
+  // ... (code commenté)
 
-  // 🚨 EXCEPTION: Ne PAS protéger les routes admin (elles ont leur propre auth)
-  if (pathname.startsWith('/admin')) {
-    return NextResponse.next()
-  }
-
-  // Si pas de mot de passe défini, continuer normalement
-  if (!SITE_PASSWORD) {
-    return NextResponse.next()
-  }
-
-  // Vérifier si l'utilisateur a déjà entré le bon mot de passe
-  const authCookie = request.cookies.get('site-auth')?.value
-
-  // Si le cookie existe et correspond au mot de passe, continuer
-  if (authCookie === SITE_PASSWORD) {
-    return NextResponse.next()
-  }
-
-  // Si on est sur la page de login, laisser passer
-  if (pathname === '/auth-check') {
-    return NextResponse.next()
-  }
-
-  // Sinon, rediriger vers la page de mot de passe
-  const url = request.nextUrl.clone()
-  url.pathname = '/auth-check'
-  url.searchParams.set('redirect', pathname)
-  return NextResponse.redirect(url)
+  // Continuer normalement sans protection par mot de passe
+  return intlMiddleware(request)
 }
 
 export const config = {
