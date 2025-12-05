@@ -38,6 +38,7 @@ export default function StaticNavBar() {
 
   const isMessages = nextPathname?.startsWith('/messages')
   const isAdmin = nextPathname?.startsWith('/admin')
+  const isLanding = nextPathname?.startsWith('/landing') || nextPathname === '/landing'
   const isMap = nextPathname?.startsWith('/map')
   const { data: session, status } = useSession()
   const isAuthenticated = status === 'authenticated'
@@ -198,8 +199,8 @@ export default function StaticNavBar() {
     }
   }, [showMenu])
 
-  // Ne pas afficher la navbar sur les pages admin - APRÈS tous les hooks
-  if (isAdmin) {
+  // Ne pas afficher la navbar sur les pages admin et landing - APRÈS tous les hooks
+  if (isAdmin || isLanding) {
     return null
   }
 

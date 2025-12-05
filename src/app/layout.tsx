@@ -3,7 +3,6 @@ import type { Metadata } from "next";
 import Providers from "./providers";
 import Script from 'next/script'
 import AnalyticsLoader from "@/components/AnalyticsLoader";
-import AppGateway from "@/components/AppGateway";
 import StaticNavBar from "@/components/layout/StaticNavBar";
 import AgeLanguageGate from "@/components/AgeLanguageGate";
 import FooterLegal from "@/components/FooterLegal";
@@ -133,21 +132,19 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <Providers>
             <SuspensionChecker />
             <AgeLanguageGate />
-            <AppGateway>
-              <div data-app-shell style={{
-                minHeight: '100vh',
-                paddingTop: 0,
-                paddingBottom: 0,
-                position: 'relative',
-                width: '100%'
-              }}>
-                {children}
-              </div>
-              <ConditionalLayout>
-                <StaticNavBar />
-                <FooterLegal />
-              </ConditionalLayout>
-            </AppGateway>
+            <div data-app-shell style={{
+              minHeight: '100vh',
+              paddingTop: 0,
+              paddingBottom: 0,
+              position: 'relative',
+              width: '100%'
+            }}>
+              {children}
+            </div>
+            <ConditionalLayout>
+              <StaticNavBar />
+              <FooterLegal />
+            </ConditionalLayout>
             <ToastContainer />
             <UploadMonitor />
             <GlobalUploadProgress />
