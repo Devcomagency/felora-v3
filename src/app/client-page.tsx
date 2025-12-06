@@ -225,8 +225,7 @@ export default function ClientFeedPage({ initialItems, initialCursor }: ClientFe
             <img
               src="/icon.png"
               alt="Chargement"
-              className="w-10 h-10 mx-auto mb-2 animate-pulse"
-              style={{ filter: 'drop-shadow(0 0 15px rgba(255, 107, 157, 0.4))' }}
+              className="w-16 h-16 mx-auto mb-2"
             />
             <p className="text-white/90 text-sm">Chargement...</p>
           </div>
@@ -240,8 +239,7 @@ export default function ClientFeedPage({ initialItems, initialCursor }: ClientFe
             <img
               src="/icon.png"
               alt="Felora"
-              className="w-20 h-20 mx-auto mb-4 animate-pulse"
-              style={{ filter: 'drop-shadow(0 0 20px rgba(255, 107, 157, 0.5))' }}
+              className="w-32 h-32 mx-auto mb-6"
             />
             <p className="text-white/90 text-lg">Chargement du feed...</p>
           </div>
