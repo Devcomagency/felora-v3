@@ -169,10 +169,10 @@ export default function EscortPremiumLausannePage() {
                 Felora s'impose comme la référence pour les rencontres premium dans la capitale vaudoise.
               </p>
 
-              <h3 className="text-2xl font-semibold mb-4 text-white mt-8">Une Sélection Rigoureuse</h3>
+              <h3 className="text-2xl font-semibold mb-4 text-white mt-8">Vérification d'Identité</h3>
 
               <p className="text-gray-300 leading-relaxed mb-6">
-                Contrairement aux annuaires traditionnels, chaque profil sur Felora passe par un processus de vérification strict.
+                Contrairement aux annuaires traditionnels, chaque profil sur Felora passe par un processus de vérification d'identité strict.
                 Les escorts premium à Lausanne présentes sur la plateforme sont vérifiées, garantissant l'authenticité des photos et la conformité avec les standards d'excellence de Felora.
               </p>
 
@@ -227,26 +227,14 @@ export default function EscortPremiumLausannePage() {
                 ))}
               </div>
 
-              <h3 className="text-2xl font-semibold mb-4 text-white mt-8">Standards Premium</h3>
+              <h3 className="text-2xl font-semibold mb-4 text-white mt-8">Badge Vérifié</h3>
 
-              <p className="text-gray-300 leading-relaxed mb-4">
-                Pour être acceptées sur Felora, les escorts premium à Lausanne doivent répondre à des critères stricts :
+              <p className="text-gray-300 leading-relaxed mb-6">
+                Sur Felora, chaque profil dispose d'un badge "Vérifié" après validation de l'identité via vérification vidéo.
+                Ce badge indique que la personne a confirmé son identité et que les photos correspondent bien à la réalité.
+                Felora ne contrôle pas le contenu des profils ni les services proposés - chaque escort est indépendante
+                et définit librement ses tarifs, prestations et disponibilités.
               </p>
-
-              <ul className="space-y-2 my-4">
-                {[
-                  'Présentation soignée et élégante',
-                  'Éducation et savoir-vivre',
-                  'Maîtrise du français et souvent de l\'anglais',
-                  'Disponibilité confirmée et ponctualité',
-                  'Respect absolu de votre vie privée',
-                ].map((criteria, index) => (
-                  <li key={index} className="flex items-center gap-3 text-gray-300">
-                    <CheckCircle className="w-5 h-5 text-pink-500 flex-shrink-0" />
-                    <span>{criteria}</span>
-                  </li>
-                ))}
-              </ul>
 
               <h3 className="text-2xl font-semibold mb-4 text-white mt-8">Au-Delà de Lausanne</h3>
 

@@ -169,10 +169,10 @@ export default function EscortTransGenevePage() {
                 Felora s'impose comme la référence pour des rencontres authentiques et haut de gamme avec des transsexuelles et ladyboys vérifiées.
               </p>
 
-              <h3 className="text-2xl font-semibold mb-4 text-white mt-8">Sélection Premium et Vérification Stricte</h3>
+              <h3 className="text-2xl font-semibold mb-4 text-white mt-8">Vérification d'Identité</h3>
 
               <p className="text-gray-300 leading-relaxed mb-6">
-                Chaque profil d'escort trans sur Felora passe par un processus de vérification rigoureux. Les escorts transsexuelles
+                Chaque profil d'escort trans sur Felora passe par un processus de vérification d'identité rigoureux. Les escorts transsexuelles
                 premium à Genève présentes sur la plateforme sont vérifiées, garantissant l'authenticité des photos et des informations du profil.
               </p>
 
@@ -215,26 +215,14 @@ export default function EscortTransGenevePage() {
                 ))}
               </ul>
 
-              <h3 className="text-2xl font-semibold mb-4 text-white mt-8">Standards d'Excellence</h3>
+              <h3 className="text-2xl font-semibold mb-4 text-white mt-8">Badge Vérifié</h3>
 
-              <p className="text-gray-300 leading-relaxed mb-4">
-                Pour être acceptées sur Felora, les escorts trans premium à Genève doivent répondre à des critères stricts :
+              <p className="text-gray-300 leading-relaxed mb-6">
+                Sur Felora, chaque profil dispose d'un badge "Vérifié" après validation de l'identité via vérification vidéo.
+                Ce badge indique que la personne a confirmé son identité et que les photos correspondent bien à la réalité.
+                Felora ne contrôle pas le contenu des profils ni les services proposés - chaque escort trans est indépendante
+                et définit librement ses tarifs, prestations et disponibilités.
               </p>
-
-              <ul className="space-y-2 my-4">
-                {[
-                  'Présentation féminine soignée et élégante',
-                  'Hygiène irréprochable et soins esthétiques réguliers',
-                  'Courtoisie, éducation et savoir-vivre',
-                  'Ponctualité et fiabilité confirmées',
-                  'Respect absolu de votre vie privée et de vos souhaits',
-                ].map((criteria, index) => (
-                  <li key={index} className="flex items-center gap-3 text-gray-300">
-                    <CheckCircle className="w-5 h-5 text-pink-500 flex-shrink-0" />
-                    <span>{criteria}</span>
-                  </li>
-                ))}
-              </ul>
 
               <h3 className="text-2xl font-semibold mb-4 text-white mt-8">Environnement Inclusif et Respectueux</h3>
 
