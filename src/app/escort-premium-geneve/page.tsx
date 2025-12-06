@@ -1,36 +1,19 @@
-import { Metadata } from 'next';
-import Link from 'next/link';
+'use client';
 
-export const metadata: Metadata = {
-  title: 'Escort Premium à Genève — Profils Vérifiés | Felora',
-  description: 'Découvrez des escorts premium vérifiées à Genève. Messagerie sécurisée E2EE, profils authentiques. Eaux-Vives, Champel, Plainpalais. Discrétion garantie.',
-  keywords: [
-    'escort premium genève',
-    'escort genève vérifiée',
-    'escort de luxe genève',
-    'escort haut de gamme genève',
-    'escort discrète genève',
-    'escort vip genève',
-    'accompagnatrice genève',
-    'escort eaux-vives',
-    'escort champel',
-  ],
-  openGraph: {
-    title: 'Escort Premium à Genève — Profils Vérifiés | Felora',
-    description: 'Découvrez des escorts premium vérifiées à Genève. Messagerie sécurisée E2EE, profils authentiques. Discrétion garantie.',
-    url: '/escort-premium-geneve',
-    type: 'website',
-  },
-  alternates: {
-    canonical: '/escort-premium-geneve',
-  },
-};
+import Link from 'next/link';
+import { motion } from 'framer-motion';
+import { Sparkles, Shield, Lock, Star, MapPin, CheckCircle, ArrowRight } from 'lucide-react';
 
 export default function EscortPremiumGenevePage() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black via-[#0D0D0D] to-black">
+    <div className="min-h-screen bg-black relative overflow-hidden">
+      {/* Background avec vraies couleurs Felora */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/10 via-black to-black" />
+      <div className="absolute top-1/4 -left-48 w-96 h-96 bg-purple-500/15 rounded-full blur-3xl animate-pulse" />
+      <div className="absolute bottom-1/4 -right-48 w-96 h-96 bg-pink-500/15 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '700ms' }} />
+
       {/* Breadcrumbs */}
-      <div className="container mx-auto px-4 py-4">
+      <div className="container mx-auto px-4 py-4 relative z-10">
         <nav className="flex items-center gap-2 text-sm text-gray-400">
           <Link href="/" className="hover:text-white transition-colors">
             Accueil
@@ -43,57 +26,124 @@ export default function EscortPremiumGenevePage() {
       </div>
 
       {/* Hero Section */}
-      <section className="container mx-auto px-4 py-12 md:py-20">
+      <section className="container mx-auto px-4 py-12 md:py-20 relative z-10">
         <div className="max-w-4xl mx-auto text-center">
-          <div className="inline-block mb-6">
-            <span className="px-4 py-2 rounded-full bg-gradient-to-r from-[#FF6B9D]/20 to-[#B794F6]/20 border border-[#FF6B9D]/30 text-[#FF6B9D] text-sm font-medium">
-              💎 Premium Genève
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6 }}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-violet-600/10 border border-white/10 backdrop-blur-xl mb-6"
+          >
+            <Sparkles className="w-4 h-4 text-pink-500" />
+            <span className="text-sm font-medium text-gray-300">Premium Genève</span>
+          </motion.div>
+
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6"
+          >
+            <span className="bg-gradient-to-r from-pink-500 via-purple-500 to-violet-600 bg-clip-text text-transparent">
+              Escort Premium à Genève
             </span>
-          </div>
+          </motion.h1>
 
-          <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-[#FF6B9D] via-[#B794F6] to-[#4FD1C7] bg-clip-text text-transparent">
-            Escort Premium à Genève
-          </h1>
-
-          <p className="text-xl md:text-2xl text-gray-300 mb-8 leading-relaxed">
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className="text-xl md:text-2xl text-gray-300 mb-12 leading-relaxed"
+          >
             Sélection exclusive d'escorts haut de gamme vérifiées. Profils authentiques, messagerie sécurisée, discrétion absolue.
-          </p>
+          </motion.p>
 
           {/* Trust Badges */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 max-w-3xl mx-auto">
-            <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4">
-              <div className="text-2xl mb-2">✅</div>
-              <div className="text-sm font-medium text-white mb-1">Vérification Vidéo</div>
-              <div className="text-xs text-gray-400">Profils authentiques</div>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 max-w-3xl mx-auto">
+            {[
+              {
+                icon: Shield,
+                title: 'Profils Vérifiés',
+                description: 'Vérification authentique',
+                gradient: 'from-pink-500 via-purple-500 to-violet-600',
+              },
+              {
+                icon: Lock,
+                title: 'Messagerie E2EE',
+                description: 'Chiffrement bout en bout',
+                gradient: 'from-purple-500 to-violet-600',
+              },
+              {
+                icon: Star,
+                title: 'Service Premium',
+                description: 'Haute qualité garantie',
+                gradient: 'from-pink-500 to-purple-500',
+              },
+            ].map((badge, index) => (
+              <motion.div
+                key={badge.title}
+                initial={{ opacity: 0, y: 50, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{
+                  duration: 0.6,
+                  delay: 0.6 + index * 0.15,
+                  type: 'spring',
+                  stiffness: 100,
+                }}
+                whileHover={{ scale: 1.05, y: -8 }}
+                className="group relative"
+              >
+                <div className={`absolute -inset-1 bg-gradient-to-br ${badge.gradient} rounded-2xl blur-xl opacity-0 group-hover:opacity-40 transition-opacity duration-500`} />
 
-            <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4">
-              <div className="text-2xl mb-2">🔒</div>
-              <div className="text-sm font-medium text-white mb-1">Messagerie E2EE</div>
-              <div className="text-xs text-gray-400">Chiffrement bout en bout</div>
-            </div>
-
-            <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4">
-              <div className="text-2xl mb-2">🌟</div>
-              <div className="text-sm font-medium text-white mb-1">Service Premium</div>
-              <div className="text-xs text-gray-400">Haute qualité garantie</div>
-            </div>
+                <div className="relative bg-white/[0.03] backdrop-blur-2xl border border-white/10 hover:border-white/20 rounded-2xl p-6 transition-all duration-500">
+                  <motion.div
+                    whileHover={{ rotate: [0, -5, 5, -5, 0], scale: 1.1 }}
+                    transition={{ duration: 0.5 }}
+                    className={`w-12 h-12 rounded-xl bg-gradient-to-br ${badge.gradient} p-3 text-white mb-4 mx-auto shadow-xl`}
+                    style={{
+                      filter: 'drop-shadow(0 0 20px rgba(236,72,153,0.4))',
+                    }}
+                  >
+                    <badge.icon className="w-full h-full" />
+                  </motion.div>
+                  <div className="text-sm font-medium text-white mb-1">{badge.title}</div>
+                  <div className="text-xs text-gray-400">{badge.description}</div>
+                </div>
+              </motion.div>
+            ))}
           </div>
 
-          <Link
-            href="/search?city=Geneva"
-            className="inline-block px-8 py-4 rounded-full bg-gradient-to-r from-[#FF6B9D] to-[#B794F6] text-white font-semibold text-lg hover:shadow-2xl hover:shadow-[#FF6B9D]/50 transition-all duration-300 hover:scale-105"
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 1.2 }}
           >
-            Découvrir les profils →
-          </Link>
+            <Link
+              href="/search?city=Geneva"
+              className="group relative inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-pink-500 via-purple-500 to-violet-600 text-white font-semibold rounded-xl overflow-hidden transition-all duration-300 hover:scale-105"
+              style={{
+                filter: 'drop-shadow(0 0 20px rgba(236,72,153,0.4))',
+              }}
+            >
+              <span className="relative z-10">Découvrir les profils</span>
+              <motion.span
+                animate={{ x: [0, 4, 0] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+                className="relative z-10"
+              >
+                <ArrowRight className="w-5 h-5" />
+              </motion.span>
+              <div className="absolute inset-0 bg-gradient-to-r from-violet-600 via-purple-500 to-pink-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+            </Link>
+          </motion.div>
         </div>
       </section>
 
       {/* SEO Content Section */}
-      <section className="container mx-auto px-4 py-12 md:py-16">
+      <section className="container mx-auto px-4 py-12 md:py-16 relative z-10">
         <div className="max-w-4xl mx-auto">
           <article className="prose prose-invert prose-lg max-w-none">
-            <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 md:p-12">
+            <div className="bg-white/[0.03] backdrop-blur-xl border border-white/10 rounded-3xl p-8 md:p-12">
               <h2 className="text-3xl font-bold mb-6 text-white">Escorts Premium à Genève : L'Excellence Felora</h2>
 
               <p className="text-gray-300 leading-relaxed mb-6">
@@ -105,8 +155,7 @@ export default function EscortPremiumGenevePage() {
 
               <p className="text-gray-300 leading-relaxed mb-6">
                 Contrairement aux annuaires traditionnels, chaque profil sur Felora passe par un processus de vérification strict.
-                Nos escorts premium à Genève sont vérifiées par vidéo en direct, garantissant l'authenticité des photos et la
-                conformité avec nos standards d'excellence.
+                Nos escorts premium à Genève sont vérifiées, garantissant l'authenticité des photos et la conformité avec nos standards d'excellence.
               </p>
 
               <p className="text-gray-300 leading-relaxed mb-6">
@@ -135,71 +184,50 @@ export default function EscortPremiumGenevePage() {
               </p>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-6">
-                <div className="bg-white/5 rounded-xl p-4 border border-white/10">
-                  <h4 className="font-semibold text-white mb-2">📍 Eaux-Vives</h4>
-                  <p className="text-sm text-gray-400">Quartier résidentiel élégant, proche du lac et des parcs</p>
-                </div>
-
-                <div className="bg-white/5 rounded-xl p-4 border border-white/10">
-                  <h4 className="font-semibold text-white mb-2">📍 Champel</h4>
-                  <p className="text-sm text-gray-400">Zone exclusive, calme et verdoyante</p>
-                </div>
-
-                <div className="bg-white/5 rounded-xl p-4 border border-white/10">
-                  <h4 className="font-semibold text-white mb-2">📍 Centre-Ville</h4>
-                  <p className="text-sm text-gray-400">À proximité des hôtels 5 étoiles et boutiques de luxe</p>
-                </div>
-
-                <div className="bg-white/5 rounded-xl p-4 border border-white/10">
-                  <h4 className="font-semibold text-white mb-2">📍 Plainpalais</h4>
-                  <p className="text-sm text-gray-400">Quartier dynamique, idéal pour les soirées culturelles</p>
-                </div>
-
-                <div className="bg-white/5 rounded-xl p-4 border border-white/10">
-                  <h4 className="font-semibold text-white mb-2">📍 Carouge</h4>
-                  <p className="text-sm text-gray-400">Charme méditerranéen aux portes de Genève</p>
-                </div>
-
-                <div className="bg-white/5 rounded-xl p-4 border border-white/10">
-                  <h4 className="font-semibold text-white mb-2">📍 Pâquis</h4>
-                  <p className="text-sm text-gray-400">Quartier cosmopolite et vivant</p>
-                </div>
+                {[
+                  { name: 'Eaux-Vives', description: 'Quartier résidentiel élégant, proche du lac et des parcs' },
+                  { name: 'Champel', description: 'Zone exclusive, calme et verdoyante' },
+                  { name: 'Centre-Ville', description: 'À proximité des hôtels 5 étoiles et boutiques de luxe' },
+                  { name: 'Plainpalais', description: 'Quartier dynamique, idéal pour les soirées culturelles' },
+                  { name: 'Carouge', description: 'Charme méditerranéen aux portes de Genève' },
+                  { name: 'Pâquis', description: 'Quartier cosmopolite et vivant' },
+                ].map((quartier, index) => (
+                  <motion.div
+                    key={quartier.name}
+                    initial={{ opacity: 0, x: index % 2 === 0 ? -20 : 20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    className="group bg-white/[0.03] rounded-xl p-4 border border-white/10 hover:border-pink-500/30 transition-all duration-300"
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <MapPin className="w-4 h-4 text-pink-500" />
+                      <h4 className="font-semibold text-white">{quartier.name}</h4>
+                    </div>
+                    <p className="text-sm text-gray-400">{quartier.description}</p>
+                  </motion.div>
+                ))}
               </div>
 
               <h3 className="text-2xl font-semibold mb-4 text-white mt-8">Comment Ça Fonctionne</h3>
 
               <div className="space-y-4 my-6">
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-r from-[#FF6B9D] to-[#B794F6] flex items-center justify-center text-white font-bold">1</div>
-                  <div>
-                    <h4 className="font-semibold text-white mb-1">Parcourez les profils vérifiés</h4>
-                    <p className="text-sm text-gray-400">Découvrez notre sélection exclusive d'escorts premium à Genève</p>
+                {[
+                  { title: 'Parcourez les profils vérifiés', description: 'Découvrez notre sélection exclusive d\'escorts premium à Genève' },
+                  { title: 'Consultez photos et disponibilités', description: 'Profils détaillés avec photos vérifiées et disponibilités en temps réel' },
+                  { title: 'Contactez via messagerie sécurisée', description: 'Échangez en toute confidentialité avec chiffrement E2EE' },
+                  { title: 'Organisez votre rencontre', description: 'Planifiez votre rendez-vous en toute discrétion' },
+                ].map((step, index) => (
+                  <div key={index} className="flex items-start gap-4">
+                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-r from-pink-500 via-purple-500 to-violet-600 flex items-center justify-center text-white font-bold">
+                      {index + 1}
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-white mb-1">{step.title}</h4>
+                      <p className="text-sm text-gray-400">{step.description}</p>
+                    </div>
                   </div>
-                </div>
-
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-r from-[#FF6B9D] to-[#B794F6] flex items-center justify-center text-white font-bold">2</div>
-                  <div>
-                    <h4 className="font-semibold text-white mb-1">Consultez photos et disponibilités</h4>
-                    <p className="text-sm text-gray-400">Profils détaillés avec photos vérifiées et disponibilités en temps réel</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-r from-[#FF6B9D] to-[#B794F6] flex items-center justify-center text-white font-bold">3</div>
-                  <div>
-                    <h4 className="font-semibold text-white mb-1">Contactez via messagerie sécurisée</h4>
-                    <p className="text-sm text-gray-400">Échangez en toute confidentialité avec chiffrement E2EE</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-r from-[#FF6B9D] to-[#B794F6] flex items-center justify-center text-white font-bold">4</div>
-                  <div>
-                    <h4 className="font-semibold text-white mb-1">Organisez votre rencontre</h4>
-                    <p className="text-sm text-gray-400">Planifiez votre rendez-vous en toute discrétion</p>
-                  </div>
-                </div>
+                ))}
               </div>
 
               <h3 className="text-2xl font-semibold mb-4 text-white mt-8">Standards Premium</h3>
@@ -209,21 +237,18 @@ export default function EscortPremiumGenevePage() {
               </p>
 
               <ul className="space-y-2 my-4">
-                <li className="flex items-center gap-3 text-gray-300">
-                  <span className="text-[#FF6B9D]">✓</span> Présentation soignée et élégante
-                </li>
-                <li className="flex items-center gap-3 text-gray-300">
-                  <span className="text-[#FF6B9D]">✓</span> Éducation et savoir-vivre
-                </li>
-                <li className="flex items-center gap-3 text-gray-300">
-                  <span className="text-[#FF6B9D]">✓</span> Maîtrise du français et souvent de l'anglais
-                </li>
-                <li className="flex items-center gap-3 text-gray-300">
-                  <span className="text-[#FF6B9D]">✓</span> Disponibilité confirmée et ponctualité
-                </li>
-                <li className="flex items-center gap-3 text-gray-300">
-                  <span className="text-[#FF6B9D]">✓</span> Respect absolu de votre vie privée
-                </li>
+                {[
+                  'Présentation soignée et élégante',
+                  'Éducation et savoir-vivre',
+                  'Maîtrise du français et souvent de l\'anglais',
+                  'Disponibilité confirmée et ponctualité',
+                  'Respect absolu de votre vie privée',
+                ].map((criteria, index) => (
+                  <li key={index} className="flex items-center gap-3 text-gray-300">
+                    <CheckCircle className="w-5 h-5 text-pink-500 flex-shrink-0" />
+                    <span>{criteria}</span>
+                  </li>
+                ))}
               </ul>
 
               <h3 className="text-2xl font-semibold mb-4 text-white mt-8">Au-Delà de Genève</h3>
@@ -238,110 +263,98 @@ export default function EscortPremiumGenevePage() {
       </section>
 
       {/* Profiles Grid Section */}
-      <section className="container mx-auto px-4 py-12 md:py-16">
+      <section className="container mx-auto px-4 py-12 md:py-16 relative z-10">
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">
-            💎 Escorts Premium Disponibles à Genève
-          </h2>
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <Sparkles className="w-8 h-8 text-pink-500" />
+            <h2 className="text-3xl md:text-4xl font-bold text-white">
+              Escorts Premium Disponibles à Genève
+            </h2>
+          </div>
           <p className="text-gray-400 text-lg mb-8">
             Profils vérifiés et actifs en ce moment
           </p>
 
           <Link
             href="/search?city=Geneva"
-            className="inline-block px-8 py-4 rounded-full bg-gradient-to-r from-[#FF6B9D] to-[#B794F6] text-white font-semibold text-lg hover:shadow-2xl hover:shadow-[#FF6B9D]/50 transition-all duration-300 hover:scale-105"
+            className="group relative inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-pink-500 via-purple-500 to-violet-600 text-white font-semibold rounded-xl overflow-hidden transition-all duration-300 hover:scale-105"
+            style={{
+              filter: 'drop-shadow(0 0 20px rgba(236,72,153,0.4))',
+            }}
           >
-            Découvrir tous les profils de Genève →
+            <span className="relative z-10">Découvrir tous les profils de Genève</span>
+            <motion.span
+              animate={{ x: [0, 4, 0] }}
+              transition={{ duration: 1.5, repeat: Infinity }}
+              className="relative z-10"
+            >
+              <ArrowRight className="w-5 h-5" />
+            </motion.span>
+            <div className="absolute inset-0 bg-gradient-to-r from-violet-600 via-purple-500 to-pink-500 opacity-0 group-hover:opacity-100 transition-opacity" />
           </Link>
         </div>
       </section>
 
       {/* FAQ Section */}
-      <section className="container mx-auto px-4 py-12 md:py-16">
+      <section className="container mx-auto px-4 py-12 md:py-16 relative z-10">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-bold mb-12 text-center text-white">
-            ❓ Questions Fréquentes
+            Questions Fréquentes
           </h2>
 
           <div className="space-y-4">
-            <details className="group bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 hover:bg-white/10 transition-all">
-              <summary className="cursor-pointer font-semibold text-white text-lg list-none flex items-center justify-between">
-                Comment vérifier l'authenticité des profils ?
-                <span className="text-[#FF6B9D] group-open:rotate-180 transition-transform">▼</span>
-              </summary>
-              <p className="mt-4 text-gray-300 leading-relaxed">
-                Tous les profils premium Felora passent par une vérification vidéo en direct. L'escort doit se présenter face caméra
-                avec une pièce d'identité (floutée pour la vie privée) et reproduire les photos de son profil. Ce processus garantit
-                que les photos sont récentes et authentiques.
-              </p>
-            </details>
-
-            <details className="group bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 hover:bg-white/10 transition-all">
-              <summary className="cursor-pointer font-semibold text-white text-lg list-none flex items-center justify-between">
-                Quels sont les quartiers couverts à Genève ?
-                <span className="text-[#FF6B9D] group-open:rotate-180 transition-transform">▼</span>
-              </summary>
-              <p className="mt-4 text-gray-300 leading-relaxed">
-                Nos escorts premium interviennent dans tous les quartiers de Genève : Eaux-Vives, Champel, Centre-Ville, Plainpalais,
-                Pâquis, Carouge, ainsi que les communes limitrophes (Meyrin, Vernier, Lancy). Déplacements possibles dans tout le
-                canton de Genève.
-              </p>
-            </details>
-
-            <details className="group bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 hover:bg-white/10 transition-all">
-              <summary className="cursor-pointer font-semibold text-white text-lg list-none flex items-center justify-between">
-                Comment fonctionne la messagerie sécurisée ?
-                <span className="text-[#FF6B9D] group-open:rotate-180 transition-transform">▼</span>
-              </summary>
-              <p className="mt-4 text-gray-300 leading-relaxed">
-                Toutes les conversations sont chiffrées de bout en bout (E2EE), exactement comme Signal ou WhatsApp. Ni Felora ni
-                personne d'autre ne peut lire vos messages. Seuls vous et votre interlocutrice avez accès au contenu. Discrétion
-                absolue garantie.
-              </p>
-            </details>
-
-            <details className="group bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 hover:bg-white/10 transition-all">
-              <summary className="cursor-pointer font-semibold text-white text-lg list-none flex items-center justify-between">
-                Quels sont les tarifs moyens à Genève ?
-                <span className="text-[#FF6B9D] group-open:rotate-180 transition-transform">▼</span>
-              </summary>
-              <p className="mt-4 text-gray-300 leading-relaxed">
-                Les tarifs varient selon l'expérience, les prestations et la durée. Généralement entre 400-800 CHF/heure pour des
-                rencontres premium à Genève. Chaque profil indique ses tarifs de manière transparente. Les paiements se font
-                directement avec l'escort, Felora ne prélève aucune commission.
-              </p>
-            </details>
-
-            <details className="group bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 hover:bg-white/10 transition-all">
-              <summary className="cursor-pointer font-semibold text-white text-lg list-none flex items-center justify-between">
-                Puis-je réserver pour un événement ou un voyage ?
-                <span className="text-[#FF6B9D] group-open:rotate-180 transition-transform">▼</span>
-              </summary>
-              <p className="mt-4 text-gray-300 leading-relaxed">
-                Absolument ! Beaucoup de nos escorts premium accompagnent leurs clients pour des dîners d'affaires, événements mondains
-                (salon de l'auto, montres et merveilles), ou voyages. Contactez directement le profil qui vous intéresse pour discuter
-                de vos besoins spécifiques.
-              </p>
-            </details>
-
-            <details className="group bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 hover:bg-white/10 transition-all">
-              <summary className="cursor-pointer font-semibold text-white text-lg list-none flex items-center justify-between">
-                Comment créer un compte sur Felora ?
-                <span className="text-[#FF6B9D] group-open:rotate-180 transition-transform">▼</span>
-              </summary>
-              <p className="mt-4 text-gray-300 leading-relaxed">
-                L'inscription est gratuite et prend 2 minutes. Cliquez sur "S'inscrire", choisissez "Compte Client", renseignez
-                email et mot de passe. Une fois connecté, vous pouvez consulter tous les profils et utiliser la messagerie sécurisée.
-                Aucune carte bancaire requise pour créer un compte.
-              </p>
-            </details>
+            {[
+              {
+                question: 'Comment vérifier l\'authenticité des profils ?',
+                answer: 'Tous les profils premium Felora passent par une vérification stricte. L\'escort doit se présenter avec une pièce d\'identité (floutée pour la vie privée) et reproduire les photos de son profil. Ce processus garantit que les photos sont récentes et authentiques.',
+              },
+              {
+                question: 'Quels sont les quartiers couverts à Genève ?',
+                answer: 'Nos escorts premium interviennent dans tous les quartiers de Genève : Eaux-Vives, Champel, Centre-Ville, Plainpalais, Pâquis, Carouge, ainsi que les communes limitrophes (Meyrin, Vernier, Lancy). Déplacements possibles dans tout le canton de Genève.',
+              },
+              {
+                question: 'Comment fonctionne la messagerie sécurisée ?',
+                answer: 'Toutes les conversations sont chiffrées de bout en bout (E2EE), exactement comme Signal ou WhatsApp. Ni Felora ni personne d\'autre ne peut lire vos messages. Seuls vous et votre interlocutrice avez accès au contenu. Discrétion absolue garantie.',
+              },
+              {
+                question: 'Quels sont les tarifs moyens à Genève ?',
+                answer: 'Les tarifs varient selon l\'expérience, les prestations et la durée. Généralement entre 400-800 CHF/heure pour des rencontres premium à Genève. Chaque profil indique ses tarifs de manière transparente. Les paiements se font directement avec l\'escort, Felora ne prélève aucune commission.',
+              },
+              {
+                question: 'Puis-je réserver pour un événement ou un voyage ?',
+                answer: 'Absolument ! Beaucoup de nos escorts premium accompagnent leurs clients pour des dîners d\'affaires, événements mondains (salon de l\'auto, montres et merveilles), ou voyages. Contactez directement le profil qui vous intéresse pour discuter de vos besoins spécifiques.',
+              },
+              {
+                question: 'Comment créer un compte sur Felora ?',
+                answer: 'L\'inscription est gratuite et prend 2 minutes. Cliquez sur "S\'inscrire", choisissez "Compte Client", renseignez email et mot de passe. Une fois connecté, vous pouvez consulter tous les profils et utiliser la messagerie sécurisée. Aucune carte bancaire requise pour créer un compte.',
+              },
+            ].map((faq, index) => (
+              <details
+                key={index}
+                className="group bg-white/[0.03] backdrop-blur-xl border border-white/10 rounded-2xl p-6 hover:bg-white/[0.05] transition-all"
+              >
+                <summary className="cursor-pointer font-semibold text-white text-lg list-none flex items-center justify-between">
+                  {faq.question}
+                  <span className="text-pink-500 group-open:rotate-180 transition-transform">▼</span>
+                </summary>
+                <p className="mt-4 text-gray-300 leading-relaxed">
+                  {faq.answer}
+                </p>
+              </details>
+            ))}
           </div>
         </div>
       </section>
 
       {/* CTA Final */}
-      <section className="container mx-auto px-4 py-12 md:py-20">
-        <div className="max-w-4xl mx-auto text-center bg-gradient-to-r from-[#FF6B9D]/10 to-[#B794F6]/10 border border-[#FF6B9D]/30 rounded-3xl p-12">
+      <section className="container mx-auto px-4 py-12 md:py-20 relative z-10">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+          className="max-w-4xl mx-auto text-center bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-violet-600/10 border border-white/10 rounded-3xl p-12 backdrop-blur-xl"
+        >
           <h2 className="text-3xl md:text-4xl font-bold mb-6 text-white">
             Prêt à découvrir nos profils premium ?
           </h2>
@@ -350,11 +363,22 @@ export default function EscortPremiumGenevePage() {
           </p>
           <Link
             href="/search?city=Geneva"
-            className="inline-block px-10 py-5 rounded-full bg-gradient-to-r from-[#FF6B9D] to-[#B794F6] text-white font-bold text-xl hover:shadow-2xl hover:shadow-[#FF6B9D]/50 transition-all duration-300 hover:scale-105"
+            className="group relative inline-flex items-center gap-2 px-10 py-5 bg-gradient-to-r from-pink-500 via-purple-500 to-violet-600 text-white font-bold text-xl rounded-xl overflow-hidden transition-all duration-300 hover:scale-105"
+            style={{
+              filter: 'drop-shadow(0 0 20px rgba(236,72,153,0.4))',
+            }}
           >
-            Voir toutes les escorts à Genève →
+            <span className="relative z-10">Voir toutes les escorts à Genève</span>
+            <motion.span
+              animate={{ x: [0, 4, 0] }}
+              transition={{ duration: 1.5, repeat: Infinity }}
+              className="relative z-10"
+            >
+              <ArrowRight className="w-5 h-5" />
+            </motion.span>
+            <div className="absolute inset-0 bg-gradient-to-r from-violet-600 via-purple-500 to-pink-500 opacity-0 group-hover:opacity-100 transition-opacity" />
           </Link>
-        </div>
+        </motion.div>
       </section>
     </div>
   );
