@@ -222,7 +222,12 @@ export default function ClientFeedPage({ initialItems, initialCursor }: ClientFe
       {isLoading && (
         <section className="snap-start h-32 flex items-center justify-center">
           <div className="text-center">
-            <div className="w-8 h-8 border-4 border-[#FF6B9D]/30 border-t-[#FF6B9D] rounded-full animate-spin mx-auto mb-2" />
+            <img
+              src="/icon.png"
+              alt="Chargement"
+              className="w-10 h-10 mx-auto mb-2 animate-pulse"
+              style={{ filter: 'drop-shadow(0 0 15px rgba(255, 107, 157, 0.4))' }}
+            />
             <p className="text-white/90 text-sm">Chargement...</p>
           </div>
         </section>
@@ -232,7 +237,12 @@ export default function ClientFeedPage({ initialItems, initialCursor }: ClientFe
       {items.length === 0 && (
         <section className="snap-start h-dvh flex items-center justify-center">
           <div className="text-center">
-            <div className="w-12 h-12 border-4 border-[#FF6B9D]/30 border-t-[#FF6B9D] rounded-full animate-spin mx-auto mb-4" />
+            <img
+              src="/icon.png"
+              alt="Felora"
+              className="w-20 h-20 mx-auto mb-4 animate-pulse"
+              style={{ filter: 'drop-shadow(0 0 20px rgba(255, 107, 157, 0.5))' }}
+            />
             <p className="text-white/90 text-lg">Chargement du feed...</p>
           </div>
         </section>
