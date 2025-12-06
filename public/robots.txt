@@ -1,0 +1,31 @@
+# Felora.ch - Robots.txt
+# Généré le 2025-12-06
+
+# Tous les robots
+User-agent: *
+
+# Pages autorisées (indexation)
+Allow: /
+Allow: /search
+Allow: /map
+Allow: /profiles
+Allow: /profile/*
+Allow: /legal/*
+
+# Pages interdites (pas d'indexation)
+Disallow: /api/*
+Disallow: /admin/*
+Disallow: /dashboard*
+Disallow: /escort/*
+Disallow: /club/*
+Disallow: /messages*
+Disallow: /settings*
+Disallow: /register*
+Disallow: /login*
+Disallow: /camera*
+Disallow: /publish*
+Disallow: /test-*
+Disallow: /dev/*
+
+# Sitemap
+Sitemap: https://www.felora.ch/sitemap.xml

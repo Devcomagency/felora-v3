@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { Sparkles, Shield, Lock, Star, MapPin, CheckCircle, ArrowRight } from 'lucide-react';
 
@@ -28,10 +29,27 @@ export default function EscortPremiumGenevePage() {
       {/* Hero Section */}
       <section className="container mx-auto px-4 py-12 md:py-20 relative z-10">
         <div className="max-w-4xl mx-auto text-center">
+          {/* Logo Felora */}
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="mb-8 flex justify-center"
+          >
+            <Image
+              src="/logo-felora.png"
+              alt="Felora Logo"
+              width={120}
+              height={120}
+              className="w-24 h-24 md:w-32 md:h-32"
+              priority
+            />
+          </motion.div>
+
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-violet-600/10 border border-white/10 backdrop-blur-xl mb-6"
           >
             <Sparkles className="w-4 h-4 text-pink-500" />
@@ -41,7 +59,7 @@ export default function EscortPremiumGenevePage() {
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
             className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6"
           >
             <span className="bg-gradient-to-r from-pink-500 via-purple-500 to-violet-600 bg-clip-text text-transparent">
@@ -52,7 +70,7 @@ export default function EscortPremiumGenevePage() {
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
+            transition={{ duration: 0.8, delay: 0.6 }}
             className="text-xl md:text-2xl text-gray-300 mb-12 leading-relaxed"
           >
             Sélection exclusive d'escorts haut de gamme vérifiées. Profils authentiques, messagerie sécurisée, discrétion absolue.
@@ -86,7 +104,7 @@ export default function EscortPremiumGenevePage() {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 transition={{
                   duration: 0.6,
-                  delay: 0.6 + index * 0.15,
+                  delay: 0.8 + index * 0.15,
                   type: 'spring',
                   stiffness: 100,
                 }}
@@ -116,7 +134,7 @@ export default function EscortPremiumGenevePage() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 1.2 }}
+            transition={{ duration: 0.8, delay: 1.4 }}
           >
             <Link
               href="/search?city=Geneva"
