@@ -1,9 +1,9 @@
+/* Import des design tokens de la librairie UI */
+@import '../ui/tokens/design-tokens.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* Import des design tokens de la librairie UI */
-@import '../ui/tokens/design-tokens.css';
 
 /* Felora Landing Page Custom Styles */
 :root {
