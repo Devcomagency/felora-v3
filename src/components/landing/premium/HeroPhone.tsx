@@ -216,14 +216,13 @@ export function HeroPhone() {
                     transition={{ duration: 0.5 }}
                     className="absolute inset-0"
                   >
-                    <Image
+                    <img
                       src={currentScreenshot}
                       alt="Felora App Screenshot"
-                      fill
-                      className="object-cover"
-                      priority={currentScreenIndex === 0}
+                      className="absolute inset-0 w-full h-full object-cover"
                       onLoad={() => setScreenshotsLoaded(true)}
-                      onError={() => {
+                      onError={(e) => {
+                        console.error('Screenshot load error:', currentScreenshot);
                         setScreenshotsLoaded(false);
                       }}
                     />
