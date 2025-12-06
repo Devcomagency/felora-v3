@@ -179,7 +179,7 @@ export default function MassageTantriqueGenevePage() {
               </p>
 
               <p className="text-gray-300 leading-relaxed mb-6">
-                Nos masseuses tantriques à Genève maîtrisent différentes techniques : massage Lingam (massage tantrique pour homme),
+                Les masseuses tantriques sur Felora à Genève maîtrisent différentes techniques : massage Lingam (massage tantrique pour homme),
                 massage Yoni (pour femme), massage Nuru (corps à corps avec gel), et massages corps à corps sensuels. Chaque séance
                 est personnalisée selon vos besoins et votre niveau de confort.
               </p>
@@ -187,7 +187,7 @@ export default function MassageTantriqueGenevePage() {
               <h3 className="text-2xl font-semibold mb-4 text-white mt-8">Masseuses Tantriques Vérifiées</h3>
 
               <p className="text-gray-300 leading-relaxed mb-6">
-                Toutes nos masseuses tantriques passent par un processus de vérification strict. Nous nous assurons qu'elles
+                Toutes les masseuses tantriques sur Felora passent par un processus de vérification strict. La plateforme s'assure qu'elles
                 possèdent une formation authentique en massage tantrique et respectent les principes éthiques de cette pratique.
                 Les profils sont vérifiés pour garantir l'authenticité des photos et des prestations proposées.
               </p>
@@ -266,7 +266,7 @@ export default function MassageTantriqueGenevePage() {
             Vivez une expérience tantrique authentique
           </h2>
           <p className="text-gray-300 text-lg mb-8">
-            Découvrez nos masseuses tantriques vérifiées à Genève
+            Découvrez les masseuses tantriques vérifiées sur Felora à Genève
           </p>
           <Link
             href="/search?city=Geneva&service=massage-tantrique"

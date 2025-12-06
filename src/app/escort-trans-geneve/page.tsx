@@ -172,8 +172,8 @@ export default function EscortTransGenevePage() {
               <h3 className="text-2xl font-semibold mb-4 text-white mt-8">Sélection Premium et Vérification Stricte</h3>
 
               <p className="text-gray-300 leading-relaxed mb-6">
-                Chaque profil d'escort trans sur Felora passe par un processus de vérification rigoureux. Nos escorts transsexuelles
-                premium à Genève sont vérifiées, garantissant l'authenticité des photos et des informations du profil.
+                Chaque profil d'escort trans sur Felora passe par un processus de vérification rigoureux. Les escorts transsexuelles
+                premium à Genève présentes sur la plateforme sont vérifiées, garantissant l'authenticité des photos et des informations du profil.
               </p>
 
               <p className="text-gray-300 leading-relaxed mb-6">
@@ -197,7 +197,7 @@ export default function EscortTransGenevePage() {
               <h3 className="text-2xl font-semibold mb-4 text-white mt-8">Profils Diversifiés</h3>
 
               <p className="text-gray-300 leading-relaxed mb-4">
-                Notre sélection d'escorts trans premium à Genève propose une diversité de profils :
+                La sélection d'escorts trans premium à Genève sur Felora propose une diversité de profils :
               </p>
 
               <ul className="space-y-2 my-4">
@@ -218,7 +218,7 @@ export default function EscortTransGenevePage() {
               <h3 className="text-2xl font-semibold mb-4 text-white mt-8">Standards d'Excellence</h3>
 
               <p className="text-gray-300 leading-relaxed mb-4">
-                Toutes nos escorts trans premium à Genève répondent à des critères stricts :
+                Pour être acceptées sur Felora, les escorts trans premium à Genève doivent répondre à des critères stricts :
               </p>
 
               <ul className="space-y-2 my-4">
@@ -239,9 +239,9 @@ export default function EscortTransGenevePage() {
               <h3 className="text-2xl font-semibold mb-4 text-white mt-8">Environnement Inclusif et Respectueux</h3>
 
               <p className="text-gray-300 leading-relaxed mb-6">
-                Felora promeut un environnement inclusif et respectueux pour toutes les identités de genre. Nos escorts trans
-                premium bénéficient du même niveau d'excellence et de protection que tous nos membres. Nous condamnons fermement
-                toute forme de discrimination et garantissons à nos escorts trans un espace sûr et professionnel.
+                Felora promeut un environnement inclusif et respectueux pour toutes les identités de genre. Les escorts trans
+                premium présentes sur la plateforme bénéficient du même niveau d'excellence et de protection que tous les membres. La plateforme condamne fermement
+                toute forme de discrimination et garantit aux escorts trans un espace sûr et professionnel.
               </p>
             </div>
           </article>
@@ -258,7 +258,7 @@ export default function EscortTransGenevePage() {
           className="max-w-4xl mx-auto text-center bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-violet-600/10 border border-white/10 rounded-3xl p-12 backdrop-blur-xl"
         >
           <h2 className="text-3xl md:text-4xl font-bold mb-6 text-white">
-            Découvrez nos escorts trans premium
+            Découvrez les escorts trans premium sur Felora
           </h2>
           <p className="text-gray-300 text-lg mb-8">
             Sélection exclusive et vérifiée d'escorts transsexuelles à Genève

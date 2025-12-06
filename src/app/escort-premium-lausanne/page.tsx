@@ -173,7 +173,7 @@ export default function EscortPremiumLausannePage() {
 
               <p className="text-gray-300 leading-relaxed mb-6">
                 Contrairement aux annuaires traditionnels, chaque profil sur Felora passe par un processus de vérification strict.
-                Nos escorts premium à Lausanne sont vérifiées, garantissant l'authenticité des photos et la conformité avec nos standards d'excellence.
+                Les escorts premium à Lausanne présentes sur la plateforme sont vérifiées, garantissant l'authenticité des photos et la conformité avec les standards d'excellence de Felora.
               </p>
 
               <p className="text-gray-300 leading-relaxed mb-6">
@@ -198,7 +198,7 @@ export default function EscortPremiumLausannePage() {
               <h3 className="text-2xl font-semibold mb-4 text-white mt-8">Tous les Quartiers de Lausanne</h3>
 
               <p className="text-gray-300 leading-relaxed mb-4">
-                Nos escorts premium interviennent dans tous les quartiers prestigieux de Lausanne :
+                Les escorts premium présentes sur Felora interviennent dans tous les quartiers prestigieux de Lausanne :
               </p>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-6">
@@ -230,7 +230,7 @@ export default function EscortPremiumLausannePage() {
               <h3 className="text-2xl font-semibold mb-4 text-white mt-8">Standards Premium</h3>
 
               <p className="text-gray-300 leading-relaxed mb-4">
-                Toutes nos escorts premium à Lausanne répondent à des critères stricts :
+                Pour être acceptées sur Felora, les escorts premium à Lausanne doivent répondre à des critères stricts :
               </p>
 
               <ul className="space-y-2 my-4">

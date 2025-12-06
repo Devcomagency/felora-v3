@@ -173,7 +173,7 @@ export default function EscortPremiumGenevePage() {
 
               <p className="text-gray-300 leading-relaxed mb-6">
                 Contrairement aux annuaires traditionnels, chaque profil sur Felora passe par un processus de vérification strict.
-                Nos escorts premium à Genève sont vérifiées, garantissant l'authenticité des photos et la conformité avec nos standards d'excellence.
+                Les escorts premium à Genève présentes sur la plateforme sont vérifiées, garantissant l'authenticité des photos et la conformité avec les standards d'excellence de Felora.
               </p>
 
               <p className="text-gray-300 leading-relaxed mb-6">
@@ -198,7 +198,7 @@ export default function EscortPremiumGenevePage() {
               <h3 className="text-2xl font-semibold mb-4 text-white mt-8">Tous les Quartiers de Genève</h3>
 
               <p className="text-gray-300 leading-relaxed mb-4">
-                Nos escorts premium interviennent dans tous les quartiers prestigieux de Genève :
+                Les escorts premium présentes sur Felora interviennent dans tous les quartiers prestigieux de Genève :
               </p>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-6">
@@ -231,7 +231,7 @@ export default function EscortPremiumGenevePage() {
 
               <div className="space-y-4 my-6">
                 {[
-                  { title: 'Parcourez les profils vérifiés', description: 'Découvrez notre sélection exclusive d\'escorts premium à Genève' },
+                  { title: 'Parcourez les profils vérifiés', description: 'Découvrez la sélection exclusive d\'escorts premium à Genève sur Felora' },
                   { title: 'Consultez photos et disponibilités', description: 'Profils détaillés avec photos vérifiées et disponibilités en temps réel' },
                   { title: 'Contactez via messagerie sécurisée', description: 'Échangez en toute confidentialité avec chiffrement E2EE' },
                   { title: 'Organisez votre rencontre', description: 'Planifiez votre rendez-vous en toute discrétion' },
@@ -251,7 +251,7 @@ export default function EscortPremiumGenevePage() {
               <h3 className="text-2xl font-semibold mb-4 text-white mt-8">Standards Premium</h3>
 
               <p className="text-gray-300 leading-relaxed mb-4">
-                Toutes nos escorts premium à Genève répondent à des critères stricts :
+                Pour être acceptées sur Felora, les escorts premium à Genève doivent répondre à des critères stricts :
               </p>
 
               <ul className="space-y-2 my-4">
@@ -328,7 +328,7 @@ export default function EscortPremiumGenevePage() {
               },
               {
                 question: 'Quels sont les quartiers couverts à Genève ?',
-                answer: 'Nos escorts premium interviennent dans tous les quartiers de Genève : Eaux-Vives, Champel, Centre-Ville, Plainpalais, Pâquis, Carouge, ainsi que les communes limitrophes (Meyrin, Vernier, Lancy). Déplacements possibles dans tout le canton de Genève.',
+                answer: 'Les escorts premium sur Felora interviennent dans tous les quartiers de Genève : Eaux-Vives, Champel, Centre-Ville, Plainpalais, Pâquis, Carouge, ainsi que les communes limitrophes (Meyrin, Vernier, Lancy). Déplacements possibles dans tout le canton de Genève.',
               },
               {
                 question: 'Comment fonctionne la messagerie sécurisée ?',
@@ -340,7 +340,7 @@ export default function EscortPremiumGenevePage() {
               },
               {
                 question: 'Puis-je réserver pour un événement ou un voyage ?',
-                answer: 'Absolument ! Beaucoup de nos escorts premium accompagnent leurs clients pour des dîners d\'affaires, événements mondains (salon de l\'auto, montres et merveilles), ou voyages. Contactez directement le profil qui vous intéresse pour discuter de vos besoins spécifiques.',
+                answer: 'Absolument ! Beaucoup d\'escorts premium sur Felora accompagnent leurs clients pour des dîners d\'affaires, événements mondains (salon de l\'auto, montres et merveilles), ou voyages. Contactez directement le profil qui vous intéresse pour discuter de vos besoins spécifiques.',
               },
               {
                 question: 'Comment créer un compte sur Felora ?',

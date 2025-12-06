@@ -180,7 +180,7 @@ export default function MassageErotiqueGenevePage() {
               </p>
 
               <p className="text-gray-300 leading-relaxed mb-6">
-                Nos masseuses érotiques à Genève proposent différentes techniques : massage body body (corps à corps), massage
+                Les masseuses érotiques sur Felora à Genève proposent différentes techniques : massage body body (corps à corps), massage
                 naturiste, massage à quatre mains, et massages sensuels sur mesure. Chaque séance commence par une discussion
                 pour établir vos attentes et garantir votre confort.
               </p>
@@ -188,7 +188,7 @@ export default function MassageErotiqueGenevePage() {
               <h3 className="text-2xl font-semibold mb-4 text-white mt-8">Masseuses Professionnelles et Vérifiées</h3>
 
               <p className="text-gray-300 leading-relaxed mb-6">
-                Toutes nos masseuses érotiques passent par un processus de vérification strict. Nous contrôlons l'authenticité
+                Toutes les masseuses érotiques sur Felora passent par un processus de vérification strict. La plateforme contrôle l'authenticité
                 des profils, des photos et de l'expérience professionnelle. Vous êtes assuré de rencontrer exactement la personne
                 présentée, dans un cadre sûr et respectueux.
               </p>
@@ -275,7 +275,7 @@ export default function MassageErotiqueGenevePage() {
             Offrez-vous un moment de pure détente
           </h2>
           <p className="text-gray-300 text-lg mb-8">
-            Découvrez nos masseuses érotiques premium à Genève
+            Découvrez les masseuses érotiques premium sur Felora à Genève
           </p>
           <Link
             href="/search?city=Geneva&service=massage"
