@@ -5,8 +5,10 @@ import Link from 'next/link';
 import { motion, useScroll, useTransform, useMotionValue } from 'framer-motion';
 import { HeroPhone } from './HeroPhone';
 import { ArrowRight, Sparkles } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 export function HeroSection() {
+  const t = useTranslations('landing.hero');
   const sectionRef = useRef<HTMLDivElement>(null);
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
@@ -74,7 +76,7 @@ export function HeroSection() {
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.03] backdrop-blur-xl border border-white/10"
           >
             <Sparkles className="w-4 h-4 text-pink-500" />
-            <span className="text-sm font-medium text-gray-300">Plateforme Premium Suisse</span>
+            <span className="text-sm font-medium text-gray-300">{t('badge')}</span>
           </motion.div>
 
           {/* Titre principal */}
@@ -85,12 +87,12 @@ export function HeroSection() {
             className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-bold leading-[1.1] tracking-tight"
           >
             <span className="block text-white mb-3">
-              Felora –
+              {t('title')}
             </span>
             <span className="block relative">
               <span className="absolute inset-0 bg-gradient-to-r from-pink-500 via-purple-500 to-violet-600 blur-2xl opacity-50" />
               <span className="relative bg-gradient-to-r from-pink-500 via-purple-500 to-violet-600 bg-clip-text text-transparent">
-                Le Réseau Social Premium
+                {t('subtitle')}
               </span>
             </span>
           </motion.h1>
@@ -102,12 +104,7 @@ export function HeroSection() {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="text-xl sm:text-2xl lg:text-3xl text-gray-300 leading-relaxed max-w-2xl mx-auto lg:mx-0 font-light"
           >
-            La plateforme{' '}
-            <span className="text-white font-medium">exclusive</span>
-            {' '}pour créatrices, indépendantes et établissements en{' '}
-            <span className="bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent font-medium">
-              Suisse
-            </span>
+            {t('description')}
           </motion.p>
 
           {/* CTAs */}
@@ -124,7 +121,7 @@ export function HeroSection() {
               <div className="absolute inset-0 bg-gradient-to-r from-pink-500 via-purple-500 to-violet-600 opacity-90 group-hover:opacity-100 transition-opacity" />
               <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-500 opacity-0 group-hover:opacity-100 transition-opacity" />
               <span className="relative z-10 text-white font-semibold text-lg sm:text-xl flex items-center gap-3">
-                Découvrir Felora
+                {t('cta.discover')}
                 <motion.span
                   animate={{ x: [0, 4, 0] }}
                   transition={{ duration: 1.5, repeat: Infinity }}
@@ -140,7 +137,7 @@ export function HeroSection() {
               className="group px-8 py-4 sm:px-10 sm:py-5 border-2 border-white/20 text-white font-semibold text-lg sm:text-xl rounded-2xl hover:bg-white/5 hover:border-white/40 transition-all duration-300 backdrop-blur-sm relative overflow-hidden"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/5 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-              <span className="relative z-10">S'inscrire Maintenant</span>
+              <span className="relative z-10">{t('cta.signup')}</span>
             </Link>
           </motion.div>
 
@@ -151,48 +148,26 @@ export function HeroSection() {
             transition={{ duration: 0.8, delay: 0.4 }}
             className="flex flex-wrap items-center justify-center lg:justify-start gap-8 pt-8"
           >
-            {[
-              { value: '100%', label: 'Suisse', icon: '✓' },
-              { value: '24/7', label: 'Support', icon: '💬' },
-            ].map((stat, i) => (
-              <div key={i} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/[0.03] backdrop-blur-sm border border-white/10">
-                <span className="text-2xl">{stat.icon}</span>
-                <div>
-                  <div className="text-lg font-bold text-white">{stat.value}</div>
-                  <div className="text-xs text-gray-400">{stat.label}</div>
-                </div>
+            <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/[0.03] backdrop-blur-sm border border-white/10">
+              <span className="text-2xl">✓</span>
+              <div>
+                <div className="text-lg font-bold text-white">100%</div>
+                <div className="text-xs text-gray-400">{t('stats.swiss')}</div>
               </div>
-            ))}
+            </div>
+            <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/[0.03] backdrop-blur-sm border border-white/10">
+              <span className="text-2xl">💬</span>
+              <div>
+                <div className="text-lg font-bold text-white">24/7</div>
+                <div className="text-xs text-gray-400">{t('stats.support')}</div>
+              </div>
+            </div>
           </motion.div>
         </div>
 
-        {/* Téléphone */}
-        <div className="hidden lg:block relative">
+        {/* Téléphone avec animations - TOUJOURS VISIBLE */}
+        <div className="relative mt-12 lg:mt-0">
           <HeroPhone />
-        </div>
-        
-        {/* Téléphone mobile - version simplifiée */}
-        <div className="lg:hidden mt-12 flex justify-center">
-          <div className="relative w-[240px] h-[480px]">
-            <div className="relative w-full h-full bg-gradient-to-br from-gray-900 to-black rounded-[2.5rem] p-2 shadow-2xl border border-gray-800">
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-28 h-6 bg-black rounded-b-2xl z-20" />
-              <div className="relative w-full h-full bg-gradient-to-br from-[#0B0B0B] to-[#111318] rounded-[2rem] overflow-hidden">
-                <div className="pt-10 px-4 space-y-3">
-                  <div className="flex items-center gap-2 mb-6">
-                    <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-pink-500 to-purple-500" />
-                    <div className="h-3 bg-white/20 rounded w-20" />
-                  </div>
-                  {[1, 2].map((i) => (
-                    <div key={i} className="bg-white/5 rounded-xl p-4 border border-white/10">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-500 to-purple-500 mb-3" />
-                      <div className="h-3 bg-white/20 rounded w-24 mb-2" />
-                      <div className="h-2 bg-white/10 rounded w-16" />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </motion.div>
 
@@ -208,7 +183,7 @@ export function HeroSection() {
           transition={{ duration: 2, repeat: Infinity }}
           className="flex flex-col items-center gap-3"
         >
-          <span className="text-gray-400 text-sm font-medium">Découvrir</span>
+          <span className="text-gray-400 text-sm font-medium">{t('scroll')}</span>
           <div className="w-7 h-12 border-2 border-white/20 rounded-full flex justify-center p-2 backdrop-blur-sm bg-white/[0.03]">
             <motion.div
               animate={{ y: [0, 16, 0] }}

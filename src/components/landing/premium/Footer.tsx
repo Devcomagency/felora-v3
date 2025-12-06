@@ -3,8 +3,10 @@
 import Link from 'next/link';
 import { Facebook, Twitter, Instagram, Mail } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useTranslations } from 'next-intl';
 
 export function Footer() {
+  const t = useTranslations('landing.footer');
   const currentYear = new Date().getFullYear();
 
   return (
@@ -20,7 +22,7 @@ export function Footer() {
               <span className="text-2xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">Felora</span>
             </div>
             <p className="text-gray-400 text-sm mb-6 leading-relaxed">
-              La plateforme premium pour rencontres en Suisse
+              {t('description')}
             </p>
             <div className="flex items-center gap-4">
               <a
@@ -62,14 +64,14 @@ export function Footer() {
 
           {/* Légal */}
           <div>
-            <h3 className="text-white font-semibold mb-6 text-lg">Légal</h3>
+            <h3 className="text-white font-semibold mb-6 text-lg">{t('legal.title')}</h3>
             <ul className="space-y-3">
               <li>
                 <Link
                   href="/legal/terms"
                   className="text-gray-400 hover:text-white transition-colors text-sm hover:translate-x-1 inline-block transition-transform"
                 >
-                  Mentions légales
+                  {t('legal.terms')}
                 </Link>
               </li>
               <li>
@@ -77,7 +79,7 @@ export function Footer() {
                   href="/legal/privacy"
                   className="text-gray-400 hover:text-white transition-colors text-sm hover:translate-x-1 inline-block transition-transform"
                 >
-                  Politique de confidentialité
+                  {t('legal.privacy')}
                 </Link>
               </li>
               <li>
@@ -85,7 +87,7 @@ export function Footer() {
                   href="/legal/terms"
                   className="text-gray-400 hover:text-white transition-colors text-sm hover:translate-x-1 inline-block transition-transform"
                 >
-                  CGU
+                  {t('legal.cgu')}
                 </Link>
               </li>
             </ul>
@@ -93,14 +95,14 @@ export function Footer() {
 
           {/* Contact */}
           <div>
-            <h3 className="text-white font-semibold mb-6 text-lg">Contact</h3>
+            <h3 className="text-white font-semibold mb-6 text-lg">{t('contact.title')}</h3>
             <ul className="space-y-3">
               <li>
                 <a
                   href="mailto:info@felora.ch"
                   className="text-gray-400 hover:text-white transition-colors text-sm hover:translate-x-1 inline-block transition-transform"
                 >
-                  Contact
+                  {t('contact.contact')}
                 </a>
               </li>
               <li>
@@ -108,7 +110,7 @@ export function Footer() {
                   href="mailto:info@felora.ch"
                   className="text-gray-400 hover:text-white transition-colors text-sm hover:translate-x-1 inline-block transition-transform"
                 >
-                  Support
+                  {t('contact.support')}
                 </a>
               </li>
             </ul>
@@ -118,7 +120,7 @@ export function Footer() {
         {/* Copyright */}
         <div className="pt-8 border-t border-white/10">
           <p className="text-gray-400 text-sm text-center">
-            © {currentYear} Felora. Tous droits réservés.
+            © {currentYear} Felora. {t('copyright')}
           </p>
         </div>
       </div>

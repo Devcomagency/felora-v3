@@ -21,8 +21,9 @@ interface FloatingElement {
 export function HeroPhone() {
   const phoneRef = useRef<HTMLDivElement>(null);
   const [currentScreenIndex, setCurrentScreenIndex] = useState(0);
-  const [screenshotsLoaded, setScreenshotsLoaded] = useState(false);
+  const [loadedScreenshots, setLoadedScreenshots] = useState<Set<number>>(new Set());
   const [mounted, setMounted] = useState(false);
+
   const { scrollYProgress } = useScroll({
     target: phoneRef,
     offset: ['start end', 'end start'],
@@ -206,7 +207,7 @@ export function HeroPhone() {
               
               {/* Écran avec screenshot réel */}
               <div className="relative w-full h-full bg-gradient-to-br from-[#0A0A0A] via-[#0B0B0B] to-[#111318] rounded-[3rem] overflow-hidden">
-                {/* Screenshot réel de l'app */}
+                {/* Screenshot réel de l'app - TOUJOURS VISIBLE */}
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={currentScreenIndex}
@@ -214,23 +215,24 @@ export function HeroPhone() {
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.95 }}
                     transition={{ duration: 0.5 }}
-                    className="absolute inset-0"
+                    className="absolute inset-0 z-10"
                   >
                     <img
                       src={currentScreenshot}
                       alt="Felora App Screenshot"
                       className="absolute inset-0 w-full h-full object-cover"
-                      onLoad={() => setScreenshotsLoaded(true)}
+                      loading="eager"
                       onError={(e) => {
-                        console.error('Screenshot load error:', currentScreenshot);
-                        setScreenshotsLoaded(false);
+                        console.error('Failed to load screenshot:', currentScreenshot);
+                        e.currentTarget.style.display = 'none';
                       }}
                     />
                   </motion.div>
                 </AnimatePresence>
-                
+
                 {/* Fallback si les screenshots n'existent pas */}
-                {!screenshotsLoaded && (
+                <div className="absolute inset-0 z-0" style={{ pointerEvents: 'none' }}>
+                {(
                   <div className="absolute inset-0 bg-gradient-to-br from-[#0B0B0B] to-[#111318] flex flex-col">
                     {/* Barre de statut */}
                     <div className="absolute top-0 left-0 right-0 h-14 flex items-center justify-between px-8 pt-3 z-20 bg-gradient-to-b from-black/50 to-transparent">
@@ -298,6 +300,7 @@ export function HeroPhone() {
                     </div>
                   </div>
                 )}
+                </div>
               </div>
             </div>
           </div>

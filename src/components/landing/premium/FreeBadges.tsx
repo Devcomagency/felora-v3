@@ -3,29 +3,28 @@
 import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { CheckCircle2, Sparkles } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 export function FreeBadges() {
+  const t = useTranslations('landing.freeBadges');
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
 
   const badges = [
     {
-      title: 'Clients',
-      description: '100% Gratuit',
+      key: 'clients',
       icon: <CheckCircle2 className="w-8 h-8" />,
       gradient: 'from-[#FF6B9D] to-[#FF6B9D]/80',
       glow: '#FF6B9D',
     },
     {
-      title: 'Indépendantes',
-      description: '100% Gratuit',
+      key: 'independantes',
       icon: <CheckCircle2 className="w-8 h-8" />,
       gradient: 'from-[#B794F6] to-[#B794F6]/80',
       glow: '#B794F6',
     },
     {
-      title: 'Établissements',
-      description: '100% Gratuit',
+      key: 'etablissements',
       icon: <CheckCircle2 className="w-8 h-8" />,
       gradient: 'from-[#4FD1C7] to-[#4FD1C7]/80',
       glow: '#4FD1C7',
@@ -51,26 +50,26 @@ export function FreeBadges() {
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-[#FF6B9D]/10 via-[#B794F6]/10 to-[#FF6B9D]/10 border border-white/10 backdrop-blur-xl mb-6"
           >
             <Sparkles className="w-4 h-4 text-[#FF6B9D]" />
-            <span className="text-sm font-medium text-gray-300">Sans engagement</span>
+            <span className="text-sm font-medium text-gray-300">{t('badge')}</span>
           </motion.div>
           <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-4">
             <span className="bg-gradient-to-r from-white via-gray-100 to-white bg-clip-text text-transparent">
-              100% Gratuit
+              {t('title')}
             </span>
           </h2>
           <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-            Pour tous, sans frais cachés ni abonnement
+            {t('description')}
           </p>
         </motion.div>
 
         <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
           {badges.map((badge, index) => (
             <motion.div
-              key={badge.title}
+              key={badge.key}
               initial={{ opacity: 0, y: 50, scale: 0.9 }}
               animate={isInView ? { opacity: 1, y: 0, scale: 1 } : {}}
-              transition={{ 
-                duration: 0.6, 
+              transition={{
+                duration: 0.6,
                 delay: index * 0.15,
                 type: 'spring',
                 stiffness: 100,
@@ -79,11 +78,11 @@ export function FreeBadges() {
               className="group relative"
             >
               {/* Glow effect */}
-              <div 
+              <div
                 className={`absolute inset-0 bg-gradient-to-br ${badge.gradient} rounded-3xl blur-2xl opacity-0 group-hover:opacity-30 transition-opacity duration-500`}
                 style={{ filter: `blur(40px)` }}
               />
-              
+
               <div className="relative p-8 lg:p-10 rounded-3xl bg-gradient-to-br from-white/5 via-white/3 to-white/5 backdrop-blur-2xl border border-white/10 hover:border-white/20 transition-all duration-500 h-full">
                 <div className="flex flex-col items-center text-center space-y-6">
                   {/* Icon container */}
@@ -91,7 +90,7 @@ export function FreeBadges() {
                     whileHover={{ rotate: 360, scale: 1.1 }}
                     transition={{ duration: 0.6 }}
                     className={`relative p-6 rounded-2xl bg-gradient-to-br ${badge.gradient} shadow-2xl`}
-                    style={{ 
+                    style={{
                       boxShadow: `0 20px 60px ${badge.glow}40`,
                     }}
                   >
@@ -100,11 +99,11 @@ export function FreeBadges() {
                       {badge.icon}
                     </div>
                   </motion.div>
-                  
+
                   <div>
-                    <h3 className="text-2xl lg:text-3xl font-bold text-white mb-2">{badge.title}</h3>
+                    <h3 className="text-2xl lg:text-3xl font-bold text-white mb-2">{t(`badges.${badge.key}.title`)}</h3>
                     <p className={`text-xl lg:text-2xl font-bold bg-gradient-to-r ${badge.gradient} bg-clip-text text-transparent`}>
-                      {badge.description}
+                      {t(`badges.${badge.key}.description`)}
                     </p>
                   </div>
                 </div>

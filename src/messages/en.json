@@ -1899,5 +1899,199 @@
     "actions": {
       "viewExample": "View example"
     }
+  },
+  "landing": {
+    "header": {
+      "nav": {
+        "independantes": "Independents",
+        "clients": "Clients",
+        "etablissements": "Establishments",
+        "contact": "Contact"
+      },
+      "cta": "Sign Up"
+    },
+    "hero": {
+      "badge": "Swiss Premium Platform",
+      "title": "Felora –",
+      "subtitle": "The Premium Social Network",
+      "description": "The exclusive platform for creators, independents and establishments in Switzerland",
+      "cta": {
+        "discover": "Discover Felora",
+        "signup": "Join Now"
+      },
+      "stats": {
+        "swiss": "Swiss",
+        "support": "Support"
+      },
+      "scroll": "Discover"
+    },
+    "freeBadges": {
+      "badge": "No commitment",
+      "title": "100% Free",
+      "description": "For everyone, no hidden fees or subscription",
+      "badges": {
+        "clients": {
+          "title": "Clients",
+          "description": "100% Free"
+        },
+        "independantes": {
+          "title": "Independents",
+          "description": "100% Free"
+        },
+        "etablissements": {
+          "title": "Establishments",
+          "description": "100% Free"
+        }
+      }
+    },
+    "dualValue": {
+      "title": "A platform for",
+      "subtitle": "Whether you are independent, client or establishment, Felora adapts to your needs with tailor-made tools",
+      "titleHighlight": "everyone",
+      "propositions": {
+        "independantes": {
+          "title": "Independents",
+          "description": "Create your premium profile and grow your business safely.",
+          "cta": "Create my profile"
+        },
+        "clients": {
+          "title": "Clients",
+          "description": "Discover verified profiles, communicate securely and find the ideal companion.",
+          "cta": "Join now"
+        },
+        "etablissements": {
+          "title": "Establishments",
+          "description": "Manage your establishment and offer a premium experience to your clients.",
+          "cta": "Learn more"
+        }
+      }
+    },
+    "featuresIndependantes": {
+      "title": "Everything to",
+      "subtitle": "Professional tools to grow your business with peace of mind",
+      "titleHighlight": "Succeed Online",
+      "features": {
+        "verified": {
+          "title": "Verified profile",
+          "description": "Get a verification badge to build trust with your clients."
+        },
+        "payments": {
+          "title": "Secure payments",
+          "description": "Receive your payments directly on the platform with a 100% secure system."
+        },
+        "gallery": {
+          "title": "Premium gallery",
+          "description": "Showcase your photos and videos with a professional and private gallery."
+        },
+        "messaging": {
+          "title": "Private messaging",
+          "description": "Communicate with your clients via encrypted and secure messaging."
+        }
+      }
+    },
+    "featuresClients": {
+      "title": "A",
+      "subtitle": "Discover all the tools to find the ideal companion",
+      "titleHighlight": "Premium Experience",
+      "features": {
+        "search": {
+          "title": "Advanced search",
+          "description": "Find exactly what you're looking for with precise and customizable filters."
+        },
+        "verified": {
+          "title": "Verified profiles",
+          "description": "All profiles are verified to ensure your safety and peace of mind."
+        },
+        "messaging": {
+          "title": "Secure messaging",
+          "description": "Communicate in complete privacy with end-to-end encryption."
+        },
+        "gifts": {
+          "title": "Gift system",
+          "description": "Show your appreciation with an elegant virtual gift system."
+        },
+        "notifications": {
+          "title": "Smart notifications",
+          "description": "Receive personalized alerts to never miss an opportunity."
+        },
+        "favorites": {
+          "title": "Favorites",
+          "description": "Save your favorite profiles to easily return to them."
+        },
+        "filters": {
+          "title": "Custom filters",
+          "description": "Customize your search according to your specific preferences and criteria."
+        },
+        "geolocation": {
+          "title": "Geolocation",
+          "description": "Discover profiles near you with a real-time interactive map."
+        }
+      }
+    },
+    "featuresEtablissements": {
+      "title": "Solutions for",
+      "subtitle": "Manage your establishment with dedicated professional tools",
+      "titleHighlight": "Establishments",
+      "features": {
+        "management": {
+          "title": "Team management",
+          "description": "Easily manage all your establishment's profiles from a centralized dashboard."
+        },
+        "configuration": {
+          "title": "Flexible configuration",
+          "description": "Customize your establishment with your specific hours, rates and services."
+        }
+      },
+      "cta": "Learn more"
+    },
+    "howItWorks": {
+      "title": "How it",
+      "titleHighlight": "works",
+      "subtitle": "Three simple steps to start your Felora experience",
+      "steps": {
+        "register": {
+          "title": "Create your account",
+          "description": "Sign up in minutes and complete your profile with your information."
+        },
+        "explore": {
+          "title": "Explore and discover",
+          "description": "Browse verified profiles and use filters to find what suits you."
+        },
+        "connect": {
+          "title": "Connect",
+          "description": "Get in touch via secure messaging and plan your meetings."
+        }
+      }
+    },
+    "finalCTA": {
+      "badge": "Join the Felora community today",
+      "title": "Ready to start your",
+      "titleHighlight": "Felora adventure?",
+      "subtitle": "Join the Felora community and discover a new way to connect",
+      "cta": {
+        "primary": "Sign up now",
+        "secondary": "Discover features"
+      },
+      "badges": {
+        "secure": "100% Secure",
+        "protected": "Data protected",
+        "verified": "Verified profiles"
+      }
+    },
+    "footer": {
+      "description": "The premium platform for dating in Switzerland",
+      "legal": {
+        "title": "Legal",
+        "terms": "Legal notice",
+        "privacy": "Privacy policy",
+        "cgu": "Terms of use"
+      },
+      "contact": {
+        "title": "Contact",
+        "contact": "Contact",
+        "support": "Support"
+      },
+      "copyright": "All rights reserved."
+    }
   }
 }

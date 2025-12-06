@@ -1918,5 +1918,199 @@
       "title": "Politique de Cookies",
       "metadata": "Politique d'utilisation des cookies de Felora"
     }
+  },
+  "landing": {
+    "header": {
+      "nav": {
+        "independantes": "Indépendantes",
+        "clients": "Clients",
+        "etablissements": "Établissements",
+        "contact": "Contact"
+      },
+      "cta": "S'inscrire"
+    },
+    "hero": {
+      "badge": "Plateforme Premium Suisse",
+      "title": "Felora –",
+      "subtitle": "Le Réseau Social Premium",
+      "description": "La plateforme exclusive pour créatrices, indépendantes et établissements en Suisse",
+      "cta": {
+        "discover": "Découvrir Felora",
+        "signup": "S'inscrire Maintenant"
+      },
+      "stats": {
+        "swiss": "Suisse",
+        "support": "Support"
+      },
+      "scroll": "Découvrir"
+    },
+    "freeBadges": {
+      "badge": "Sans engagement",
+      "title": "100% Gratuit",
+      "description": "Pour tous, sans frais cachés ni abonnement",
+      "badges": {
+        "clients": {
+          "title": "Clients",
+          "description": "100% Gratuit"
+        },
+        "independantes": {
+          "title": "Indépendantes",
+          "description": "100% Gratuit"
+        },
+        "etablissements": {
+          "title": "Établissements",
+          "description": "100% Gratuit"
+        }
+      }
+    },
+    "dualValue": {
+      "title": "Une plateforme pour",
+      "subtitle": "Que vous soyez indépendante, client ou établissement, Felora s'adapte à vos besoins avec des outils sur mesure",
+      "titleHighlight": "tous",
+      "propositions": {
+        "independantes": {
+          "title": "Indépendantes",
+          "description": "Créez votre profil premium et développez votre activité en toute sécurité.",
+          "cta": "Créer mon profil"
+        },
+        "clients": {
+          "title": "Clients",
+          "description": "Découvrez des profils vérifiés, communiquez en toute sécurité et trouvez l'accompagnement idéal.",
+          "cta": "Rejoindre maintenant"
+        },
+        "etablissements": {
+          "title": "Établissements",
+          "description": "Gérez votre établissement et offrez une expérience premium à vos clients.",
+          "cta": "En savoir plus"
+        }
+      }
+    },
+    "featuresIndependantes": {
+      "title": "Tout Pour",
+      "subtitle": "Des outils professionnels pour développer votre activité en toute sérénité",
+      "titleHighlight": "Réussir en Ligne",
+      "features": {
+        "verified": {
+          "title": "Profil vérifié",
+          "description": "Obtenez un badge de vérification pour renforcer la confiance de vos clients."
+        },
+        "payments": {
+          "title": "Paiements sécurisés",
+          "description": "Recevez vos paiements directement sur la plateforme avec un système 100% sécurisé."
+        },
+        "gallery": {
+          "title": "Galerie premium",
+          "description": "Mettez en valeur vos photos et vidéos avec une galerie professionnelle et privée."
+        },
+        "messaging": {
+          "title": "Messagerie privée",
+          "description": "Communiquez avec vos clients via une messagerie chiffrée et sécurisée."
+        }
+      }
+    },
+    "featuresClients": {
+      "title": "Une Expérience",
+      "subtitle": "Découvrez tous les outils pour trouver l'accompagnement idéal",
+      "titleHighlight": "Premium",
+      "features": {
+        "search": {
+          "title": "Recherche avancée",
+          "description": "Trouvez exactement ce que vous cherchez avec des filtres précis et personnalisables."
+        },
+        "verified": {
+          "title": "Profils vérifiés",
+          "description": "Tous les profils sont vérifiés pour garantir votre sécurité et votre tranquillité."
+        },
+        "messaging": {
+          "title": "Messagerie sécurisée",
+          "description": "Communiquez en toute confidentialité avec un chiffrement de bout en bout."
+        },
+        "gifts": {
+          "title": "Système de cadeaux",
+          "description": "Montrez votre appréciation avec un système de cadeaux virtuel élégant."
+        },
+        "notifications": {
+          "title": "Notifications intelligentes",
+          "description": "Recevez des alertes personnalisées pour ne jamais manquer une opportunité."
+        },
+        "favorites": {
+          "title": "Favoris",
+          "description": "Sauvegardez vos profils préférés pour y revenir facilement."
+        },
+        "filters": {
+          "title": "Filtres personnalisés",
+          "description": "Personnalisez votre recherche selon vos préférences et critères spécifiques."
+        },
+        "geolocation": {
+          "title": "Géolocalisation",
+          "description": "Découvrez les profils près de chez vous avec une carte interactive en temps réel."
+        }
+      }
+    },
+    "featuresEtablissements": {
+      "title": "Solutions pour",
+      "subtitle": "Gérez votre établissement avec des outils professionnels dédiés",
+      "titleHighlight": "Établissements",
+      "features": {
+        "management": {
+          "title": "Gestion d'équipe",
+          "description": "Gérez facilement tous les profils de votre établissement depuis un tableau de bord centralisé."
+        },
+        "configuration": {
+          "title": "Configuration flexible",
+          "description": "Personnalisez votre établissement avec vos horaires, tarifs et services spécifiques."
+        }
+      },
+      "cta": "En savoir plus"
+    },
+    "howItWorks": {
+      "title": "Comment ça",
+      "titleHighlight": "fonctionne",
+      "subtitle": "Trois étapes simples pour commencer votre expérience Felora",
+      "steps": {
+        "register": {
+          "title": "Créez votre compte",
+          "description": "Inscrivez-vous en quelques minutes et complétez votre profil avec vos informations."
+        },
+        "explore": {
+          "title": "Explorez et découvrez",
+          "description": "Parcourez les profils vérifiés et utilisez les filtres pour trouver ce qui vous correspond."
+        },
+        "connect": {
+          "title": "Connectez-vous",
+          "description": "Entrez en contact via la messagerie sécurisée et planifiez vos rencontres."
+        }
+      }
+    },
+    "finalCTA": {
+      "badge": "Rejoignez la communauté Felora dès aujourd'hui",
+      "title": "Prêt à commencer votre",
+      "titleHighlight": "aventure Felora ?",
+      "subtitle": "Rejoignez la communauté Felora et découvrez une nouvelle façon de vous connecter",
+      "cta": {
+        "primary": "S'inscrire maintenant",
+        "secondary": "Découvrir les fonctionnalités"
+      },
+      "badges": {
+        "secure": "100% Sécurisé",
+        "protected": "Données protégées",
+        "verified": "Profils vérifiés"
+      }
+    },
+    "footer": {
+      "description": "La plateforme premium pour rencontres en Suisse",
+      "legal": {
+        "title": "Légal",
+        "terms": "Mentions légales",
+        "privacy": "Politique de confidentialité",
+        "cgu": "CGU"
+      },
+      "contact": {
+        "title": "Contact",
+        "contact": "Contact",
+        "support": "Support"
+      },
+      "copyright": "Tous droits réservés."
+    }
   }
 }

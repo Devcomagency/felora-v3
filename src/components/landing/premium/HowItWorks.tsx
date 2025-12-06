@@ -3,31 +3,30 @@
 import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { UserPlus, Search, MessageCircle } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 export function HowItWorks() {
+  const t = useTranslations('landing.howItWorks');
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
 
   const steps = [
     {
       number: '1',
+      key: 'register',
       icon: <UserPlus className="w-10 h-10" />,
-      title: 'Créez votre compte',
-      description: 'Inscrivez-vous en quelques minutes et complétez votre profil avec vos informations.',
       gradient: 'from-pink-500 via-purple-500 to-violet-600',
     },
     {
       number: '2',
+      key: 'explore',
       icon: <Search className="w-10 h-10" />,
-      title: 'Explorez et découvrez',
-      description: 'Parcourez les profils vérifiés et utilisez les filtres pour trouver ce qui vous correspond.',
       gradient: 'from-purple-500 to-violet-600',
     },
     {
       number: '3',
+      key: 'connect',
       icon: <MessageCircle className="w-10 h-10" />,
-      title: 'Connectez-vous',
-      description: 'Entrez en contact via la messagerie sécurisée et planifiez vos rencontres.',
       gradient: 'from-violet-500 to-purple-600',
     },
   ];
@@ -48,13 +47,13 @@ export function HowItWorks() {
           className="text-center mb-20"
         >
           <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6">
-            Comment ça{' '}
+            {t('title')}{' '}
             <span className="bg-gradient-to-r from-pink-500 via-purple-500 to-violet-600 bg-clip-text text-transparent">
-              fonctionne
+              {t('titleHighlight')}
             </span>
           </h2>
           <p className="text-xl lg:text-2xl text-gray-400 max-w-3xl mx-auto leading-relaxed">
-            Trois étapes simples pour commencer votre expérience Felora
+            {t('subtitle')}
           </p>
         </motion.div>
 
@@ -94,8 +93,8 @@ export function HowItWorks() {
                   {step.icon}
                 </motion.div>
 
-                <h3 className="text-2xl lg:text-3xl font-bold text-white mb-4">{step.title}</h3>
-                <p className="text-gray-400 leading-relaxed text-lg max-w-xs">{step.description}</p>
+                <h3 className="text-2xl lg:text-3xl font-bold text-white mb-4">{t(`steps.${step.key}.title`)}</h3>
+                <p className="text-gray-400 leading-relaxed text-lg max-w-xs">{t(`steps.${step.key}.description`)}</p>
               </div>
             </motion.div>
           ))}

@@ -4,35 +4,31 @@ import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { Users, Building2, UserCheck, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 
 export function DualValueProposition() {
+  const t = useTranslations('landing.dualValue');
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
 
   const propositions = [
     {
+      key: 'independantes',
       icon: <UserCheck className="w-12 h-12" />,
-      title: 'Indépendantes',
-      description: 'Créez votre profil premium et développez votre activité en toute sécurité.',
-      cta: 'Créer mon profil',
       href: '/register/indepandante',
       gradient: 'from-pink-500 via-purple-500 to-violet-600',
       bgGradient: 'from-pink-500/10 via-purple-500/5 to-transparent',
     },
     {
+      key: 'clients',
       icon: <Users className="w-12 h-12" />,
-      title: 'Clients',
-      description: 'Découvrez des profils vérifiés, communiquez en toute sécurité et trouvez l\'accompagnement idéal.',
-      cta: 'Rejoindre maintenant',
       href: '/register/client',
       gradient: 'from-cyan-500 to-blue-500',
       bgGradient: 'from-cyan-500/10 via-blue-500/5 to-transparent',
     },
     {
+      key: 'etablissements',
       icon: <Building2 className="w-12 h-12" />,
-      title: 'Établissements',
-      description: 'Gérez votre établissement et offrez une expérience premium à vos clients.',
-      cta: 'En savoir plus',
       href: '/register/salon',
       gradient: 'from-violet-500 to-purple-600',
       bgGradient: 'from-violet-500/10 via-purple-500/5 to-transparent',
@@ -55,24 +51,24 @@ export function DualValueProposition() {
           className="text-center mb-20"
         >
           <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6">
-            Une plateforme pour{' '}
+            {t('title')}{' '}
             <span className="bg-gradient-to-r from-pink-500 via-purple-500 to-violet-600 bg-clip-text text-transparent">
-              tous
+              {t('titleHighlight')}
             </span>
           </h2>
           <p className="text-xl lg:text-2xl text-gray-400 max-w-3xl mx-auto leading-relaxed">
-            Que vous soyez indépendante, client ou établissement, Felora s'adapte à vos besoins avec des outils sur mesure
+            {t('subtitle')}
           </p>
         </motion.div>
 
         <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
           {propositions.map((prop, index) => (
             <motion.div
-              key={prop.title}
+              key={prop.key}
               initial={{ opacity: 0, y: 60, scale: 0.95 }}
               animate={isInView ? { opacity: 1, y: 0, scale: 1 } : {}}
-              transition={{ 
-                duration: 0.7, 
+              transition={{
+                duration: 0.7,
                 delay: index * 0.2,
                 type: 'spring',
                 stiffness: 100,
@@ -81,7 +77,7 @@ export function DualValueProposition() {
               className="group relative"
             >
               <div className={`absolute -inset-1 bg-gradient-to-br ${prop.gradient} rounded-3xl blur-xl opacity-0 group-hover:opacity-40 transition-opacity duration-500`} />
-              
+
               <div className={`relative p-8 lg:p-10 rounded-3xl bg-gradient-to-br ${prop.bgGradient} backdrop-blur-xl border border-white/10 hover:border-white/20 transition-all duration-500 h-full flex flex-col`}>
                 <motion.div
                   whileHover={{ rotate: [0, -10, 10, -10, 0], scale: 1.1 }}
@@ -93,12 +89,12 @@ export function DualValueProposition() {
                 >
                   {prop.icon}
                 </motion.div>
-                
+
                 <div className="flex-1">
-                  <h3 className="text-2xl lg:text-3xl font-bold text-white mb-4">{prop.title}</h3>
-                  <p className="text-gray-400 mb-8 leading-relaxed text-lg">{prop.description}</p>
+                  <h3 className="text-2xl lg:text-3xl font-bold text-white mb-4">{t(`propositions.${prop.key}.title`)}</h3>
+                  <p className="text-gray-400 mb-8 leading-relaxed text-lg">{t(`propositions.${prop.key}.description`)}</p>
                 </div>
-                
+
                 <Link
                   href={prop.href}
                   className={`group relative inline-flex items-center gap-2 px-6 py-4 bg-gradient-to-r ${prop.gradient} text-white font-semibold rounded-xl overflow-hidden transition-all duration-300 hover:scale-105`}
@@ -106,7 +102,7 @@ export function DualValueProposition() {
                     filter: 'drop-shadow(0 0 20px rgba(236,72,153,0.4))',
                   }}
                 >
-                  <span className="relative z-10">{prop.cta}</span>
+                  <span className="relative z-10">{t(`propositions.${prop.key}.cta`)}</span>
                   <motion.span
                     animate={{ x: [0, 4, 0] }}
                     transition={{ duration: 1.5, repeat: Infinity }}

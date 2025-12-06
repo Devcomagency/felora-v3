@@ -4,8 +4,11 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useScroll, useMotionValueEvent } from 'framer-motion';
+import { useTranslations } from 'next-intl';
+import { LanguageSwitcher } from './LanguageSwitcher';
 
 export function Header() {
+  const t = useTranslations('landing.header');
   const [isScrolled, setIsScrolled] = useState(false);
   const { scrollY } = useScroll();
 
@@ -14,10 +17,10 @@ export function Header() {
   });
 
   const navLinks = [
-    { label: 'Indépendantes', href: '#independantes' },
-    { label: 'Clients', href: '#clients' },
-    { label: 'Établissements', href: '#etablissements' },
-    { label: 'Contact', href: '#contact' },
+    { label: t('nav.independantes'), href: '#independantes' },
+    { label: t('nav.clients'), href: '#clients' },
+    { label: t('nav.etablissements'), href: '#etablissements' },
+    { label: t('nav.contact'), href: '#contact' },
   ];
 
   return (
@@ -66,8 +69,9 @@ export function Header() {
             ))}
           </nav>
 
-          {/* CTA Button - Amélioré */}
-          <div>
+          {/* Language Switcher + CTA Button */}
+          <div className="flex items-center gap-3">
+            <LanguageSwitcher />
             <Link
               href="/register"
               className="group relative inline-flex items-center gap-2 px-6 py-3 overflow-hidden rounded-xl font-semibold text-sm transition-all duration-300 hover:scale-105"
@@ -83,7 +87,7 @@ export function Header() {
               
               {/* Texte */}
               <span className="relative z-10 text-white flex items-center gap-2">
-                S'inscrire
+                {t('cta')}
                 <span className="inline-block">→</span>
               </span>
             </Link>
